@@ -1,0 +1,40 @@
+# This file defines your python project and its CLI entrypoint
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docling_graph"
+version = "0.1.0"
+description = "A tool to convert documents into knowledge graphs using Docling."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+# Add all dependencies from requirements.txt here
+dependencies = [
+    "docling[vlm]",
+    "pydantic",
+    "networkx",
+    "pymupdf",
+    "plotly",
+    "matplotlib",
+    "pygraphviz", # Note: Still requires system-level install
+    "rich",
+    "typer[all]",
+    "mistralai",
+    # "openai", 
+    # "google-generativeai",
+    # "ibm-watson-machine-learning"
+]
+
+[project.urls]
+Homepage = "https://github.com/ayoub-ibm/docling-graph"
+Issues = "https://github.com/ayoub-ibm/docling-graph/issues"
+
+[project.scripts]
+# This is the magic line that creates the `docling-graph` command
+docling-graph = "docling_graph.cli:main"

@@ -1,0 +1,43 @@
+# This file defines reusable extraction pipelines for docling-graph.
+# Run `docling-graph convert --pipeline <name> ...` to use one.
+
+pipelines:
+
+  # --- "One-to-One" Pipelines ---
+  # Use for: A batch of N items in one file (e.g., a 10-page PDF of 10 invoices).
+  # Output: N Knowledge Graphs (one for each item/page).
+  
+  one_to_one_local:
+    description: "Fastest. Use for 1 item/page. (Uses Docling VLM/NuExtract)"
+    processing_mode: "one_to_one"
+    extractor_type: "local_vlm"
+    # The model can be overridden at the command line, e.g., --model "numind/NuExtract-2.0-8B"
+    default_model: "numind/NuExtract-2.0-2B"
+
+  one_to_one_api:
+    description: "Accurate. Use for 1 item/page. (Uses 1 API call per page)"
+    processing_mode: "one_to_one"
+    extractor_type: "api"
+    # Provider/model can be overridden at the command line
+    provider: "mistral" 
+    default_model: "mistral-small-latest"
+
+  # --- "Many-to-One" Pipelines ---
+  # Use for: A single item that spans N pages (e.g., a 10-page insurance policy).
+  # Output: 1 consolidated Knowledge Graph.
+
+  many_to_one_api:
+    description: "Recommended. Use for 1 item spanning many pages. (Uses Docling MD -> LLM)"
+    processing_mode: "many_to_one"
+    extractor_type: "api"
+    # Provider/model can be overridden at the command line
+    provider: "mistral"
+    default_model: "mistral-large-latest"
+
+  many_to_one_local:
+    description: "Advanced. Use for 1 item spanning many pages. (Requires Ollama/vLLM)"
+    processing_mode: "many_to_one"
+    extractor_type: "local_llm"
+    # Example for Ollama. Can be overridden at the command line
+    # Ensure your local server is running and has this model
+    default_model: "llama3:8b-instruct" 

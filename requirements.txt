@@ -8,12 +8,19 @@ pymupdf
 plotly
 matplotlib
 
+### CLI Libraries ###
+rich
+typer[all]
 
 ### Notebook & Utility Libraries ###
 notebook
 ipython
-rich
 
+### API Providers ###
+mistralai
+openai
+google-generativeai
+ibm-watson-machine-learning
 
 ### Hierarchical Graph Layouts ###
 pygraphviz

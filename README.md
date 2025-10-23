@@ -1,129 +1,198 @@
 # Docling-Graph: Document to Knowledge Graph Converter
 
-Turn any document into a structured, queryable knowledge graph using the power of Docling VLM pipeline.
+Docling-Graph is a Python toolkit that leverages the **docling** library to convert unstructured documents (PDFs, images) into structured knowledge graphs.
 
-**Docling-Graph** is a Python toolkit that leverages the schema-driven extraction capabilities of the `docling` library to transform unstructured documents (like invoices, reports, or articles) into a rich, interconnected knowledge graph. It automatically handles entity resolution, relationship linking, and provides powerful visualization tools.
+It provides a flexible, config-driven pipeline to extract information from documents using your desired **Pydantic schema** and processing strategy. You can choose between:
+
+- **Fast, Local VLM Extraction** (using docling's NuExtract pipeline)
+- **Powerful LLM Extraction** (using local models via Ollama or remote APIs like Mistral, OpenAI, etc.)
+
+
+
+## Core Processing Strategies
+
+Docling-Graph is built around two core processing strategies:
+
+- **One-to-One:** For documents that are batches of single-page items (e.g., a 10-page PDF containing 10 separate invoices).
+- **Many-to-One:** For documents that are one logical entity spanning multiple pages (e.g., a 5-page insurance policy).
 
 
 
 ## Core Features
 
-### Schema-Driven Extraction
-Define your desired entities and relationships using simple Pydantic models. Docling-Graph uses this schema to guide the foundation model, ensuring a clean, predictable, and structured output.
+### Config-Driven Pipelines
+Use `docling-graph init` to create a central YAML config. Run complex pipelines with a simple name (e.g., `many_to_one_api`).
 
-### Automatic Entity Deduplication
-Intelligently identifies unique real-world entities. For example, "Robert Schneider AG" mentioned across ten documents will be treated as a single, canonical node, preventing data redundancy.
+### Flexible Processing Modes
+- **One-to-One:** Processes each page of a document as a separate item.
+- **Many-to-One:** Processes the entire document as a single, complete item.
 
-### Backend-Agnostic Export
-The primary output is a universal JSON format (nodes and edges), allowing you to easily load your graph into any database like **Neo4j**, **Amazon Neptune**, or **TigerGraph**.
+### Multiple Extractor Types
+- **local_vlm:** Uses the docling VLM pipeline (e.g., NuExtract) for direct, schema-driven extraction. Blazing fast, no LLM required.
+- **local_llm:** Uses a local model (via Ollama) to extract from document markdown.
+- **api:** Uses a remote LLM API (Mistral, OpenAI, etc.) for extraction.
 
-### Rich, Interactive Visualizations
-Automatically generate beautiful, interactive graphs with **Plotly** for data exploration, or create static, publication-quality images.
+### Intelligent Fallback Logic
+The Many-to-One extractor automatically handles large documents. It attempts a single "fast path" call, but if the document exceeds the LLM's context window, it automatically falls back to a page-by-page extraction and intelligently merges the partial JSON results.
 
+### Pydantic-Powered
+Define your desired output using a Pydantic model. The extractor will return a validated object.
 
-
-## How It Works
-
-The workflow is simple and powerful, designed to get you from a raw document to an insightful graph in minutes.
-
-### 1. Define Your Schema
-
-You define the "shape" of your desired knowledge graph using Pydantic models. Special `Edge` markers define the relationships between entities.
-
-```python
-class Organization(BaseModel):
-    name: str = Field(description="The legal name of the organization")
-    # ... other properties
-
-class Invoice(BaseModel):
-    bill_no: str = Field(description="The unique invoice identifier")
-    # ... other properties
-    
-    # Define an edge from Invoice to Organization
-    issued_by: Organization = Edge(label="ISSUED_BY")
-```
-
-See an example schema in `templates/invoice.py`.
-
-### 2. Extract Structured Data (`extraction_invoice.ipynb`)
-The `docling` library reads your document (e.g., a PDF or image) and uses your Pydantic schema to extract a structured data object.
-
-### 3. Convert to a Graph (`graph_converter.py`)
-The `GraphConverter` processes the extracted data, creating nodes for each entity and linking them with the defined edges. Its content-based hashing ensures entities are automatically deduplicated.
-
-### 4. Visualize and Explore (`graph_visualizer.py`)
-Instantly generate visualizations to understand the extracted knowledge.
+### Graph Generation & Visualization
+Automatically converts your extracted Pydantic models into a **networkx** graph and generates a static `.png` visualization of the resulting graph.
 
 
 
-## Project Structure
+## Quick Start
 
-```
-├── data/                       # Contains input example files (e.g., sample invoices)
-├── outputs/                    # Default directory for generated graphs
-├── templates/
-│   └── invoice.py              # Pydantic schema for invoices
-├── scripts/
-│   └── graph_converter.py          # Core logic for converting Pydantic objects to a graph
-│   └── graph_visualizer.py         # Functions for creating static and interactive visualizations
-├── extraction_invoice.ipynb    # Main notebook demonstrating the full workflow
-├── requirements.txt            # All project dependencies
-└── README.md                   # This file
-```
-
-
-
-## Getting Started
-
-### Prerequisites
-- Python 3.8+
-- Graphviz (optional, but required for hierarchical layouts in visualizations)
-
-### Installation
-
-Clone the repository:
+### 1. Installation
 
 ```bash
 git clone https://github.com/ayoub-ibm/docling-graph.git
 cd docling-graph
+pip install -e .
+
+# Install LLM clients as needed
+pip install ollama mistralai
 ```
 
-Install dependencies:
+### 2. Initialize Project Config
 
 ```bash
-pip install -r requirements.txt
+docling-graph init
+```
+
+This creates a file `docling_graph_config.yaml` with 4 pre-defined pipelines. You can edit this file to set your preferred models and API providers.
+
+### 3. Run a Pipeline
+
+#### Example: Local One-to-One (Batch of Invoices)
+```bash
+docling-graph convert "data/my_invoices.pdf"   --template "templates.invoice.Invoice"   --pipeline "one_to_one_local"   --output-dir "outputs/"
+```
+
+#### Example: API Many-to-One (Multi-page Insurance Policy)
+```bash
+export MISTRAL_API_KEY="your_api_key_here"
+
+docling-graph convert "data/my_policy.pdf"   --template "templates.insurance.HomeInsurance"   --pipeline "many_to_one_api"   --output-dir "outputs/"
 ```
 
 
 
-## Usage
+## Configuration Example
 
-The easiest way to get started is to run the `extraction_invoice.ipynb` notebook.  
-It contains a complete, step-by-step walkthrough of the entire process:
+```yaml
+# docling_graph_config.yaml
+pipelines:
+  one_to_one_local:
+    processing_mode: one_to_one
+    extractor_type: local_vlm
+    default_model: "numind/NuExtract-2.0-8B"
 
-1. Loading the Pydantic schema from the templates directory.  
-2. Using `docling` to extract data from a sample invoice.  
-3. Using the `GraphConverter` to build the knowledge graph.  
-4. Calling the `GraphVisualizer` to generate and display both static and interactive outputs.
+  one_to_one_api:
+    processing_mode: one_to_one
+    extractor_type: api
+    provider: mistral
+    default_model: "mistral-small-latest"
+
+  many_to_one_local:
+    processing_mode: many_to_one
+    extractor_type: local_llm
+    provider: ollama
+    default_model: "llama3:8b"
+
+  many_to_one_api:
+    processing_mode: many_to_one
+    extractor_type: api
+    provider: mistral
+    default_model: "mistral-large-latest"
+```
 
 
 
-## Examples
+## Pipeline Breakdown
 
-Below is an example output showing the conversion of a sample invoice into a knowledge graph.
+### one_to_one_local
+- **Use Case:** Batch of single-page items (invoices, ID cards).
+- **Logic:** Uses `docling.DocumentExtractor` (NuExtract) per page.
+- **Result:** List of Pydantic models.
 
-### Sample Invoice
-<img src="data/sample_invoice.jpg" alt="Sample Invoice" width="800"/>
+### one_to_one_api
+- **Use Case:** Same as above, but using an API-based LLM.
+- **Logic:** Converts each page to Markdown and calls the LLM API.
+- **Result:** List of Pydantic models.
 
-### Generated Knowledge Graph
-<img src="outputs/sample_invoice/invoice_knowledge_graph.png" alt="Generated Knowledge Graph" width="800"/>
+### many_to_one_local
+- **Use Case:** Multi-page logical document (reports, policies).
+- **Logic:** Uses local Ollama model with hybrid fallback.
+- **Result:** Single Pydantic model.
+
+### many_to_one_api
+- **Use Case:** Same as above, using remote API (Mistral, etc.).
+- **Logic:** Uses remote LLM API with hybrid fallback.
+- **Result:** Single Pydantic model.
 
 
 
-## Future Work
+## CLI Usage
 
-Docling-Graph is currently in its initial boilerplate stage.. Future enhancements could include:
+```bash
+docling-graph convert [OPTIONS] SOURCE
+```
 
-- Direct integration with graph databases (e.g., a `to_neo4j()` method).  
-- More sophisticated entity resolution strategies.  
-- Support for time-series and event-based graph analysis.
+### Arguments
+- `SOURCE`: Path to the source document.
+
+### Options
+| Option | Description |
+|--------|--------------|
+| `--template` | (Required) Pydantic model path (e.g., templates.invoice.Invoice). |
+| `--pipeline` | (Required) Pipeline name (e.g., many_to_one_api). |
+| `--config-file` | Config file path (default: `docling_graph_config.yaml`). |
+| `--output-dir` | Output directory (default: `outputs/`). |
+| `--model` | Override model name. |
+| `--provider` | Override provider (e.g., openai). |
+
+
+
+## Conceptual Design
+
+### 1. Processing Modes
+- **one_to_one:** Treats a 10-page PDF as 10 distinct documents.  
+  _Good for invoices, receipts, ID cards._
+- **many_to_one:** Treats a 10-page PDF as one logical document.  
+  _Good for policies, reports, contracts._
+
+### 2. Extractor Types
+- **local_vlm:** Fast, schema-driven extraction via NuExtract.
+- **local_llm:** Local LLM (Ollama) for Markdown-to-schema extraction.
+- **api:** Remote LLM (Mistral, OpenAI, etc.) for complex documents.
+
+### 3. Hybrid Fallback Logic
+If the full document is too large for the model context window, the extractor:
+1. Detects the overflow.
+2. Switches to page-by-page extraction.
+3. Merges partial JSON results into one validated Pydantic model.
+
+
+
+## Adding Pydantic Templates
+
+Create new files in the `templates/` directory (e.g., `templates/report.py`).  
+Define your Pydantic `BaseModel`s and use the `Edge` helper function for relationships.
+
+Run the CLI with:
+```bash
+docling-graph convert "data/my_doc.pdf"   --template "templates.report.YourModelName"
+```
+
+
+
+## Dependencies
+
+| Category | Libraries |
+|-----------|------------|
+| Core | `docling[vlm]`, `typer[all]`, `rich`, `networkx`, `pyyaml` |
+| Visualization | `matplotlib`, `pygraphviz` *(optional)* |
+| LLM Clients | `ollama`, `mistralai`, `openai`, `google-generativeai` |
