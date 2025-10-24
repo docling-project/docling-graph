@@ -1,0 +1,6 @@
+:START_ID,:END_ID,:TYPE
+Invoice_c84b53e96b,Issuer_8d96021948,issued_by
+Invoice_c84b53e96b,Client_c873814ac1,sent_to
+Invoice_c84b53e96b,LineItem_6a33c9a6a6,contains_items
+Issuer_8d96021948,Address_85a65de79b,located_at
+Client_c873814ac1,Address_aa5185e65d,lives_at

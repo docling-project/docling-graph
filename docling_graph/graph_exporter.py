@@ -86,6 +86,10 @@ def to_csv(graph: nx.Graph, output_dir: Path):
     """
     Exports a networkx graph to nodes and relationships CSV files.
     """
+    
+    graph_dir = Path(output_dir, "graph")
+    graph_dir.mkdir(parents=True, exist_ok=True)
+
     # --- Export Nodes ---
     nodes_data = []
     for node, data in graph.nodes(data=True):
@@ -107,7 +111,7 @@ def to_csv(graph: nx.Graph, output_dir: Path):
         cols = ["id:ID", "label:LABEL"] + [c for c in nodes_df.columns if c not in ["id:ID", "label:LABEL"]]
         nodes_df = nodes_df[cols]
     
-    nodes_df.to_csv(output_dir / "graph" / "nodes.csv", index=False, encoding="utf-8")
+    nodes_df.to_csv(graph_dir / "nodes.csv", index=False, encoding="utf-8")
 
     # --- Export Relationships ---
     edges_data = []
@@ -131,5 +135,5 @@ def to_csv(graph: nx.Graph, output_dir: Path):
         cols = [":START_ID", ":END_ID", ":TYPE"] + [c for c in edges_df.columns if c not in [":START_ID", ":END_ID", ":TYPE"]]
         edges_df = edges_df[cols]
 
-    edges_df.to_csv(output_dir / "graph" / "relationships.csv", index=False, encoding="utf-8")
+    edges_df.to_csv(graph_dir / "relationships.csv", index=False, encoding="utf-8")
 

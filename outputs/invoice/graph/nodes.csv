@@ -1,0 +1,7 @@
+id:ID,label:LABEL,id,bill_no,date,currency,subtotal,vat_amount,total,name,street,postal_code,city,country,description,quantity,unit,unit_price
+Invoice_c84b53e96b,Invoice,Invoice_c84b53e96b,1223113,2023-12-01,CHF,1725.0,0.0,1725.0,,,,,,,,,
+Issuer_8d96021948,Issuer,Issuer_8d96021948,,,,,,,Slack,,,,,,,,
+Address_85a65de79b,Address,Address_85a65de79b,,,,,,,,500 Howard Street,94105,San Francisco,CA,,,,
+Client_c873814ac1,Client,Client_c873814ac1,,,,,,,MineralTree,,,,,,,,
+Address_aa5185e65d,Address,Address_aa5185e65d,,,,,,,,101 Arch Street,02110,Boston,MA,,,,
+LineItem_6a33c9a6a6,LineItem,LineItem_6a33c9a6a6,,,,,,307.35,,,,,,Business+ Monthly User License,1.0,user,307.35

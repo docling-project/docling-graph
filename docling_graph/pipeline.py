@@ -114,27 +114,28 @@ def run_pipeline(config: Dict[str, Any]):
     
     print(f"Graph created with [blue]{knowledge_graph.number_of_nodes()} nodes[/blue] and [blue]{knowledge_graph.number_of_edges()} edges[/blue].")
 
-    # 6. Save and Visualize
+    # 6. Save outputs
     output_dir = Path(config.get("output_dir", "outputs"))
     output_dir.mkdir(parents=True, exist_ok=True)
     base_name = Path(config["source"]).stem
-    output_filename = f"{base_name}_graph"
-    output_path = output_dir / output_filename
+    output_path = output_dir / f"{base_name}_graph"
 
-    if export_format == "csv":        
-        # Creates nodes.csv and relationships.csv
+    # Export graph data
+    export_format = config.get("export_format", "csv")
+    print(f"Exporting graph data in [cyan]{export_format.upper()}[/cyan] format...")
+    
+    if export_format == "csv":
         to_csv(knowledge_graph, output_dir)
+        print(f"Saved CSV files to [green]{output_dir}[/green]")
     elif export_format == "cypher":
         cypher_path = output_dir / f"{base_name}_graph.cypher"
         to_cypher(knowledge_graph, cypher_path)
+        print(f"Saved Cypher script to [green]{cypher_path}[/green]")
 
-    print(f"Saving markdown graph report to [green]{output_dir}[/green]")
+    # Create visualizations
+    print(f"Creating visualizations in [green]{output_dir}[/green]")
     create_markdown_report(knowledge_graph, output_path)
-    
-    print(f"Saving interactive graph to [green]{output_path}[/green]")
     create_interactive_graph(knowledge_graph, output_path)
-    
-    print(f"Saving static graph visualization to [green]{output_path}[/green]")
     create_static_graph(knowledge_graph, output_path)
 
     print("--- [blue]Pipeline Finished Successfully[/blue] ---")
