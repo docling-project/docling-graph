@@ -1,18 +1,17 @@
-import importlib
+from typing import Dict, Any
 from pathlib import Path
 from rich import print
-from typing import Dict, Any
-
-# Import extractor factory
-from .extractors.factory import ExtractorFactory
+import importlib
 
 # Import LLM Clients
-from .llm_clients.base import BaseLlmClient
 from .llm_clients.mistral import MistralClient
 from .llm_clients.ollama import OllamaClient
+from .llm_clients.base import BaseLlmClient
 
+from .extractors.factory import ExtractorFactory
 from .graph_converter import GraphConverter
-from .graph_visualizer import create_static_graph, create_interactive_graph, create_markdown_report
+
+from .graph_visualizer import create_interactive_graph, create_static_graph, create_markdown_report
 from .graph_exporter import to_csv, to_cypher
 
 
@@ -129,7 +128,8 @@ def run_pipeline(config: Dict[str, Any]):
 
     # 5. Convert to Graph
     print("Converting Pydantic model(s) to Knowledge Graph...")
-    converter = GraphConverter()
+    # To enable reverse edges: GraphConverter(add_reverse_edges=True)
+    converter = GraphConverter() 
     knowledge_graph = converter.pydantic_list_to_graph(extracted_data)
     print(f"Graph created with [blue]{knowledge_graph.number_of_nodes()} nodes[/blue] and [blue]{knowledge_graph.number_of_edges()} edges[/blue].")
 
@@ -150,9 +150,15 @@ def run_pipeline(config: Dict[str, Any]):
         to_cypher(knowledge_graph, cypher_path)
         print(f"[green]->[/green] Saved Cypher script to [green]{cypher_path}[/green]")
 
-    print(f"Creating visualizations in [green]{output_dir}[/green]")
+    print(f"[green]->[/green] Saved graphs and report to [green]{output_dir}[/green]")
+
+    # Markdown report
     create_markdown_report(knowledge_graph, output_path)
+
+    # Interactive visualizations
     create_interactive_graph(knowledge_graph, output_path)
-    create_static_graph(knowledge_graph, output_path)
+
+    # Static exports (PNG, SVG, PDF)
+    create_static_graph(knowledge_graph, output_path, format='png')
 
     print("--- [blue]Pipeline Finished Successfully[/blue] ---")

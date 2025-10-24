@@ -168,10 +168,10 @@ def convert_command(
     # Display configuration
     print(f"Configuration:")
     print(f"  Processing mode: [cyan]{processing_mode}[/cyan]")
-    print(f"  Model type:      [cyan]{model_type.upper()}[/cyan]")
+    print(f"  Model type:      [cyan]{model_type}[/cyan]")
     print(f"  Inference:       [cyan]{inference}[/cyan]")
     print(f"  Docling config: [cyan]{docling_config}[/cyan]")
-    print(f"  Export format:   [cyan]{export_format.upper()}[/cyan]")
+    print(f"  Export format:   [cyan]{export_format}[/cyan]")
     
     # Bundle settings for the pipeline
     run_config = {

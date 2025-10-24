@@ -1,17 +1,17 @@
 ### Core Dependencies ###
+networkx>=3.0
 docling[vlm]
 pydantic
-networkx
 pymupdf
 
 ### Visualization Libraries ###
-plotly
-matplotlib
+matplotlib>=3.7.0,
+pyvis>=0.3.2,
 
 ### CLI Libraries ###
-rich
-dotenv
 typer[all]
+dotenv
+rich
 
 ### Notebook & Utility Libraries ###
 notebook
@@ -27,13 +27,3 @@ ibm-watson-machine-learning
 google-generativeai
 mistralai
 openai
-
-### Hierarchical Graph Layouts ###
-#pygraphviz
-
-# Note: Requires system-level installation of Graphviz
-# On Debian/Ubuntu: sudo apt-get install graphviz graphviz-dev
-# On MacOS: brew install graphviz
-
-# You can also use conda to install graphviz:
-# conda install -c conda-forge graphviz

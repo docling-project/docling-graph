@@ -18,10 +18,10 @@ classifiers = [
 dependencies = [
     "docling[vlm]",
     "pydantic",
-    "networkx",
+    "networkx>=3.0",
     "pymupdf",
-    "plotly",
-    "matplotlib",
+    "matplotlib>=3.7.0",
+    "pyvis>=0.3.2",
     "rich",
     "typer[all]",
     "ollama",

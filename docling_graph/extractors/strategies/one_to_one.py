@@ -59,7 +59,7 @@ class OneToOneStrategy(BaseExtractor):
                 if model:
                     extracted_models.append(model)
             
-            print(f"[OneToOneStrategy] Extracted [green]{len(extracted_models)}[/green] models")
+            print(f"[OneToOneStrategy] Extracted {len(extracted_models)} model(s)")
             return extracted_models
         
         else:

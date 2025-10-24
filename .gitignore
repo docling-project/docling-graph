@@ -77,4 +77,5 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific directories
+data
 outputs

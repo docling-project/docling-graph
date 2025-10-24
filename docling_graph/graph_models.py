@@ -1,8 +1,9 @@
 """
 Defines shared Pydantic models for graph conversion, such as the Edge model.
 """
-from pydantic import BaseModel, Field
+
 from typing import TypeVar, Generic, Optional
+from pydantic import BaseModel, Field
 
 # T is a type variable that can be any Pydantic BaseModel
 T = TypeVar('T', bound=BaseModel)

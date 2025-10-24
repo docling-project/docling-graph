@@ -9,6 +9,7 @@ The schema is designed to be converted into a knowledge graph.
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, Any, List
 from datetime import date
+import re
 
 # --- Edge Helper Function ---
 def Edge(label: str, **kwargs: Any) -> Any:
@@ -80,7 +81,11 @@ class Person(BaseModel):
     )
     date_of_birth: Optional[date] = Field(
         None,
-        description="Date of birth in YYYY-MM-DD format",
+        description=(
+            "The cardholder's date of birth.",
+            "Look for text like 'Date of birth', 'Date de naiss.', or similar.",
+            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format."
+        ),
         examples=["1990-05-15"]
     )
     place_of_birth: Optional[str] = Field(
@@ -108,6 +113,42 @@ class Person(BaseModel):
             return [v]
         return v
     
+    @field_validator('lives_at', mode='before')
+    @classmethod
+    def parse_address(cls, v):
+        """
+        Accept both Address objects and strings.
+        If string, attempt to parse into Address structure.
+        """
+        if v is None or isinstance(v, dict):
+            return v  # Let Pydantic handle dict -> Address
+        
+        if isinstance(v, str):
+            # Attempt to parse the address string
+            # Pattern: "street, additional, postal_code city, country"
+            parts = [p.strip() for p in v.split(',')]
+            
+            # Basic heuristic parsing
+            address_dict = {
+                'street_address': parts[0] if len(parts) > 0 else None,
+                'city': None,
+                'postal_code': None,
+                'country': parts[-1] if len(parts) > 1 else None
+            }
+            
+            # Try to extract postal code and city
+            if len(parts) >= 2:
+                # Look for postal code pattern (5 digits for France)
+                for part in parts:
+                    postal_match = re.search(r'\b(\d{5})\s+(.+)', part)
+                    if postal_match:
+                        address_dict['postal_code'] = postal_match.group(1)
+                        address_dict['city'] = postal_match.group(2)
+                        break
+                                
+            return address_dict        
+        return v
+    
     def __str__(self):
         parts = [self.first_name, self.last_name]
         return " ".join(p for p in parts if p)
@@ -123,7 +164,7 @@ class IDCard(BaseModel):
     document_type: str = Field(
         "ID Card",
         description="Type of document (e.g., ID Card, Passport, Driver's License)",
-        examples=["Carte Nationale d'Identité", "Passeport"]
+        examples=["ID Card", "Passeport"]
     )
     document_number: str = Field(
         ...,
@@ -138,18 +179,20 @@ class IDCard(BaseModel):
     issue_date: Optional[date] = Field(
         None,
         description=(
-            "Date the document was issued, in DD-MM-YYYY format",
-            "Look for text like 'Date of Issue', 'Issued on', 'Délivré le', or similar"
+            "Date the document was issued.",
+            "Look for text like 'Date of Issue', 'Date de délivrence', or similar.",
+            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format."
         ),
-        examples=["20-01-2023", "23.12.2019", "05 07 2031"]
+        examples=["2023-10-20"]
     )
     expiry_date: Optional[date] = Field(
         None,
         description=(
-            "Date the document expires, in DD-MM-YYYY format",
-            "Look for text like 'Expiry Date', 'Expires on', 'Valable jusqu’au', or similar"
+            "Date the document expires.",
+            "Look for text like 'Expiry Date', 'Date d'expir.', or similar.",
+            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format."
         ),
-        examples=["19-01-2033", "22.12.2029", "04 07 2041"]
+        examples=["2033-10-19"]
     )
 
     # --- Edge Definition ---

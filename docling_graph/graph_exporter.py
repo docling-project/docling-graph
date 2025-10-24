@@ -4,8 +4,9 @@ Module for exporting networkx graphs to various formats.
 
 import networkx as nx
 import pandas as pd
-from pathlib import Path
 import re
+
+from pathlib import Path
 from typing import Any
 
 def escape_cypher_string(value: Any) -> str:

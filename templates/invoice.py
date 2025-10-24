@@ -97,7 +97,7 @@ class LineItem(BaseModel):
         description="The quantity of the item",
         examples=[28.0, 1.0, 115.0]
     )
-    unit: str = Field(
+    unit: Optional[str] = Field(
         description="The unit of measurement for the quantity",
         examples=["Std.", "pcs", "hours", "user"]
     )
