@@ -1,6 +1,22 @@
-<p align="center"><br><img src="docs/logo.png" alt="Docling Graph" width="250"></p>
+<p align="center"><br>
+  <a href="https://github.com/ayoub-ibm/docling-graph">
+    <img loading="lazy" alt="Docling Graph" src="docs/assets/logo.png" width="250"/>
+  </a>
+</p>
 
-# Docling-Graph
+# Docling Graph
+
+[![Docs](https://img.shields.io/badge/docs-coming%20soon-brightgreen)](https://github.com/ayoub-ibm/docling-graph)
+[![Docling](https://img.shields.io/badge/Docling-VLM-red)](https://github.com/docling-project/docling)
+[![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
+[![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
+[![NetworkX](https://img.shields.io/badge/NetworkX-3.0+-orange)](https://networkx.org/)
+[![Typer](https://img.shields.io/badge/Typer-CLI-purple)](https://typer.tiangolo.com/)
+[![Rich](https://img.shields.io/badge/Rich-terminal-cyan)](https://github.com/Textualize/rich)
+[![Ollama](https://img.shields.io/badge/Ollama-compatible-black)](https://ollama.ai/)
+[![Mistral AI](https://img.shields.io/badge/Mistral-API-ff7000)](https://mistral.ai/)
+[![License MIT](https://img.shields.io/github/license/ayoub-ibm/docling-graph)](https://opensource.org/licenses/MIT)
+
 
 Docling-Graph converts PDFs and images into validated **Pydantic** objects and then into a **directed knowledge graph**, with exports to CSV or Cypher and both static and interactive visualizations.  
 
@@ -19,18 +35,18 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 ## Key Capabilities
 
 - **Extraction**:
-  - Local VLM (Docling’s VLM pipeline)  
-  - LLM (local via Ollama or API via Mistral)  
+  - Local `VLM` (Docling’s VLM pipeline)  
+  - `LLM` (local via Ollama or API via Mistral)  
   - Page-wise or whole-document strategies
 - **Graph Construction**:
-  - Markdown to Graph: Convert validated Pydantic instances to a NetworkX DiGraph with rich edge metadata and stable node IDs
+  - Markdown to Graph: Convert validated Pydantic instances to a `NetworkX DiGraph` with rich edge metadata and stable node IDs
   - Smart Merge: Combine multi-page documents into a single Pydantic instance for unified processing
 - **Export**:
-  - CSV compatible with Neo4j admin import  
-  - Cypher script generation for bulk ingestion
+  - `CSV` compatible with `Neo4j` admin import  
+  - `Cypher` script generation for bulk ingestion
 - **Visualization**:
-  - Interactive Pyvis HTML with improved tooltips and physics  
-  - Publication-grade static images (PNG, SVG, PDF)
+  - Interactive Pyvis `HTML` with improved tooltips and physics  
+  - Publication-grade static images (`PNG`, `SVG`, `PDF`)
 
 
 
@@ -70,6 +86,18 @@ Dependencies:
 ```bash
 docling-graph init
 ```
+
+The interactive wizard will walk you through:
+- **Processing Mode** – Choose between `one-to-one` (page-by-page) or `many-to-one` (entire document) processing  
+- **Backend Type** – Select `llm` (Language Model) or `vlm` (Vision-Language Model) for extraction  
+- **Inference Location** – Choose `local` (your machine) or `remote` (cloud APIs)  
+- **Export Format** – Select `csv` or `cypher` for knowledge graph output  
+- **Docling Pipeline** – Choose document processing pipeline (`ocr`, or `vision`)  
+- **Model Configuration** – Select specific models based on your backend and inference choices  
+- **Output Settings** – Configure output directory and visualization preferences  
+
+Each option includes helpful descriptions and sensible defaults, making it easy to get started even if you're new to the tool.
+
 
 2. Run conversion with your Pydantic template:
 ```bash
@@ -217,7 +245,7 @@ docling-graph convert data/id_card.png \
 
 - Use `model_config.graph_id_fields` for natural keys to ensure stable node IDs.  
 - Include examples and descriptions on fields for better LLM extraction.
-- Please refer to the [Pydantic Templates for Knowledge Graph Extraction](docs/pydantic_templates_for_knowledge_graph_extraction.md) guide for more details.
+- Please refer to the [Pydantic Templates for Knowledge Graph Extraction](docs/guides/pydantic_templates_for_knowledge_graph_extraction.md) guide for more details.
 
 
 
