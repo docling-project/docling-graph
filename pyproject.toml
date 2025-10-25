@@ -27,8 +27,8 @@ dependencies = [
     "ollama",
     # "vllm",
     "mistralai",
-    # "openai", 
-    # "google-generativeai",
+    # "google",
+    # "openai",
     # "ibm-watson-machine-learning"
 ]
 
@@ -37,8 +37,7 @@ Homepage = "https://github.com/ayoub-ibm/docling-graph"
 Issues = "https://github.com/ayoub-ibm/docling-graph/issues"
 
 [project.scripts]
-# This is the magic line that creates the `docling-graph` command
-docling-graph = "docling_graph.cli:main"
+docling-graph = "docling_graph.cli.main:main"
 
 [tool.setuptools.packages.find]
 include = ["docling_graph*"]

@@ -1,10 +1,10 @@
 defaults:
-  processing_mode: one-to-one
+  processing_mode: many-to-one
   backend_type: vlm
   inference: local
   export_format: csv
 docling:
-  pipeline: ocr
+  pipeline: vision
 models:
   vlm:
     local:
