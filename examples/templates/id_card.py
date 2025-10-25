@@ -9,6 +9,7 @@ The schema is designed to be converted into a knowledge graph.
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, Any, List
 from datetime import date
+import re
 
 
 # --- Edge Helper Function ---
