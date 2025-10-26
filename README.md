@@ -28,19 +28,19 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 
 ## Design Philosophy
 
-- **Separation of Concerns**: Decouples processing granularity, model family, and inference location—configurable independently via CLI and defaults in `config.yaml`.
+- **Separation of Concerns**: Decouples processing granularity, model family, and inference site.
 - **Typed, Validated Outputs**: Uses Pydantic models with stable node IDs driven by optional `graph_id_fields`.
-- **Modular Architecture**: Refactored graph module with clean separation (core, exporters, visualizers, utils).
-- **Robust Fallbacks**: Supports long documents with merging strategies, clear logs, Markdown reports, and exportable graphs (CSV, Cypher, HTML, PNG/SVG/PDF).
+- **Modular Architecture**: Graph module with clean separation (`core`, `exporters`, `visualizers`, `utils`).
+- **Robust Fallbacks**: Supports long documents with merging strategies, clear logs, Markdown reports, and exportable graphs (`CSV`, `JSON` or `Cypher`) for batch imports.
 
 
 
 ## Key Capabilities
 
 - **Extraction**:
-  - Local `VLM` (Docling's VLM pipeline)  
+  - Local `VLM` (Docling's vision pipeline leveraging Granite-Docling)  
   - `LLM` (local via Ollama or remote via Mistral/OpenAI/Gemini API)  
-  - Page-wise or whole-document strategies
+  - Page-wise or whole-document conversion strategies
 - **Graph Construction**:
   - Markdown to Graph: Convert validated Pydantic instances to a `NetworkX DiGraph` with rich edge metadata and stable node IDs
   - Smart Merge: Combine multi-page documents into a single Pydantic instance for unified processing
@@ -52,7 +52,7 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 - **Visualization**:
   - Interactive Pyvis `HTML` with improved tooltips and physics  
   - Publication-grade static images (`PNG`, `SVG`, `PDF`)
-  - Enhanced visualizers with better styling and layout algorithms
+  - Detailed `MARKDOWN` report with graph nodes content and edges
 
 
 
@@ -114,57 +114,6 @@ docling-graph convert <SOURCE> --template "<TEMPLATE_PATH>" [OPTIONS]
 
 
 
-## Configuration
-
-`docling-graph init` creates `config.yaml` with editable defaults:
-
-```yaml
-defaults:
-  processing_mode: many-to-one    # one-to-one | many-to-one
-  backend_type: llm               # llm | vlm
-  inference: local                # local | remote
-  export_format: csv              # csv | json | cypher
-
-docling:
-  pipeline: ocr                   # ocr | vision
-
-models:
-  vlm:
-    local:
-      default_model: "numind/NuExtract-2.0-8B"
-      provider: "docling"
-
-  llm:
-    local:
-      default_model: "llama3:8b-instruct"
-      provider: "ollama"
-    remote:
-      default_model: "mistral-small-latest"
-      provider: "mistral"
-
-  providers:
-    mistral:
-      default_model: "mistral-small-latest"
-    openai:
-      default_model: "gpt-4o-mini"
-    gemini:
-      default_model: "gemini-1.5-flash"
-    ollama:
-      default_model: "llama3:8b-instruct"
-
-output:
-  default_directory: "outputs"
-  create_visualizations: true
-  create_markdown: true
-```
-
-**Notes**:
-
-- VLM extraction is **local-only**; `--backend_type vlm` with `--inference remote` is invalid.
-- `docling.pipeline` only affects the LLM path (default OCR vs VLM pipeline).
-
-
-
 ## CLI Usage
 
 ### Base Command
@@ -214,14 +163,6 @@ docling-graph convert examples/data/invoice.png \
   --template "examples.templates.invoice.Invoice" \
   -p many-to-one -b llm -i remote \
   --provider mistral -o outputs
-```
-
-**Export graph as Cypher:**
-```bash
-docling-graph convert examples/data/id_card.png \
-  --template "examples.templates.id_card.IDCard" \
-  -p one-to-one -b vlm -i local \
-  -e cypher -o outputs
 ```
 
 **With reverse edges:**
@@ -391,62 +332,6 @@ visualizer = StaticVisualizer(config=viz_config)
 
 
 
-## Outputs
-
-- **CSV Export**: `outputs/nodes.csv` and `outputs/edges.csv` compatible with Neo4j
-- **JSON Export**: `outputs/<name>_graph.json` with full graph structure
-- **Interactive HTML**: `outputs/<name>_graph.html` with drag-and-drop interface
-- **Static Images**: `outputs/<name>_graph.png` (also available in SVG, PDF)
-- **Markdown Report**: `outputs/<name>_graph.md` with graph statistics
-- **Cypher Export**: `outputs/<name>_graph.cypher` (CREATE + MATCH statements)
-
-
-
-## Architecture
-
-### Modular Design
-Clear separation of concerns across modules:
-
-```
-docling_graph/
-├── core/                             # Modular graph module
-│   ├── base/                           # Core functionality
-│   │   ├── converter.py                  # Pydantic → NetworkX conversion
-│   │   ├── config.py                     # Configuration classes
-│   │   └── models.py                     # Data models (Edge, GraphMetadata)
-│   ├── exporters/                      # Export functionality
-│   │   ├── csv_exporter.py               # CSV export (Neo4j compatible)
-│   │   ├── cypher_exporter.py            # Cypher script generation
-│   │   └── json_exporter.py              # JSON export
-│   ├── visualizers/                    # Visualization
-│   │   ├── static_visualizer.py          # Matplotlib (PNG/SVG/PDF)
-│   │   ├── interactive_visualizer.py     # Pyvis (HTML)
-│   │   └── report_generator.py           # Markdown reports
-│   └── utils/                          # Utilities
-│       ├── graph_stats.py                # Graph analysis
-│       └── formatting.py                 # Display formatting
-├── extractors/                         # Extraction strategies
-│   ├── backends/                         # VLM and LLM backends
-│   └── strategies/                       # OneToOne, ManyToOne
-├── llm_clients/                        # Client definitions for LLM provider
-├── protocols.py                      # Definitions for type-safe interfaces
-└── pipeline.py                       # Main orchestration
-```
-
-### Key Components
-
-- **CLI (Typer)**: `init` scaffolds config; `convert` orchestrates the pipeline
-- **Pipeline**: Imports template → resolves model/provider → runs extraction → converts to graph → exports + visualizes
-- **Extractors**: Compose backend (VLM or LLM) with strategy (OneToOne / ManyToOne)
-- **Graph Module**:
-  - `GraphConverter`: Pydantic → NetworkX with stable node IDs
-  - `Exporters`: Pluggable export formats (CSV, JSON, Cypher)
-  - `Visualizers`: Static (Matplotlib) and Interactive (Pyvis)
-  - `Config`: Centralized configuration management
-- **LLM Clients**: Mistral, OpenAI, Gemini (remote), Ollama (local)
-
-
-
 ## Pydantic Templates
 
 Templates define the schema for extraction and graph structure:
@@ -483,44 +368,6 @@ For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](
 
 
 
-## Visualization Features
-
-### Static Visualizations
-
-- **Formats**: PNG, SVG, PDF
-- **Layout**: Kamada-Kawai for small graphs, Spring for larger graphs
-- **Styling**: Publication-quality with customizable colors and sizes
-- **Properties**: Optional property boxes next to nodes
-- **Title**: "Document Knowledge Graph" with customizable styling
-
-### Interactive Visualizations
-
-- **Physics**: forceAtlas2Based solver with stabilization
-- **Navigation**: Drag nodes, zoom, pan with mouse/keyboard
-- **Tooltips**: Hover to see node properties
-- **Manual Positioning**: Physics disables after stabilization
-- **Full Viewport**: Responsive height and width
-
-### Configuration
-
-```python
-from docling_graph.graph import VisualizationConfig
-
-config = VisualizationConfig(
-    # Static
-    static_figure_size=(24, 18),
-    static_node_size=4000,
-    static_node_color='#4A90E2',
-    static_edge_color='#95A5A6',
-    
-    # Interactive  
-    interactive_height="calc(100vh - 20px)",
-    interactive_width="100%"
-)
-```
-
-
-
 ## Environment and Providers
 
 ### Local LLM (Ollama)
@@ -533,6 +380,8 @@ ollama pull llama3:8b-instruct
 ```
 
 ### API Providers
+
+API keys for LLM providers can also be set in the `.env` file.
 
 **Mistral:**
 ```bash
@@ -550,7 +399,7 @@ export OPENAI_API_KEY="your_api_key_here"
 export GEMINI_API_KEY="your_api_key_here"
 ```
 
-### VLM (Docling)
+### Local VLM (via Docling)
 
 Specify HuggingFace model ID:
 ```yaml
@@ -623,18 +472,3 @@ MIT License - see [LICENSE](LICENSE) for details.
 - Graph powered by [NetworkX](https://networkx.org/)
 - Visualizations with [Matplotlib](https://matplotlib.org/) and [Pyvis](https://github.com/WestHealth/pyvis)
 - CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich)
-
-
-
-## Citation
-
-If you use Docling-Graph in your research, please cite:
-
-```bibtex
-@software{docling_graph,
-  title = {Docling-Graph: Document to Knowledge Graph Conversion},
-  author = {Your Name},
-  year = {2024},
-  url = {https://github.com/ayoub-ibm/docling-graph}
-}
-```
