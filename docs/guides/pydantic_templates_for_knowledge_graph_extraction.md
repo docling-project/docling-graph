@@ -129,9 +129,9 @@ contains_items: List[LineItem] = Edge(
 
 Use descriptive, all-caps labels with underscores:
 
-- ✅ `ISSUED_BY`, `LIVES_AT`, `LOCATED_AT`, `CONTAINS_ITEM`
-- ✅ `BELONGS_TO`, `HAS_GUARANTEE`, `OFFERS_PLAN`
-- ❌ `issuedBy`, `located-at`, `has guarantee`
+- **GOOD**: `ISSUED_BY`, `LIVES_AT`, `LOCATED_AT`, `CONTAINS_ITEM`
+- **GOOD**: `BELONGS_TO`, `HAS_GUARANTEE`, `OFFERS_PLAN`
+- **BAD**: `issuedBy`, `located-at`, `has guarantee`
 
 
 ## **4. Entity vs Component Classification**
@@ -142,7 +142,7 @@ Use descriptive, all-caps labels with underscores:
 | :-- | :-- | :-- |
 | **What** | Unique, identifiable objects | Value objects, deduplicated by content |
 | **Examples** | `Person`, `Organization`, `Invoice` | `Address`, `MonetaryAmount` |
-| **graph_id_fields** | ✅ Required | ❌ Not used |
+| **graph_id_fields** | Required | Not used |
 | **is_entity** | `True` (default) | `False` (must set explicitly) |
 | **Deduplication** | By ID fields | By all fields (content-based) |
 
@@ -241,7 +241,7 @@ status: str = Field(
 **Good descriptions guide the LLM:**
 
 ```python
-# ✅ GOOD - Clear, specific, with guidance
+# GOOD - Clear, specific, with guidance
 date_of_birth: Optional[date] = Field(
     None,
     description=(
@@ -252,7 +252,7 @@ date_of_birth: Optional[date] = Field(
     examples=["1990-05-15", "1985-12-20"]
 )
 
-# ❌ BAD - Too vague
+# BAD - Too vague
 date_of_birth: Optional[date] = Field(None, description="Birth date")
 ```
 
@@ -262,7 +262,7 @@ date_of_birth: Optional[date] = Field(None, description="Birth date")
 **Provide 2-5 realistic examples per field:**
 
 ```python
-# ✅ GOOD - Diverse, realistic examples
+# GOOD - Diverse, realistic examples
 email: Optional[str] = Field(
     None,
     description="Contact email address",
@@ -273,7 +273,7 @@ email: Optional[str] = Field(
     ]
 )
 
-# ❌ BAD - Generic or single example
+# BAD - Generic or single example
 email: Optional[str] = Field(
     None,
     description="Email",
@@ -284,7 +284,7 @@ email: Optional[str] = Field(
 **For lists, show list examples:**
 
 ```python
-# ✅ GOOD - Shows list structure
+# GOOD - Shows list structure
 guarantees: Optional[List[str]] = Field(
     default_factory=list,
     description="List of coverage guarantees",
