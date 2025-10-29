@@ -50,7 +50,7 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
   - `Cypher` script generation for bulk ingestion
   - `JSON` export for general-purpose graph data
 - **Visualization**:
-  - Interactive Pyvis `HTML` with improved tooltips and physics  
+  - Interactive `CosmoGraph HTML` visualization in full-page browser view with enhanced node/edge exploration
   - Publication-grade static images (`PNG`, `SVG`, `PDF`)
   - Detailed `MARKDOWN` report with graph nodes content and edges
 
@@ -81,7 +81,7 @@ pip install -e .
 
 Dependencies:
 
-- Core: `docling[vlm]`, `pydantic`, `networkx`, `pymupdf`, `matplotlib`, `pyvis`, `rich`, `typer`
+- Core: `docling[vlm]`, `pydantic`, `networkx`, `pymupdf`, `matplotlib`, `cosmograph`, `ipywidgets`, `rich`, `typer`
 - Optional LLM clients: `ollama` (local), `mistralai`, `openai`, `google-generativeai` (remote)
 
 
@@ -114,19 +114,17 @@ docling-graph convert <SOURCE> --template "<TEMPLATE_PATH>" [OPTIONS]
 
 
 
-## CLI Usage
+## CLI Commands
 
-### Base Command
+### Convert Command
 
-```bash
-docling-graph convert [OPTIONS] SOURCE
-```
+Converts documents into knowledge graphs with full extraction and export capabilities.
 
-### Required Options
+#### Required Options
 
 - `--template, -t` : Dotted path to Pydantic template (e.g., `examples.templates.invoice.Invoice`)
 
-### Optional Dimensions
+#### Optional Dimensions
 
 - `--processing-mode, -p` : `one-to-one` | `many-to-one`  
 - `--backend_type, -b` : `llm` | `vlm`  
@@ -138,7 +136,7 @@ docling-graph convert [OPTIONS] SOURCE
 - `--export-format, -e` : `csv` | `json` | `cypher`  
 - `--reverse-edges` : Add reverse edges to graph
 
-### Usage Examples
+#### Convert Examples
 
 **Local VLM (one-to-one), VLM docling pipeline:**
 ```bash
@@ -171,6 +169,53 @@ docling-graph convert examples/data/invoice.pdf \
   --template "examples.templates.invoice.Invoice" \
   -p one-to-one -b vlm -i local \
   --reverse-edges -o outputs
+```
+
+
+### Inspect Command
+
+
+Visualizes existing graph data using CosmoGraph in an interactive browser interface. This command creates a self-contained HTML file that can be opened, shared, or saved for later viewing.
+
+#### Arguments
+
+- `PATH` : Path to graph data
+  - For **CSV format**: Directory containing `nodes.csv` and `edges.csv`
+  - For **JSON format**: Path to `.json` file
+
+#### Options
+
+- `--format, -f` : Import format (`csv` or `json`, default: `csv`)
+- `--output, -o` : Output HTML file path (default: temporary file)
+- `--open/--no-open` : Automatically open in browser (default: `--open`)
+
+#### Inspect Examples
+
+**Visualize CSV graph data (opens in browser automatically):**
+```bash
+docling-graph inspect ./outputs
+```
+
+**Visualize JSON format:**
+```bash
+docling-graph inspect graph.json --format json
+```
+
+**Save to specific location:**
+```bash
+docling-graph inspect ./outputs --output graph_visualization.html
+```
+
+**Create HTML without opening browser:**
+```bash
+docling-graph inspect ./outputs --no-open --output viz.html
+```
+
+**Inspect previously exported graph:**
+```bash
+# After running convert, inspect the output
+docling-graph convert invoice.pdf --template "examples.templates.invoice.Invoice" -o outputs
+docling-graph inspect outputs
 ```
 
 
@@ -219,8 +264,7 @@ from docling_graph.graph import (
     CSVExporter,
     CypherExporter,
     JSONExporter,
-    StaticVisualizer,
-    InteractiveVisualizer,
+    CosmoGraphVisualizer,
 )
 from examples.templates.invoice import Invoice
 from pathlib import Path
@@ -257,21 +301,20 @@ cypher_exporter = CypherExporter()
 cypher_exporter.export(graph, output_dir / "graph.cypher")
 
 # 4. Create visualizations
-# Static visualization (PNG/SVG/PDF)
-static_viz = StaticVisualizer()
-static_viz.visualize(
+# Generate markdown report
+report_gen = ReportGenerator()
+report_gen.visualize(
     graph,
-    output_path=output_dir / "graph_static",
-    format="png",  # or "svg", "pdf"
-    show_properties=True
+    output_path=output_dir / "graph_report.md",
+    source_model_count=1
 )
 
-# Interactive visualization (HTML)
-interactive_viz = InteractiveVisualizer()
-interactive_viz.visualize(
+# Interactive CosmoGraph visualization (HTML)
+cosmo_viz = CosmoGraphVisualizer()
+cosmo_viz.visualize(
     graph,
     output_path=output_dir / "graph_interactive",
-    notebook=False
+    open_browser=True  # Opens visualization in browser
 )
 ```
 
@@ -419,7 +462,8 @@ vlm:
 - **Ollama connection error**: Ensure service is running (`ollama serve`) and model is pulled
 - **API key not set**: Export API key environment variable or add to `.env` file
 - **Empty LLM responses**: Check prompt configuration and model compatibility
-- **Graph visualization issues**: Ensure matplotlib and pyvis are installed
+- **Graph visualization issues**: Ensure matplotlib, cosmograph, and ipywidgets are installed (`pip install cosmograph ipywidgets`)
+- **CosmoGraph browser issues**: If visualization doesn't open, manually open the generated HTML file
 - **Node ID format issues**: Check that `graph_id_fields` values are properly set
 
 
@@ -468,5 +512,5 @@ MIT License - see [LICENSE](LICENSE) for details.
 - Built on [Docling](https://github.com/docling-project/docling) for document processing
 - Uses [Pydantic](https://pydantic.dev) for data validation
 - Graph powered by [NetworkX](https://networkx.org/)
-- Visualizations with [Matplotlib](https://matplotlib.org/) and [Pyvis](https://github.com/WestHealth/pyvis)
+- Visualizations with [Matplotlib](https://matplotlib.org/) and [Cosmograph](https://cosmograph.app/)
 - CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich)
