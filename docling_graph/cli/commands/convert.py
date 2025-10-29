@@ -133,7 +133,6 @@ def convert_command(
     # Run pipeline
     try:
         run_pipeline(run_config)
-        print("\n[green]Conversion completed successfully![/green]")
     except Exception as e:
         print(f"\n[bold red]Error:[/bold red] {e}")
         import traceback

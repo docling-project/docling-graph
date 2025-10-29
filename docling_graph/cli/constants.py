@@ -19,7 +19,7 @@ BACKEND_TYPES: Final[list[str]] = ["llm", "vlm"]
 INFERENCE_LOCATIONS: Final[list[str]] = ["local", "remote"]
 
 # Export formats
-EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher"]
+EXPORT_FORMATS: Final[list[str]] = ["csv", "json", "cypher"]
 
 # Docling pipeline configurations
 DOCLING_PIPELINES: Final[list[str]] = ["ocr", "vision"]

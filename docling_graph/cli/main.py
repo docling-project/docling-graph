@@ -3,7 +3,9 @@ Main CLI application setup and entry point.
 """
 
 from .commands.convert import convert_command
+from .commands.inspect import inspect_command
 from .commands.init import init_command
+
 from pathlib import Path
 import typer
 
@@ -24,6 +26,11 @@ app.command(
     name="convert", 
     help="Convert a document to a knowledge graph."
 )(convert_command)
+
+app.command(
+    name="inspect",
+    help="Visualize graph data using CosmoGraph in the browser."
+)(inspect_command)
 
 
 def main():
