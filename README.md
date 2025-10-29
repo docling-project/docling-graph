@@ -15,10 +15,8 @@
 [![Typer](https://img.shields.io/badge/Typer-CLI-purple)](https://typer.tiangolo.com/)
 [![Pytest](https://img.shields.io/badge/pytest-passing-brightgreen?logo=pytest&logoColor=white)](https://docs.pytest.org/)
 [![Rich](https://img.shields.io/badge/Rich-terminal-cyan)](https://github.com/Textualize/rich)
-[![Mistral AI](https://img.shields.io/badge/Mistral-API-ff7000)](https://mistral.ai/)
 [![Ollama](https://img.shields.io/badge/Ollama-compatible-black)](https://ollama.ai/)
 [![License MIT](https://img.shields.io/github/license/ayoub-ibm/docling-graph)](https://opensource.org/licenses/MIT)
-[![LF AI & Data](https://img.shields.io/badge/LF%20AI%20%26%20Data-003778?logo=linuxfoundation&logoColor=fff&color=0094ff&labelColor=003778)](https://lfaidata.foundation/projects/)
 
 Docling-Graph converts documents into validated **Pydantic** objects and then into a **directed knowledge graph**, with exports to CSV or Cypher and both static and interactive visualizations.  
 
@@ -509,8 +507,14 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- Built on [Docling](https://github.com/docling-project/docling) for document processing
-- Uses [Pydantic](https://pydantic.dev) for data validation
-- Graph powered by [NetworkX](https://networkx.org/)
-- Visualizations with [Matplotlib](https://matplotlib.org/) and [Cosmograph](https://cosmograph.app/)
-- CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich)
+- Built upon [Docling](https://github.com/docling-project/docling) for advanced document processing.
+- Uses [Pydantic](https://pydantic.dev) for data validation.
+- Graph generation powered by [NetworkX](https://networkx.org/).
+- Visualizations with [Cosmograph](https://cosmograph.app/) and [Matplotlib](https://matplotlib.org/).
+- CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich).
+
+
+
+## IBM ❤️ Open Source AI
+
+Docling Graph has been brought to you by IBM.
