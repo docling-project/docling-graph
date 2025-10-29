@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from typing import Type, List
 from rich import print
 
-from ...protocols import is_vlm_backend, is_llm_backend, get_backend_type
+from ....protocols import is_vlm_backend, is_llm_backend, get_backend_type
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
 

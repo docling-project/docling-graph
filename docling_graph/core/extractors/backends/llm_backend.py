@@ -9,8 +9,8 @@ from pydantic import BaseModel, ValidationError
 from typing import Type, Optional
 from rich import print
 
-from ...llm_clients.llm_base import BaseLlmClient
-from ...llm_clients.prompts import get_prompt
+from ....llm_clients.llm_base import BaseLlmClient
+from ....llm_clients.prompts import get_prompt
 
 class LlmBackend:
     """Backend for LLM-based extraction (local or API)."""

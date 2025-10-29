@@ -4,7 +4,7 @@ Base extractor interface for all extraction strategies.
 
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-from typing import Type, List, Optional
+from typing import Type, List
 
 
 class BaseExtractor(ABC):

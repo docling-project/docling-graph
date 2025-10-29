@@ -6,7 +6,7 @@ from rich import print
 
 from .strategies.many_to_one import ManyToOneStrategy
 from .strategies.one_to_one import OneToOneStrategy
-from ..llm_clients.llm_base import BaseLlmClient
+from ...llm_clients.llm_base import BaseLlmClient
 from .backends.vlm_backend import VlmBackend
 from .backends.llm_backend import LlmBackend
 
