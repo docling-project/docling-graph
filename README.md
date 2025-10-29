@@ -116,15 +116,15 @@ docling-graph convert <SOURCE> --template "<TEMPLATE_PATH>" [OPTIONS]
 
 ## CLI Commands
 
-### Convert Command
+### 1. Convert Command
 
 Converts documents into knowledge graphs with full extraction and export capabilities.
 
-#### Required Options
+#### 1.1. Required Options
 
 - `--template, -t` : Dotted path to Pydantic template (e.g., `examples.templates.invoice.Invoice`)
 
-#### Optional Dimensions
+#### 1.2. Optional Dimensions
 
 - `--processing-mode, -p` : `one-to-one` | `many-to-one`  
 - `--backend_type, -b` : `llm` | `vlm`  
@@ -136,7 +136,7 @@ Converts documents into knowledge graphs with full extraction and export capabil
 - `--export-format, -e` : `csv` | `json` | `cypher`  
 - `--reverse-edges` : Add reverse edges to graph
 
-#### Convert Examples
+#### 1.3. Convert Examples
 
 **Local VLM (one-to-one), VLM docling pipeline:**
 ```bash
@@ -172,24 +172,24 @@ docling-graph convert examples/data/invoice.pdf \
 ```
 
 
-### Inspect Command
+### 2. Inspect Command
 
 
 Visualizes existing graph data using CosmoGraph in an interactive browser interface. This command creates a self-contained HTML file that can be opened, shared, or saved for later viewing.
 
-#### Arguments
+#### 2.1. Arguments
 
 - `PATH` : Path to graph data
   - For **CSV format**: Directory containing `nodes.csv` and `edges.csv`
   - For **JSON format**: Path to `.json` file
 
-#### Options
+#### 2.2. Options
 
 - `--format, -f` : Import format (`csv` or `json`, default: `csv`)
 - `--output, -o` : Output HTML file path (default: temporary file)
 - `--open/--no-open` : Automatically open in browser (default: `--open`)
 
-#### Inspect Examples
+#### 2.3. Inspect Examples
 
 **Visualize CSV graph data (opens in browser automatically):**
 ```bash
@@ -222,7 +222,7 @@ docling-graph inspect outputs
 
 ## Python API Usage
 
-### Basic Example
+### 1. Basic Example
 
 ```python
 from pathlib import Path
@@ -255,7 +255,7 @@ config = {
 run_pipeline(config)
 ```
 
-### Advanced: Direct Graph Module Usage
+### 2. Advanced: Direct Graph Module Usage
 
 ```python
 from docling_graph.graph import (
@@ -318,7 +318,7 @@ cosmo_viz.visualize(
 )
 ```
 
-### Working with NetworkX Directly
+### 3. Working with NetworkX Directly
 
 ```python
 import networkx as nx
@@ -344,7 +344,7 @@ for source, target, data in graph.edges(data=True):
 print(f"Average degree: {sum(dict(graph.degree()).values()) / graph.number_of_nodes()}")
 ```
 
-### Custom Configuration
+### 4. Custom Configuration
 
 ```python
 from docling_graph.graph import GraphConfig, VisualizationConfig
@@ -482,22 +482,22 @@ This section outlines the upcoming priorities and development directions for the
 
 ### 2. Upcoming Features
 
-* **Multi-LLM Support** — Extend provider compatibility to include `WatsonX`, `vLLM`, and other clients.
-* **Flexible Input Modalities** — Support `text`, `markdown`, and direct `DoclingDocument` inputs.
-* **Adaptive OCR Pipeline** — Use Hugging Face’s [XGB classifier](https://github.com/huggingface/finepdfs?tab=readme-ov-file#ocr-vs-noocr-classifier) to automatically choose the appropriate Docling conversion path.
-* **Graph Database Integration** — Enable direct graph loading into `Neo4j`, `ArangoDB`, and similar systems.
-* **CLI Graph Queries** — Add a `docling-graph query` command to query generated graphs (e.g., with LangChain).
-* **Customizable Components** — Allow user-defined module overrides and flexible component instantiation.
-* **Interactive Template Builder** — Create guided, interactive workflows for generating Pydantic templates.
-* **Optimized Batch Processing** — Improve GPU-based local inference batching and memory utilization.
-* **Persistent Markdown Storage** — Cache and reuse intermediate Markdown outputs from the Docling converter.
+* **Multi-LLM Support:** Extend provider compatibility to include `WatsonX`, `vLLM`, and other clients.
+* **Flexible Input Modalities:** Support `text`, `markdown`, and direct `DoclingDocument` inputs.
+* **Adaptive OCR Pipeline:** Use Hugging Face’s [XGB classifier](https://github.com/huggingface/finepdfs?tab=readme-ov-file#ocr-vs-noocr-classifier) to automatically choose the appropriate Docling conversion path.
+* **Graph Database Integration:** Enable direct graph loading into `Neo4j`, `ArangoDB`, and similar systems.
+* **CLI Graph Queries:** Add a `docling-graph query` command to query generated graphs (e.g., with LangChain).
+* **Customizable Components:** Allow user-defined module overrides and flexible component instantiation.
+* **Interactive Template Builder:** Create guided, interactive workflows for generating Pydantic templates.
+* **Optimized Batch Processing:** Improve GPU-based local inference batching and memory utilization.
+* **Persistent Markdown Storage:** Cache and reuse intermediate Markdown outputs from the Docling converter.
 
 
 ### 3. Research & Development Ideas
 
-* **Smart Chunking** — Replace naive context-window splitting with Docling’s structure-aware chunking to preserve logical document relationships (lists, tables, etc.).
-* **Ontology-Based Template Matching** — Use semantic similarity and ontology mapping to automatically select the most relevant Pydantic template for extraction.
-* **Graph Docling Conversion** — Leverage *Docling Graph* to transform datasets such as [FinePDFs](https://huggingface.co/datasets/HuggingFaceFW/finepdfs) or [DocLayNet v1.2](https://huggingface.co/datasets/ds4sd/DocLayNet-v1.2) into paired `document–knowledge graph datasets`, enabling direct doc → knowledge graph model training (bypassing intermediate Pydantic layers).
+* **Smart Chunking:** Replace naive context-window splitting with Docling’s structure-aware chunking to preserve logical document relationships (lists, tables, etc.).
+* **Ontology-Based Template Matching:** Use semantic similarity and ontology mapping to automatically select the most relevant Pydantic template for extraction.
+* **Graph Docling Conversion:** Leverage *Docling Graph* to transform datasets such as [FinePDFs](https://huggingface.co/datasets/HuggingFaceFW/finepdfs) or [DocLayNet v1.2](https://huggingface.co/datasets/ds4sd/DocLayNet-v1.2) into paired `document–knowledge graph datasets`, enabling direct doc → knowledge graph model training (bypassing intermediate Pydantic layers).
 
 
 
