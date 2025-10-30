@@ -15,6 +15,7 @@ from .exporters.cypher_exporter import CypherExporter
 from .exporters.json_exporter import JSONExporter
 from .exporters.csv_exporter import CSVExporter
 
+from .visualizers.interactive_visualizer import InteractiveVisualizer
 from .visualizers.cosmo_visualizer import CosmoGraphVisualizer
 from .visualizers.report_generator import ReportGenerator
 
@@ -33,6 +34,7 @@ __all__ = [
     "CypherExporter",
     "JSONExporter",
     # Visualizers
+    "InteractiveVisualizer",
     "CosmoGraphVisualizer",
     "ReportGenerator",
 ]

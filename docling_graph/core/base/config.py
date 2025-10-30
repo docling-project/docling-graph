@@ -56,6 +56,14 @@ class VisualizationConfig:
     MAX_TOOLTIP_LENGTH: int = 80
     MAX_PROPERTIES_DISPLAY: int = 5
 
+    # Interactive visualization (Pyvis)
+    INTERACTIVE_HEIGHT: str = "calc(100vh - 20px)"
+    INTERACTIVE_WIDTH: str = "100%"
+    INTERACTIVE_BGCOLOR: str = "#ffffff"
+    INTERACTIVE_FONT_COLOR: str = "#2C3E50"
+    INTERACTIVE_DIRECTED: bool = True
+    INTERACTIVE_CDN_RESOURCES: str = "remote"
+
     # Static visualization (Matplotlib)
     STATIC_NODE_SIZE: int = 4000
     STATIC_NODE_COLOR: str = "#4A90E2"
