@@ -214,13 +214,7 @@ class Property(Measurement):
 
 class Slurry(BaseModel):
     """Collection of slurry components."""
-    model_config = ConfigDict(graph_id_fields=['slurry_id'])
-
-    slurry_id: str = Field(
-        ...,
-        description="Unique slurry identifier.",
-        examples=["SLURRY-001", "EXP2024-SLURRY02"],
-    )
+    model_config = ConfigDict(graph_id_fields=['components'])
 
     components: List[Component] = Edge(
         label="HAS_COMPONENT",
@@ -394,12 +388,7 @@ class EvaluationResult(BaseModel):
 
 class Extraction(BaseModel):
     """Main experiment instance for a battery slurry."""
-    model_config = ConfigDict(graph_id_fields=['experiment_id'])
-
-    experiment_id: str = Field(
-        description="Unique experiment identifier.",
-        examples=["EXP2024-001", "BATTERY-SLURRY-001"],
-    )
+    model_config = ConfigDict(graph_id_fields=['slurry_under_test'])
 
     objective: Optional[str] = Field(
         default=None,
@@ -475,11 +464,21 @@ class Extraction(BaseModel):
         examples=["Stable dispersion achieved", "Optimized drying time"],
     )
 
-    limitations: Optional[str] = Field(
-        default=None,
+    limitations: Optional[List[str]] = Field(
+        default_factory=list,
         description="Stated limitations of the experiment.",
-        examples=["Limited range of binder ratios tested"],
+        examples=["Limited range of binder ratios tested"]
     )
+
+    @field_validator('limitations', mode='before')
+    def coerce_limitations(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        if isinstance(v, list):
+            return [str(item) for item in v]
+        raise TypeError("limitations should be a list[str] or string")
 
 
 class Research(BaseModel):
