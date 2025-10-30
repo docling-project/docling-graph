@@ -1,11 +1,10 @@
-
 """
 CLI constants and configuration values.
 """
 
 from typing import Final
 
- 
+
 # Configuration
 CONFIG_FILE_NAME: Final[str] = "config.yaml"
 
@@ -19,10 +18,23 @@ BACKEND_TYPES: Final[list[str]] = ["llm", "vlm"]
 INFERENCE_LOCATIONS: Final[list[str]] = ["local", "remote"]
 
 # Export formats
-EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher"]
+EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher", "json"]
 
 # Docling pipeline configurations
 DOCLING_PIPELINES: Final[list[str]] = ["ocr", "vision"]
+
+# Docling export formats
+DOCLING_EXPORT_FORMATS: Final[list[str]] = ["markdown", "json", "document"]
+
+# Default Docling settings
+DEFAULT_DOCLING_CONFIG = {
+    "pipeline": "ocr",
+    "export": {
+        "docling_json": True,
+        "markdown": True,
+        "per_page_markdown": False
+    }
+}
 
 # Default model configurations
 DEFAULT_MODELS = {

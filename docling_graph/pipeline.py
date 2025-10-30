@@ -22,10 +22,10 @@ from .core import (
     ExtractorFactory,
     GraphConverter,
     GraphConfig,
+    DoclingExporter,
     CypherExporter,
     CSVExporter,
     JSONExporter,
-    CosmoGraphVisualizer,
     ReportGenerator
 )
 
@@ -157,6 +157,12 @@ def run_pipeline(config: Dict[str, Any]) -> None:
     extractor = None
     llm_client = None
 
+    
+    # Set outputs directory
+    output_dir = Path(config.get("output_dir", "outputs"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    base_name = Path(config["source"]).stem
+
     try:
         # 1. Load Template
         try:
@@ -215,6 +221,25 @@ def run_pipeline(config: Dict[str, Any]) -> None:
 
         print(f"Successfully extracted {len(extracted_data)} item(s).")
 
+        # Docling document and markdown export
+        if config.get("export_docling", True):
+            print("Exporting Docling document and markdown...")
+            docling_exporter = DoclingExporter(output_dir=output_dir)
+            
+            # Get the document from extractor
+            if hasattr(extractor, 'doc_processor') and hasattr(extractor.doc_processor, 'converter'):
+                # Re-convert to get document object if needed
+                doc_result = extractor.doc_processor.converter.convert(config["source"])
+                docling_document = doc_result.document
+                
+                docling_exporter.export_document(
+                    docling_document,
+                    base_name=base_name,
+                    include_json=config.get("export_docling_json", True),
+                    include_markdown=config.get("export_markdown", True),
+                    per_page=config.get("export_per_page_markdown", False)
+                )
+
         # 5. Convert to Graph
         print("Converting Pydantic model(s) to Knowledge Graph...")
 
@@ -236,14 +261,7 @@ def run_pipeline(config: Dict[str, Any]) -> None:
             for node_type, count in graph_metadata.node_types.items():
                 print(f"  - {node_type}: {count}")
 
-        # 6. Save outputs
-        output_dir = Path(config.get("output_dir", "outputs"))
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        base_name = Path(config["source"]).stem
-        output_path = output_dir / f"{base_name}_graph"
-
-        # 7. Export graph
+        # 6. Export graph
         export_format = config.get("export_format", "csv")
         print(f"Exporting graph data in [cyan]{export_format.upper()}[/cyan] format...")
 
@@ -264,26 +282,18 @@ def run_pipeline(config: Dict[str, Any]) -> None:
         exporter.export(knowledge_graph, json_path)
         print(f"[green]->[/green] Saved JSON to [green]{json_path}[/green]")
 
-        # 8. Generate visualizations
+        # 7. Generate reports
         print(f"[green]->[/green] Generating visualizations...")
 
         # Markdown report
-        report_generator = ReportGenerator()
+        report_generator = ReportGenerator()        
+        report_path = output_dir / f"{base_name}_report"
         report_generator.visualize(
             knowledge_graph,
-            output_path,
+            report_path,
             source_model_count=len(extracted_data)
         )
         print(f"[green]->[/green] Generated markdown report")
-
-        # CosmoGraph interactive visualization
-        cosmo_viz = CosmoGraphVisualizer()
-        cosmo_viz.save_cosmo_graph(
-            knowledge_graph, 
-            output_path,
-            open_browser=False  # Set to True to auto-open in browser
-        )
-        print(f"[green]->[/green] Generated CosmoGraph interactive visualization")
 
         print("--- [blue]Pipeline Finished Successfully![/blue] ---")
 

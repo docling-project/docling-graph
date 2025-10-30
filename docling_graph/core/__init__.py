@@ -11,30 +11,32 @@ from .base.converter import GraphConverter
 
 from .extractors.factory import ExtractorFactory
 
+from .exporters.docling_exporter import DoclingExporter
 from .exporters.cypher_exporter import CypherExporter
 from .exporters.json_exporter import JSONExporter
 from .exporters.csv_exporter import CSVExporter
 
 from .visualizers.interactive_visualizer import InteractiveVisualizer
-from .visualizers.cosmo_visualizer import CosmoGraphVisualizer
+from .visualizers.static_visualizer import StaticVisualizer
 from .visualizers.report_generator import ReportGenerator
 
 __all__ = [
     # Core
-    "GraphConverter",
-    "GraphConfig",
     "VisualizationConfig",
-    "ExportConfig",
-    "Edge",
+    "GraphConverter",
     "GraphMetadata",
+    "ExportConfig",
+    "GraphConfig",
+    "Edge",
     # Extractors
     "ExtractorFactory",
     # Exporters
-    "CSVExporter",
+    "DoclingExporter",
     "CypherExporter",
+    "CSVExporter",
     "JSONExporter",
     # Visualizers
     "InteractiveVisualizer",
-    "CosmoGraphVisualizer",
-    "ReportGenerator",
+    "StaticVisualizer",
+    "ReportGenerator"
 ]

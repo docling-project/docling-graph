@@ -102,20 +102,48 @@ def _prompt_defaults() -> Dict[str, str]:
     }
 
 
-def _prompt_docling() -> Dict[str, str]:
+def _prompt_docling() -> Dict[str, Any]:
     """Prompt for Docling configuration."""
     print("\n[bold cyan]── Docling Pipeline ──[/bold cyan]")
+    
+    # Pipeline selection
     print("\n[bold]5. Document Processing Pipeline[/bold]")
-    print(" • [cyan]ocr[/cyan]: OCR pipeline (standard documents)")
-    print(" • [cyan]vision[/cyan]: VLM pipeline (complex layouts)")
-
+    print("  • [cyan]ocr[/cyan]: OCR pipeline (standard documents)")
+    print("  • [cyan]vision[/cyan]: VLM pipeline (complex layouts)")
+    
     pipeline = typer.prompt(
         "Select docling pipeline",
         type=click.Choice(DOCLING_PIPELINES, case_sensitive=False),
         default="ocr"
     )
-
-    return {"pipeline": pipeline}
+    
+    # Export options
+    print("\n[bold]6. Docling Export Options[/bold]")
+    print("  [dim]Choose what to export from document processing:[/dim]")
+    
+    export_docling_json = typer.confirm(
+        "  Export Docling document structure (JSON)?",
+        default=True
+    )
+    
+    export_markdown = typer.confirm(
+        "  Export full document markdown?",
+        default=True
+    )
+    
+    export_per_page = typer.confirm(
+        "  Export per-page markdown files?",
+        default=False
+    )
+    
+    return {
+        "pipeline": pipeline,
+        "export": {
+            "docling_json": export_docling_json,
+            "markdown": export_markdown,
+            "per_page_markdown": export_per_page
+        }
+    }
 
 
 def _prompt_models(backend_type: str, inference: str) -> Dict[str, Any]:

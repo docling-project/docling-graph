@@ -5,7 +5,7 @@
 defaults:
   processing_mode: many-to-one  # one-to-one | many-to-one
   backend_type: llm             # llm | vlm
-  inference: local              # local | api
+  inference: local              # local | remote
   export_format: csv            # csv | cypher
 
 # Docling pipeline configuration
@@ -13,7 +13,22 @@ docling:
   # Choose pipeline type for document conversion
   # - "ocr": Classic OCR pipeline (most accurate for standard documents)
   # - "vision": Vision-Language Model pipeline based on Granite-Docling (best for complex layouts)
-  pipeline: default  # ocr | vision
+  pipeline: ocr  # ocr | vision
+  
+  # Export options for Docling document processing
+  export:
+    # Export the full Docling document structure as JSON
+    # Contains document metadata, layout information, tables, etc.
+    docling_json: true
+    
+    # Export the document as markdown (full document)
+    # Best for human-readable output and documentation
+    markdown: true
+    
+    # Export per-page markdown files
+    # Useful for page-by-page analysis or processing
+    # Creates a subdirectory with one .md file per page
+    per_page_markdown: false
 
 # Model configurations organized by type and inference location
 models:
@@ -24,35 +39,30 @@ models:
       provider: "docling"
       # Alternative models:
       # - "numind/NuExtract-2.0-2B" (faster, less accurate)
-  
+
   # Language Models (LLM)
   llm:
     local:
       default_model: "ibm-granite/granite-4.0-1b"
       provider: "vllm"
-
       # Provider-specific configurations
       providers:
         vllm:
           default_model: "ibm-granite/granite-4.0-1b"
           base_url: "http://localhost:8000/v1"
-
         ollama:
           default_model: "llama-3.1-8b"
-        
+    
     remote:
       default_model: "mistral-small-latest"
       provider: "mistral"
-      
       # Multiple API providers supported
       # Set API key: <PROVIDER>_API_KEY="your_key" using .env or export
       providers:
         mistral:
           default_model: "mistral-small-latest"
-          
         openai:
           default_model: "gpt-4-turbo"
-          
         gemini:
           default_model: "gemini-2.5-flash"
 

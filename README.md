@@ -44,6 +44,8 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
   - Smart Merge: Combine multi-page documents into a single Pydantic instance for unified processing
   - Modular graph module with enhanced type safety and configuration
 - **Export**:
+  - `Docling Document` exports (JSON format with full document structure)
+  - `Markdown` exports (full document and per-page options)
   - `CSV` compatible with `Neo4j` admin import  
   - `Cypher` script generation for bulk ingestion
   - `JSON` export for general-purpose graph data
@@ -96,8 +98,12 @@ The interactive wizard will walk you through:
 - **Processing Mode** – Choose between `one-to-one` (page-by-page) or `many-to-one` (entire document) processing  
 - **Backend Type** – Select `llm` (Language Model) or `vlm` (Vision-Language Model) for extraction  
 - **Inference Location** – Choose `local` (your machine) or `remote` (cloud APIs)  
-- **Export Format** – Select `csv` or `cypher` for knowledge graph output  
-- **Docling Pipeline** – Choose document processing pipeline (`ocr`, or `vision`)  
+- **Export Format** – Select `csv`, `cypher`, or `json` for knowledge graph output  
+- **Docling Pipeline** – Choose document processing pipeline (`ocr` or `vision`)  
+- **Docling Export Options** – Configure what to export from document processing:
+  - **Docling JSON**: Full document structure with metadata, layout, tables, and bounding boxes
+  - **Markdown**: Human-readable document export (full document)
+  - **Per-Page Markdown**: Individual markdown files for each page
 - **Model Configuration** – Select specific models based on your backend and inference choices  
 - **Output Settings** – Configure output directory and visualization preferences  
 
@@ -125,40 +131,70 @@ Converts documents into knowledge graphs with full extraction and export capabil
 #### 1.2. Optional Dimensions
 
 - `--processing-mode, -p` : `one-to-one` | `many-to-one`  
-- `--backend_type, -b` : `llm` | `vlm`  
+- `--backend-type, -b` : `llm` | `vlm`  
 - `--inference, -i` : `local` | `remote`  
-- `--docling-config, -d` : `default` (OCR) | `vision` (VLM pipeline)  
+- `--docling-pipeline, -d` : `ocr` | `vision` (document processing pipeline)  
 - `--output-dir, -o` : Output directory (default: `outputs`)  
 - `--model` : Override model name  
 - `--provider` : Override provider  
 - `--export-format, -e` : `csv` | `cypher`  
 - `--reverse-edges` : Add reverse edges to graph
 
-#### 1.3. Convert Examples
+#### 1.3. Docling Export Options
 
-**Local VLM (one-to-one), VLM docling pipeline:**
-```bash
-docling-graph convert examples/data/invoice.pdf \
-  --template "examples.templates.invoice.Invoice" \
-  -p one-to-one -b vlm -i local -d vision -o outputs
+Control what gets exported from document processing:
+
+- `--export-docling-json` / `--no-docling-json` : Export Docling document as JSON (default: enabled)
+- `--export-markdown` / `--no-markdown` : Export full document markdown (default: enabled)
+- `--export-per-page` / `--no-per-page` : Export per-page markdown files (default: disabled)
+
+#### 1.4. Convert Examples
+
+**Basic conversion (with default exports):**
+```
+docling-graph convert invoice.pdf \
+  --template "examples.templates.invoice.Invoice"
 ```
 
-**Local LLM via vLLM (many-to-one), default OCR pipeline:**
-```bash
+**Local VLM (one-to-one), vision pipeline:**
+```
+docling-graph convert examples/data/invoice.pdf \
+  --template "examples.templates.invoice.Invoice" \
+  -p one-to-one -b vlm -i local \
+  -d vision -o outputs
+```
+
+**Local LLM via vLLM (many-to-one), OCR pipeline:**
+```
 docling-graph convert examples/data/policy.pdf \
   --template "examples.templates.insurance.InsuranceTerms" \
   -p many-to-one -b llm -i local \
   --provider vllm --model "ibm-granite/granite-4.0-1b" \
-  -d default -o outputs
+  --docling-pipeline ocr -o outputs
 ```
 
 **API LLM via Mistral (many-to-one):**
-```bash
+```
 export MISTRAL_API_KEY="your_api_key_here"
 docling-graph convert examples/data/invoice.png \
   --template "examples.templates.invoice.Invoice" \
   -p many-to-one -b llm -i remote \
   --provider mistral -o outputs
+```
+
+**With per-page markdown export:**
+```
+docling-graph convert invoice.pdf \
+  --template "examples.templates.invoice.Invoice" \
+  --export-per-page
+```
+
+**Minimal export (graph only, no Docling exports):**
+```
+docling-graph convert invoice.pdf \
+  --template "examples.templates.invoice.Invoice" \
+  --no-docling-json \
+  --no-markdown
 ```
 
 **With reverse edges:**
@@ -222,7 +258,7 @@ docling-graph inspect outputs
 
 ### 1. Basic Example
 
-```python
+```bash
 from pathlib import Path
 from docling_graph.pipeline import run_pipeline
 
@@ -237,6 +273,11 @@ config = {
     "output_dir": "outputs",
     "export_format": "csv",
     "reverse_edges": False,
+    # Docling export settings
+    "export_docling": True,
+    "export_docling_json": True,
+    "export_markdown": True,
+    "export_per_page_markdown": False,
     "config": {
         "models": {
             "vlm": {
@@ -264,6 +305,7 @@ from docling_graph.graph import (
     JSONExporter,
     CosmoGraphVisualizer,
 )
+from docling_graph.core import DoclingExporter
 from examples.templates.invoice import Invoice
 from pathlib import Path
 
@@ -297,6 +339,16 @@ json_exporter.export(graph, output_dir / "graph.json")
 # Cypher Export
 cypher_exporter = CypherExporter()
 cypher_exporter.export(graph, output_dir / "graph.cypher")
+
+# Docling Document Export
+docling_exporter = DoclingExporter(output_dir=output_dir)
+docling_exporter.export_document(
+    document=docling_document,  # From document processor
+    base_name="invoice",
+    include_json=True,
+    include_markdown=True,
+    per_page=False
+)
 
 # 4. Create visualizations
 # Generate markdown report
@@ -465,7 +517,7 @@ vlm:
 ## Troubleshooting
 
 - **Config not found**: Run `docling-graph init`
-- **VLM with API not supported**: Use `--inference local` or `--backend_type llm`
+- **VLM with API not supported**: Use `--inference local` or `--backend-type llm`
 - **Template import failed**: Verify the dotted path and ensure the module is accessible
 - **Ollama connection error**: Ensure service is running (`ollama serve`) and model is pulled
 - **API key not set**: Export API key environment variable or add to `.env` file
@@ -473,6 +525,7 @@ vlm:
 - **Graph visualization issues**: Ensure matplotlib, cosmograph, and ipywidgets are installed (`pip install cosmograph ipywidgets`)
 - **CosmoGraph browser issues**: If visualization doesn't open, manually open the generated HTML file
 - **Node ID format issues**: Check that `graph_id_fields` values are properly set
+- **Missing Docling exports**: Verify export flags are enabled in config or CLI
 
 
 
@@ -492,7 +545,7 @@ This section outlines the upcoming priorities and development directions for the
 
 * **Multi-LLM Support:** Extend provider compatibility to include `WatsonX`, `vLLM`, and other clients.
 * **Flexible Input Modalities:** Support `text`, `markdown`, and direct `DoclingDocument` inputs.
-* **Adaptive OCR Pipeline:** Use Hugging Face’s [XGB classifier](https://github.com/huggingface/finepdfs?tab=readme-ov-file#ocr-vs-noocr-classifier) to automatically choose the appropriate Docling conversion path.
+* **Adaptive OCR Pipeline:** Use Hugging Face's [XGB classifier](https://github.com/huggingface/finepdfs?tab=readme-ov-file#ocr-vs-noocr-classifier) to automatically choose the appropriate Docling conversion path.
 * **Graph Database Integration:** Enable direct graph loading into `Neo4j`, `ArangoDB`, and similar systems.
 * **CLI Graph Queries:** Add a `docling-graph query` command to query generated graphs (e.g., with LangChain).
 * **Customizable Components:** Allow user-defined module overrides and flexible component instantiation.
@@ -503,7 +556,7 @@ This section outlines the upcoming priorities and development directions for the
 
 ### 3. Research & Development Ideas
 
-* **Smart Chunking:** Replace naive context-window splitting with Docling’s structure-aware chunking to preserve logical document relationships (lists, tables, etc.).
+* **Smart Chunking:** Replace naive context-window splitting with Docling's structure-aware chunking to preserve logical document relationships (lists, tables, etc.).
 * **Ontology-Based Template Matching:** Use semantic similarity and ontology mapping to automatically select the most relevant Pydantic template for extraction.
 * **Graph Docling Conversion:** Leverage *Docling Graph* to transform datasets such as [FinePDFs](https://huggingface.co/datasets/HuggingFaceFW/finepdfs) or [DocLayNet v1.2](https://huggingface.co/datasets/ds4sd/DocLayNet-v1.2) into paired `document–knowledge graph datasets`, enabling direct doc → knowledge graph model training (bypassing intermediate Pydantic layers).
 
