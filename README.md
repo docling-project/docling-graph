@@ -81,7 +81,7 @@ pip install -e .
 
 Dependencies:
 
-- Core: `docling[vlm]`, `pydantic`, `networkx`, `pyvis`, `matplotlib`, `cosmograph`, `ipywidgets`, `rich`, `typer`
+- Core: `docling[vlm]`, `pydantic`, `networkx`, `pyvis`, `matplotlib`, `ipywidgets`, `rich`, `typer`
 - Optional LLM clients: `vllm`, `ollama` (local), `mistralai`, `openai`, `google-generativeai` (remote)
 
 
@@ -209,7 +209,7 @@ docling-graph convert examples/data/invoice.pdf \
 ### 2. Inspect Command
 
 
-Visualizes existing graph data using CosmoGraph in an interactive browser interface. This command creates a self-contained HTML file that can be opened, shared, or saved for later viewing.
+Visualizes existing graph data using Pyvis in an interactive browser interface. This command creates a self-contained HTML file that can be opened, shared, or saved for later viewing.
 
 #### 2.1. Arguments
 
@@ -302,8 +302,7 @@ from docling_graph.graph import (
     GraphConfig,
     CSVExporter,
     CypherExporter,
-    JSONExporter,
-    CosmoGraphVisualizer,
+    JSONExporter
 )
 from docling_graph.core import DoclingExporter
 from examples.templates.invoice import Invoice
@@ -359,8 +358,8 @@ report_gen.visualize(
     source_model_count=1
 )
 
-# Interactive CosmoGraph visualization (HTML)
-cosmo_viz = CosmoGraphVisualizer()
+# Interactive visualization (HTML)
+cosmo_viz = InteractiveVisualizer()
 cosmo_viz.visualize(
     graph,
     output_path=output_dir / "graph_interactive",
@@ -522,8 +521,8 @@ vlm:
 - **Ollama connection error**: Ensure service is running (`ollama serve`) and model is pulled
 - **API key not set**: Export API key environment variable or add to `.env` file
 - **Empty LLM responses**: Check prompt configuration and model compatibility
-- **Graph visualization issues**: Ensure matplotlib, cosmograph, and ipywidgets are installed (`pip install cosmograph ipywidgets`)
-- **CosmoGraph browser issues**: If visualization doesn't open, manually open the generated HTML file
+- **Graph visualization issues**: Ensure matplotlib and pyvis are installed (`pip matplotlib pyvis`)
+- **Interactive Graph browser issues**: If visualization doesn't open, manually open the generated HTML file
 - **Node ID format issues**: Check that `graph_id_fields` values are properly set
 - **Missing Docling exports**: Verify export flags are enabled in config or CLI
 
@@ -573,7 +572,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - Built upon [Docling](https://github.com/docling-project/docling) for advanced document processing.
 - Uses [Pydantic](https://pydantic.dev) for data validation.
 - Graph generation powered by [NetworkX](https://networkx.org/).
-- Visualizations with [Pyvis](https://cosmograph.app/), [Matplotlib](https://matplotlib.org/) and [Cosmograph](https://cosmograph.app/).
+- Visualizations with [Pyvis](https://pyvis.readthedocs.io/en/latest/) and [Matplotlib](https://matplotlib.org/).
 - CLI powered by [Typer](https://pyvis.readthedocs.io/en/latest/) and [Rich](https://github.com/Textualize/rich).
 
 

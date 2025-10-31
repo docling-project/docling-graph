@@ -29,7 +29,7 @@ app.command(
 
 app.command(
     name="inspect",
-    help="Visualize graph data using CosmoGraph in the browser."
+    help="Visualize graph data in the browser."
 )(inspect_command)
 
 

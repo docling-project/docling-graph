@@ -1,5 +1,5 @@
 """
-Inspect command - visualizes graph data using CosmoGraph in browser.
+Inspect command - visualizes graph data in browser.
 """
 
 from typing_extensions import Annotated
@@ -29,7 +29,7 @@ def inspect_command(
     )] = True,
 ) -> None:
     """
-    Visualize graph data using CosmoGraph in the browser.
+    Visualize graph data in the browser.
 
     This command creates an interactive HTML visualization that opens
     in your default web browser. The HTML file is self-contained and
@@ -48,7 +48,7 @@ def inspect_command(
         # Create HTML without opening browser
         docling-graph inspect ./output_dir --no-open --output viz.html
     """
-    from ...core.visualizers.cosmo_visualizer import CosmoGraphVisualizer
+    from ...core.visualizers.interactive_visualizer import InteractiveVisualizer
 
     # Validate format
     format = format.lower()
@@ -79,7 +79,7 @@ def inspect_command(
             raise typer.Exit(code=1)
 
     print("[blue]--- Docling-Graph Inspection ---[/blue]")
-    print(f"\n[bold]CosmoGraph Visualization[/bold]")
+    print(f"\n[bold]Interactive Visualization[/bold]")
     print(f"  Input: [cyan]{path}[/cyan]")
     print(f"  Format: [cyan]{format}[/cyan]")
     if output:
@@ -89,7 +89,7 @@ def inspect_command(
 
     try:
         # Create visualizer
-        visualizer = CosmoGraphVisualizer()
+        visualizer = InteractiveVisualizer()
 
         # Load and visualize
         print(f"\nLoading graph data...")
