@@ -4,6 +4,7 @@ Unit tests for utility functions.
 
 import pytest
 from pydantic import BaseModel, Field
+
 from docling_graph.core.extractors.utils import merge_pydantic_models
 
 

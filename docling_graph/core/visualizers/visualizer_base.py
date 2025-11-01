@@ -1,7 +1,8 @@
 """Base protocol for graph visualizers."""
 
-from typing import Protocol, runtime_checkable
 from pathlib import Path
+from typing import Protocol, runtime_checkable
+
 import networkx as nx
 
 
@@ -9,12 +10,7 @@ import networkx as nx
 class GraphVisualizerProtocol(Protocol):
     """Protocol for graph visualization implementations."""
 
-    def visualize(
-        self,
-        graph: nx.DiGraph,
-        output_path: Path,
-        **kwargs
-    ) -> None:
+    def visualize(self, graph: nx.DiGraph, output_path: Path, **kwargs) -> None:
         """Create visualization of the graph.
 
         Args:

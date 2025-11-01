@@ -142,9 +142,9 @@ ignore = [
   "UP006",  # List vs list, etc
   "UP007",  # Option and Union
   "UP035",  # `typing.Set` is deprecated, use `set` instead"
-    "ANN101",  # Missing type annotation for self
-    "ANN102",  # Missing type annotation for cls
-    "ANN401",  # Dynamically typed expressions (Any)
+  # "ANN101",  # Missing type annotation for self
+  # "ANN102",  # Missing type annotation for cls
+  "ANN401",  # Dynamically typed expressions (Any)
 ]
 
 [tool.ruff.lint.pep8-naming]

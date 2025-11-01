@@ -3,11 +3,12 @@ Many-to-one extraction strategy.
 Processes entire document and returns single consolidated model.
 """
 
+from typing import List, Type
+
 from pydantic import BaseModel
-from typing import Type, List
 from rich import print
 
-from ....protocols import is_vlm_backend, is_llm_backend, get_backend_type
+from ....protocols import get_backend_type, is_llm_backend, is_vlm_backend
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
 from ..utils import merge_pydantic_models
@@ -26,8 +27,10 @@ class ManyToOneStrategy(BaseExtractor):
         self.doc_processor = DocumentProcessor(docling_config=docling_config)
 
         backend_type = get_backend_type(backend)
-        print(f"[blue][ManyToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
-              f"[cyan]{backend.__class__.__name__}[/cyan]")
+        print(
+            f"[blue][ManyToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
+            f"[cyan]{backend.__class__.__name__}[/cyan]"
+        )
 
     # Public extraction entry point
     def extract(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
@@ -72,18 +75,24 @@ class ManyToOneStrategy(BaseExtractor):
                 return []
 
             if len(models) == 1:
-                print("[blue][ManyToOneStrategy][/blue] Single-page document extracted successfully")
+                print(
+                    "[blue][ManyToOneStrategy][/blue] Single-page document extracted successfully"
+                )
                 return models
 
             # Merge multiple page-level models
-            print(f"[blue][ManyToOneStrategy][/blue] Merging [cyan]{len(models)}[/cyan] extracted page models...")
+            print(
+                f"[blue][ManyToOneStrategy][/blue] Merging [cyan]{len(models)}[/cyan] extracted page models..."
+            )
             merged_model = merge_pydantic_models(models, template)
 
             if merged_model:
                 print("[green][ManyToOneStrategy][/green] Successfully merged all VLM page models")
                 return [merged_model]
             else:
-                print("[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first page result")
+                print(
+                    "[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first page result"
+                )
                 return [models[0]]
 
         except Exception as e:
@@ -103,12 +112,16 @@ class ManyToOneStrategy(BaseExtractor):
                 estimated_tokens = len(full_markdown) / 3.5  # Rough heuristic
 
                 if estimated_tokens < (context_limit * 0.9):
-                    print(f"[blue][ManyToOneStrategy][/blue] Document fits context "
-                          f"({int(estimated_tokens)} tokens) — using full-document extraction")
+                    print(
+                        f"[blue][ManyToOneStrategy][/blue] Document fits context "
+                        f"({int(estimated_tokens)} tokens) — using full-document extraction"
+                    )
                     return self._extract_full_document(full_markdown, template)
                 else:
-                    print(f"[yellow][ManyToOneStrategy][/yellow] Document too large "
-                          f"({int(estimated_tokens)} tokens) — using page-by-page fallback")
+                    print(
+                        f"[yellow][ManyToOneStrategy][/yellow] Document too large "
+                        f"({int(estimated_tokens)} tokens) — using page-by-page fallback"
+                    )
                     return self._extract_pages_and_merge(document, template)
             else:
                 # No context info, default to full-document attempt
@@ -120,20 +133,24 @@ class ManyToOneStrategy(BaseExtractor):
             return []
 
     # Full-document extraction (LLM)
-    def _extract_full_document(self, full_markdown: str, template: Type[BaseModel]) -> List[BaseModel]:
+    def _extract_full_document(
+        self, full_markdown: str, template: Type[BaseModel]
+    ) -> List[BaseModel]:
         """Extract a single consolidated model from full document markdown."""
         try:
             model = self.backend.extract_from_markdown(
-                markdown=full_markdown,
-                template=template,
-                context="full document"
+                markdown=full_markdown, template=template, context="full document"
             )
 
             if model:
-                print("[green][ManyToOneStrategy][/green] Successfully extracted consolidated model from full document")
+                print(
+                    "[green][ManyToOneStrategy][/green] Successfully extracted consolidated model from full document"
+                )
                 return [model]
             else:
-                print("[yellow][ManyToOneStrategy][/yellow] Full-document extraction returned no model")
+                print(
+                    "[yellow][ManyToOneStrategy][/yellow] Full-document extraction returned no model"
+                )
                 return []
         except Exception as e:
             print(f"[red][ManyToOneStrategy][/red] Full-document extraction failed: {e}")
@@ -146,16 +163,18 @@ class ManyToOneStrategy(BaseExtractor):
             page_markdowns = self.doc_processor.extract_page_markdowns(document)
             total_pages = len(page_markdowns)
 
-            print(f"[blue][ManyToOneStrategy][/blue] Starting page-by-page extraction ({total_pages} pages)...")
+            print(
+                f"[blue][ManyToOneStrategy][/blue] Starting page-by-page extraction ({total_pages} pages)..."
+            )
 
             extracted_models = []
             for page_num, page_md in enumerate(page_markdowns, 1):
-                print(f"[blue][ManyToOneStrategy][/blue] Extracting from page {page_num}/{total_pages}")
+                print(
+                    f"[blue][ManyToOneStrategy][/blue] Extracting from page {page_num}/{total_pages}"
+                )
 
                 model = self.backend.extract_from_markdown(
-                    markdown=page_md,
-                    template=template,
-                    context=f"page {page_num}"
+                    markdown=page_md, template=template, context=f"page {page_num}"
                 )
 
                 if model:
@@ -171,14 +190,18 @@ class ManyToOneStrategy(BaseExtractor):
                 print("[blue][ManyToOneStrategy][/blue] Single page extracted — no merge needed")
                 return extracted_models
 
-            print(f"[blue][ManyToOneStrategy][/blue] Merging [cyan]{len(extracted_models)}[/cyan] page models...")
+            print(
+                f"[blue][ManyToOneStrategy][/blue] Merging [cyan]{len(extracted_models)}[/cyan] page models..."
+            )
             merged_model = merge_pydantic_models(extracted_models, template)
 
             if merged_model:
                 print("[green][ManyToOneStrategy][/green] Successfully merged all page models")
                 return [merged_model]
             else:
-                print("[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first extracted model")
+                print(
+                    "[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first extracted model"
+                )
                 return [extracted_models[0]]
 
         except Exception as e:

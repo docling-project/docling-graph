@@ -4,14 +4,15 @@ Mistral API client implementation.
 Based on https://docs.mistral.ai/api/endpoint/chat
 """
 
-from mistralai import Mistral
-from typing import Dict, Any
 import json
 import os
+from typing import Any, Dict
+
+from dotenv import load_dotenv
+from mistralai import Mistral
+from rich import print
 
 from .llm_base import BaseLlmClient
-from dotenv import load_dotenv
-from rich import print
 
 # Load environment variables
 load_dotenv()
@@ -37,7 +38,7 @@ class MistralClient(BaseLlmClient):
         model_context_limits = {
             "mistral-large-latest": 128000,
             "mistral-medium-latest": 128000,
-            "mistral-small-latest": 32000
+            "mistral-small-latest": 32000,
         }
 
         self._context_limit = model_context_limits.get(model, 32000)
@@ -66,32 +67,38 @@ class MistralClient(BaseLlmClient):
 
             # Validate we have content
             if not system_content or not user_content:
-                print(f"[yellow]Warning:[/yellow] Empty system or user prompt")
+                print("[yellow]Warning:[/yellow] Empty system or user prompt")
                 print(f"  System: {bool(system_content)}")
                 print(f"  User: {bool(user_content)}")
 
             # Add system message if present
             if system_content:
-                messages.append({
-                    "role": "system",
-                    "content": system_content,
-                })
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": system_content,
+                    }
+                )
 
             # Add user message
-            messages.append({
-                "role": "user",
-                "content": user_content or "Please provide a JSON response.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": user_content or "Please provide a JSON response.",
+                }
+            )
         else:
             # Legacy string prompt
             if not prompt:
-                print(f"[yellow]Warning:[/yellow] Empty prompt string")
+                print("[yellow]Warning:[/yellow] Empty prompt string")
                 prompt = "Please provide a JSON response."
 
-            messages.append({
-                "role": "user",
-                "content": prompt,
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            )
 
         try:
             # Call Mistral API
@@ -114,7 +121,9 @@ class MistralClient(BaseLlmClient):
                 parsed_json = json.loads(response_content)
 
                 # Validate it's not empty
-                if not parsed_json or (isinstance(parsed_json, dict) and not any(parsed_json.values())):
+                if not parsed_json or (
+                    isinstance(parsed_json, dict) and not any(parsed_json.values())
+                ):
                     print("[yellow]Warning:[/yellow] Mistral returned empty or all-null JSON")
 
                 return parsed_json
@@ -127,6 +136,7 @@ class MistralClient(BaseLlmClient):
         except Exception as e:
             print(f"[red]Error:[/red] Mistral API call failed: {e}")
             import traceback
+
             traceback.print_exc()
             return {}
 

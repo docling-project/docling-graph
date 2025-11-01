@@ -2,16 +2,13 @@
 Unit tests for configuration utilities.
 """
 
-import pytest
-import yaml
-import typer
 from pathlib import Path
 
-from docling_graph.cli.config_utils import (
-    load_config,
-    save_config,
-    get_config_value
-)
+import pytest
+import typer
+import yaml
+
+from docling_graph.cli.config_utils import get_config_value, load_config, save_config
 
 
 class TestLoadConfig:
@@ -21,7 +18,7 @@ class TestLoadConfig:
         """Test loading a valid config file."""
         # Create config file
         config_path = temp_dir / "config.yaml"
-        with open(config_path, 'w') as f:
+        with open(config_path, "w") as f:
             yaml.dump(sample_config_dict, f)
 
         # Change to temp directory
@@ -103,15 +100,9 @@ class TestSaveConfig:
         """Test saving complex nested config."""
         complex_config = {
             "level1": {
-                "level2": {
-                    "level3": {
-                        "value": "deep"
-                    }
-                },
+                "level2": {"level3": {"value": "deep"}},
                 "list": [1, 2, 3],
-                "mixed": {
-                    "a": [{"b": "c"}]
-                }
+                "mixed": {"a": [{"b": "c"}]},
             }
         }
 
@@ -133,49 +124,29 @@ class TestGetConfigValue:
 
     def test_get_nested_value(self, sample_config_dict):
         """Test getting nested config value."""
-        value = get_config_value(
-            sample_config_dict,
-            "defaults",
-            "processing_mode"
-        )
+        value = get_config_value(sample_config_dict, "defaults", "processing_mode")
         assert value == "many-to-one"
 
     def test_get_deeply_nested_value(self, sample_config_dict):
         """Test getting deeply nested value."""
-        value = get_config_value(
-            sample_config_dict,
-            "models",
-            "llm",
-            "local",
-            "default_model"
-        )
+        value = get_config_value(sample_config_dict, "models", "llm", "local", "default_model")
         assert value == "llama3:8b-instruct"
 
     def test_get_nonexistent_key(self, sample_config_dict):
         """Test getting nonexistent key returns default."""
-        value = get_config_value(
-            sample_config_dict,
-            "nonexistent",
-            default="default_value"
-        )
+        value = get_config_value(sample_config_dict, "nonexistent", default="default_value")
         assert value == "default_value"
 
     def test_get_nonexistent_nested_key(self, sample_config_dict):
         """Test getting nonexistent nested key."""
         value = get_config_value(
-            sample_config_dict,
-            "defaults",
-            "nonexistent",
-            default="default_value"
+            sample_config_dict, "defaults", "nonexistent", default="default_value"
         )
         assert value == "default_value"
 
     def test_get_value_no_default(self, sample_config_dict):
         """Test getting nonexistent value without default."""
-        value = get_config_value(
-            sample_config_dict,
-            "nonexistent"
-        )
+        value = get_config_value(sample_config_dict, "nonexistent")
         assert value is None
 
     def test_get_from_non_dict_value(self, sample_config_dict):
@@ -186,7 +157,7 @@ class TestGetConfigValue:
             "defaults",
             "processing_mode",
             "nested",  # But processing_mode is a string!
-            default="default_value"
+            default="default_value",
         )
         assert value == "default_value"
 
@@ -195,13 +166,16 @@ class TestGetConfigValue:
         value = get_config_value(sample_config_dict)
         assert value == sample_config_dict
 
-    @pytest.mark.parametrize("keys,expected", [
-        (["defaults", "backend_type"], "llm"),
-        (["defaults", "inference"], "local"),
-        (["defaults", "export_format"], "csv"),
-        (["docling", "pipeline"], "ocr"),
-        (["output", "create_visualizations"], True),
-    ])
+    @pytest.mark.parametrize(
+        "keys,expected",
+        [
+            (["defaults", "backend_type"], "llm"),
+            (["defaults", "inference"], "local"),
+            (["defaults", "export_format"], "csv"),
+            (["docling", "pipeline"], "ocr"),
+            (["output", "create_visualizations"], True),
+        ],
+    )
     def test_various_config_paths(self, sample_config_dict, keys, expected):
         """Test various config paths."""
         value = get_config_value(sample_config_dict, *keys)

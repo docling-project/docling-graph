@@ -4,6 +4,7 @@ Unit tests for core data models (Edge, GraphMetadata).
 
 import pytest
 from pydantic import ValidationError
+
 from docling_graph.core.base.models import Edge, GraphMetadata
 
 
@@ -12,11 +13,7 @@ class TestEdgeModel:
 
     def test_edge_creation_basic(self):
         """Test creating a basic Edge."""
-        edge = Edge(
-            source="node_1",
-            target="node_2",
-            label="connects_to"
-        )
+        edge = Edge(source="node_1", target="node_2", label="connects_to")
         assert edge.source == "node_1"
         assert edge.target == "node_2"
         assert edge.label == "connects_to"
@@ -28,7 +25,7 @@ class TestEdgeModel:
             source="person_1",
             target="company_1",
             label="works_at",
-            properties={"since": "2020", "role": "engineer"}
+            properties={"since": "2020", "role": "engineer"},
         )
         assert edge.properties["since"] == "2020"
         assert edge.properties["role"] == "engineer"
@@ -53,21 +50,14 @@ class TestEdgeModel:
 
     def test_edge_empty_properties_default(self):
         """Test that properties defaults to empty dict."""
-        edge = Edge(
-            source="node_1",
-            target="node_2",
-            label="connects_to"
-        )
+        edge = Edge(source="node_1", target="node_2", label="connects_to")
         assert edge.properties == {}
         assert isinstance(edge.properties, dict)
 
     def test_edge_serialization(self):
         """Test Edge serialization to dict."""
         edge = Edge(
-            source="node_1",
-            target="node_2",
-            label="connects_to",
-            properties={"weight": 1.5}
+            source="node_1", target="node_2", label="connects_to", properties={"weight": 1.5}
         )
         edge_dict = edge.model_dump()
         assert edge_dict["source"] == "node_1"
@@ -81,7 +71,7 @@ class TestEdgeModel:
             "source": "node_1",
             "target": "node_2",
             "label": "connects_to",
-            "properties": {"attr": "value"}
+            "properties": {"attr": "value"},
         }
         edge = Edge(**edge_dict)
         assert edge.source == "node_1"
@@ -97,8 +87,8 @@ class TestEdgeModel:
             properties={
                 "confidence": 0.95,
                 "type": "semantic",
-                "metadata": {"created": "2024-01-01"}
-            }
+                "metadata": {"created": "2024-01-01"},
+            },
         )
         assert edge.properties["confidence"] == 0.95
         assert edge.properties["metadata"]["created"] == "2024-01-01"
@@ -115,6 +105,7 @@ class TestEdgeModel:
         edge2 = Edge(source="c", target="b", label="connects")
         assert edge1 != edge2
 
+
 class TestGraphMetadata:
     """Tests for GraphMetadata Pydantic model."""
 
@@ -123,7 +114,7 @@ class TestGraphMetadata:
         metadata = GraphMetadata(
             node_count=10,
             edge_count=15,
-            source_models=5  # Use source_models
+            source_models=5,  # Use source_models
         )
         assert metadata.node_count == 10
         assert metadata.edge_count == 15
@@ -132,19 +123,13 @@ class TestGraphMetadata:
     def test_metadata_requires_node_count(self):
         """Test that node_count is required."""
         with pytest.raises(ValidationError) as exc_info:
-            GraphMetadata(
-                edge_count=15,
-                source_models=5
-            )
+            GraphMetadata(edge_count=15, source_models=5)
         assert "node_count" in str(exc_info.value)
 
     def test_metadata_requires_edge_count(self):
         """Test that edge_count is required."""
         with pytest.raises(ValidationError) as exc_info:
-            GraphMetadata(
-                node_count=10,
-                source_models=5
-            )
+            GraphMetadata(node_count=10, source_models=5)
         assert "edge_count" in str(exc_info.value)
 
     def test_metadata_requires_source_models(self):
@@ -160,7 +145,7 @@ class TestGraphMetadata:
             node_count=10,
             edge_count=15,
             source_models=5,  # Added source_models
-            average_degree=3.0
+            average_degree=3.0,
         )
         metadata_dict = metadata.model_dump()
         assert metadata_dict["node_count"] == 10
@@ -177,7 +162,7 @@ class TestGraphMetadata:
             "node_types": {"A": 10, "B": 10},
             "edge_types": {"rel": 30},
             "source_models": 10,
-            "average_degree": 3.5
+            "average_degree": 3.5,
         }
         metadata = GraphMetadata(**metadata_dict)
         assert metadata.node_count == 20
@@ -185,21 +170,13 @@ class TestGraphMetadata:
 
     def test_metadata_zero_values(self):
         """Test GraphMetadata with zero values."""
-        metadata = GraphMetadata(
-            node_count=0,
-            edge_count=0,
-            source_models=0
-        )
+        metadata = GraphMetadata(node_count=0, edge_count=0, source_models=0)
         assert metadata.node_count == 0
         assert metadata.edge_count == 0
 
     def test_metadata_large_values(self):
         """Test GraphMetadata with large values."""
-        metadata = GraphMetadata(
-            node_count=1_000_000,
-            edge_count=5_000_000,
-            source_models=100_000
-        )
+        metadata = GraphMetadata(node_count=1_000_000, edge_count=5_000_000, source_models=100_000)
         assert metadata.node_count == 1_000_000
         assert metadata.edge_count == 5_000_000
 
@@ -209,10 +186,7 @@ class TestGraphMetadata:
         # If you have validators that enforce non-negative values
         try:
             metadata = GraphMetadata(
-                node_count=-1,
-                edge_count=-1,
-                source_models=-1,
-                average_degree=-1.0
+                node_count=-1, edge_count=-1, source_models=-1, average_degree=-1.0
             )
             # If creation succeeds, at least verify the values
             assert metadata.node_count == -1
@@ -226,38 +200,23 @@ class TestGraphMetadata:
             node_count=10,
             edge_count=15,
             source_models=5,
-            average_degree=3.0  # Explicitly set it
+            average_degree=3.0,  # Explicitly set it
         )
         assert isinstance(metadata.average_degree, float)
         assert metadata.average_degree == 3.0
 
     def test_metadata_equality(self):
         """Test GraphMetadata equality."""
-        meta1 = GraphMetadata(
-            node_count=10,
-            edge_count=15,
-            source_models=5
-        )
-        meta2 = GraphMetadata(
-            node_count=10,
-            edge_count=15,
-            source_models=5
-        )
+        meta1 = GraphMetadata(node_count=10, edge_count=15, source_models=5)
+        meta2 = GraphMetadata(node_count=10, edge_count=15, source_models=5)
         assert meta1 == meta2
 
     def test_metadata_inequality(self):
         """Test GraphMetadata inequality."""
-        meta1 = GraphMetadata(
-            node_count=10,
-            edge_count=15,
-            source_models=5
-        )
-        meta2 = GraphMetadata(
-            node_count=20,
-            edge_count=25,
-            source_models=10
-        )
+        meta1 = GraphMetadata(node_count=10, edge_count=15, source_models=5)
+        meta2 = GraphMetadata(node_count=20, edge_count=25, source_models=10)
         assert meta1 != meta2
+
 
 class TestModelsIntegration:
     """Integration tests for models working together."""
@@ -278,9 +237,5 @@ class TestModelsIntegration:
             Edge(source="a", target="b", label="connects"),
             Edge(source="b", target="c", label="connects"),
         ]
-        metadata = GraphMetadata(
-            node_count=3,
-            edge_count=len(edges),
-            source_models=1
-        )
+        metadata = GraphMetadata(node_count=3, edge_count=len(edges), source_models=1)
         assert metadata.edge_count == len(edges)

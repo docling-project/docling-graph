@@ -1,13 +1,13 @@
-
 """
 Configuration loading and validation utilities.
 """
 
-from typing import Any, Dict
 from pathlib import Path
-from rich import print
+from typing import Any, Dict
+
 import typer
 import yaml
+from rich import print
 
 from .constants import CONFIG_FILE_NAME
 
@@ -25,11 +25,11 @@ def load_config() -> Dict[str, Any]:
 
     if not config_path.exists():
         print(f"[red]Error:[/red] Configuration file '{CONFIG_FILE_NAME}' not found.")
-        print(f"Please run [cyan]docling-graph init[/cyan] first.")
+        print("Please run [cyan]docling-graph init[/cyan] first.")
         raise typer.Exit(code=1)
 
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path) as f:
             return yaml.safe_load(f)
     except yaml.YAMLError as e:
         print(f"[red]Error parsing '{CONFIG_FILE_NAME}':[/red] {e}")
@@ -46,7 +46,7 @@ def save_config(config_dict: Dict[str, Any], output_path: Path) -> None:
     Raises:
         Exception: If writing fails.
     """
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         yaml.dump(config_dict, f, default_flow_style=False, sort_keys=False, indent=2)
 
 

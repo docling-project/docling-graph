@@ -5,6 +5,7 @@ This module provides improved prompts for structured data extraction
 from document markdown using LLMs.
 """
 
+
 def get_prompt(markdown_content: str, schema_json: str, is_partial: bool = False) -> dict:
     """
     Generates system and user prompts for LLM extraction.
@@ -71,10 +72,7 @@ def get_prompt(markdown_content: str, schema_json: str, is_partial: bool = False
             "following the schema above."
         )
 
-    return {
-        "system": system_prompt,
-        "user": user_prompt
-    }
+    return {"system": system_prompt, "user": user_prompt}
 
 
 def get_legacy_prompt(markdown_content: str, schema_json: str, is_partial: bool = False) -> str:

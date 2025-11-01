@@ -1,10 +1,11 @@
 """JSON exporter for graph serialization."""
 
-from pathlib import Path
-import networkx as nx
 import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from typing import Optional, Dict, Any, List
+import networkx as nx
+
 from ..base.config import ExportConfig
 
 
@@ -36,12 +37,9 @@ class JSONExporter:
 
         graph_dict = self._graph_to_dict(graph)
 
-        with open(output_path, 'w', encoding=self.config.JSON_ENCODING) as f:
+        with open(output_path, "w", encoding=self.config.JSON_ENCODING) as f:
             json.dump(
-                graph_dict,
-                f,
-                indent=self.config.JSON_INDENT,
-                ensure_ascii=self.config.ENSURE_ASCII
+                graph_dict, f, indent=self.config.JSON_INDENT, ensure_ascii=self.config.ENSURE_ASCII
             )
 
     def validate_graph(self, graph: nx.DiGraph) -> bool:
@@ -67,23 +65,16 @@ class JSONExporter:
         """
         nodes: List[Dict[str, Any]] = []
         for node_id, data in graph.nodes(data=True):
-            node_dict = {'id': node_id, **data}
+            node_dict = {"id": node_id, **data}
             nodes.append(node_dict)
 
         edges: List[Dict[str, Any]] = []
         for source, target, data in graph.edges(data=True):
-            edge_dict = {
-                'source': source,
-                'target': target,
-                **data
-            }
+            edge_dict = {"source": source, "target": target, **data}
             edges.append(edge_dict)
 
         return {
-            'nodes': nodes,
-            'edges': edges,
-            'metadata': {
-                'node_count': len(nodes),
-                'edge_count': len(edges)
-            }
+            "nodes": nodes,
+            "edges": edges,
+            "metadata": {"node_count": len(nodes), "edge_count": len(edges)},
         }

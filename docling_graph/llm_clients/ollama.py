@@ -4,16 +4,20 @@ Ollama (local LLM) client implementation.
 Based on https://ollama.com/blog/structured-outputs
 """
 
-from .llm_base import BaseLlmClient
-from typing import Dict, Any
-from rich import print
 import json
+from typing import Any, Dict
+
+from rich import print
+
+from .llm_base import BaseLlmClient
 
 # Requires `pip install ollama`
 try:
     import ollama
 except ImportError:
-    print("[red]Error:[/red] `ollama` package not found. Please run `pip install ollama` to use local LLMs.")
+    print(
+        "[red]Error:[/red] `ollama` package not found. Please run `pip install ollama` to use local LLMs."
+    )
     ollama = None
 
 
@@ -23,21 +27,16 @@ class OllamaClient(BaseLlmClient):
     def __init__(self, model: str):
         if ollama is None:
             raise ImportError(
-                "Ollama client could not be imported. "
-                "Please install it with: pip install ollama"
+                "Ollama client could not be imported. Please install it with: pip install ollama"
             )
 
         self.model = model
 
         # Context limits for different models
-        model_context_limits = {
-            "llama3.1:8b": 128000,
-            "llama3.2:3b": 128000,
-            "mixtral:8x7b": 32000
-        }
+        model_context_limits = {"llama3.1:8b": 128000, "llama3.2:3b": 128000, "mixtral:8x7b": 32000}
 
         # Extract base model name for lookup
-        base_model = model.split(':')[0] + ':' + model.split(':')[1] if ':' in model else model
+        base_model = model.split(":")[0] + ":" + model.split(":")[1] if ":" in model else model
         self._context_limit = model_context_limits.get(base_model, 8000)
 
         try:
@@ -46,8 +45,8 @@ class OllamaClient(BaseLlmClient):
             print(f"[OllamaClient] Initialized with Ollama model: [blue]{self.model}[/blue]")
         except Exception as e:
             print(f"[red]Ollama connection error:[/red] {e}")
-            print(f"Please ensure:")
-            print(f"  1. Ollama is running: ollama serve")
+            print("Please ensure:")
+            print("  1. Ollama is running: ollama serve")
             print(f"  2. Model is available: ollama pull {self.model}")
             raise
 
@@ -68,7 +67,7 @@ class OllamaClient(BaseLlmClient):
         if isinstance(prompt, dict):
             messages = [
                 {"role": "system", "content": prompt["system"]},
-                {"role": "user", "content": prompt["user"]}
+                {"role": "user", "content": prompt["user"]},
             ]
         else:
             # Legacy: treat entire prompt as user message
@@ -82,18 +81,20 @@ class OllamaClient(BaseLlmClient):
                 format="json",  # Official JSON mode - ensures valid JSON
                 options={
                     "temperature": 0.1,  # Low temperature for consistent extraction
-                }
+                },
             )
 
             # Get response content
-            raw_json = res['message']['content']
+            raw_json = res["message"]["content"]
 
             # Parse JSON
             try:
                 parsed_json = json.loads(raw_json)
 
                 # Validate it's not empty
-                if not parsed_json or (isinstance(parsed_json, dict) and not any(parsed_json.values())):
+                if not parsed_json or (
+                    isinstance(parsed_json, dict) and not any(parsed_json.values())
+                ):
                     print("[yellow]Warning:[/yellow] Ollama returned empty or all-null JSON")
 
                 return parsed_json
@@ -106,6 +107,7 @@ class OllamaClient(BaseLlmClient):
         except Exception as e:
             print(f"[red]Error:[/red] Ollama API call failed: {e}")
             import traceback
+
             traceback.print_exc()
             return {}
 

@@ -1,8 +1,8 @@
 """Configuration classes for graph conversion, export, and visualization."""
 
 from dataclasses import dataclass, field
-from typing import Final, Literal
 from pathlib import Path
+from typing import Final, Literal
 
 
 @dataclass(frozen=True)

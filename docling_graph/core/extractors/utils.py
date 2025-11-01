@@ -3,11 +3,12 @@ Utility functions for document extraction.
 """
 
 import copy
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 # Heuristic for token calculation (chars / 3.5 is a rough proxy)
 # You can replace this with a proper tokenizer like tiktoken if you want more accuracy.
 TOKEN_CHAR_RATIO = 3.5
+
 
 def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -56,10 +57,8 @@ def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str
 
     return target
 
-def merge_pydantic_models(
-    models: List[Any],
-    template_class: type
-) -> Any:
+
+def merge_pydantic_models(models: List[Any], template_class: type) -> Any:
     """
     Merge multiple Pydantic model instances into a single model.
 
@@ -98,6 +97,7 @@ def merge_pydantic_models(
         print(f"Warning: Failed to merge models: {e}")
         return models[0]
 
+
 def chunk_text(text: str, max_tokens: int = 8000) -> List[str]:
     """
     Split text into chunks that don't exceed max_tokens.
@@ -127,7 +127,7 @@ def chunk_text(text: str, max_tokens: int = 8000) -> List[str]:
         # Try to break at a sentence boundary if not at end
         if end_pos < len(text):
             # Look for last period, exclamation, or question mark
-            for delimiter in ['. ', '! ', '? ', '\n\n', '\n']:
+            for delimiter in [". ", "! ", "? ", "\n\n", "\n"]:
                 last_break = text.rfind(delimiter, current_pos, end_pos)
                 if last_break != -1:
                     end_pos = last_break + len(delimiter)
@@ -141,9 +141,8 @@ def chunk_text(text: str, max_tokens: int = 8000) -> List[str]:
 
     return chunks
 
-def consolidate_extracted_data(
-    data_list: List[Dict[str, Any]]
-) -> Dict[str, Any]:
+
+def consolidate_extracted_data(data_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Consolidate multiple extracted data dictionaries into one.
 

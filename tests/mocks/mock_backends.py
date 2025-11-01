@@ -3,6 +3,7 @@ Mock backends for testing without actual LLM/VLM dependencies.
 """
 
 from typing import Any, Dict, List
+
 from pydantic import BaseModel
 
 
@@ -57,6 +58,7 @@ class MockLLMBackend:
         self.call_count = 0
         self.last_input = None
 
+
 class MockVLMBackend:
     """Mock VLM (Vision Language Model) backend for testing."""
 
@@ -85,7 +87,7 @@ class MockVLMBackend:
         # Return actual list with mock data
         return [
             {"name": "John Doe", "age": 30},
-            {"name": "Jane Smith", "age": 25}
+            {"name": "Jane Smith", "age": 25},
         ]  # NOT just Mock()
 
     def extract_from_images(self, images, template):
@@ -98,15 +100,9 @@ class MockVLMBackend:
         Returns:
             List of dictionaries matching template structure.
         """
-        return [
-            {"name": "Person1", "age": 40}
-        ]
+        return [{"name": "Person1", "age": 40}]
 
-    def extract(
-        self,
-        image_path: str,
-        template: type[BaseModel]
-    ) -> List[Dict[str, Any]]:
+    def extract(self, image_path: str, template: type[BaseModel]) -> List[Dict[str, Any]]:
         """Mock extraction from image.
 
         Args:
@@ -144,6 +140,7 @@ class MockVLMBackend:
         self.call_count = 0
         self.last_image = None
 
+
 class MockOllamaClient:
     """Mock Ollama client for testing."""
 
@@ -169,7 +166,7 @@ class MockOllamaClient:
         return {
             "message": {
                 "role": "assistant",
-                "content": '{"name": "mock_name", "value": "mock_value"}'
+                "content": '{"name": "mock_name", "value": "mock_value"}',
             }
         }
 
@@ -184,6 +181,7 @@ class MockOllamaClient:
             Mock data.
         """
         return MockLLMBackend().extract(text, template)
+
 
 class MockMistralClient:
     """Mock Mistral API client for testing."""
@@ -215,7 +213,9 @@ class MockMistralClient:
                 class MockMessage:
                     content = '{"field": "value"}'
                     role = "assistant"
+
                 message = MockMessage()
+
             choices = [MockChoice()]
 
         return MockResponse()
@@ -231,6 +231,7 @@ class MockMistralClient:
             Mock data.
         """
         return MockLLMBackend().extract(text, template)
+
 
 class ConfigurableMockBackend:
     """Configurable mock backend for advanced testing."""
@@ -273,6 +274,7 @@ class ConfigurableMockBackend:
         self.call_count = 0
         self.calls = []
 
+
 class FailingMockBackend:
     """Mock backend that simulates failures."""
 
@@ -301,11 +303,13 @@ class FailingMockBackend:
             raise Exception("Mock backend error")
         elif self.failure_mode == "timeout":
             import time
+
             time.sleep(10)  # Simulate timeout
         elif self.failure_mode == "invalid_data":
             return {"invalid": "does not match template"}
         else:
             raise ValueError(f"Unknown failure mode: {self.failure_mode}")
+
 
 # Convenience functions
 def create_mock_llm_backend() -> MockLLMBackend:
@@ -316,6 +320,7 @@ def create_mock_llm_backend() -> MockLLMBackend:
     """
     return MockLLMBackend()
 
+
 def create_mock_vlm_backend() -> MockVLMBackend:
     """Create a mock VLM backend.
 
@@ -323,6 +328,7 @@ def create_mock_vlm_backend() -> MockVLMBackend:
         Configured MockVLMBackend instance.
     """
     return MockVLMBackend()
+
 
 def create_failing_backend(failure_mode: str = "exception") -> FailingMockBackend:
     """Create a failing mock backend.

@@ -4,13 +4,14 @@ Unit tests for CLI validators.
 
 import pytest
 import typer
+
 from docling_graph.cli.validators import (
-    validate_processing_mode,
     validate_backend_type,
-    validate_inference,
     validate_docling_config,
     validate_export_format,
-    validate_vlm_constraints
+    validate_inference,
+    validate_processing_mode,
+    validate_vlm_constraints,
 )
 
 
@@ -39,13 +40,7 @@ class TestValidateProcessingMode:
         with pytest.raises(typer.Exit):
             validate_processing_mode("")
 
-    @pytest.mark.parametrize("invalid_input", [
-        "one-two-one",
-        "many",
-        "one",
-        "all",
-        "batch"
-    ])
+    @pytest.mark.parametrize("invalid_input", ["one-two-one", "many", "one", "all", "batch"])
     def test_various_invalid_modes(self, invalid_input):
         """Test various invalid mode inputs."""
         with pytest.raises(typer.Exit):
@@ -72,13 +67,7 @@ class TestValidateBackendType:
             validate_backend_type("gpt")
         assert exc_info.value.exit_code == 1
 
-    @pytest.mark.parametrize("invalid_input", [
-        "transformer",
-        "bert",
-        "gpt",
-        "api",
-        ""
-    ])
+    @pytest.mark.parametrize("invalid_input", ["transformer", "bert", "gpt", "api", ""])
     def test_various_invalid_backends(self, invalid_input):
         """Test various invalid backend inputs."""
         with pytest.raises(typer.Exit):
@@ -103,13 +92,7 @@ class TestValidateInference:
         with pytest.raises(typer.Exit):
             validate_inference("cloud")
 
-    @pytest.mark.parametrize("invalid_input", [
-        "api",
-        "cloud",
-        "hybrid",
-        "distributed",
-        ""
-    ])
+    @pytest.mark.parametrize("invalid_input", ["api", "cloud", "hybrid", "distributed", ""])
     def test_various_invalid_inference(self, invalid_input):
         """Test various invalid inference inputs."""
         with pytest.raises(typer.Exit):
@@ -134,13 +117,7 @@ class TestValidateDoclingConfig:
         with pytest.raises(typer.Exit):
             validate_docling_config("default")
 
-    @pytest.mark.parametrize("invalid_input", [
-        "default",
-        "tesseract",
-        "paddle",
-        "easyocr",
-        ""
-    ])
+    @pytest.mark.parametrize("invalid_input", ["default", "tesseract", "paddle", "easyocr", ""])
     def test_various_invalid_configs(self, invalid_input):
         """Test various invalid config inputs."""
         with pytest.raises(typer.Exit):
@@ -190,12 +167,15 @@ class TestValidateVlmConstraints:
             validate_vlm_constraints("vlm", "remote")
         assert exc_info.value.exit_code == 1
 
-    @pytest.mark.parametrize("backend,inference,should_pass", [
-        ("vlm", "local", True),
-        ("vlm", "remote", False),
-        ("llm", "local", True),
-        ("llm", "remote", True),
-    ])
+    @pytest.mark.parametrize(
+        "backend,inference,should_pass",
+        [
+            ("vlm", "local", True),
+            ("vlm", "remote", False),
+            ("llm", "local", True),
+            ("llm", "remote", True),
+        ],
+    )
     def test_various_constraint_combinations(self, backend, inference, should_pass):
         """Test various backend/inference combinations."""
         if should_pass:

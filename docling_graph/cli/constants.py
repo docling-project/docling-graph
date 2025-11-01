@@ -4,7 +4,6 @@ CLI constants and configuration values.
 
 from typing import Final
 
-
 # Configuration
 CONFIG_FILE_NAME: Final[str] = "config.yaml"
 
@@ -29,11 +28,7 @@ DOCLING_EXPORT_FORMATS: Final[list[str]] = ["markdown", "json", "document"]
 # Default Docling settings
 DEFAULT_DOCLING_CONFIG = {
     "pipeline": "ocr",
-    "export": {
-        "docling_json": True,
-        "markdown": True,
-        "per_page_markdown": False
-    }
+    "export": {"docling_json": True, "markdown": True, "per_page_markdown": False},
 }
 
 # Default model configurations
@@ -43,8 +38,8 @@ DEFAULT_MODELS = {
     "llm_remote": {
         "mistral": "mistral-small-latest",
         "openai": "gpt-4-turbo",
-        "gemini": "gemini-2.5-flash"
-    }
+        "gemini": "gemini-2.5-flash",
+    },
 }
 
 # Local Providers

@@ -1,12 +1,13 @@
 """Markdown report generator for graphs."""
 
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
 import networkx as nx
 
+from ..base.models import GraphMetadata
 from ..utils.formatting import format_property_key, format_property_value
 from ..utils.graph_stats import calculate_graph_stats
-from ..base.models import GraphMetadata
 
 
 class ReportGenerator:
@@ -17,7 +18,7 @@ class ReportGenerator:
         graph: nx.DiGraph,
         output_path: Path,
         source_model_count: int = 1,
-        include_samples: bool = True
+        include_samples: bool = True,
     ) -> None:
         """Generate markdown report for graph.
 
@@ -34,8 +35,8 @@ class ReportGenerator:
             raise ValueError("Cannot generate report for empty graph")
 
         # Ensure .md extension
-        if not str(output_path).endswith('.md'):
-            output_path = Path(str(output_path) + '.md')
+        if not str(output_path).endswith(".md"):
+            output_path = Path(str(output_path) + ".md")
 
         # Calculate statistics
         metadata = calculate_graph_stats(graph, source_model_count)
@@ -53,8 +54,8 @@ class ReportGenerator:
             report_parts.append(self._create_sample_edges(graph))
 
         # Write report
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write('\n\n'.join(report_parts))
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n\n".join(report_parts))
 
     def validate_graph(self, graph: nx.DiGraph) -> bool:
         """Validate that graph is not empty."""
@@ -73,7 +74,7 @@ class ReportGenerator:
 - **Total Nodes**: {metadata.node_count}
 - **Total Edges**: {metadata.edge_count}
 - **Source Models**: {metadata.source_models}
-- **Generated**: {metadata.created_at.strftime('%Y-%m-%d %H:%M:%S')}"""
+- **Generated**: {metadata.created_at.strftime("%Y-%m-%d %H:%M:%S")}"""
 
     @staticmethod
     def _create_node_type_distribution(metadata: GraphMetadata) -> str:
@@ -88,14 +89,12 @@ class ReportGenerator:
 
             total = metadata.node_count
             for node_type, count in sorted(
-                metadata.node_types.items(),
-                key=lambda x: x[1],
-                reverse=True
+                metadata.node_types.items(), key=lambda x: x[1], reverse=True
             ):
                 percentage = (count / total * 100) if total > 0 else 0
                 lines.append(f"| {node_type} | {count} | {percentage:.1f}% |")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     @staticmethod
     def _create_edge_type_distribution(metadata: GraphMetadata) -> str:
@@ -110,14 +109,12 @@ class ReportGenerator:
 
             total = metadata.edge_count
             for edge_type, count in sorted(
-                metadata.edge_types.items(),
-                key=lambda x: x[1],
-                reverse=True
+                metadata.edge_types.items(), key=lambda x: x[1], reverse=True
             ):
                 percentage = (count / total * 100) if total > 0 else 0
                 lines.append(f"| {edge_type} | {count} | {percentage:.1f}% |")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     @staticmethod
     def _create_sample_nodes(graph: nx.DiGraph, max_samples: int = 5) -> str:
@@ -137,7 +134,7 @@ class ReportGenerator:
 
             lines.append("")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     @staticmethod
     def _create_sample_edges(graph: nx.DiGraph, max_samples: int = 5) -> str:
@@ -147,9 +144,9 @@ class ReportGenerator:
         sample_edges = list(graph.edges(data=True))[:max_samples]
 
         for source, target, data in sample_edges:
-            label = data.get('label', 'related_to')
+            label = data.get("label", "related_to")
             lines.append(f"### {source} → {target}")
             lines.append(f"**Type**: {label}")
             lines.append("")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)

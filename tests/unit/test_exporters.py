@@ -2,14 +2,11 @@
 Unit tests for exporters (CSV, Cypher, JSON).
 """
 
-import pytest
 from pathlib import Path
 
-from docling_graph.core.exporters import (
-    CSVExporter,
-    CypherExporter,
-    JSONExporter
-)
+import pytest
+
+from docling_graph.core.exporters import CSVExporter, CypherExporter, JSONExporter
 
 
 class TestCSVExporter:
@@ -30,8 +27,8 @@ class TestCSVExporter:
         exporter.export(simple_graph, temp_dir)
         nodes_file = temp_dir / "nodes.csv"
         content = nodes_file.read_text()
-        assert ("id" in content.lower() or ":id" in content.lower())
-        assert ("label" in content.lower() or ":label" in content.lower())
+        assert "id" in content.lower() or ":id" in content.lower()
+        assert "label" in content.lower() or ":label" in content.lower()
 
     def test_edges_csv_has_header(self, simple_graph, temp_dir):
         """Test that edges CSV has correct header."""
@@ -39,19 +36,21 @@ class TestCSVExporter:
         exporter.export(simple_graph, temp_dir)
         edges_file = temp_dir / "edges.csv"
         content = edges_file.read_text()
-        assert ("source" in content.lower() or ":start_id" in content.lower())
-        assert ("target" in content.lower() or ":end_id" in content.lower())
-        assert ("label" in content.lower() or ":type" in content.lower())
+        assert "source" in content.lower() or ":start_id" in content.lower()
+        assert "target" in content.lower() or ":end_id" in content.lower()
+        assert "label" in content.lower() or ":type" in content.lower()
 
     def test_export_empty_graph(self, temp_dir):
         """Test exporting an empty graph."""
         import networkx as nx
+
         empty_graph = nx.DiGraph()
         exporter = CSVExporter()
 
         # Expect ValueError for empty graph
         with pytest.raises(ValueError, match="Cannot export empty graph"):
             exporter.export(empty_graph, temp_dir)
+
 
 class TestCypherExporter:
     """Tests for Cypher exporter."""
@@ -79,6 +78,7 @@ class TestCypherExporter:
         content = cypher_file.read_text()
         assert "MATCH" in content
 
+
 class TestJSONExporter:
     """Tests for JSON exporter."""
 
@@ -92,6 +92,7 @@ class TestJSONExporter:
     def test_json_structure(self, simple_graph, temp_dir):
         """Test that JSON has correct structure."""
         import json
+
         exporter = JSONExporter()
         json_file = temp_dir / "graph.json"
         exporter.export(simple_graph, json_file)

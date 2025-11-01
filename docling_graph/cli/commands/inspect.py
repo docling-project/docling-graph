@@ -2,32 +2,36 @@
 Inspect command - visualizes graph data in browser.
 """
 
-from typing_extensions import Annotated
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
-from rich import print
 import typer
+from rich import print
+from typing_extensions import Annotated
 
 from ...core.visualizers.interactive_visualizer import InteractiveVisualizer
 
+
 def inspect_command(
-    path: Annotated[Path, typer.Argument(
-        help="Path to graph data. For CSV: directory with nodes.csv and edges.csv. For JSON: path to .json file.",
-        exists=True
-    )],
-    format: Annotated[str, typer.Option(
-        "--format", "-f",
-        help="Import format: 'csv' or 'json'."
-    )] = "csv",
-    output: Annotated[Optional[Path], typer.Option(
-        "--output", "-o",
-        help="Output HTML file path. If not specified, uses temporary file."
-    )] = None,
-    open_browser: Annotated[bool, typer.Option(
-        "--open/--no-open",
-        help="Automatically open browser."
-    )] = True,
+    path: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to graph data. For CSV: directory with nodes.csv and edges.csv. For JSON: path to .json file.",
+            exists=True,
+        ),
+    ],
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Import format: 'csv' or 'json'.")
+    ] = "csv",
+    output: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--output", "-o", help="Output HTML file path. If not specified, uses temporary file."
+        ),
+    ] = None,
+    open_browser: Annotated[
+        bool, typer.Option("--open/--no-open", help="Automatically open browser.")
+    ] = True,
 ) -> None:
     """
     Visualize graph data in the browser.
@@ -59,7 +63,9 @@ def inspect_command(
     # Validate path based on format
     if format == "csv":
         if not path.is_dir():
-            print(f"[bold red]Error:[/bold red] For CSV format, path must be a directory containing nodes.csv and edges.csv")
+            print(
+                "[bold red]Error:[/bold red] For CSV format, path must be a directory containing nodes.csv and edges.csv"
+            )
             raise typer.Exit(code=1)
 
         nodes_path = path / "nodes.csv"
@@ -75,38 +81,38 @@ def inspect_command(
 
     elif format == "json":
         if not path.is_file() or path.suffix != ".json":
-            print(f"[bold red]Error:[/bold red] For JSON format, path must be a .json file")
+            print("[bold red]Error:[/bold red] For JSON format, path must be a .json file")
             raise typer.Exit(code=1)
 
     print("--- [blue]Starting Docling-Graph Inspection[/blue] ---")
-    print(f"\n[bold]Interactive Visualization[/bold]")
+    print("\n[bold]Interactive Visualization[/bold]")
     print(f"  Input: [cyan]{path}[/cyan]")
     print(f"  Format: [cyan]{format}[/cyan]")
     if output:
         print(f"  Output: [cyan]{output}[/cyan]")
     else:
-        print(f"  Output: [cyan]temporary file[/cyan]")
+        print("  Output: [cyan]temporary file[/cyan]")
 
     try:
         # Create visualizer
         visualizer = InteractiveVisualizer()
 
         # Load and visualize
-        print(f"\nLoading graph data...")
+        print("\nLoading graph data...")
         visualizer.display_cytoscape_graph(
-            path=path,
-            format=format,
-            output_path=output,
-            open_browser=open_browser
+            path=path, format=format, output_path=output, open_browser=open_browser
         )
-        
+
         print("--- [blue]Docling-Graph Inspection Finished Successfully[/blue] ---")
 
         if not open_browser:
-            print(f"\n[blue]Tip:[/blue] Open the HTML file in your browser to view the visualization")
+            print(
+                "\n[blue]Tip:[/blue] Open the HTML file in your browser to view the visualization"
+            )
 
     except Exception as e:
         print(f"\n[bold red]Error:[/bold red] {e}")
         import traceback
+
         traceback.print_exc()
         raise typer.Exit(code=1)

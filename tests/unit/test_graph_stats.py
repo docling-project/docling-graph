@@ -2,8 +2,9 @@
 Unit tests for graph statistics calculations.
 """
 
-import pytest
 import networkx as nx
+import pytest
+
 from docling_graph.core.utils.graph_stats import calculate_graph_stats
 
 
@@ -65,11 +66,13 @@ class TestCalculateGraphStats:
     def test_stats_average_degree_calculation(self):
         """Test average degree calculation."""
         graph = nx.DiGraph()
-        graph.add_edges_from([
-            ("a", "b"),
-            ("b", "c"),
-            ("c", "a"),
-        ])
+        graph.add_edges_from(
+            [
+                ("a", "b"),
+                ("b", "c"),
+                ("c", "a"),
+            ]
+        )
         metadata = calculate_graph_stats(graph, source_model_count=1)
         # Each node has in-degree=1 and out-degree=1
         # Average degree = sum(in+out) / num_nodes = (2+2+2)/3 = 2.0
@@ -83,7 +86,7 @@ class TestCalculateGraphStats:
             graph.add_node(f"node_{i}", label="Person")
         # Add 4 edges
         for i in range(4):
-            graph.add_edge(f"node_{i}", f"node_{i+1}", label="knows")
+            graph.add_edge(f"node_{i}", f"node_{i + 1}", label="knows")
         # Pass correct count (5, not 1)
         metadata = calculate_graph_stats(graph, source_model_count=5)
         assert metadata.node_count == 7
@@ -129,6 +132,7 @@ class TestCalculateGraphStats:
     def test_stats_returns_graph_metadata(self):
         """Test that function returns GraphMetadata instance."""
         from docling_graph.core.base.models import GraphMetadata
+
         graph = nx.DiGraph()
         graph.add_node("node_1")
         metadata = calculate_graph_stats(graph, source_model_count=1)
@@ -143,18 +147,21 @@ class TestCalculateGraphStats:
             graph.add_node(f"node_{i}")
         # Add some edges
         for i in range(0, num_nodes - 1, 10):
-            graph.add_edge(f"node_{i}", f"node_{i+1}")
+            graph.add_edge(f"node_{i}", f"node_{i + 1}")
         metadata = calculate_graph_stats(graph, source_model_count=1)
         assert metadata.node_count == num_nodes
         assert metadata.edge_count > 0
         assert metadata.average_degree >= 0
 
-    @pytest.mark.parametrize("num_nodes,num_edges", [
-        (1, 0),
-        (5, 4),
-        (10, 20),
-        (100, 200),
-    ])
+    @pytest.mark.parametrize(
+        "num_nodes,num_edges",
+        [
+            (1, 0),
+            (5, 4),
+            (10, 20),
+            (100, 200),
+        ],
+    )
     def test_stats_various_graph_sizes(self, num_nodes, num_edges):
         """Test statistics with various graph sizes."""
         graph = nx.DiGraph()
@@ -163,6 +170,7 @@ class TestCalculateGraphStats:
             graph.add_node(f"node_{i}")
         # Add edges (random connections)
         import random
+
         random.seed(42)
         for _ in range(min(num_edges, num_nodes * (num_nodes - 1))):
             source = random.randint(0, num_nodes - 1)
@@ -172,6 +180,7 @@ class TestCalculateGraphStats:
         metadata = calculate_graph_stats(graph, source_model_count=1)
         assert metadata.node_count == num_nodes
         assert metadata.edge_count >= 0
+
 
 class TestGraphStatsEdgeCases:
     """Test edge cases for graph statistics."""
@@ -202,12 +211,11 @@ class TestGraphStatsEdgeCases:
         graph.add_edges_from([("a", "b"), ("b", "c")])
         metadata1 = calculate_graph_stats(graph, source_model_count=1)
         metadata2 = calculate_graph_stats(graph, source_model_count=1)
-        
+
         assert metadata1.node_count == metadata2.node_count
         assert metadata1.edge_count == metadata2.edge_count
         assert metadata1.source_models == metadata2.source_models
         assert metadata1.average_degree == metadata2.average_degree
-
 
     def test_stats_does_not_modify_graph(self):
         """Test that statistics calculation doesn't modify graph."""

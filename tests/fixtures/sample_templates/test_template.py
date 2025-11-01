@@ -1,8 +1,10 @@
 """
 Sample Pydantic template for testing.
 """
-from pydantic import BaseModel, Field
+
 from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class SampleInvoice(BaseModel):
@@ -14,9 +16,7 @@ class SampleInvoice(BaseModel):
     vendor_name: str = Field(description="Vendor name")
     items: List[str] = Field(default_factory=list, description="Line items")
 
-    model_config = {
-        "graph_id_fields": ["invoice_number"]
-    }
+    model_config = {"graph_id_fields": ["invoice_number"]}
 
 
 class SamplePerson(BaseModel):
@@ -27,9 +27,7 @@ class SamplePerson(BaseModel):
     age: Optional[int] = Field(default=None, description="Age")
     email: str = Field(description="Email address")
 
-    model_config = {
-        "graph_id_fields": ["email"]
-    }
+    model_config = {"graph_id_fields": ["email"]}
 
 
 class SampleCompany(BaseModel):
@@ -40,6 +38,4 @@ class SampleCompany(BaseModel):
     founded_year: int = Field(description="Year founded")
     employees: List[SamplePerson] = Field(default_factory=list)
 
-    model_config = {
-        "graph_id_fields": ["company_name"]
-    }
+    model_config = {"graph_id_fields": ["company_name"]}

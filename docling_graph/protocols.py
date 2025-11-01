@@ -6,13 +6,14 @@ for backends, extractors, and clients. Using Protocols instead of abstract
 base classes provides better type checking and duck typing support.
 """
 
-from typing import Protocol, Type, List, Dict, Any, Optional, runtime_checkable
-from pydantic import BaseModel
+from typing import Any, Dict, List, Optional, Protocol, Type, runtime_checkable
 
+from pydantic import BaseModel
 
 # =============================================================================
 # Backend Protocols
 # =============================================================================
+
 
 @runtime_checkable
 class ExtractionBackendProtocol(Protocol):
@@ -22,11 +23,7 @@ class ExtractionBackendProtocol(Protocol):
     documents directly without requiring markdown conversion.
     """
 
-    def extract_from_document(
-        self, 
-        source: str, 
-        template: Type[BaseModel]
-    ) -> List[BaseModel]:
+    def extract_from_document(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
         """Extract structured data from a document.
 
         Args:
@@ -54,10 +51,7 @@ class TextExtractionBackendProtocol(Protocol):
     client: Any  # LLM client instance
 
     def extract_from_markdown(
-        self,
-        markdown: str,
-        template: Type[BaseModel],
-        context: str = "document"
+        self, markdown: str, template: Type[BaseModel], context: str = "document"
     ) -> Optional[BaseModel]:
         """Extract structured data from markdown content.
 
@@ -80,6 +74,7 @@ class TextExtractionBackendProtocol(Protocol):
 # LLM Client Protocol
 # =============================================================================
 
+
 @runtime_checkable
 class LLMClientProtocol(Protocol):
     """Protocol for LLM clients (Ollama, Mistral, OpenAI, etc.).
@@ -95,11 +90,7 @@ class LLMClientProtocol(Protocol):
         """
         ...
 
-    def get_json_response(
-        self,
-        prompt: str,
-        schema_json: str
-    ) -> Dict[str, Any]:
+    def get_json_response(self, prompt: str, schema_json: str) -> Dict[str, Any]:
         """Execute LLM call and return parsed JSON.
 
         Args:
@@ -116,6 +107,7 @@ class LLMClientProtocol(Protocol):
 # Extractor Protocol
 # =============================================================================
 
+
 @runtime_checkable
 class ExtractorProtocol(Protocol):
     """Protocol for extraction strategies.
@@ -125,11 +117,7 @@ class ExtractorProtocol(Protocol):
 
     backend: Any  # Backend instance (VLM or LLM)
 
-    def extract(
-        self,
-        source: str,
-        template: Type[BaseModel]
-    ) -> List[BaseModel]:
+    def extract(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
         """Extract structured data from a source document.
 
         Args:
@@ -147,6 +135,7 @@ class ExtractorProtocol(Protocol):
 # =============================================================================
 # Document Processor Protocol
 # =============================================================================
+
 
 @runtime_checkable
 class DocumentProcessorProtocol(Protocol):
@@ -189,6 +178,7 @@ class DocumentProcessorProtocol(Protocol):
 # =============================================================================
 # Type Checking Utilities
 # =============================================================================
+
 
 def is_vlm_backend(backend: Any) -> bool:
     """Check if backend implements VLM extraction protocol.

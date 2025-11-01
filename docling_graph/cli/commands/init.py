@@ -3,12 +3,15 @@ Init command - creates configuration file interactively.
 """
 
 from pathlib import Path
-from rich import print
+
 import typer
 import yaml
-from .config_builder import build_config_interactive, print_next_steps
-from ..constants import CONFIG_FILE_NAME
+from rich import print
+
 from ..config_utils import save_config
+from ..constants import CONFIG_FILE_NAME
+from .config_builder import build_config_interactive, print_next_steps
+
 
 def init_command():
     """Create a customized configuration file through interactive prompts."""
@@ -33,7 +36,7 @@ def init_command():
         template_path = Path(__file__).parent.parent.parent / "config_template.yaml"
 
         if template_path.exists():
-            with open(template_path, 'r') as f:
+            with open(template_path) as f:
                 config_dict = yaml.safe_load(f)
             print("[blue]Loaded default configuration from template.[/blue]")
         else:
@@ -43,14 +46,16 @@ def init_command():
                     "processing_mode": "many-to-one",
                     "backend_type": "llm",
                     "inference": "local",
-                    "export_format": "csv"
+                    "export_format": "csv",
                 },
                 "docling": {"pipeline": "default"},
                 "models": {
-                    "vlm": {"local": {"default_model": "numind/NuExtract-2.0-8B", "provider": "docling"}},
-                    "llm": {"local": {"default_model": "llama3:8b-instruct", "provider": "ollama"}}
+                    "vlm": {
+                        "local": {"default_model": "numind/NuExtract-2.0-8B", "provider": "docling"}
+                    },
+                    "llm": {"local": {"default_model": "llama3:8b-instruct", "provider": "ollama"}},
                 },
-                "output": {"directory": "./output"}
+                "output": {"directory": "./output"},
             }
             print("[blue]Using minimal default configuration.[/blue]")
 

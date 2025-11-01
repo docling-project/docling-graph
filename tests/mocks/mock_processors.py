@@ -2,8 +2,8 @@
 Mock document processors for testing without Docling dependency.
 """
 
-from typing import List, Optional
 from pathlib import Path
+from typing import List, Optional
 
 
 class MockDocumentProcessor:
@@ -45,8 +45,8 @@ class MockDocumentProcessor:
         pages = []
         for i in range(min(num_pages, 10)):  # Max 10 pages
             pages.append(
-                f"# Page {i+1}\n\n"
-                f"This is mock content for page {i+1} of {source_path.name}\n\n"
+                f"# Page {i + 1}\n\n"
+                f"This is mock content for page {i + 1} of {source_path.name}\n\n"
                 f"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             )
 
@@ -66,11 +66,7 @@ class MockDocumentProcessor:
 class ConfigurableMockProcessor:
     """Configurable mock processor for advanced testing."""
 
-    def __init__(
-        self,
-        page_contents: Optional[List[str]] = None,
-        should_fail: bool = False
-    ):
+    def __init__(self, page_contents: Optional[List[str]] = None, should_fail: bool = False):
         """Initialize configurable mock processor.
 
         Args:
@@ -103,9 +99,7 @@ class ConfigurableMockProcessor:
             return self.page_contents
 
         # Default behavior
-        return [
-            "# Mock Page\n\nMock content"
-        ]
+        return ["# Mock Page\n\nMock content"]
 
     def cleanup(self):
         """Mock cleanup."""
@@ -142,13 +136,12 @@ class SlowMockProcessor:
 
         for i in range(num_pages):
             time.sleep(self.delay_per_page)
-            pages.append(f"Page {i+1} content")
+            pages.append(f"Page {i + 1} content")
 
         return pages
 
     def cleanup(self):
         """Mock cleanup."""
-        pass
 
 
 class EmptyMockProcessor:
@@ -172,7 +165,6 @@ class EmptyMockProcessor:
 
     def cleanup(self):
         """Mock cleanup."""
-        pass
 
 
 class MultiPageMockProcessor:
@@ -201,25 +193,19 @@ class MultiPageMockProcessor:
         pages = []
         for i in range(self.num_pages):
             pages.append(
-                f"# Page {i+1}\n\n"
-                f"Content for page {i+1}\n\n"
-                f"- Item 1\n"
-                f"- Item 2\n"
-                f"- Item 3"
+                f"# Page {i + 1}\n\nContent for page {i + 1}\n\n- Item 1\n- Item 2\n- Item 3"
             )
 
         return pages
 
     def cleanup(self):
         """Mock cleanup."""
-        pass
 
 
 # Convenience functions
 
-def create_mock_processor(
-    docling_config: str = "ocr"
-) -> MockDocumentProcessor:
+
+def create_mock_processor(docling_config: str = "ocr") -> MockDocumentProcessor:
     """Create a standard mock document processor.
 
     Args:

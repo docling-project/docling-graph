@@ -1,8 +1,10 @@
 """Graph statistics and analysis utilities."""
 
-from ..base.models import GraphMetadata
 from typing import Dict
+
 import networkx as nx
+
+from ..base.models import GraphMetadata
 
 
 def calculate_graph_stats(graph: nx.DiGraph, source_model_count: int) -> GraphMetadata:
@@ -22,14 +24,14 @@ def calculate_graph_stats(graph: nx.DiGraph, source_model_count: int) -> GraphMe
     num_nodes = graph.number_of_nodes()
     num_edges = graph.number_of_edges()
     average_degree = (2 * num_edges) / num_nodes if num_nodes > 0 else 0.0
-    
+
     return GraphMetadata(
         node_count=num_nodes,
         edge_count=num_edges,
         node_types=node_types,
         edge_types=edge_types,
         source_models=source_model_count,
-        average_degree=average_degree
+        average_degree=average_degree,
     )
 
 
@@ -45,7 +47,7 @@ def get_node_type_distribution(graph: nx.DiGraph) -> Dict[str, int]:
     type_counts: Dict[str, int] = {}
 
     for _, data in graph.nodes(data=True):
-        node_type = data.get('label', 'Unknown')
+        node_type = data.get("label", "Unknown")
         type_counts[node_type] = type_counts.get(node_type, 0) + 1
 
     return type_counts
@@ -63,7 +65,7 @@ def get_edge_type_distribution(graph: nx.DiGraph) -> Dict[str, int]:
     type_counts: Dict[str, int] = {}
 
     for _, _, data in graph.edges(data=True):
-        edge_type = data.get('label', 'Unknown')
+        edge_type = data.get("label", "Unknown")
         type_counts[edge_type] = type_counts.get(edge_type, 0) + 1
 
     return type_counts

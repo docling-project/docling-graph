@@ -1,8 +1,9 @@
 """Data models for graph components."""
 
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
 from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field
 
 
 class Edge(BaseModel):
@@ -12,12 +13,12 @@ class Edge(BaseModel):
     target: str = Field(..., description="Target node ID")
     label: str = Field(..., description="Edge label/relationship type")
     properties: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Additional edge properties"
+        default_factory=dict, description="Additional edge properties"
     )
 
     class Config:
         """Pydantic model configuration."""
+
         frozen = True
 
 
@@ -27,27 +28,21 @@ class GraphMetadata(BaseModel):
     node_count: int = Field(..., description="Total number of nodes")
     edge_count: int = Field(..., description="Total number of edges")
     node_types: Dict[str, int] = Field(
-        default_factory=dict,
-        description="Count of nodes by type/label"
+        default_factory=dict, description="Count of nodes by type/label"
     )
     edge_types: Dict[str, int] = Field(
-        default_factory=dict,
-        description="Count of edges by type/label"
+        default_factory=dict, description="Count of edges by type/label"
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        description="Graph creation timestamp"
+        default_factory=lambda: datetime.now(timezone.utc), description="Graph creation timestamp"
     )
-    source_models: int = Field(
-        ...,
-        description="Number of source Pydantic models"
-    )
+    source_models: int = Field(..., description="Number of source Pydantic models")
     # Average degree of nodes in the graph
     average_degree: Optional[float] = Field(
-        default=None,
-        description="Average degree of nodes in the graph"
+        default=None, description="Average degree of nodes in the graph"
     )
 
     class Config:
         """Pydantic model configuration."""
+
         frozen = True

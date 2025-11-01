@@ -1,7 +1,7 @@
 """String formatting utilities for graph display."""
 
-from typing import Any
 import re
+from typing import Any
 
 
 def format_property_value(value: Any, max_length: int = 80) -> str:
@@ -24,7 +24,7 @@ def format_property_value(value: Any, max_length: int = 80) -> str:
     if len(str_val) <= max_length:
         return str_val
 
-    return str_val[:max_length-3] + "..."
+    return str_val[: max_length - 3] + "..."
 
 
 def format_property_key(key: str) -> str:
@@ -38,11 +38,11 @@ def format_property_key(key: str) -> str:
         Title-cased string
     """
     # Handle snake_case
-    if '_' in key:
-        return ' '.join(word.capitalize() for word in key.split('_'))
+    if "_" in key:
+        return " ".join(word.capitalize() for word in key.split("_"))
 
     # Handle camelCase
-    return re.sub(r'([A-Z])', r' \1', key).strip().title()
+    return re.sub(r"([A-Z])", r" \1", key).strip().title()
 
 
 def truncate_string(text: str, max_length: int, suffix: str = "...") -> str:
@@ -60,9 +60,11 @@ def truncate_string(text: str, max_length: int, suffix: str = "...") -> str:
         ValueError: If max_length is less than suffix length.
     """
     if len(suffix) >= max_length:
-        raise ValueError(f"max_length ({max_length}) must be greater than suffix length ({len(suffix)})")
+        raise ValueError(
+            f"max_length ({max_length}) must be greater than suffix length ({len(suffix)})"
+        )
 
     if len(text) <= max_length:
         return text
 
-    return text[:max_length - len(suffix)] + suffix
+    return text[: max_length - len(suffix)] + suffix

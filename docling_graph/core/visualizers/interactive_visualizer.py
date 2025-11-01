@@ -2,18 +2,17 @@
 Cytoscape visualizer for interactive graph visualization in the browser.
 """
 
-from rich import print
-import webbrowser
 import json
 import os
-
-from typing import Optional, Literal, Tuple
+import webbrowser
 from collections import Counter
 from pathlib import Path
+from typing import Literal, Optional, Tuple
 
 import networkx as nx
-import pandas as pd
 import numpy as np
+import pandas as pd
+from rich import print
 
 
 class InteractiveVisualizer:
@@ -21,7 +20,6 @@ class InteractiveVisualizer:
 
     def __init__(self) -> None:
         """Initialize Cytoscape visualizer."""
-        pass
 
     def load_csv(self, path: Path) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -55,7 +53,7 @@ class InteractiveVisualizer:
             Tuple of (nodes_df, edges_df)
         """
         print(f"Loading graph from {path}...")
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
         nodes = data.get("nodes", [])
@@ -65,28 +63,28 @@ class InteractiveVisualizer:
         edges_df = pd.DataFrame(edges)
 
         return nodes_df, edges_df
-    
+
     def _extract_labels_for_count(self, row: pd.Series) -> list[str]:
         # 1) plural 'labels' column (array or delimited string)
-        if 'labels' in row and self._is_valid_value(row['labels']):
-            v = row['labels']
+        if "labels" in row and self._is_valid_value(row["labels"]):
+            v = row["labels"]
             if isinstance(v, (list, tuple, set)):
                 return [str(x) for x in v if str(x)]
             if isinstance(v, str):
                 # split common delimiters
-                if '|' in v:
-                    return [p.strip() for p in v.split('|') if p.strip()]
-                if ',' in v:
-                    return [p.strip() for p in v.split(',') if p.strip()]
+                if "|" in v:
+                    return [p.strip() for p in v.split("|") if p.strip()]
+                if "," in v:
+                    return [p.strip() for p in v.split(",") if p.strip()]
                 # Neo4j-like ":Research:Entity"
-                if ':' in v and not v.strip().startswith('http'):
-                    return [p for p in v.split(':') if p]
+                if ":" in v and not v.strip().startswith("http"):
+                    return [p for p in v.split(":") if p]
                 return [v]
         # 2) single label-like columns
-        for col in ['label', 'node_label', 'node_type', 'type', 'category', 'class', 'kind']:
+        for col in ["label", "node_label", "node_type", "type", "category", "class", "kind"]:
             if col in row and self._is_valid_value(row[col]):
                 return [str(row[col])]
-        return ['Unknown']
+        return ["Unknown"]
 
     def _compute_node_type_counts(self, nodes_df: pd.DataFrame) -> dict:
         counts = Counter()
@@ -113,7 +111,7 @@ class InteractiveVisualizer:
             return False
 
         # Handle empty strings
-        if isinstance(value, str) and value.strip() == '':
+        if isinstance(value, str) and value.strip() == "":
             return False
 
         return True
@@ -128,7 +126,7 @@ class InteractiveVisualizer:
             return None
 
         # Handle numpy types
-        if hasattr(value, 'item'):
+        if hasattr(value, "item"):
             return value.item()
 
         # Handle lists and arrays
@@ -161,14 +159,14 @@ class InteractiveVisualizer:
                     serialized = self._serialize_value(value)
                     if serialized is not None:
                         node_data[key] = serialized
-            if 'id' not in node_data:
-                node_data['id'] = str(row.name)
+            if "id" not in node_data:
+                node_data["id"] = str(row.name)
             else:
-                node_data['id'] = str(node_data['id'])
+                node_data["id"] = str(node_data["id"])
             # Preserve existing display label fallback for UI text
-            if 'label' not in node_data:
-                node_data['label'] = node_data.get('name', node_data.get('type', node_data['id']))
-            nodes_list.append({'data': node_data})
+            if "label" not in node_data:
+                node_data["label"] = node_data.get("name", node_data.get("type", node_data["id"]))
+            nodes_list.append({"data": node_data})
 
         # Prepare edges
         edges_list = []
@@ -179,21 +177,21 @@ class InteractiveVisualizer:
                     serialized = self._serialize_value(value)
                     if serialized is not None:
                         edge_data[key] = serialized
-            if 'source' not in edge_data or 'target' not in edge_data:
+            if "source" not in edge_data or "target" not in edge_data:
                 raise ValueError("Edges dataframe must have 'source' and 'target' columns")
-            edge_data['source'] = str(edge_data['source'])
-            edge_data['target'] = str(edge_data['target'])
-            if 'id' not in edge_data:
-                edge_data['id'] = f"{edge_data['source']}-{edge_data['target']}-{idx}"
-            edges_list.append({'data': edge_data})
+            edge_data["source"] = str(edge_data["source"])
+            edge_data["target"] = str(edge_data["target"])
+            if "id" not in edge_data:
+                edge_data["id"] = f"{edge_data['source']}-{edge_data['target']}-{idx}"
+            edges_list.append({"data": edge_data})
 
         meta = {
-            'node_types': self._compute_node_type_counts(nodes_df),
-            'node_count': int(len(nodes_list)),
-            'edge_count': int(len(edges_list)),
+            "node_types": self._compute_node_type_counts(nodes_df),
+            "node_count": len(nodes_list),
+            "edge_count": len(edges_list),
         }
 
-        return {'nodes': nodes_list, 'edges': edges_list, 'meta': meta}
+        return {"nodes": nodes_list, "edges": edges_list, "meta": meta}
 
     def display_cytoscape_graph(
         self,
@@ -214,16 +212,14 @@ class InteractiveVisualizer:
         return self._prepare_and_visualize(nodes_df, edges_df, output_path, open_browser)
 
     def save_cytoscape_graph(
-        self,
-        graph: nx.DiGraph,
-        output_path: Path,
-        open_browser: bool = False,
-        **kwargs
+        self, graph: nx.DiGraph, output_path: Path, open_browser: bool = False, **kwargs
     ) -> Path:
         """Visualize a NetworkX graph using Cytoscape."""
         # Convert NetworkX graph to DataFrames
         nodes_data = [{"id": str(n), **attrs} for n, attrs in graph.nodes(data=True)]
-        edges_data = [{"source": str(s), "target": str(t), **attrs} for s, t, attrs in graph.edges(data=True)]
+        edges_data = [
+            {"source": str(s), "target": str(t), **attrs} for s, t, attrs in graph.edges(data=True)
+        ]
 
         nodes_df = pd.DataFrame(nodes_data)
         edges_df = pd.DataFrame(edges_data)
@@ -235,7 +231,7 @@ class InteractiveVisualizer:
         nodes_df: pd.DataFrame,
         edges_df: pd.DataFrame,
         output_path: Optional[Path],
-        open_browser: bool
+        open_browser: bool,
     ) -> Path:
         """Common logic to prepare data and create Cytoscape HTML."""
         # Prepare data
@@ -248,12 +244,7 @@ class InteractiveVisualizer:
 
         return self._export_and_open(cytoscape_elements, output_path, open_browser)
 
-    def _export_and_open(
-        self,
-        elements: dict,
-        output_path: Path,
-        open_browser: bool
-    ) -> Path:
+    def _export_and_open(self, elements: dict, output_path: Path, open_browser: bool) -> Path:
         """
         Write the Cytoscape HTML and optionally open it in the default browser.
         """
@@ -278,11 +269,13 @@ class InteractiveVisualizer:
         template_path = Path(__file__).parent / "assets/interactive_template.html"
 
         if template_path.exists():
-            with open(template_path, "r", encoding="utf-8") as f:
+            with open(template_path, encoding="utf-8") as f:
                 html_template = f.read()
         else:
             # Fallback: use inline template (minimal version)
-            print(f"[yellow][InteractiveVisualizer][/yellow] HTML template missing - Falling back to minimal version instead")
+            print(
+                "[yellow][InteractiveVisualizer][/yellow] HTML template missing - Falling back to minimal version instead"
+            )
             html_template = self._get_default_template()
 
         # Inject the graph data with proper JSON serialization
@@ -290,8 +283,7 @@ class InteractiveVisualizer:
 
         # Replace the placeholder with the actual JavaScript variable declaration
         html_content = html_template.replace(
-            "/* ELEMENTS_DATA_PLACEHOLDER */",
-            f"const graphElements = {elements_json};"
+            "/* ELEMENTS_DATA_PLACEHOLDER */", f"const graphElements = {elements_json};"
         )
 
         # Write to file

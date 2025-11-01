@@ -31,10 +31,7 @@ class MockAPIClient:
         self.call_count += 1
         self.last_request = {"endpoint": endpoint, "data": data}
 
-        return {
-            "status": "success",
-            "data": {"result": "mock_result"}
-        }
+        return {"status": "success", "data": {"result": "mock_result"}}
 
 
 class MockOpenAIClient:
@@ -49,11 +46,7 @@ class MockOpenAIClient:
         self.api_key = api_key
         self.call_count = 0
 
-    def chat_completion(
-        self,
-        model: str,
-        messages: List[Dict[str, str]]
-    ) -> Dict[str, Any]:
+    def chat_completion(self, model: str, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         """Mock chat completion.
 
         Args:
@@ -65,14 +58,7 @@ class MockOpenAIClient:
         """
         self.call_count += 1
 
-        return {
-            "choices": [{
-                "message": {
-                    "role": "assistant",
-                    "content": '{"extracted": "data"}'
-                }
-            }]
-        }
+        return {"choices": [{"message": {"role": "assistant", "content": '{"extracted": "data"}'}}]}
 
 
 class MockGeminiClient:

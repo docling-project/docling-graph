@@ -3,16 +3,17 @@ Google Gemini API client implementation.
 
 Based on https://ai.google.dev/gemini-api/docs/structured-output
 """
+
 import json
 import os
+from typing import Any, Dict
 
-from typing import Dict, Any
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from rich import print
 
 from .llm_base import BaseLlmClient
-from dotenv import load_dotenv
-from rich import print
 
 # Load environment variables
 load_dotenv()
@@ -39,7 +40,7 @@ class GeminiClient(BaseLlmClient):
             "gemini-1.5-flash": 1000000,
             "gemini-1.5-pro": 1000000,
             "gemini-2.0-flash": 1000000,
-            "gemini-2.5-pro": 1000000
+            "gemini-2.5-pro": 1000000,
         }
 
         self._context_limit = model_context_limits.get(model, 1000000)
@@ -74,9 +75,7 @@ class GeminiClient(BaseLlmClient):
 
             # Generate content
             response = self.client.models.generate_content(
-                model=self.model,
-                contents=contents,
-                config=config
+                model=self.model, contents=contents, config=config
             )
 
             # Get response text
@@ -87,7 +86,9 @@ class GeminiClient(BaseLlmClient):
                 parsed_json = json.loads(response_text)
 
                 # Validate it's not empty
-                if not parsed_json or (isinstance(parsed_json, dict) and not any(parsed_json.values())):
+                if not parsed_json or (
+                    isinstance(parsed_json, dict) and not any(parsed_json.values())
+                ):
                     print("[yellow]Warning:[/yellow] Gemini returned empty or all-null JSON")
 
                 return parsed_json
@@ -100,6 +101,7 @@ class GeminiClient(BaseLlmClient):
         except Exception as e:
             print(f"[red]Error:[/red] Gemini API call failed: {e}")
             import traceback
+
             traceback.print_exc()
             return {}
 

@@ -3,15 +3,16 @@ OpenAI API client implementation.
 
 Based on https://platform.openai.com/docs/guides/structured-outputs
 """
+
 import json
 import os
+from typing import Any, Dict
 
-from typing import Dict, Any
+from dotenv import load_dotenv
 from openai import OpenAI
+from rich import print
 
 from .llm_base import BaseLlmClient
-from dotenv import load_dotenv
-from rich import print
 
 # Load environment variables
 load_dotenv()
@@ -63,13 +64,16 @@ class OpenAIClient(BaseLlmClient):
         if isinstance(prompt, dict):
             messages = [
                 {"role": "system", "content": prompt["system"]},
-                {"role": "user", "content": prompt["user"]}
+                {"role": "user", "content": prompt["user"]},
             ]
         else:
             # Legacy: add generic system message and use prompt as user message
             messages = [
-                {"role": "system", "content": "You are a helpful assistant that responds in JSON format."},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that responds in JSON format.",
+                },
+                {"role": "user", "content": prompt},
             ]
 
         try:
@@ -89,7 +93,9 @@ class OpenAIClient(BaseLlmClient):
                 parsed_json = json.loads(content)
 
                 # Validate it's not empty
-                if not parsed_json or (isinstance(parsed_json, dict) and not any(parsed_json.values())):
+                if not parsed_json or (
+                    isinstance(parsed_json, dict) and not any(parsed_json.values())
+                ):
                     print("[yellow]Warning:[/yellow] OpenAI returned empty or all-null JSON")
 
                 return parsed_json
@@ -102,6 +108,7 @@ class OpenAIClient(BaseLlmClient):
         except Exception as e:
             print(f"[red]Error:[/red] OpenAI API call failed: {e}")
             import traceback
+
             traceback.print_exc()
             return {}
 

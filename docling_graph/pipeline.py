@@ -4,31 +4,28 @@ Main extraction and graph conversion pipeline.
 This module orchestrates the complete workflow from document extraction
 to graph generation, export, and visualization using the graph module.
 """
-from typing import Dict, Any, Optional
-from pathlib import Path
-from rich import print
-import importlib
 
-# Import LLM clients
-from .llm_clients import (
-    BaseLlmClient,
-    MistralClient,
-    VllmClient,
-    OllamaClient
-)
+import importlib
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+from rich import print
 
 # Import core components
 from .core import (
-    ExtractorFactory,
-    GraphConverter,
-    GraphConfig,
-    DoclingExporter,
-    CypherExporter,
     CSVExporter,
-    JSONExporter,
+    CypherExporter,
+    DoclingExporter,
+    ExtractorFactory,
+    GraphConfig,
+    GraphConverter,
     InteractiveVisualizer,
-    ReportGenerator
+    JSONExporter,
+    ReportGenerator,
 )
+
+# Import LLM clients
+from .llm_clients import BaseLlmClient, MistralClient, OllamaClient, VllmClient
 
 
 def _load_template_class(template_str: str):
@@ -46,7 +43,7 @@ def _load_template_class(template_str: str):
     print(f"Loading template: [yellow]{template_str}[/yellow]")
 
     try:
-        module_path, class_name = template_str.rsplit('.', 1)
+        module_path, class_name = template_str.rsplit(".", 1)
         module = importlib.import_module(module_path)
         TemplateClass = getattr(module, class_name)
         print(f"[green]Successfully loaded Pydantic template: {class_name}[/green]")
@@ -61,7 +58,7 @@ def _get_model_config(
     backend_type: str,
     inference: str,
     model_override: Optional[str] = None,
-    provider_override: Optional[str] = None
+    provider_override: Optional[str] = None,
 ) -> Dict[str, str]:
     """Retrieves the appropriate model configuration based on settings.
 
@@ -78,31 +75,28 @@ def _get_model_config(
     Raises:
         ValueError: If configuration is invalid.
     """
-    model_config = config_data.get('models', {}).get(backend_type, {}).get(inference, {})
+    model_config = config_data.get("models", {}).get(backend_type, {}).get(inference, {})
 
     if not model_config:
         raise ValueError(
-            f"No configuration found for backend_type='{backend_type}' "
-            f"with inference='{inference}'"
+            f"No configuration found for backend_type='{backend_type}' with inference='{inference}'"
         )
 
     provider = provider_override or model_config.get(
-        'provider',
-        'ollama' if inference == 'local' else 'mistral'
+        "provider", "ollama" if inference == "local" else "mistral"
     )
 
     if model_override:
         model = model_override
-    elif provider_override and inference == 'remote':
-        providers = model_config.get('providers', {})
+    elif provider_override and inference == "remote":
+        providers = model_config.get("providers", {})
         model = providers.get(provider_override, {}).get(
-            'default_model',
-            model_config.get('default_model')
+            "default_model", model_config.get("default_model")
         )
     else:
-        model = model_config.get('default_model')
+        model = model_config.get("default_model")
 
-    return {'model': model, 'provider': provider}
+    return {"model": model, "provider": provider}
 
 
 def _initialize_llm_client(provider: str, model: str) -> BaseLlmClient:
@@ -158,7 +152,6 @@ def run_pipeline(config: Dict[str, Any]) -> None:
     extractor = None
     llm_client = None
 
-    
     # Set outputs directory
     output_dir = Path(config.get("output_dir", "outputs"))
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -174,14 +167,16 @@ def run_pipeline(config: Dict[str, Any]) -> None:
         # 2. Get model configuration
         try:
             model_config = _get_model_config(
-                config.get('config', {}),
+                config.get("config", {}),
                 backend_type,
                 inference,
-                config.get('model_override'),
-                config.get('provider_override')
+                config.get("model_override"),
+                config.get("provider_override"),
             )
-            print(f"Using model: [cyan]{model_config['model']}[/cyan] "
-                  f"(provider: {model_config['provider']})")
+            print(
+                f"Using model: [cyan]{model_config['model']}[/cyan] "
+                f"(provider: {model_config['provider']})"
+            )
         except Exception as e:
             print(f"[red]Configuration error:[/red] {e}")
             return
@@ -192,19 +187,16 @@ def run_pipeline(config: Dict[str, Any]) -> None:
                 extractor = ExtractorFactory.create_extractor(
                     processing_mode=processing_mode,
                     backend_type=backend_type,
-                    model_name=model_config['model'],
-                    docling_config=docling_config
+                    model_name=model_config["model"],
+                    docling_config=docling_config,
                 )
             elif backend_type == "llm":
-                llm_client = _initialize_llm_client(
-                    model_config['provider'],
-                    model_config['model']
-                )
+                llm_client = _initialize_llm_client(model_config["provider"], model_config["model"])
                 extractor = ExtractorFactory.create_extractor(
                     processing_mode=processing_mode,
                     backend_type=backend_type,
                     llm_client=llm_client,
-                    docling_config=docling_config
+                    docling_config=docling_config,
                 )
             else:
                 print(f"[red]Error:[/red] Invalid backend_type: {backend_type}")
@@ -226,19 +218,21 @@ def run_pipeline(config: Dict[str, Any]) -> None:
         if config.get("export_docling", True):
             print("Exporting Docling document and markdown...")
             docling_exporter = DoclingExporter(output_dir=output_dir)
-            
+
             # Get the document from extractor
-            if hasattr(extractor, 'doc_processor') and hasattr(extractor.doc_processor, 'converter'):
+            if hasattr(extractor, "doc_processor") and hasattr(
+                extractor.doc_processor, "converter"
+            ):
                 # Re-convert to get document object if needed
                 doc_result = extractor.doc_processor.converter.convert(config["source"])
                 docling_document = doc_result.document
-                
+
                 docling_exporter.export_document(
                     docling_document,
                     base_name=base_name,
                     include_json=config.get("export_docling_json", True),
                     include_markdown=config.get("export_markdown", True),
-                    per_page=config.get("export_per_page_markdown", False)
+                    per_page=config.get("export_per_page_markdown", False),
                 )
 
         # 5. Convert to Graph
@@ -253,8 +247,10 @@ def run_pipeline(config: Dict[str, Any]) -> None:
         # Convert models to graph (NOW RETURNS TUPLE!)
         knowledge_graph, graph_metadata = converter.pydantic_list_to_graph(extracted_data)
 
-        print(f"Graph created with [blue]{graph_metadata.node_count} nodes[/blue] "
-              f"and [blue]{graph_metadata.edge_count} edges[/blue].")
+        print(
+            f"Graph created with [blue]{graph_metadata.node_count} nodes[/blue] "
+            f"and [blue]{graph_metadata.edge_count} edges[/blue]."
+        )
 
         # 6. Export graph
         export_format = config.get("export_format", "csv")
@@ -278,26 +274,21 @@ def run_pipeline(config: Dict[str, Any]) -> None:
         print(f"[green]→[/green] Saved JSON to [green]{json_path}[/green]")
 
         # 7. Generate reports
-        print(f"Generating outputs...")
+        print("Generating outputs...")
 
         # Markdown report
         report_generator = ReportGenerator()
         report_path = output_dir / f"{base_name}_report"
         report_generator.visualize(
-            knowledge_graph,
-            report_path,
-            source_model_count=len(extracted_data)
+            knowledge_graph, report_path, source_model_count=len(extracted_data)
         )
-        print(f"[green]→[/green] Generated markdown report")
+        print("[green]→[/green] Generated markdown report")
 
         # Interactive HTML Graph
         html_path = output_dir / f"{base_name}_graph"
-        visualizer = InteractiveVisualizer()        
-        visualizer.save_cytoscape_graph(
-            knowledge_graph,
-            html_path
-        )
-        print(f"[green]→[/green] Generated interactive html graph")
+        visualizer = InteractiveVisualizer()
+        visualizer.save_cytoscape_graph(knowledge_graph, html_path)
+        print("[green]→[/green] Generated interactive html graph")
 
         print("--- [blue]Pipeline Finished Successfully[/blue] ---")
 
@@ -308,11 +299,11 @@ def run_pipeline(config: Dict[str, Any]) -> None:
         # Clean up extractor and its components
         if extractor is not None:
             # Clean up backend (VLM or LLM)
-            if hasattr(extractor, 'backend') and hasattr(extractor.backend, 'cleanup'):
+            if hasattr(extractor, "backend") and hasattr(extractor.backend, "cleanup"):
                 extractor.backend.cleanup()
 
             # Clean up document processor
-            if hasattr(extractor, 'doc_processor') and hasattr(extractor.doc_processor, 'cleanup'):
+            if hasattr(extractor, "doc_processor") and hasattr(extractor.doc_processor, "cleanup"):
                 extractor.doc_processor.cleanup()
 
         # Clean up LLM client if used
@@ -321,11 +312,13 @@ def run_pipeline(config: Dict[str, Any]) -> None:
 
         # Final garbage collection
         import gc
+
         gc.collect()
 
         # Clear CUDA cache if available
         try:
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         except ImportError:

@@ -2,19 +2,20 @@
 Configuration builder for interactive config creation.
 """
 
-from typing import Dict, Any, Tuple
-from rich import print
+from typing import Any, Dict, Tuple
+
 import click
 import typer
+from rich import print
 
 from ..constants import (
-    DEFAULT_MODELS,
     API_PROVIDERS,
-    PROCESSING_MODES,
     BACKEND_TYPES,
-    INFERENCE_LOCATIONS,
+    DEFAULT_MODELS,
+    DOCLING_PIPELINES,
     EXPORT_FORMATS,
-    DOCLING_PIPELINES
+    INFERENCE_LOCATIONS,
+    PROCESSING_MODES,
 )
 
 
@@ -34,12 +35,7 @@ def build_config_interactive() -> Dict[str, Any]:
     output = _prompt_output()
 
     # Build complete config
-    config_dict = {
-        "defaults": defaults,
-        "docling": docling,
-        "models": models,
-        "output": output
-    }
+    config_dict = {"defaults": defaults, "docling": docling, "models": models, "output": output}
 
     return config_dict
 
@@ -56,7 +52,7 @@ def _prompt_defaults() -> Dict[str, str]:
     processing_mode = typer.prompt(
         "Select processing mode",
         type=click.Choice(PROCESSING_MODES, case_sensitive=False),
-        default="one-to-one"
+        default="one-to-one",
     )
 
     # Backend Type
@@ -65,9 +61,7 @@ def _prompt_defaults() -> Dict[str, str]:
     print(" • [cyan]llm[/cyan]: Language Model (text-based)")
     print(" • [cyan]vlm[/cyan]: Vision-Language Model (image-based)")
     backend_type = typer.prompt(
-        "Select backend type",
-        type=click.Choice(BACKEND_TYPES, case_sensitive=False),
-        default="llm"
+        "Select backend type", type=click.Choice(BACKEND_TYPES, case_sensitive=False), default="llm"
     )
 
     # Inference Location
@@ -81,7 +75,7 @@ def _prompt_defaults() -> Dict[str, str]:
         inference = typer.prompt(
             "Select inference location",
             type=click.Choice(INFERENCE_LOCATIONS, case_sensitive=False),
-            default="remote"
+            default="remote",
         )
 
     # Export Format
@@ -91,65 +85,56 @@ def _prompt_defaults() -> Dict[str, str]:
     export_format = typer.prompt(
         "Select export format",
         type=click.Choice(EXPORT_FORMATS, case_sensitive=False),
-        default="csv"
+        default="csv",
     )
 
     return {
         "processing_mode": processing_mode,
         "backend_type": backend_type,
         "inference": inference,
-        "export_format": export_format
+        "export_format": export_format,
     }
 
 
 def _prompt_docling() -> Dict[str, Any]:
     """Prompt for Docling configuration."""
     print("\n[bold cyan]── Docling Pipeline ──[/bold cyan]")
-    
+
     # Pipeline selection
     print("\n[bold]5. Document Processing Pipeline[/bold]")
     print("  • [cyan]ocr[/cyan]: OCR pipeline (standard documents)")
     print("  • [cyan]vision[/cyan]: VLM pipeline (complex layouts)")
-    
+
     pipeline = typer.prompt(
         "Select docling pipeline",
         type=click.Choice(DOCLING_PIPELINES, case_sensitive=False),
-        default="ocr"
+        default="ocr",
     )
-    
+
     # Export options
     print("\n[bold]6. Docling Export Options[/bold]")
     print("  [dim]Choose what to export from document processing:[/dim]")
-    
-    export_docling_json = typer.confirm(
-        "  Export Docling document structure (JSON)?",
-        default=True
-    )
-    
-    export_markdown = typer.confirm(
-        "  Export full document markdown?",
-        default=True
-    )
-    
-    export_per_page = typer.confirm(
-        "  Export per-page markdown files?",
-        default=False
-    )
-    
+
+    export_docling_json = typer.confirm("  Export Docling document structure (JSON)?", default=True)
+
+    export_markdown = typer.confirm("  Export full document markdown?", default=True)
+
+    export_per_page = typer.confirm("  Export per-page markdown files?", default=False)
+
     return {
         "pipeline": pipeline,
         "export": {
             "docling_json": export_docling_json,
             "markdown": export_markdown,
-            "per_page_markdown": export_per_page
-        }
+            "per_page_markdown": export_per_page,
+        },
     }
 
 
 def _prompt_models(backend_type: str, inference: str) -> Dict[str, Any]:
     """Prompt for model configuration."""
     print("\n[bold cyan]── Model Configuration ──[/bold cyan]")
-    
+
     if backend_type == "vlm":
         vlm, llm_local, llm_remote, remote_provider, _ = _prompt_vlm_models()
         local_provider = "docling"  # VLM uses docling
@@ -157,11 +142,9 @@ def _prompt_models(backend_type: str, inference: str) -> Dict[str, Any]:
         vlm, llm_local, llm_remote, remote_provider, local_provider = _prompt_llm_local_models()
     else:
         vlm, llm_local, llm_remote, remote_provider, local_provider = _prompt_llm_remote_models()
-    
+
     return {
-        "vlm": {
-            "local": {"default_model": vlm, "provider": "docling"}
-        },
+        "vlm": {"local": {"default_model": vlm, "provider": "docling"}},
         "llm": {
             "local": {"default_model": llm_local, "provider": local_provider},
             "remote": {"default_model": llm_remote, "provider": remote_provider},
@@ -170,9 +153,9 @@ def _prompt_models(backend_type: str, inference: str) -> Dict[str, Any]:
                 "vllm": {"default_model": "llama-3.1-8b"},
                 "mistral": {"default_model": DEFAULT_MODELS["llm_remote"]["mistral"]},
                 "openai": {"default_model": DEFAULT_MODELS["llm_remote"]["openai"]},
-                "gemini": {"default_model": DEFAULT_MODELS["llm_remote"]["gemini"]}
-            }
-        }
+                "gemini": {"default_model": DEFAULT_MODELS["llm_remote"]["gemini"]},
+            },
+        },
     }
 
 
@@ -183,8 +166,13 @@ def _prompt_vlm_models() -> Tuple[str, str, str, str, str]:
     vlm = typer.prompt("Select VLM model", default=DEFAULT_MODELS["vlm"])
     if vlm == "custom":
         vlm = typer.prompt("Enter custom model path")
-    return (vlm, DEFAULT_MODELS["llm_local"], 
-            DEFAULT_MODELS["llm_remote"]["mistral"], "mistral", "docling")
+    return (
+        vlm,
+        DEFAULT_MODELS["llm_local"],
+        DEFAULT_MODELS["llm_remote"]["mistral"],
+        "mistral",
+        "docling",
+    )
 
 
 def _prompt_llm_local_models() -> Tuple[str, str, str, str]:
@@ -192,22 +180,27 @@ def _prompt_llm_local_models() -> Tuple[str, str, str, str]:
     print("\n[bold]6. Local LLM Provider[/bold]")
     print(" • [cyan]ollama[/cyan]: Ollama (requires ollama serve)")
     print(" • [cyan]vllm[/cyan]: vLLM (direct Python API, GPU required)")
-    
+
     local_provider = typer.prompt(
         "Select local provider",
         type=click.Choice(["ollama", "vllm"], case_sensitive=False),
-        default="vllm"
+        default="vllm",
     )
-    
+
     print(f"\n[bold]7. LLM Model for {local_provider}[/bold]")
     print(f" • [cyan]{DEFAULT_MODELS['llm_local']}[/cyan]: Default")
-    
+
     llm = typer.prompt("Select LLM model", default=DEFAULT_MODELS)
     if llm == "custom":
         llm = typer.prompt(f"Enter {local_provider} model name")
-    
-    return (DEFAULT_MODELS["vlm"], llm,
-            DEFAULT_MODELS["llm_remote"]["mistral"], "mistral", local_provider)
+
+    return (
+        DEFAULT_MODELS["vlm"],
+        llm,
+        DEFAULT_MODELS["llm_remote"]["mistral"],
+        "mistral",
+        local_provider,
+    )
 
 
 def _prompt_llm_remote_models() -> Tuple[str, str, str, str, str]:
@@ -217,12 +210,9 @@ def _prompt_llm_remote_models() -> Tuple[str, str, str, str, str]:
     provider = typer.prompt(
         "Select API provider",
         type=click.Choice(API_PROVIDERS, case_sensitive=False),
-        default="mistral"
+        default="mistral",
     )
-    model = typer.prompt(
-        f"Model for {provider}",
-        default=DEFAULT_MODELS["llm_remote"][provider]
-    )
+    model = typer.prompt(f"Model for {provider}", default=DEFAULT_MODELS["llm_remote"][provider])
     return (DEFAULT_MODELS["vlm"], DEFAULT_MODELS["llm_local"], model, provider, "vllm")
 
 
@@ -240,7 +230,7 @@ def _prompt_output() -> Dict[str, Any]:
     return {
         "default_directory": directory,
         "create_visualizations": visualizations,
-        "create_markdown": markdown
+        "create_markdown": markdown,
     }
 
 
@@ -248,21 +238,21 @@ def print_next_steps(config: Dict[str, Any]) -> None:
     """Print next steps after config creation."""
     inference = config["defaults"]["inference"]
     backend = config["defaults"]["backend_type"]
-    
+
     print("\n[bold]Next steps:[/bold]")
     if inference == "local" and backend == "llm":
         provider = config["models"]["llm"]["local"]["provider"]
         model = config["models"]["llm"]["local"]["default_model"]
-        
+
         if provider == "ollama":
-            print(f" 1. Start Ollama: [cyan]ollama serve[/cyan]")
+            print(" 1. Start Ollama: [cyan]ollama serve[/cyan]")
             print(f" 2. Pull model: [cyan]ollama pull {model}[/cyan]")
         elif provider == "vllm":
             print(f" 1. Start vLLM: [cyan]vllm serve {model} --host 0.0.0.0[/cyan]")
-            print(f" 2. Ensure GPU available with sufficient memory")
+            print(" 2. Ensure GPU available with sufficient memory")
     elif inference == "remote":
         provider = config["models"]["llm"]["remote"]["provider"].upper()
         print(f" 1. Set API key: [cyan]export {provider}_API_KEY='...'[/cyan]")
-    
-    print(f" 3. Convert: [cyan]docling-graph convert doc.pdf -t templates.Invoice[/cyan]")
-    print(f"\n[dim]Edit config.yaml anytime to adjust settings.[/dim]")
+
+    print(" 3. Convert: [cyan]docling-graph convert doc.pdf -t templates.Invoice[/cyan]")
+    print("\n[dim]Edit config.yaml anytime to adjust settings.[/dim]")

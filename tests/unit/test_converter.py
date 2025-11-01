@@ -2,16 +2,16 @@
 Unit tests for GraphConverter.
 """
 
-import pytest
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 import networkx as nx
+import pytest
 from pydantic import BaseModel, Field
 
-from docling_graph.core.base.converter import GraphConverter
 from docling_graph.core.base.config import GraphConfig
+from docling_graph.core.base.converter import GraphConverter
 from docling_graph.core.base.models import Edge
-
-from concurrent.futures import ThreadPoolExecutor
-import threading
 
 
 class TestGraphConverterInitialization:
@@ -26,10 +26,7 @@ class TestGraphConverterInitialization:
 
     def test_init_with_custom_config(self):
         """Test initialization with custom config."""
-        config = GraphConfig(
-            NODE_ID_HASH_LENGTH=16,
-            MAX_STRING_LENGTH=500
-        )
+        config = GraphConfig(NODE_ID_HASH_LENGTH=16, MAX_STRING_LENGTH=500)
         converter = GraphConverter(config=config)
         assert converter.config.NODE_ID_HASH_LENGTH == 16
         assert converter.config.MAX_STRING_LENGTH == 500
@@ -87,10 +84,10 @@ class TestGraphConverterNodeGeneration:
         node_id = list(graph.nodes())[0]
         node_data = graph.nodes[node_id]
 
-        assert node_data['label'] == 'Person'
-        assert node_data['type'] == 'entity'
-        assert node_data['name'] == 'John Doe'
-        assert node_data['age'] == 30
+        assert node_data["label"] == "Person"
+        assert node_data["type"] == "entity"
+        assert node_data["name"] == "John Doe"
+        assert node_data["age"] == 30
 
     def test_node_id_stability(self, sample_person):
         """Test that node IDs are stable across conversions."""
@@ -140,8 +137,8 @@ class TestGraphConverterEdgeGeneration:
         edges = list(graph.edges(data=True))
 
         # At least one edge should have 'employees' or 'address' label
-        labels = [edge[2]['label'] for edge in edges]
-        assert any(label in ['employees', 'address'] for label in labels)
+        labels = [edge[2]["label"] for edge in edges]
+        assert any(label in ["employees", "address"] for label in labels)
 
     def test_reverse_edges_creation(self, sample_company):
         """Test that reverse edges are created when enabled."""
@@ -150,7 +147,7 @@ class TestGraphConverterEdgeGeneration:
 
         # Count edges with 'reverse_' prefix
         edges = list(graph.edges(data=True))
-        reverse_edges = [e for e in edges if e[2]['label'].startswith('reverse_')]
+        reverse_edges = [e for e in edges if e[2]["label"].startswith("reverse_")]
 
         # Should have some reverse edges
         assert len(reverse_edges) > 0
@@ -212,7 +209,7 @@ class TestGraphConverterValueSerialization:
         graph, _ = converter.pydantic_list_to_graph([person])
 
         node_id = list(graph.nodes())[0]
-        assert graph.nodes[node_id]['name'] == "John"
+        assert graph.nodes[node_id]["name"] == "John"
 
     def test_serialize_long_strings_truncated(self):
         """Test that long strings are truncated."""
@@ -225,7 +222,7 @@ class TestGraphConverterValueSerialization:
         graph, _ = converter.pydantic_list_to_graph([person])
 
         node_id = list(graph.nodes())[0]
-        serialized_name = graph.nodes[node_id]['name']
+        serialized_name = graph.nodes[node_id]["name"]
 
         # Should be truncated
         assert len(serialized_name) < len(long_name)
@@ -240,8 +237,8 @@ class TestGraphConverterValueSerialization:
         graph, _ = converter.pydantic_list_to_graph([person])
 
         node_id = list(graph.nodes())[0]
-        assert graph.nodes[node_id]['age'] == 30
-        assert isinstance(graph.nodes[node_id]['age'], int)
+        assert graph.nodes[node_id]["age"] == 30
+        assert isinstance(graph.nodes[node_id]["age"], int)
 
 
 class TestGraphConverterNodeIDGeneration:

@@ -1,7 +1,8 @@
 """Base protocol for graph exporters."""
 
-from typing import Protocol, runtime_checkable
 from pathlib import Path
+from typing import Protocol, runtime_checkable
+
 import networkx as nx
 
 

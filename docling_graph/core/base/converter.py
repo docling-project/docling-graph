@@ -5,20 +5,20 @@ This module provides the GraphConverter class for converting Pydantic models
 into directed graphs with nodes and edges, including features like stable node
 IDs, edge metadata, and bidirectional edges.
 """
-from rich import print
-import networkx as nx
+
 import hashlib
 import json
-
 from datetime import date, datetime, time, timedelta
-from pydantic import BaseModel
 from decimal import Decimal
+from typing import Any, List, Optional, Set, Type
 
-from typing import List, Any, Set, Optional, Type
-from .models import Edge, GraphMetadata
-from .config import GraphConfig
+import networkx as nx
+from pydantic import BaseModel
+from rich import print
 
 from ..utils.graph_stats import calculate_graph_stats
+from .config import GraphConfig
+from .models import Edge, GraphMetadata
 
 
 class GraphConverter:
@@ -32,7 +32,7 @@ class GraphConverter:
         self,
         config: Optional[GraphConfig] = None,
         add_reverse_edges: bool = False,
-        validate_graph: bool = True
+        validate_graph: bool = True,
     ):
         """Initialize the graph converter.
 
@@ -45,8 +45,7 @@ class GraphConverter:
         self.validate_graph = validate_graph or self.config.validate_graph
 
     def pydantic_list_to_graph(
-        self,
-        model_instances: List[BaseModel]
+        self, model_instances: List[BaseModel]
     ) -> tuple[nx.DiGraph, GraphMetadata]:
         """Convert list of Pydantic models to a NetworkX graph.
 
@@ -77,14 +76,11 @@ class GraphConverter:
             edges_to_add.extend(edges)
 
         # Add edges to graph in bulk
-        edge_list = [
-            (e.source, e.target, {'label': e.label, **e.properties})
-            for e in edges_to_add
-        ]
+        edge_list = [(e.source, e.target, {"label": e.label, **e.properties}) for e in edges_to_add]
 
         if self.add_reverse_edges:
             reverse_edge_list = [
-                (e.target, e.source, {'label': f"reverse_{e.label}", **e.properties})
+                (e.target, e.source, {"label": f"reverse_{e.label}", **e.properties})
                 for e in edges_to_add
             ]
             edge_list.extend(reverse_edge_list)
@@ -138,7 +134,7 @@ class GraphConverter:
                     f"[yellow][!] Truncating string from {len(value)} "
                     f"to {self.config.MAX_STRING_LENGTH} chars[/yellow]"
                 )
-                return value[:self.config.MAX_STRING_LENGTH] + self.config.TRUNCATE_SUFFIX
+                return value[: self.config.MAX_STRING_LENGTH] + self.config.TRUNCATE_SUFFIX
             return value
 
         # Default: convert complex objects to string safely
@@ -156,25 +152,25 @@ class GraphConverter:
 
     def _get_node_id(self, model_instance: BaseModel) -> str:
         """Generate stable node ID for a model instance.
-        
+
         Uses graph_id_fields from model config if available, otherwise
         generates hash from model content. Always includes a hash suffix
         for consistency and to handle complex field types.
-        
+
         Args:
             model_instance: Pydantic model instance.
-        
+
         Returns:
             Unique node ID string in format: ClassName_hash
         """
         model_config = model_instance.model_config
-        
+
         # Check for graph_id_fields in model config
-        if hasattr(model_config, 'get'):
-            id_fields = model_config.get('graph_id_fields', [])
+        if hasattr(model_config, "get"):
+            id_fields = model_config.get("graph_id_fields", [])
         else:
-            id_fields = getattr(model_config, 'graph_id_fields', [])
-        
+            id_fields = getattr(model_config, "graph_id_fields", [])
+
         # Determine what to hash
         if id_fields:
             # Use specified fields to create content for hashing
@@ -191,50 +187,44 @@ class GraphConverter:
                     except TypeError:
                         value = tuple(value)
                 id_content[field] = value
-            
+
             # Create JSON string from ID fields only
             content_str = json.dumps(id_content, sort_keys=True, default=str)
         else:
             # Use entire model for hashing
-            content_str = json.dumps(
-                model_instance.model_dump(),
-                sort_keys=True,
-                default=str
-            )
-        
+            content_str = json.dumps(model_instance.model_dump(), sort_keys=True, default=str)
+
         # Generate hash from content
         hash_value = hashlib.blake2b(content_str.encode(), digest_size=32).hexdigest()
-        
-        # Return ID in consistent format: ClassName_hash
-        return f"{model_instance.__class__.__name__}_{hash_value[:self.config.NODE_ID_HASH_LENGTH]}"
 
+        # Return ID in consistent format: ClassName_hash
+        return (
+            f"{model_instance.__class__.__name__}_{hash_value[: self.config.NODE_ID_HASH_LENGTH]}"
+        )
 
     def _create_nodes_pass(
-        self,
-        model_instance: BaseModel,
-        graph: nx.DiGraph,
-        visited_ids: Set[str]
+        self, model_instance: BaseModel, graph: nx.DiGraph, visited_ids: Set[str]
     ) -> None:
         """First pass: create nodes for model and nested models.
-        
+
         Args:
             model_instance: Pydantic model instance to process.
             graph: NetworkX graph to add nodes to.
             visited_ids: Set of already visited node IDs.
         """
         node_id = self._get_node_id(model_instance)
-        
+
         if node_id in visited_ids:
             return
-        
+
         visited_ids.add(node_id)
-        
+
         # Create node with serialized attributes
         node_data = {
-            'label': model_instance.__class__.__name__,
-            'type': 'entity',
+            "label": model_instance.__class__.__name__,
+            "type": "entity",
         }
-        
+
         for field_name, field_value in model_instance.model_dump().items():
             # Check if it's a list of BaseModel instances (edges/relationships)
             if isinstance(field_value, list):
@@ -251,9 +241,9 @@ class GraphConverter:
             else:
                 # Simple field - add it
                 node_data[field_name] = self._serialize_value(field_value)
-        
+
         graph.add_node(node_id, **node_data)
-        
+
         # Recursively process nested models
         for field_name, field_value in model_instance:
             if isinstance(field_value, BaseModel):
@@ -261,13 +251,9 @@ class GraphConverter:
             elif isinstance(field_value, list):
                 for item in field_value:
                     if isinstance(item, BaseModel):
-                        self._create_nodes_pass(item, graph, visited_ids)   
+                        self._create_nodes_pass(item, graph, visited_ids)
 
-    def _create_edges_pass(
-        self, 
-        model_instance: BaseModel, 
-        visited_ids: Set[str]
-    ) -> List[Edge]:
+    def _create_edges_pass(self, model_instance: BaseModel, visited_ids: Set[str]) -> List[Edge]:
         """Second pass: create edges for relationships.
 
         Args:
@@ -288,13 +274,10 @@ class GraphConverter:
                 # Edge Node validation
                 if target_id not in visited_ids:
                     raise ValueError(f"Target node {target_id} not found for edge from {source_id}")
-                
-                edges.append(Edge(
-                    source=source_id,
-                    target=target_id,
-                    label=field_name,
-                    properties={}
-                ))
+
+                edges.append(
+                    Edge(source=source_id, target=target_id, label=field_name, properties={})
+                )
                 # Recursively get edges from nested model
                 edges.extend(self._create_edges_pass(field_value, visited_ids))
 
@@ -303,12 +286,11 @@ class GraphConverter:
                 for item in field_value:
                     if isinstance(item, BaseModel):
                         target_id = self._get_node_id(item)
-                        edges.append(Edge(
-                            source=source_id,
-                            target=target_id,
-                            label=field_name,
-                            properties={}
-                        ))
+                        edges.append(
+                            Edge(
+                                source=source_id, target=target_id, label=field_name, properties={}
+                            )
+                        )
                         edges.extend(self._create_edges_pass(item, visited_ids))
 
         return edges
@@ -321,7 +303,6 @@ class GraphConverter:
             graph: NetworkX graph to add edge to.
         """
         if graph.has_edge(edge.source, edge.target):
-
             # Merge properties
             existing = graph[edge.source][edge.target]
             existing.update(edge.properties)
@@ -331,39 +312,39 @@ class GraphConverter:
     def _validate_graph(self, graph: nx.DiGraph) -> None:
         """
         Validate graph structure after creation.
-        
+
         Ensures all edge endpoints reference existing nodes in the graph.
         Uses rich console for formatted error output.
-        
+
         Args:
             graph: NetworkX directed graph to validate.
-            
+
         Raises:
             ValueError: If graph contains edges pointing to non-existent nodes.
         """
         nodes = set(graph.nodes())
         invalid_edges = []
-        
+
         # Check all edges have valid source and target nodes
         for source, target in graph.edges():
             if source not in nodes:
                 invalid_edges.append((source, target, "source"))
             if target not in nodes:
                 invalid_edges.append((source, target, "target"))
-        
+
         # Report errors with rich formatting if found
         if invalid_edges:
             print("[red][GraphConverter] Graph validation failed![/red]")
-            
+
             # Show first 5 invalid edges
             for source, target, issue_type in invalid_edges[:5]:
                 print(
                     f"[red]  • Invalid edge: {source} -> {target} "
                     f"({issue_type} node not found)[/red]"
                 )
-            
+
             # Indicate if there are more
             if len(invalid_edges) > 5:
                 print(f"[red]  • ... and {len(invalid_edges) - 5} more invalid edges[/red]")
-            
+
             raise ValueError(f"Graph validation failed: {len(invalid_edges)} invalid edge(s) found")
