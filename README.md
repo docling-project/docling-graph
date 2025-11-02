@@ -102,7 +102,7 @@ Includes:
 
 #### 3. OPTIONAL - GPU Support (PyTorch)
 
-Follow the steps in [this guide](docs/guides/setup_gpu_support_via_uv.md) to install PyTorch with NVIDIA GPU (CUDA) support using uv.
+Follow the steps in [this guide](docs/guides/setup_with_gpu_support.md) to install PyTorch with NVIDIA GPU (CUDA) support.
 
 
 
