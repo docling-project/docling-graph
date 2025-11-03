@@ -97,15 +97,12 @@ Follow the steps in [this guide](docs/guides/setup_with_gpu_support.md) to insta
 If you’re using **Option C** or **Option D** (remote/cloud inference), set your API keys for the providers you plan to use:
 
 ```bash
-# OpenAI
-export OPENAI_API_KEY="sk-..."
-
-# Mistral
-export MISTRAL_API_KEY="..."
-
-# Google Gemini
-export GEMINI_API_KEY="..."
+export OPENAI_API_KEY="..."   # OpenAI
+export MISTRAL_API_KEY="..."  # Mistral
+export GEMINI_API_KEY="..."   # Google Gemini
 ```
+
+On Windows, replace `export` with `set` in Command Prompt or `$env:` in PowerShell.
 
 Alternatively, add them to your `.env` file.
 
@@ -210,13 +207,13 @@ For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](
 
 ## Documentation
 
-*Work In Progress*
+* *Work In Progress*
 
 
 
 ## Examples
 
-*Work In Progress*
+* *Work In Progress*
 
 
 
