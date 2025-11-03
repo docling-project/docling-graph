@@ -33,7 +33,7 @@ class TestInitCommand:
         """Should successfully initialize config."""
         mock_cwd.return_value = tmp_path
         mock_build_config.return_value = {
-            "defaults": {"backend_type": "llm", "inference": "local"},
+            "defaults": {"backend": "llm", "inference": "local"},
             "docling": {"pipeline": "ocr"},
         }
         mock_validate_deps.return_value = True
@@ -79,7 +79,7 @@ class TestInitCommand:
         mock_cwd.return_value = tmp_path
 
         mock_build_config.return_value = {
-            "defaults": {"backend_type": "llm", "inference": "local"},
+            "defaults": {"backend": "llm", "inference": "local"},
             "docling": {"pipeline": "ocr"},
         }
         mock_validate_deps.return_value = True
@@ -90,7 +90,7 @@ class TestInitCommand:
         # Verify new config was saved
         with open(config_file) as f:
             saved_config = yaml.safe_load(f)
-        assert saved_config["defaults"]["backend_type"] == "llm"
+        assert saved_config["defaults"]["backend"] == "llm"
 
     @patch("docling_graph.cli.commands.init.print_next_steps_with_deps")
     @patch("docling_graph.cli.commands.init.print_next_steps")
@@ -122,7 +122,7 @@ class TestInitCommand:
         with open(config_file) as f:
             config = yaml.safe_load(f)
         # Should have default values from fallback
-        assert config["defaults"]["backend_type"] in ["llm", "vlm"]
+        assert config["defaults"]["backend"] in ["llm", "vlm"]
 
     @patch("docling_graph.cli.commands.init.print_next_steps_with_deps")
     @patch("docling_graph.cli.commands.init.print_next_steps")
@@ -192,7 +192,7 @@ class TestInitCommand:
         test_config = {
             "defaults": {
                 "processing_mode": "many-to-one",
-                "backend_type": "llm",
+                "backend": "llm",
                 "inference": "local",
                 "export_format": "csv",
             },

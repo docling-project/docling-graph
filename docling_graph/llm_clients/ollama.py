@@ -56,7 +56,7 @@ class OllamaClient(BaseLlmClient):
             rich_print("Please ensure:")
             rich_print("  1. Ollama is running: ollama serve")
             rich_print(f"  2. Model is available: ollama pull {self.model}")
-            raise
+            raise RuntimeError(str(e)) from e
 
     def get_json_response(self, prompt: str | dict, schema_json: str) -> Dict[str, Any]:
         """

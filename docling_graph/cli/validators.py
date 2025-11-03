@@ -14,7 +14,7 @@ from ..deps import (
     get_missing_for_inference_type,
 )
 from .constants import (
-    BACKEND_TYPES,
+    BACKENDS,
     DOCLING_PIPELINES,
     EXPORT_FORMATS,
     INFERENCE_LOCATIONS,
@@ -57,9 +57,9 @@ def validate_backend_type(backend: str) -> str:
         typer.Exit: If backend is invalid.
     """
     backend = backend.lower()
-    if backend not in BACKEND_TYPES:
+    if backend not in BACKENDS:
         rich_print(f"[red]Error:[/red] Invalid backend type '{backend}'.")
-        rich_print(f"Must be one of: {', '.join(BACKEND_TYPES)}")
+        rich_print(f"Must be one of: {', '.join(BACKENDS)}")
         raise typer.Exit(code=1)
     return backend
 
@@ -124,23 +124,21 @@ def validate_export_format(export_format: str) -> str:
     return export_format
 
 
-def validate_vlm_constraints(backend_type: str, inference: str) -> None:
+def validate_vlm_constraints(backend: str, inference: str) -> None:
     """Validate VLM-specific constraints.
 
     Args:
-        backend_type: Backend type.
+        backend: Backend type.
         inference: Inference location.
 
     Raises:
         typer.Exit: If VLM constraints are violated.
     """
-    if backend_type == "vlm" and inference == "remote":
+    if backend == "vlm" and inference == "remote":
         rich_print(
             "[red]Error:[/red] VLM (Vision-Language Model) is currently only supported with local inference."
         )
-        rich_print(
-            "Please use '--inference local' or switch to '--backend_type llm' for API inference."
-        )
+        rich_print("Please use '--inference local' or switch to '--backend llm' for API inference.")
         raise typer.Exit(code=1)
 
 

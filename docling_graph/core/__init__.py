@@ -5,6 +5,7 @@ This module handles conversion of Pydantic models to NetworkX graphs,
 and provides export and visualization capabilities.
 """
 
+from ..config import PipelineConfig
 from .base.config import ExportConfig, GraphConfig
 from .base.converter import GraphConverter
 from .base.models import Edge, GraphMetadata
@@ -28,5 +29,6 @@ __all__ = [
     "GraphMetadata",
     "InteractiveVisualizer",
     "JSONExporter",
+    "PipelineConfig",
     "ReportGenerator",
 ]

@@ -1,6 +1,6 @@
 defaults:
   processing_mode: one-to-one
-  backend_type: llm
+  backend: llm
   inference: local
   export_format: csv
 docling:
@@ -12,7 +12,7 @@ docling:
 models:
   vlm:
     local:
-      default_model: numind/NuExtract-2.0-8B
+      default_model: numind/NuExtract-2.0-2B
       provider: docling
   llm:
     local:

@@ -1,49 +1,49 @@
 """
-CLI constants and configuration values.
+CLI constants for validation enums and provider defaults.
+
+NOTE: Default values are centralized here and in PipelineConfig.
+This module contains validation enums and model defaults for the CLI.
 """
 
 from typing import Any, Final
 
-# Configuration
+# Configuration file name
 CONFIG_FILE_NAME: Final[str] = "config.yaml"
 
-# Processing modes
+# Processing modes (enum for validation)
 PROCESSING_MODES: Final[list[str]] = ["one-to-one", "many-to-one"]
 
-# Backend types
-BACKEND_TYPES: Final[list[str]] = ["llm", "vlm"]
+# Backend types (enum for validation)
+BACKENDS: Final[list[str]] = ["llm", "vlm"]
 
-# Inference locations
+# Inference locations (enum for validation)
 INFERENCE_LOCATIONS: Final[list[str]] = ["local", "remote"]
 
-# Export formats
-EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher", "json"]
+# Export formats (enum for validation)
+EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher"]
 
-# Docling pipeline configurations
+# Docling pipeline configurations (enum for validation)
 DOCLING_PIPELINES: Final[list[str]] = ["ocr", "vision"]
 
-# Docling export formats
+# Docling export formats (enum for validation)
 DOCLING_EXPORT_FORMATS: Final[list[str]] = ["markdown", "json", "document"]
 
-# Default Docling settings
-DEFAULT_DOCLING_CONFIG = {
-    "pipeline": "ocr",
-    "export": {"docling_json": True, "markdown": True, "per_page_markdown": False},
-}
-
-# Default model configurations
-DEFAULT_MODELS: Final[dict[str, Any]] = {
-    "vlm": "numind/NuExtract-2.0-8B",
-    "llm_local": "llama-3.1-8b",
-    "llm_remote": {
-        "mistral": "mistral-small-latest",
-        "openai": "gpt-4-turbo",
-        "gemini": "gemini-2.5-flash",
-    },
-}
-
-# Local Providers
+# Providers (enum for validation)
 LOCAL_PROVIDERS: Final[list[str]] = ["vllm", "ollama"]
-
-# API Providers
 API_PROVIDERS: Final[list[str]] = ["mistral", "openai", "gemini"]
+
+# Provider-specific default models (for CLI prompts)
+PROVIDER_DEFAULT_MODELS: Final[dict[str, str]] = {
+    "mistral": "mistral-small-latest",
+    "openai": "gpt-4-turbo",
+    "gemini": "gemini-2.5-flash",
+}
+
+# Local provider default models
+LOCAL_PROVIDER_DEFAULTS: Final[dict[str, str]] = {
+    "vllm": "ibm-granite/granite-4.0-1b",
+    "ollama": "llama-3.1-8b",
+}
+
+# VLM default model
+VLM_DEFAULT_MODEL: Final[str] = "numind/NuExtract-2.0-2B"

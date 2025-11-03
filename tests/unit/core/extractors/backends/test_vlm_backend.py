@@ -25,8 +25,8 @@ class TestVlmBackendInitialization:
     def test_initialization_with_model_name(self, mock_extractor):
         """Should initialize with model name."""
         with patch.object(VlmBackend, "_initialize_extractor"):
-            backend = VlmBackend(model_name="numind/NuExtract-2.0-8B")
-            assert backend.model_name == "numind/NuExtract-2.0-8B"
+            backend = VlmBackend(model_name="numind/NuExtract-2.0-2B")
+            assert backend.model_name == "numind/NuExtract-2.0-2B"
 
     @patch("docling_graph.core.extractors.backends.vlm_backend.DocumentExtractor")
     def test_initialization_sets_extractor(self, mock_extractor):

@@ -22,7 +22,6 @@ from ..extractor_base import BaseExtractor
 
 class OneToOneStrategy(BaseExtractor):
     """One-to-one extraction strategy.
-
     Extracts one model per page/item using Protocol-based type checking.
     """
 
@@ -31,16 +30,16 @@ class OneToOneStrategy(BaseExtractor):
 
         Args:
             backend: Extraction backend instance implementing either
-                     ExtractionBackendProtocol or TextExtractionBackendProtocol.
+                ExtractionBackendProtocol or TextExtractionBackendProtocol.
             docling_config: Docling pipeline configuration ('ocr' or 'vision').
         """
         self.backend = backend
         self.doc_processor = DocumentProcessor(docling_config=docling_config)
 
-        backend_type = get_backend_type(backend)
+        backend_type = get_backend_type(self.backend)
         rich_print(
             f"[blue][OneToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
-            f"[cyan]{backend.__class__.__name__}[/cyan]"
+            f"[cyan]{self.backend.__class__.__name__}[/cyan]"
         )
 
     def extract(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
@@ -62,12 +61,10 @@ class OneToOneStrategy(BaseExtractor):
                 # VLM backend: handles page-based extraction internally
                 rich_print("[blue][OneToOneStrategy][/blue] Using VLM backend for extraction")
                 return self._extract_with_vlm(self.backend, source, template)
-
             elif is_llm_backend(self.backend):
                 # LLM backend: needs markdown preprocessing
                 rich_print("[blue][OneToOneStrategy][/blue] Using LLM backend for extraction")
                 return self._extract_with_llm(self.backend, source, template)
-
             else:
                 # Unexpected backend type
                 backend_class = self.backend.__class__.__name__
@@ -75,7 +72,6 @@ class OneToOneStrategy(BaseExtractor):
                     f"Backend '{backend_class}' does not implement a recognized extraction protocol. "
                     "Expected either a VLM or LLM backend."
                 )
-
         except Exception as e:
             rich_print(f"[red][OneToOneStrategy][/red] Extraction error: {e}")
             return []
@@ -92,7 +88,6 @@ class OneToOneStrategy(BaseExtractor):
         """LLM path: convert to markdown and process per page."""
         # Use high-level document processing to obtain page markdowns
         page_markdowns = self.doc_processor.process_document(source)
-
         print(f"page_markdowns: {page_markdowns}")
 
         extracted_models: List[BaseModel] = []
@@ -100,11 +95,9 @@ class OneToOneStrategy(BaseExtractor):
 
         for page_num, page_md in enumerate(page_markdowns, start=1):
             rich_print(f"[blue][OneToOneStrategy][/blue] Processing page {page_num}/{total_pages}")
-
             model = backend.extract_from_markdown(
                 markdown=page_md, template=template, context=f"page {page_num}"
             )
-
             if model:
                 extracted_models.append(model)
             else:

@@ -2,6 +2,8 @@
 Factory for creating extractors based on configuration.
 """
 
+from typing import Literal
+
 from rich import print as rich_print
 
 from ...llm_clients.llm_base import BaseLlmClient
@@ -18,8 +20,8 @@ class ExtractorFactory:
 
     @staticmethod
     def create_extractor(
-        processing_mode: str,
-        backend_type: str,
+        processing_mode: Literal["one-to-one", "many-to-one"],
+        backend_name: Literal["vlm", "llm"],
         model_name: str | None = None,
         llm_client: BaseLlmClient | None = None,
         docling_config: str = "ocr",
@@ -29,7 +31,7 @@ class ExtractorFactory:
 
         Args:
             processing_mode (str): 'one-to-one' or 'many-to-one'
-            backend_type (str): 'vlm' or 'llm'
+            backend_name (str): 'vlm' or 'llm'
             model_name (str): Model name for VLM (optional)
             llm_client (BaseLlmClient): LLM client instance (optional)
             docling_config (str): Docling pipeline configuration ('default' or 'vlm')
@@ -38,29 +40,29 @@ class ExtractorFactory:
             BaseExtractor: Configured extractor instance.
         """
         rich_print("[blue][ExtractorFactory][/blue] Creating extractor:")
-        rich_print(f"  Mode: [cyan]{processing_mode}[/cyan]")
-        rich_print(f"  Type: [cyan]{backend_type}[/cyan]")
-        rich_print(f"  Docling: [cyan]{docling_config}[/cyan]")
+        rich_print(f" Mode: [cyan]{processing_mode}[/cyan]")
+        rich_print(f" Type: [cyan]{backend_name}[/cyan]")
+        rich_print(f" Docling: [cyan]{docling_config}[/cyan]")
 
-        # Create backend
-        backend: Backend
-        if backend_type == "vlm":
+        # Create backend instance
+        backend_obj: Backend
+        if backend_name == "vlm":
             if not model_name:
                 raise ValueError("VLM requires model_name parameter")
-            backend = VlmBackend(model_name=model_name)
-        elif backend_type == "llm":
+            backend_obj = VlmBackend(model_name=model_name)
+        elif backend_name == "llm":
             if not llm_client:
                 raise ValueError("LLM requires llm_client parameter")
-            backend = LlmBackend(llm_client=llm_client)
+            backend_obj = LlmBackend(llm_client=llm_client)
         else:
-            raise ValueError(f"Unknown backend_type: {backend_type}")
+            raise ValueError(f"Unknown backend: {backend_name}")
 
         # Create strategy with docling_config
         extractor: BaseExtractor
         if processing_mode == "one-to-one":
-            extractor = OneToOneStrategy(backend=backend, docling_config=docling_config)
+            extractor = OneToOneStrategy(backend=backend_obj, docling_config=docling_config)
         elif processing_mode == "many-to-one":
-            extractor = ManyToOneStrategy(backend=backend, docling_config=docling_config)
+            extractor = ManyToOneStrategy(backend=backend_obj, docling_config=docling_config)
         else:
             raise ValueError(f"Unknown processing_mode: {processing_mode}")
 

@@ -79,7 +79,8 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Project specific directories
+# Project relateds files and directories
+config.yaml
 data/*
 !data/.gitkeep
 outputs/*

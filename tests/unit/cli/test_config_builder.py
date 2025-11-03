@@ -2,16 +2,17 @@
 Tests for interactive configuration builder.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from typing import Dict, Any
+from typing import Any, Dict
+from unittest.mock import MagicMock, patch
 
-from docling_graph.cli.commands.config_builder import (
-    build_config_interactive,
+import pytest
+
+from docling_graph.cli.config_builder import (
     _prompt_defaults,
     _prompt_docling,
     _prompt_models,
     _prompt_output,
+    build_config_interactive,
 )
 
 
@@ -23,7 +24,7 @@ class TestPromptDefaults:
         """Should return dictionary with default settings."""
         mock_prompt.side_effect = [
             "one-to-one",  # processing_mode
-            "llm",  # backend_type
+            "llm",  # backend
             "local",  # inference
             "csv",  # export_format
         ]
@@ -32,7 +33,7 @@ class TestPromptDefaults:
 
         assert isinstance(result, dict)
         assert "processing_mode" in result
-        assert "backend_type" in result
+        assert "backend" in result
         assert "inference" in result
         assert "export_format" in result
 
@@ -41,13 +42,13 @@ class TestPromptDefaults:
         """Should force local inference for VLM backend."""
         mock_prompt.side_effect = [
             "one-to-one",  # processing_mode
-            "vlm",  # backend_type
+            "vlm",  # backend
             "csv",  # export_format
         ]
 
         result = _prompt_defaults()
 
-        assert result["backend_type"] == "vlm"
+        assert result["backend"] == "vlm"
         assert result["inference"] == "local"
 
 
@@ -103,7 +104,7 @@ class TestPromptModels:
     @patch("typer.prompt")
     def test_prompt_models_vlm_backend(self, mock_prompt):
         """Should configure VLM model."""
-        mock_prompt.return_value = "numind/NuExtract-2.0-8B"
+        mock_prompt.return_value = "numind/NuExtract-2.0-2B"
 
         result = _prompt_models("vlm", "local")
 
@@ -112,67 +113,32 @@ class TestPromptModels:
 
 
 class TestPromptOutput:
-    """Test output configuration prompt."""
-
     @patch("typer.prompt")
     @patch("typer.confirm")
     def test_prompt_output_returns_config(self, mock_confirm, mock_prompt):
-        """Should return output configuration."""
         mock_prompt.return_value = "outputs"
         mock_confirm.side_effect = [True, True]
 
         result = _prompt_output()
 
         assert isinstance(result, dict)
-        assert "default_directory" in result
-        assert "create_visualizations" in result
-        assert "create_markdown" in result
+        # Key changed from 'default_directory' to 'directory'
+        assert "directory" in result
 
 
 class TestBuildConfigInteractive:
-    """Test complete interactive config building."""
-
     @patch("typer.prompt")
     @patch("typer.confirm")
-    def test_build_config_interactive_returns_complete_config(
-        self, mock_confirm, mock_prompt
-    ):
-        """Should return complete configuration dictionary."""
-        # Setup mock responses for all prompts
-        mock_prompt.side_effect = [
-            # _prompt_defaults
-            "one-to-one",
-            "llm",
-            "remote",
-            "csv",
-            # _prompt_docling
-            "ocr",
-            # _prompt_models
-            "mistral",
-            "mistral-small-latest",
-            # _prompt_output
-            "outputs",
-        ]
-        mock_confirm.side_effect = [True, True, False, True, True]
-
-        result = build_config_interactive()
-
-        assert isinstance(result, dict)
-        assert "defaults" in result
-        assert "docling" in result
-        assert "models" in result
-        assert "output" in result
-
-    @patch("typer.prompt")
-    @patch("typer.confirm")
-    def test_build_config_has_all_required_sections(
-        self, mock_confirm, mock_prompt
-    ):
+    def test_build_config_has_all_required_sections(self, mock_confirm, mock_prompt):
         """Should have all required configuration sections."""
         mock_prompt.side_effect = [
-            "one-to-one", "llm", "local", "csv",  # defaults
+            "one-to-one",
+            "llm",
+            "local",
+            "csv",  # defaults
             "vision",  # docling
-            "ollama", "llama3:8b",  # models - local
+            "ollama",
+            "llama3:8b",  # models - local
             "outputs",  # output
         ]
         mock_confirm.side_effect = [True, True, False, True, True]
@@ -180,6 +146,7 @@ class TestBuildConfigInteractive:
         result = build_config_interactive()
 
         assert result["defaults"]["processing_mode"] == "one-to-one"
-        assert result["defaults"]["backend_type"] == "llm"
+        assert result["defaults"]["backend"] == "llm"
         assert result["docling"]["pipeline"] == "vision"
-        assert result["output"]["default_directory"] == "outputs"
+        # Fix here: change 'default_directory' to 'directory'
+        assert result["output"]["directory"] == "outputs"

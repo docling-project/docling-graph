@@ -2,11 +2,12 @@
 Shared test constants and fixtures for LLM clients.
 """
 
-import pytest
 import types as py_types
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock, patch
 
+import pytest
 
 # ==================== Context Limit Constants ====================
 
@@ -40,10 +41,11 @@ GEMINI_TEST_MODELS = [
 
 # ==================== Shared Fixtures ====================
 
+
 @pytest.fixture
 def mock_openai_client():
     """Mock OpenAI API client."""
-    with patch('docling_graph.llm_clients.openai.OpenAI') as mock_class:
+    with patch("docling_graph.llm_clients.openai.OpenAI") as mock_class:
         mock_instance = MagicMock()
         mock_class.return_value = mock_instance
         yield mock_instance
@@ -52,7 +54,7 @@ def mock_openai_client():
 @pytest.fixture
 def mock_ollama_module():
     """Mock Ollama module."""
-    with patch('docling_graph.llm_clients.ollama.ollama') as mock:
+    with patch("docling_graph.llm_clients.ollama.ollama") as mock:
         mock.show = MagicMock(return_value={"name": "test-model"})
         yield mock
 
@@ -60,7 +62,7 @@ def mock_ollama_module():
 @pytest.fixture
 def mock_mistral_api():
     """Mock Mistral API module."""
-    with patch('docling_graph.llm_clients.mistral.Mistral') as mock_class:
+    with patch("docling_graph.llm_clients.mistral.Mistral") as mock_class:
         mock_instance = MagicMock()
         mock_class.return_value = mock_instance
         yield mock_instance
@@ -69,11 +71,12 @@ def mock_mistral_api():
 @pytest.fixture
 def mock_gemini():
     """Mock Gemini API and its types module."""
-    with patch('docling_graph.llm_clients.gemini.genai') as mock_genai, \
-         patch('docling_graph.llm_clients.gemini.types') as mock_types:
-
+    with (
+        patch("docling_graph.llm_clients.gemini.genai") as mock_genai,
+        patch("docling_graph.llm_clients.gemini.types") as mock_types,
+    ):
         # Minimal config object with attribute access for assertions
-        def make_config(**kwargs):
+        def make_config(**kwargs: Any) -> SimpleNamespace:
             return SimpleNamespace(**kwargs)
 
         mock_types.GenerateContentConfig = lambda **kwargs: make_config(**kwargs)
@@ -89,7 +92,7 @@ def mock_gemini():
 @pytest.fixture
 def mock_vllm_openai_client():
     """Mock OpenAI client for vLLM."""
-    with patch('docling_graph.llm_clients.vllm.OpenAI') as mock_class:
+    with patch("docling_graph.llm_clients.vllm.OpenAI") as mock_class:
         mock_instance = MagicMock()
         mock_class.return_value = mock_instance
         mock_instance.models.list.return_value = MagicMock()

@@ -34,18 +34,18 @@ class ManyToOneStrategy(BaseExtractor):
         self.backend = backend
         self.doc_processor = DocumentProcessor(docling_config=docling_config)
 
-        backend_type = get_backend_type(backend)
+        backend_type = get_backend_type(self.backend)
         rich_print(
             f"[blue][ManyToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
-            f"[cyan]{backend.__class__.__name__}[/cyan]"
+            f"[cyan]{self.backend.__class__.__name__}[/cyan]"
         )
 
     # Public extraction entry point
     def extract(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
         """Extract structured data using a many-to-one strategy.
 
-        - **VLM backend:** Extracts all pages and merges the results.
-        - **LLM backend:** Attempts full-document extraction (fast path),
+        - VLM backend: Extracts all pages and merges the results.
+        - LLM backend: Attempts full-document extraction (fast path),
           and falls back to page-by-page extraction if document exceeds context limit.
 
         Returns:
@@ -55,18 +55,15 @@ class ManyToOneStrategy(BaseExtractor):
             if is_vlm_backend(self.backend):
                 rich_print("[blue][ManyToOneStrategy][/blue] Using VLM backend for extraction")
                 return self._extract_with_vlm(self.backend, source, template)
-
             elif is_llm_backend(self.backend):
                 rich_print("[blue][ManyToOneStrategy][/blue] Using LLM backend for extraction")
                 return self._extract_with_llm(self.backend, source, template)
-
             else:
                 backend_class = self.backend.__class__.__name__
                 raise TypeError(
                     f"Backend '{backend_class}' does not implement a recognized extraction protocol. "
                     "Expected either a VLM or LLM backend."
                 )
-
         except Exception as e:
             rich_print(f"[red][ManyToOneStrategy][/red] Extraction error: {e}")
             return []  # Graceful fallback
@@ -97,7 +94,6 @@ class ManyToOneStrategy(BaseExtractor):
                 f"[blue][ManyToOneStrategy][/blue] Merging [cyan]{len(models)}[/cyan] extracted page models..."
             )
             merged_model = merge_pydantic_models(models, template)
-
             if merged_model:
                 rich_print(
                     "[green][ManyToOneStrategy][/green] Successfully merged all VLM page models"
@@ -108,7 +104,6 @@ class ManyToOneStrategy(BaseExtractor):
                     "[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first page result"
                 )
                 return [models[0]]
-
         except Exception as e:
             rich_print(f"[red][ManyToOneStrategy][/red] VLM extraction failed: {e}")
             return []
@@ -126,7 +121,6 @@ class ManyToOneStrategy(BaseExtractor):
                 context_limit = backend.client.context_limit
                 full_markdown = self.doc_processor.extract_full_markdown(document)
                 estimated_tokens = len(full_markdown) / 3.5  # Rough heuristic
-
                 if estimated_tokens < (context_limit * 0.9):
                     rich_print(
                         f"[blue][ManyToOneStrategy][/blue] Document fits context "
@@ -143,7 +137,6 @@ class ManyToOneStrategy(BaseExtractor):
                 # No context info, default to full-document attempt
                 full_markdown = self.doc_processor.extract_full_markdown(document)
                 return self._extract_full_document(backend, full_markdown, template)
-
         except Exception as e:
             rich_print(f"[red][ManyToOneStrategy][/red] LLM extraction failed: {e}")
             return []
@@ -157,7 +150,6 @@ class ManyToOneStrategy(BaseExtractor):
             model = backend.extract_from_markdown(
                 markdown=full_markdown, template=template, context="full document"
             )
-
             if model:
                 rich_print(
                     "[green][ManyToOneStrategy][/green] Successfully extracted consolidated model from full document"
@@ -183,21 +175,18 @@ class ManyToOneStrategy(BaseExtractor):
         try:
             page_markdowns = self.doc_processor.extract_page_markdowns(document)
             total_pages = len(page_markdowns)
-
             rich_print(
                 f"[blue][ManyToOneStrategy][/blue] Starting page-by-page extraction ({total_pages} pages)..."
             )
 
-            extracted_models = []
+            extracted_models: List[BaseModel] = []
             for page_num, page_md in enumerate(page_markdowns, 1):
                 rich_print(
                     f"[blue][ManyToOneStrategy][/blue] Extracting from page {page_num}/{total_pages}"
                 )
-
                 model = backend.extract_from_markdown(
                     markdown=page_md, template=template, context=f"page {page_num}"
                 )
-
                 if model:
                     extracted_models.append(model)
                 else:
@@ -219,7 +208,6 @@ class ManyToOneStrategy(BaseExtractor):
                 f"[blue][ManyToOneStrategy][/blue] Merging [cyan]{len(extracted_models)}[/cyan] page models..."
             )
             merged_model = merge_pydantic_models(extracted_models, template)
-
             if merged_model:
                 rich_print("[green][ManyToOneStrategy][/green] Successfully merged all page models")
                 return [merged_model]
@@ -228,7 +216,6 @@ class ManyToOneStrategy(BaseExtractor):
                     "[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first extracted model"
                 )
                 return [extracted_models[0]]
-
         except Exception as e:
             rich_print(f"[red][ManyToOneStrategy][/red] Page-by-page extraction failed: {e}")
             return []

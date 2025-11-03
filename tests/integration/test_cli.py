@@ -45,7 +45,7 @@ class TestCLIConvertCommand:
         config_file = temp_dir / "config.yaml"
         config_file.write_text("""
 processing_mode: one-to-one
-backend_type: llm
+backend: llm
 """)
 
         result = cli_runner.invoke(app, ["convert", "--config", str(config_file)])

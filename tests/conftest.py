@@ -21,7 +21,7 @@ def sample_config() -> Dict[str, Any]:
     return {
         "defaults": {
             "processing_mode": "many-to-one",
-            "backend_type": "llm",
+            "backend": "llm",
             "inference": "local",
             "export_format": "csv",
         },
@@ -36,7 +36,7 @@ def sample_config() -> Dict[str, Any]:
         "models": {
             "vlm": {
                 "local": {
-                    "default_model": "numind/NuExtract-2.0-8B",
+                    "default_model": "numind/NuExtract-2.0-2B",
                     "provider": "docling",
                 }
             },
@@ -65,7 +65,7 @@ def sample_config_vlm() -> Dict[str, Any]:
     return {
         "defaults": {
             "processing_mode": "one-to-one",
-            "backend_type": "vlm",
+            "backend": "vlm",
             "inference": "local",
             "export_format": "json",
         },
@@ -80,7 +80,7 @@ def sample_config_vlm() -> Dict[str, Any]:
         "models": {
             "vlm": {
                 "local": {
-                    "default_model": "numind/NuExtract-2.0-8B",
+                    "default_model": "numind/NuExtract-2.0-2B",
                     "provider": "docling",
                 }
             },
@@ -99,7 +99,7 @@ def sample_config_remote() -> Dict[str, Any]:
     return {
         "defaults": {
             "processing_mode": "many-to-one",
-            "backend_type": "llm",
+            "backend": "llm",
             "inference": "remote",
             "export_format": "csv",
         },
@@ -227,7 +227,7 @@ def mock_config_builder() -> MagicMock:
     """Mock for config builder."""
     mock = MagicMock()
     mock.return_value = {
-        "defaults": {"backend_type": "llm", "inference": "local"},
+        "defaults": {"backend": "llm", "inference": "local"},
         "docling": {"pipeline": "ocr"},
     }
     return mock

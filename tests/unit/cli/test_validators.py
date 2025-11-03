@@ -133,11 +133,6 @@ class TestValidateExportFormat:
         result = validate_export_format("cypher")
         assert result == "cypher"
 
-    def test_validate_export_format_json(self):
-        """Should accept 'json' format."""
-        result = validate_export_format("json")
-        assert result == "json"
-
     def test_validate_export_format_case_insensitive(self):
         """Should handle case-insensitive input."""
         result = validate_export_format("CSV")

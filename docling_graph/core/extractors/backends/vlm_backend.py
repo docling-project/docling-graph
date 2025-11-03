@@ -23,7 +23,7 @@ class VlmBackend:
         Initialize VLM backend with specified model.
 
         Args:
-            model_name (str): HuggingFace model repository ID (e.g., 'numind/NuExtract-2.0-8B')
+            model_name (str): HuggingFace model repository ID (e.g., 'numind/NuExtract-2.0-2B')
         """
         self.model_name = model_name
         self._initialize_extractor()

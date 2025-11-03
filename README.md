@@ -29,24 +29,32 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 
 ## Key Capabilities
 
-- **Extraction**:
-  - Local `VLM` (Docling's vision pipeline leveraging Granite-Docling)  
+- **🧠 Extraction**:
+  - Local `VLM` (Docling's information extraction pipeline - ideal for small documents with key-value focus)  
   - `LLM` (local via vLLM/Ollama or remote via Mistral/OpenAI/Gemini API)  
   - Page-wise or whole-document conversion strategies
-- **Graph Construction**:
+- **🔨 Graph Construction**:
   - Markdown to Graph: Convert validated Pydantic instances to a `NetworkX DiGraph` with rich edge metadata and stable node IDs
   - Smart Merge: Combine multi-page documents into a single Pydantic instance for unified processing
   - Modular graph module with enhanced type safety and configuration
-- **Export**:
+- **📦 Export**:
   - `Docling Document` exports (JSON format with full document structure)
   - `Markdown` exports (full document and per-page options)
   - `CSV` compatible with `Neo4j` admin import  
   - `Cypher` script generation for bulk ingestion
   - `JSON` export for general-purpose graph data
-- **Visualization**:
+- **📊 Visualization**:
   - Interactive `HTML` visualization in full-page browser view with enhanced node/edge exploration
-  - Publication-grade static images (`PNG`, `SVG`, `PDF`)
   - Detailed `MARKDOWN` report with graph nodes content and edges
+
+### Coming Soon
+
+* ✂️ **Smart Chunking:** Structure-aware text splitting that keeps document logic intact.
+* 🧬 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
+* ✍🏻 **Flexible Inputs:** Accepts `text`, `markdown`, and `DoclingDocument` directly.
+* 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
+* ⚡ **Batch Optimization:** Faster GPU inference with better memory handling.
+* 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
 
 
@@ -55,7 +63,7 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 ### Requirements
 
 - Python 3.10 or higher
-- UV package manager (pip install uv)
+- UV package manager
 
 ### Installation
 
@@ -70,34 +78,12 @@ cd docling-graph
 
 Choose the installation option that matches your use case:
 
-**Option A: Minimal Installation** (Docling features only, no LLM inference)
-```bash
-uv sync
-```
-
-**Option B: Full Installation** (All features and providers)
-```bash
-uv sync --extra all
-```
-
-**Option C: Local LLM Inference** (Run LLMs on your machine)
-```bash
-uv sync --extra local
-```
-
-Includes:
-- `vllm` - Fast local LLM inference (requires GPU)
-- `ollama` - Run open-source models locally
-
-**Option D: Remote API Inference** (Use cloud-based LLM APIs)
-```bash
-uv sync --extra remote
-```
-
-Includes:
-- `mistral` - Mistral AI API
-- `openai` - OpenAI API
-- `gemini` - Google Gemini API
+| Option          | Command                   | Description                                                         |
+| :---            | :---                      | :---                                                                |
+| **Minimal**     | `uv sync`                 | Includes core VLM features (Docling), **no** LLM inference          |
+| **Full**        | `uv sync --extra all`     | Includes **all** features, VLM, and all local/remote LLM providers  |
+| **Local LLM**   | `uv sync --extra local`   | Adds support for vLLM and Ollama (requires GPU for vLLM)            |
+| **Remote API**  | `uv sync --extra remote`  | Adds support for Mistral, OpenAI, and Google Gemini APIs            |
 
 
 #### 3. OPTIONAL - GPU Support (PyTorch)
@@ -125,40 +111,80 @@ Alternatively, add them to your `.env` file.
 
 
 
-## Quick Start
+## Getting Started
 
-### 1. Initialize Configuration (CLI)
+Docling Graph is primarily driven by its **CLI**, but you can easily integrate the core pipeline into Python scripts.
+
+### 1. Python Example
+
+To run a conversion programmatically, you define a configuration dictionary and pass it to the `run_pipeline` function. This example uses a **remote LLM API** in a `many-to-one` mode for a single multi-page document:
+
+```python
+from docling_graph import run_pipeline, PipelineConfig
+from examples.templates.battery_research import Research  # Pydantic model to use as an extraction template
+
+# Create typed config
+config = PipelineConfig(
+    source="examples/data/battery_research/bauer2014.pdf",
+    template=Research,
+    backend="llm",
+    inference="remote",
+    processing_mode="many-to-one",
+    provider_override="mistral",              # Specify your preferred provider and ensure its API key is set
+    model_override="mistral-medium-latest",   # Specify your preferred LLM model
+    output_dir="outputs/battery_research"
+)
+
+try:
+    run_pipeline(config)
+    print(f"\nExtraction complete! Graph data saved to: {config.output_dir}")
+except Exception as e:
+    print(f"An error occurred: {e}")
+```
+
+
+### 2. CLI Example
+
+Use the command-line interface for quick conversions and inspections. The following command runs the conversion using the local VLM backend and outputs a graph ready for Neo4j import:
+
+#### 2.1. Initialize Configuration
+
+A wizard will walk you through setting up the right configfor your use case.
 
 ```bash
 uv run docling-graph init
 ```
 
-### 2. Run Conversion (CLI)
+#### 2.2. Run Conversion
+
+You can use: `docling-graph convert --help` to see the full list of available options and usage details
 
 ```bash
-uv run docling-graph convert <SOURCE_FILE_PATH> --template "<TEMPLATE_PATH>" [OPTIONS]
+# uv run docling-graph convert <SOURCE_FILE_PATH> --template "<TEMPLATE_DOTTED_PATH>" [OPTIONS]
+
+uv run docling-graph convert "examples/data/battery_research/bauer2014.pdf" \
+    --template "examples.templates.battery_research.Research" \
+    --output-dir "outputs/battery_research"  \
+    --processing-mode "many-to-one"
 ```
 
-### 2. Run Conversion (CLI)
+#### 2.3. Run Conversion
 
 ```bash
-uv run docling-graph inspect <CONVERT_OUTPUT_PATH>
+# uv run docling-graph inspect <CONVERT_OUTPUT_PATH> [OPTIONS]
+
+uv run docling-graph inspect outputs/battery_research
 ```
+
 
 
 ## Pydantic Templates
 
-Templates define the schema for extraction and graph structure:
+Templates are the foundation of Docling Graph, defining both the **extraction schema** and the resulting **graph structure**.
 
-- Available templates: **invoices**, **French ID cards**, **insurance terms**
-- Edges can be **implicit** (nested BaseModels) or **explicit** (generic Edge type)
-
-### Tips
-
-- Use `model_config.graph_id_fields` for natural keys to ensure stable, readable node IDs
-- Include examples and descriptions on fields for better LLM extraction
-- Leverage `is_entity=True` in model_config to create nodes
-- Use `Edge()` helper for explicit relationship definition
+  * Use `is_entity=True` in `model_config` to explicitly mark a class as a graph node.
+  * Leverage `model_config.graph_id_fields` to create stable, readable node IDs (natural keys).
+  * Use the `Edge()` helper to define explicit relationships between entities.
 
 **Example:**
 
@@ -179,6 +205,18 @@ class Person(BaseModel):
 ```
 
 For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](docs/guides/pydantic_templates_for_knowledge_graph_extraction.md)
+
+
+
+## Documentation
+
+*Work In Progress*
+
+
+
+## Examples
+
+*Work In Progress*
 
 
 

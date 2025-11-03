@@ -4,7 +4,7 @@
 # Default settings (can be overridden via CLI flags)
 defaults:
   processing_mode: many-to-one  # one-to-one | many-to-one
-  backend_type: llm             # llm | vlm
+  backend: llm                  # llm | vlm
   inference: local              # local | remote
   export_format: csv            # csv | cypher
 
@@ -14,17 +14,17 @@ docling:
   # - "ocr": Classic OCR pipeline (most accurate for standard documents)
   # - "vision": Vision-Language Model pipeline based on Granite-Docling (best for complex layouts)
   pipeline: ocr  # ocr | vision
-  
+
   # Export options for Docling document processing
   export:
     # Export the full Docling document structure as JSON
     # Contains document metadata, layout information, tables, etc.
     docling_json: true
-    
+
     # Export the document as markdown (full document)
     # Best for human-readable output and documentation
     markdown: true
-    
+
     # Export per-page markdown files
     # Useful for page-by-page analysis or processing
     # Creates a subdirectory with one .md file per page
@@ -35,7 +35,7 @@ models:
   # Vision-Language Models (VLM)
   vlm:
     local:
-      default_model: "numind/NuExtract-2.0-8B"
+      default_model: "numind/NuExtract-2.0-2B"
       provider: "docling"
       # Alternative models:
       # - "numind/NuExtract-2.0-2B" (faster, less accurate)
@@ -52,7 +52,7 @@ models:
           base_url: "http://localhost:8000/v1"
         ollama:
           default_model: "llama-3.1-8b"
-    
+
     remote:
       default_model: "mistral-small-latest"
       provider: "mistral"
@@ -68,6 +68,11 @@ models:
 
 # Output settings
 output:
-  default_directory: "outputs"
+  # Directory for all outputs (graphs, JSON, reports, visualizations)
+  # Note: the CLI flag --output-dir overrides this at runtime
+  directory: "outputs"
+
+  # Optional toggles for downstream tools (not required by pipeline)
+  # Set to false if you want to skip generating visualization or markdown reports
   create_visualizations: true
   create_markdown: true

@@ -2,14 +2,15 @@
 Tests for command-specific validators (init, convert, inspect).
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from docling_graph.cli.validators import (
-    validate_provider,
     print_dependency_setup_guide,
     print_next_steps_with_deps,
+    validate_provider,
 )
 
 

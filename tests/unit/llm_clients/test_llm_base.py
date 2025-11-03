@@ -2,24 +2,25 @@
 Tests for LLM base client interface.
 """
 
-import pytest
 from abc import ABC
 from typing import Any, Dict
 from unittest.mock import MagicMock
+
+import pytest
 
 from docling_graph.llm_clients.llm_base import BaseLlmClient
 
 
 class ConcreteClient(BaseLlmClient):
     """Concrete implementation for testing."""
-    
+
     def __init__(self, model: str, **kwargs: Any) -> None:
         self.model = model
         self._context_limit = 4096
-    
+
     def get_json_response(self, prompt: str | dict, schema_json: str) -> Dict[str, Any]:
         return {"result": "test"}
-    
+
     @property
     def context_limit(self) -> int:
         return self._context_limit
@@ -46,7 +47,7 @@ class TestBaseLlmClient:
     def test_client_context_limit_property(self):
         """Client should have context_limit property."""
         client = ConcreteClient(model="test-model")
-        assert hasattr(client, 'context_limit')
+        assert hasattr(client, "context_limit")
         assert isinstance(client.context_limit, int)
         assert client.context_limit > 0
 
@@ -54,18 +55,18 @@ class TestBaseLlmClient:
         """Client should have get_json_response method."""
         client = ConcreteClient(model="test-model")
         result = client.get_json_response("prompt", "{}")
-        
+
         assert isinstance(result, dict)
         assert result.get("result") == "test"
 
     def test_accepts_string_or_dict_prompt(self):
         """get_json_response should accept string or dict prompt."""
         client = ConcreteClient(model="test-model")
-        
+
         # String prompt
         result1 = client.get_json_response("test prompt", "{}")
         assert isinstance(result1, dict)
-        
+
         # Dict prompt
         result2 = client.get_json_response({"system": "sys", "user": "msg"}, "{}")
         assert isinstance(result2, dict)

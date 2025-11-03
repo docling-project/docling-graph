@@ -8,10 +8,12 @@ import typer
 import yaml
 from rich import print as rich_print
 
+from docling_graph.config import PipelineConfig
+
+from ..config_builder import build_config_interactive, print_next_steps
 from ..config_utils import save_config
 from ..constants import CONFIG_FILE_NAME
 from ..validators import print_next_steps_with_deps, validate_and_warn_dependencies
-from .config_builder import build_config_interactive, print_next_steps
 
 
 def init_command() -> None:
@@ -23,42 +25,16 @@ def init_command() -> None:
         rich_print(f"[yellow]'{CONFIG_FILE_NAME}' already exists.[/yellow]")
         if not typer.confirm("Overwrite it?"):
             rich_print("Initialization cancelled.")
-            return  # Return normally (exit code 0)
+            return
 
     # Build configuration interactively
     try:
         config_dict = build_config_interactive()
     except (EOFError, KeyboardInterrupt, typer.Abort):
-        # Handle non-interactive environment gracefully
+        # Handle non-interactive environment: use defaults from PipelineConfig
         rich_print("[yellow]Interactive mode not available. Using default configuration.[/yellow]")
-
-        # Load default config from template
-        template_path = Path(__file__).parent.parent / "config_template.yaml"
-        if template_path.exists():
-            with open(template_path) as f:
-                config_dict = yaml.safe_load(f)
-            rich_print("[blue]Loaded default configuration from template.[/blue]")
-        else:
-            # Minimal fallback config if template not found
-            config_dict = {
-                "defaults": {
-                    "processing_mode": "many-to-one",
-                    "backend_type": "llm",
-                    "inference": "local",
-                    "export_format": "csv",
-                },
-                "docling": {"pipeline": "ocr"},
-                "models": {
-                    "vlm": {
-                        "local": {"default_model": "numind/NuExtract-2.0-8B", "provider": "docling"}
-                    },
-                    "llm": {
-                        "local": {"default_model": "llama-3.8b-instruct", "provider": "ollama"},
-                    },
-                },
-                "output": {"directory": "./outputs"},
-            }
-            rich_print("[blue]Using minimal default configuration.[/blue]")
+        config_dict = PipelineConfig.generate_yaml_dict()
+        rich_print("[blue]Loaded default configuration from PipelineConfig.[/blue]")
     except Exception as err:
         rich_print(f"[red]Error creating config: {err}[/red]")
         raise typer.Exit(code=1) from err
@@ -67,8 +43,7 @@ def init_command() -> None:
     rich_print("\n[bold cyan]Validating dependencies...[/bold cyan]")
     deps_valid = validate_and_warn_dependencies(config_dict, interactive=True)
 
-    # Save configuration regardless of dependency validation
-    # (validation is just a warning, not a blocker)
+    # Save configuration
     try:
         save_config(config_dict, output_path)
         rich_print(f"[green]Successfully created {output_path}[/green]")
@@ -76,7 +51,7 @@ def init_command() -> None:
         rich_print(f"[red]Error saving config: {err}[/red]")
         raise typer.Exit(code=1) from err
 
-    # Print next steps with dependency info
+    # Print next steps
     print_next_steps(config_dict)
     print_next_steps_with_deps(config_dict)
 

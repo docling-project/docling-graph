@@ -89,9 +89,7 @@ class TestGetModelConfig:
 
     def test_get_model_config_local_llm(self):
         """Should return config for local LLM."""
-        config = {
-            "models": {"llm": {"local": {"provider": "ollama", "default_model": "llama-3.1-8b"}}}
-        }
+        config = {"llm": {"local": {"provider": "ollama", "default_model": "llama-3.1-8b"}}}
 
         result = _get_model_config(config, "llm", "local")
 
@@ -100,9 +98,7 @@ class TestGetModelConfig:
 
     def test_get_model_config_remote_llm(self):
         """Should return config for remote LLM."""
-        config = {
-            "models": {"llm": {"remote": {"provider": "mistral", "default_model": "mistral-small"}}}
-        }
+        config = {"llm": {"remote": {"provider": "mistral", "default_model": "mistral-small"}}}
 
         result = _get_model_config(config, "llm", "remote")
 
@@ -111,9 +107,7 @@ class TestGetModelConfig:
 
     def test_get_model_config_vlm(self):
         """Should return config for VLM."""
-        config = {
-            "models": {"vlm": {"local": {"provider": "docling", "default_model": "nuextract"}}}
-        }
+        config = {"vlm": {"local": {"provider": "docling", "default_model": "nuextract"}}}
 
         result = _get_model_config(config, "vlm", "local")
 
@@ -122,9 +116,7 @@ class TestGetModelConfig:
 
     def test_get_model_config_with_override(self):
         """Should apply model override."""
-        config = {
-            "models": {"llm": {"local": {"provider": "ollama", "default_model": "llama-3.1-8b"}}}
-        }
+        config = {"llm": {"local": {"provider": "ollama", "default_model": "llama-3.1-8b"}}}
 
         result = _get_model_config(config, "llm", "local", model_override="custom-model")
 
@@ -132,9 +124,7 @@ class TestGetModelConfig:
 
     def test_get_model_config_with_provider_override(self):
         """Should apply provider override."""
-        config = {
-            "models": {"llm": {"remote": {"provider": "mistral", "default_model": "mistral-small"}}}
-        }
+        config = {"llm": {"remote": {"provider": "mistral", "default_model": "mistral-small"}}}
 
         result = _get_model_config(config, "llm", "remote", provider_override="openai")
 
@@ -142,14 +132,14 @@ class TestGetModelConfig:
 
     def test_get_model_config_missing_raises_error(self):
         """Should raise ValueError if config missing."""
-        config = {"models": {}}
+        config = {}
 
         with pytest.raises(ValueError):
             _get_model_config(config, "llm", "local")
 
     def test_get_model_config_default_provider(self):
         """Should use default provider if not specified."""
-        config = {"models": {"llm": {"local": {"default_model": "llama"}}}}
+        config = {"llm": {"local": {"default_model": "llama"}}}
 
         result = _get_model_config(config, "llm", "local")
 

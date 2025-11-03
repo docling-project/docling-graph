@@ -12,9 +12,10 @@ from typing_extensions import Annotated
 
 sys.path.append(str(Path.cwd()))
 
+from docling_graph.config import PipelineConfig
 from docling_graph.pipeline import run_pipeline
 
-from ..config_utils import get_config_value, load_config
+from ..config_utils import load_config
 from ..validators import (
     validate_backend_type,
     validate_docling_config,
@@ -44,15 +45,14 @@ def convert_command(
             help="Dotted path to Pydantic template (e.g., 'templates.invoice.Invoice').",
         ),
     ],
-    # Configuration options
     processing_mode: Annotated[
         Optional[str],
         typer.Option(
             "--processing-mode", "-p", help="Processing strategy: 'one-to-one' or 'many-to-one'."
         ),
     ] = None,
-    backend_type: Annotated[
-        Optional[str], typer.Option("--backend-type", "-b", help="Backend: 'llm' or 'vlm'.")
+    backend: Annotated[
+        Optional[str], typer.Option("--backend", "-b", help="Backend: 'llm' or 'vlm'.")
     ] = None,
     inference: Annotated[
         Optional[str], typer.Option("--inference", "-i", help="Inference: 'local' or 'remote'.")
@@ -61,7 +61,7 @@ def convert_command(
         Optional[str],
         typer.Option("--docling-pipeline", "-d", help="Docling pipeline: 'ocr' or 'vision'."),
     ] = None,
-    # Docling export options Experiment
+    # Docling export options
     export_docling_json: Annotated[
         bool,
         typer.Option(
@@ -99,22 +99,23 @@ def convert_command(
     """Convert a document to a knowledge graph."""
     rich_print("--- [blue]Docling-Graph Conversion[/blue] ---")
 
-    # Load configuration
+    # Load YAML configuration (flat)
     config_data = load_config()
     defaults = config_data.get("defaults", {})
-    docling_config = config_data.get("docling", {})
+    docling_cfg = config_data.get("docling", {})
+    models_from_yaml = config_data.get("models", {})  # flat models only
 
     # Resolve configuration (CLI args override config file)
-    processing_mode = processing_mode or defaults.get("processing_mode", "many-to-one")
-    backend_type = backend_type or defaults.get("backend_type", "llm")
-    inference = inference or defaults.get("inference", "local")
-    export_format = export_format or defaults.get("export_format", "csv")
+    processing_mode_val = processing_mode or defaults.get("processing_mode", "many-to-one")
+    backend_val = backend or defaults.get("backend", "llm")
+    inference_val = inference or defaults.get("inference", "local")
+    export_format_val = export_format or defaults.get("export_format", "csv")
 
     # Docling settings
-    docling_pipeline = docling_pipeline or docling_config.get("pipeline", "ocr")
+    docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
 
     # Docling export settings - use config file as fallback
-    docling_export_settings = docling_config.get("export", {})
+    docling_export_settings = docling_cfg.get("export", {})
     final_export_docling_json = (
         export_docling_json
         if export_docling_json is not None
@@ -132,59 +133,52 @@ def convert_command(
     )
 
     # Validate all inputs
-    processing_mode = validate_processing_mode(processing_mode)
-    backend_type = validate_backend_type(backend_type)
-    inference = validate_inference(inference)
-    docling_pipeline = validate_docling_config(docling_pipeline)
-    export_format = validate_export_format(export_format)
-
-    # Validate VLM constraints
-    validate_vlm_constraints(backend_type, inference)
+    processing_mode_val = validate_processing_mode(processing_mode_val)
+    backend_val = validate_backend_type(backend_val)
+    inference_val = validate_inference(inference_val)
+    docling_pipeline_val = validate_docling_config(docling_pipeline_val)
+    export_format_val = validate_export_format(export_format_val)
+    validate_vlm_constraints(backend_val, inference_val)
 
     # Display configuration
     rich_print("\n[bold]Configuration:[/bold]")
-    rich_print(f"  Source: [cyan]{source}[/cyan]")
-    rich_print(f"  Template: [cyan]{template}[/cyan]")
-    rich_print(f"  Docling Pipeline: [cyan]{docling_pipeline}[/cyan]")
-    rich_print(f"  Processing: [cyan]{processing_mode}[/cyan]")
-    rich_print(f"  Backend: [cyan]{backend_type}[/cyan]")
-    rich_print(f"  Inference: [cyan]{inference}[/cyan]")
-    rich_print(f"  Export: [cyan]{export_format}[/cyan]")
-    rich_print(f"  Reverse edges: [cyan]{reverse_edges}[/cyan]")
+    rich_print(f" Source: [cyan]{source}[/cyan]")
+    rich_print(f" Template: [cyan]{template}[/cyan]")
+    rich_print(f" Docling Pipeline: [cyan]{docling_pipeline_val}[/cyan]")
+    rich_print(f" Processing: [cyan]{processing_mode_val}[/cyan]")
+    rich_print(f" Backend: [cyan]{backend_val}[/cyan]")
+    rich_print(f" Inference: [cyan]{inference_val}[/cyan]")
+    rich_print(f" Export: [cyan]{export_format_val}[/cyan]")
+    rich_print(f" Reverse edges: [cyan]{reverse_edges}[/cyan]")
 
     # Display Docling export settings
     rich_print("\n[bold]Docling Export:[/bold]")
-    rich_print(f"  Document JSON: [cyan]{final_export_docling_json}[/cyan]")
-    rich_print(f"  Markdown: [cyan]{final_export_markdown}[/cyan]")
-    rich_print(f"  Per-page MD: [cyan]{final_export_per_page}[/cyan]")
+    rich_print(f" Document JSON: [cyan]{final_export_docling_json}[/cyan]")
+    rich_print(f" Markdown: [cyan]{final_export_markdown}[/cyan]")
+    rich_print(f" Per-page MD: [cyan]{final_export_per_page}[/cyan]")
 
-    # Build run configuration
-    run_config = {
-        "source": str(source),
-        "template": template,
-        "output_dir": str(output_dir),
-        "docling_config": docling_pipeline,
-        "processing_mode": processing_mode,
-        "backend_type": backend_type,
-        "inference": inference,
-        "reverse_edges": reverse_edges,
-        "export_format": export_format,
-        # Docling export settings Experiment
-        "export_docling": True,  # Master switch
-        "export_docling_json": final_export_docling_json,
-        "export_markdown": final_export_markdown,
-        "export_per_page_markdown": final_export_per_page,
-        "config": config_data,
-        "model_override": model,
-        "provider_override": provider,
-    }
+    # Build typed config
+    cfg = PipelineConfig(
+        source=str(source),
+        template=template,
+        backend=backend_val,
+        inference=inference_val,
+        processing_mode=processing_mode_val,
+        docling_config=docling_pipeline_val,
+        model_override=model,
+        provider_override=provider,
+        models=models_from_yaml,
+        export_format=export_format_val,
+        export_docling=True,
+        export_docling_json=final_export_docling_json,
+        export_markdown=final_export_markdown,
+        export_per_page_markdown=final_export_per_page,
+        reverse_edges=reverse_edges,
+        output_dir=str(output_dir),
+    )
 
-    # Run pipeline
+    # Run pipeline with normalized/validated config
     try:
-        run_pipeline(run_config)
-    except Exception as err:
-        rich_print(f"\n[bold red]Error:[/bold red] {err}")
-        import traceback
-
-        traceback.print_exc()
-        raise typer.Exit(code=1) from err
+        run_pipeline(cfg)
+    except Exception as e:
+        raise ValueError(str(e)) from e

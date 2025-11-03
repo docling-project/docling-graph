@@ -30,7 +30,7 @@ def sample_config_yaml():
     """Sample YAML configuration."""
     return """
     processing_mode: one-to-one
-    backend_type: llm
+    backend: llm
     inference: local
     docling_config: ocr
     template: docling_graph.templates.invoice.Invoice

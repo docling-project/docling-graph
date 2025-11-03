@@ -24,13 +24,13 @@ class TestLoadConfig:
     def test_load_config_success(self, mock_cwd, tmp_path):
         """Should successfully load valid YAML config."""
         config_path = tmp_path / CONFIG_FILE_NAME
-        config_path.write_text("defaults:\n  backend_type: llm\n")
+        config_path.write_text("defaults:\n  backend: llm\n")
         mock_cwd.return_value = tmp_path
 
         config = load_config()
 
         assert isinstance(config, dict)
-        assert config["defaults"]["backend_type"] == "llm"
+        assert config["defaults"]["backend"] == "llm"
 
     @patch("docling_graph.cli.config_utils.Path.cwd")
     def test_load_config_file_not_found(self, mock_cwd, tmp_path):
@@ -78,7 +78,7 @@ class TestLoadConfig:
         """Should load complex nested config."""
         config_path = tmp_path / CONFIG_FILE_NAME
         config_data = {
-            "defaults": {"backend_type": "llm", "inference": "local"},
+            "defaults": {"backend": "llm", "inference": "local"},
             "models": {"llm": {"local": {"provider": "ollama"}}},
         }
         with open(config_path, "w") as f:
@@ -87,7 +87,7 @@ class TestLoadConfig:
 
         config = load_config()
 
-        assert config["defaults"]["backend_type"] == "llm"
+        assert config["defaults"]["backend"] == "llm"
         assert config["models"]["llm"]["local"]["provider"] == "ollama"
 
 
@@ -97,7 +97,7 @@ class TestSaveConfig:
     def test_save_config_creates_valid_yaml(self, tmp_path):
         """Should save config as valid YAML."""
         config = {
-            "defaults": {"backend_type": "llm", "inference": "local"},
+            "defaults": {"backend": "llm", "inference": "local"},
             "models": {"vlm": {"local": {"default_model": "test-model"}}},
         }
         output_path = tmp_path / "config.yaml"
@@ -155,7 +155,7 @@ class TestGetConfigValue:
     def test_get_config_value_nested_keys(self):
         """Should retrieve deeply nested config value."""
         config = {
-            "defaults": {"backend_type": "llm", "inference": "local"},
+            "defaults": {"backend": "llm", "inference": "local"},
             "models": {"llm": {"local": {"provider": "ollama"}}},
         }
         result = get_config_value(config, "models", "llm", "local", "provider")
