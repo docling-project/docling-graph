@@ -16,28 +16,28 @@ def cleaner():
 @pytest.fixture
 def dirty_graph() -> nx.DiGraph:
     """Returns a graph with duplicates, phantoms, and orphans."""
-    G = nx.DiGraph()
+    g = nx.DiGraph()
     # Add nodes
-    G.add_node("node-1", name="Alice")
-    G.add_node("node-2", name="Acme")
-    G.add_node("node-3", name="Bob")
+    g.add_node("node-1", name="Alice")
+    g.add_node("node-2", name="Acme")
+    g.add_node("node-3", name="Bob")
     # Add a semantic duplicate node
-    G.add_node("node-4", name="Alice")
+    g.add_node("node-4", name="Alice")
     # Add a phantom node (only metadata)
-    G.add_node("phantom-1", id="phantom-1", label="Person")
+    g.add_node("phantom-1", id="phantom-1", label="Person")
 
     # Add edges
-    G.add_edge("node-1", "node-2", label="WORKS_AT")
+    g.add_edge("node-1", "node-2", label="WORKS_AT")
     # Add a duplicate edge
-    G.add_edge("node-1", "node-2", label="WORKS_AT")
+    g.add_edge("node-1", "node-2", label="WORKS_AT")
     # Add edge from the semantic duplicate
-    G.add_edge("node-4", "node-2", label="WORKS_AT")
+    g.add_edge("node-4", "node-2", label="WORKS_AT")
     # Add edge to the phantom node
-    G.add_edge("node-3", "phantom-1", label="KNOWS")
+    g.add_edge("node-3", "phantom-1", label="KNOWS")
     # Add an orphaned edge (node-99 doesn't exist)
-    G.add_edge("node-1", "node-99", label="ORPHAN")
+    g.add_edge("node-1", "node-99", label="ORPHAN")
 
-    return G
+    return g
 
 
 def test_clean_graph(cleaner: GraphCleaner, dirty_graph: nx.DiGraph):
@@ -73,29 +73,29 @@ def test_clean_graph(cleaner: GraphCleaner, dirty_graph: nx.DiGraph):
 
 def test_validate_graph_structure_valid():
     """Test validation on a clean graph."""
-    G = nx.DiGraph()
-    G.add_node("A", name="Node A")
-    G.add_node("B", name="Node B")
-    G.add_edge("A", "B", label="CONNECTS")
+    g = nx.DiGraph()
+    g.add_node("A", name="Node A")
+    g.add_node("B", name="Node B")
+    g.add_edge("A", "B", label="CONNECTS")
 
-    assert validate_graph_structure(G, raise_on_error=True) is True
+    assert validate_graph_structure(g, raise_on_error=True) is True
 
 
 def test_validate_graph_structure_orphan_edge():
     """Test validation failure for an auto-created empty node."""
-    G = nx.DiGraph()
-    G.add_node("A", name="Node A")
-    G.add_edge("A", "B", label="CONNECTS")  # networkx auto-creates node "B" with no data
+    g = nx.DiGraph()
+    g.add_node("A", name="Node A")
+    g.add_edge("A", "B", label="CONNECTS")  # networkx auto-creates node "B" with no data
 
     with pytest.raises(ValueError, match="Empty node: B"):
-        validate_graph_structure(G, raise_on_error=True)
+        validate_graph_structure(g, raise_on_error=True)
 
 
 def test_validate_graph_structure_empty_node():
     """Test validation failure for an empty node."""
-    G = nx.DiGraph()
-    G.add_node("A", name="Node A")
-    G.add_node("B", id="B", label="Test")  # Empty node
+    g = nx.DiGraph()
+    g.add_node("A", name="Node A")
+    g.add_node("B", id="B", label="Test")  # Empty node
 
     with pytest.raises(ValueError, match="Empty node: B"):
-        validate_graph_structure(G, raise_on_error=True)
+        validate_graph_structure(g, raise_on_error=True)

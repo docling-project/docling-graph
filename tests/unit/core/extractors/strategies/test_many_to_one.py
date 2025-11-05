@@ -1,3 +1,4 @@
+from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -18,14 +19,14 @@ def mock_llm_backend():
     backend.client = MagicMock(context_limit=8000, content_ratio=0.8)
     backend.__class__.__name__ = "MockLlmBackend"
 
-    def mock_extract(markdown, template, context, is_partial):
+    def mock_extract(markdown, template, context, is_partial) -> Optional[MockTemplate]:
         if "fail" in markdown:
             return None
         return template(name=context, value=len(markdown))
 
     backend.extract_from_markdown.side_effect = mock_extract
 
-    def mock_consolidate(raw_models, programmatic_model, template):
+    def mock_consolidate(raw_models, programmatic_model, template) -> MockTemplate:
         return template(name="Consolidated", value=999)
 
     backend.consolidate_from_pydantic_models.side_effect = mock_consolidate
@@ -38,7 +39,7 @@ def mock_vlm_backend():
     backend = MagicMock(spec=ExtractionBackendProtocol)
     backend.__class__.__name__ = "MockVlmBackend"
 
-    def mock_extract(source, template):
+    def mock_extract(source, template) -> List[MockTemplate]:
         if "single" in source:
             return [template(name="Page 1", value=10)]
         if "multi" in source:

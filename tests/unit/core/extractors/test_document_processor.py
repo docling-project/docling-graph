@@ -69,7 +69,7 @@ def test_extract_page_markdowns(mock_docling_doc):
     """Test extracting markdown page by page."""
     processor = DocumentProcessor()
 
-    def export_side_effect(page_no=None):
+    def export_side_effect(page_no=None) -> str:
         if page_no == 1:
             return "Page 1 MD"
         if page_no == 2:
@@ -144,7 +144,7 @@ def test_process_document(mock_chunker_class, mock_converter_class, mock_docling
     mock_result.document = mock_docling_doc
     mock_converter_instance.convert.return_value = mock_result
 
-    def export_side_effect(page_no=None):
+    def export_side_effect(page_no=None) -> str:
         if page_no == 1:
             return "Page 1 MD"
         if page_no == 2:

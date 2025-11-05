@@ -14,7 +14,7 @@ def test_create_llm_many_to_one(mock_strategy, mock_backend):
     mock_llm_client = MagicMock()
     mock_llm_client.__class__.__name__ = "MockLLMClient"
 
-    extractor = ExtractorFactory.create_extractor(
+    ExtractorFactory.create_extractor(
         processing_mode="many-to-one",
         backend_name="llm",
         llm_client=mock_llm_client,
@@ -31,7 +31,7 @@ def test_create_llm_many_to_one(mock_strategy, mock_backend):
 @patch("docling_graph.core.extractors.factory.ManyToOneStrategy")
 def test_create_vlm_many_to_one(mock_strategy, mock_backend):
     """Test creating VLM backend with many-to-one strategy."""
-    extractor = ExtractorFactory.create_extractor(
+    ExtractorFactory.create_extractor(
         processing_mode="many-to-one",
         backend_name="vlm",
         model_name="docling-vlm",
@@ -48,7 +48,7 @@ def test_create_one_to_one(mock_strategy, mock_backend):
     """Test creating one-to-one strategy."""
     mock_llm_client = MagicMock()
 
-    extractor = ExtractorFactory.create_extractor(
+    ExtractorFactory.create_extractor(
         processing_mode="one-to-one",
         backend_name="llm",
         llm_client=mock_llm_client,
