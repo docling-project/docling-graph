@@ -9,6 +9,7 @@ from typing import TypedDict
 
 class PromptDict(TypedDict):
     """Type definition for prompt dictionaries."""
+
     system: str
     user: str
 
@@ -137,9 +138,7 @@ def get_consolidation_prompt(
     Returns:
         The formatted consolidation prompt.
     """
-    raw_jsons = "\n\n---\n\n".join(
-        m.model_dump_json(indent=2) for m in raw_models
-    )
+    raw_jsons = "\n\n---\n\n".join(m.model_dump_json(indent=2) for m in raw_models)
 
     programmatic_json = (
         programmatic_model.model_dump_json(indent=2)

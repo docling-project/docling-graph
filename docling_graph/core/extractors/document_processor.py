@@ -112,9 +112,7 @@ class DocumentProcessor:
         )
         return result.document
 
-    def extract_chunks(
-        self, document: DoclingDocument, with_stats: bool = False
-    ) -> Any:
+    def extract_chunks(self, document: DoclingDocument, with_stats: bool = False) -> Any:
         """
         Extract structure-aware chunks from document using HybridChunker.
 
@@ -183,9 +181,7 @@ class DocumentProcessor:
         Returns:
             List of Markdown strings, one per page.
         """
-        rich_print(
-            "[blue][DocumentProcessor][/blue] Processing document into per-page markdowns"
-        )
+        rich_print("[blue][DocumentProcessor][/blue] Processing document into per-page markdowns")
         document = self.convert_to_docling_doc(source)
         return self.extract_page_markdowns(document)
 

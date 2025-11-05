@@ -12,17 +12,16 @@ Configurable per LLM provider tokenizer.
 
 from typing import List, Optional
 
+from docling.chunking import HybridChunker
 from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
 from docling_core.transforms.chunker.tokenizer.openai import OpenAITokenizer
-from docling.chunking import HybridChunker
-
 from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
 from transformers import AutoTokenizer
 
 from ...llm_clients.config import (
-    get_tokenizer_for_provider,
     get_recommended_chunk_size,
+    get_tokenizer_for_provider,
 )
 
 
@@ -35,10 +34,10 @@ class DocumentChunker:
         max_tokens: Optional[int] = None,
         provider: Optional[str] = None,
         merge_peers: bool = True,
-    ):
+    ) -> None:
         """
         Initialize the chunker with smart defaults based on provider or custom tokenizer.
-        
+
         Now uses centralized llm_config.py registry.
         """
         # Step 1: Determine tokenizer name
@@ -66,6 +65,7 @@ class DocumentChunker:
             # Special handling for OpenAI tiktoken
             try:
                 import tiktoken
+
                 tt_tokenizer = tiktoken.encoding_for_model("gpt-4o")
                 self.tokenizer = OpenAITokenizer(
                     tokenizer=tt_tokenizer,

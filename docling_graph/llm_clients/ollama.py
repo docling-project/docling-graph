@@ -29,7 +29,6 @@ except ImportError:
 ollama: Any = _ollama
 
 
-
 class OllamaClient(BaseLlmClient):
     """Ollama (local LLM) implementation with proper message structure."""
 

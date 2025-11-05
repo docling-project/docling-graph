@@ -22,7 +22,6 @@ from .constants import (
 )
 
 
-
 def build_config_interactive() -> Dict[str, Any]:
     """Build configuration through interactive prompts.
 
@@ -274,4 +273,6 @@ def print_next_steps(config: Dict[str, Any]) -> None:
     rich_print("\n[bold green]Configuration created successfully![/bold green]")
     rich_print("\n[bold]Next steps:[/bold]")
     rich_print("1. Customize your Pydantic template in templates/")
-    rich_print("2. Run: [cyan]docling-graph convert --source <doc> --template <template_path>[/cyan]")
+    rich_print(
+        "2. Run: [cyan]docling-graph convert --source <doc> --template <template_path>[/cyan]"
+    )

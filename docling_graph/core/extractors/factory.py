@@ -53,7 +53,6 @@ class ExtractorFactory:
         rich_print(f" • Chunking: [cyan]{use_chunking}[/cyan]")
         # --- ADDED PRINT STATEMENTS END ---
 
-
         # Create backend instance
         backend_obj: Backend
         if backend_name == "vlm":
@@ -69,13 +68,13 @@ class ExtractorFactory:
 
         # Create strategy with docling_config
         extractor: BaseExtractor
-        
+
         strategy_args = {
             "backend": backend_obj,
             "docling_config": docling_config,
             "use_chunking": use_chunking,
         }
-        
+
         # Only pass llm_consolidation if backend is llm
         if backend_name == "llm":
             strategy_args["llm_consolidation"] = llm_consolidation

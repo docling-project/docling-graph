@@ -3,7 +3,7 @@ Many-to-one extraction strategy.
 Processes entire document and returns single consolidated model.
 """
 
-from typing import List, Type
+from typing import List, Optional, Type
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
@@ -17,16 +17,15 @@ from ....protocols import (
     is_llm_backend,
     is_vlm_backend,
 )
-
-from ..document_processor import DocumentProcessor
-from ..extractor_base import BaseExtractor
 from ...utils.dict_merger import merge_pydantic_models
 from ..chunk_batcher import ChunkBatcher
+from ..document_processor import DocumentProcessor
+from ..extractor_base import BaseExtractor
 
 
 class ManyToOneStrategy(BaseExtractor):
     """Many-to-one extraction strategy.
-    
+
     Extracts one consolidated model from an entire document
     using Protocol-based backend type checking (VLM or LLM).
     """
@@ -37,11 +36,11 @@ class ManyToOneStrategy(BaseExtractor):
         docling_config: str = "default",
         use_chunking: bool = True,
         llm_consolidation: bool = False,
-        chunker_config: dict = None,
+        chunker_config: Optional[dict] = None,
     ) -> None:
         """
         Initialize the extraction strategy with a backend and document processor.
-        
+
         Args:
             backend: Extraction backend (VLM or LLM)
             docling_config: Docling pipeline config ("ocr" or "vision")
@@ -58,7 +57,7 @@ class ManyToOneStrategy(BaseExtractor):
         self.backend = backend
         self.llm_consolidation = llm_consolidation
         self.use_chunking = use_chunking
-        
+
         # Auto-configure chunker based on backend if not provided
         if use_chunking and chunker_config is None and hasattr(backend, "client"):
             context_limit = getattr(backend.client, "context_limit", 8000)
@@ -66,12 +65,12 @@ class ManyToOneStrategy(BaseExtractor):
             # Reserve room for prompt/template overhead
             max_tokens = int(context_limit * content_ratio)
             chunker_config = {"max_tokens": max_tokens}
-        
+
         self.doc_processor = DocumentProcessor(
             docling_config=docling_config,
             chunker_config=chunker_config if use_chunking else None,
         )
-        
+
         backend_type = get_backend_type(self.backend)
         rich_print(
             f"[blue][ManyToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
@@ -83,10 +82,10 @@ class ManyToOneStrategy(BaseExtractor):
     # Public extraction entry point
     def extract(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
         """Extract structured data using a many-to-one strategy.
-        
+
         - VLM backend: Extracts all pages and merges the results.
         - LLM backend: Uses structure-aware chunking (if enabled) or falls back to page-by-page.
-        
+
         Returns:
             A list containing a single merged model instance, or an empty list on failure.
         """
@@ -160,7 +159,7 @@ class ManyToOneStrategy(BaseExtractor):
             # Use chunking if enabled
             if self.use_chunking:
                 return self._extract_with_chunks(backend, document, template)
-            
+
             # Fallback to legacy page-by-page or full-doc extraction
             if hasattr(backend.client, "context_limit"):
                 context_limit = backend.client.context_limit
@@ -199,12 +198,12 @@ class ManyToOneStrategy(BaseExtractor):
         try:
             chunks = self.doc_processor.extract_chunks(document)
             total_chunks = len(chunks)
-            
+
             # Get context limit from backend
             context_limit = getattr(
                 backend.client, "context_limit", 3500
             )  # Fallback for unknown backends
-            
+
             # Create batcher
             batcher = ChunkBatcher(
                 context_limit=context_limit,
@@ -212,26 +211,21 @@ class ManyToOneStrategy(BaseExtractor):
                 response_buffer_tokens=500,
                 merge_threshold=0.85,
             )
-            
+
             # Batch chunks for efficient processing
             batches = batcher.batch_chunks(chunks)
-            
+
             rich_print(
                 f"[blue][ManyToOneStrategy][/blue] Starting batch extraction "
                 f"({len(batches)} batches from {total_chunks} chunks)..."
             )
-            
+
             extracted_models: List[BaseModel] = []
-            
+
             for batch in batches:
-                batch_label = (
-                    f"batch {batch.batch_id + 1} "
-                    f"({batch.chunk_count} chunks)"
-                )
-                rich_print(
-                    f"[blue][ManyToOneStrategy][/blue] Extracting from {batch_label}"
-                )
-                
+                batch_label = f"batch {batch.batch_id + 1} ({batch.chunk_count} chunks)"
+                rich_print(f"[blue][ManyToOneStrategy][/blue] Extracting from {batch_label}")
+
                 # Send combined batch to LLM
                 model = backend.extract_from_markdown(
                     markdown=batch.combined_text,
@@ -239,27 +233,24 @@ class ManyToOneStrategy(BaseExtractor):
                     context=batch_label,
                     is_partial=True,
                 )
-                
+
                 if model:
                     extracted_models.append(model)
                 else:
                     rich_print(
-                        f"[yellow][ManyToOneStrategy][/yellow] "
-                        f"{batch_label} returned no model"
+                        f"[yellow][ManyToOneStrategy][/yellow] {batch_label} returned no model"
                     )
-            
+
             if not extracted_models:
-                rich_print(
-                    "[red][ManyToOneStrategy][/red] No models extracted from any batch"
-                )
+                rich_print("[red][ManyToOneStrategy][/red] No models extracted from any batch")
                 return []
-            
+
             if len(extracted_models) == 1:
                 rich_print(
                     "[blue][ManyToOneStrategy][/blue] Single batch extracted — no merge needed"
                 )
                 return extracted_models
-            
+
             rich_print(
                 f"[blue][ManyToOneStrategy][/blue] Programmatically merging "
                 f"[cyan]{len(extracted_models)}[/cyan] batch models..."
@@ -274,7 +265,9 @@ class ManyToOneStrategy(BaseExtractor):
 
             # Consolidation step
             if self.llm_consolidation and is_llm_backend(self.backend):
-                rich_print("[green][ManyToOneStrategy][/green] Programmatic merge complete. Starting LLM consolidation pass...")
+                rich_print(
+                    "[green][ManyToOneStrategy][/green] Programmatic merge complete. Starting LLM consolidation pass..."
+                )
                 final_model = self.backend.consolidate_from_pydantic_models(
                     raw_models=extracted_models,
                     programmatic_model=programmatic_model,
@@ -289,7 +282,6 @@ class ManyToOneStrategy(BaseExtractor):
             else:
                 return [programmatic_model]
 
-        
         except Exception as e:
             rich_print(f"[red][ManyToOneStrategy][/red] Batch extraction failed: {e}")
             return []
@@ -333,7 +325,7 @@ class ManyToOneStrategy(BaseExtractor):
         try:
             page_markdowns = self.doc_processor.extract_page_markdowns(document)
             total_pages = len(page_markdowns)
-            
+
             rich_print(
                 f"[blue][ManyToOneStrategy][/blue] Starting page-by-page extraction ({total_pages} pages)..."
             )
@@ -344,14 +336,14 @@ class ManyToOneStrategy(BaseExtractor):
                 rich_print(
                     f"[blue][ManyToOneStrategy][/blue] Extracting from page {page_num}/{total_pages}"
                 )
-                
+
                 model = backend.extract_from_markdown(
                     markdown=page_md,
                     template=template,
                     context=f"page {page_num}",
                     is_partial=True,
                 )
-                
+
                 if model:
                     extracted_models.append(model)
                 else:
@@ -384,7 +376,9 @@ class ManyToOneStrategy(BaseExtractor):
 
             # Consolidation step
             if self.llm_consolidation and is_llm_backend(self.backend):
-                rich_print("[blue]Programmatic merge complete. Starting LLM consolidation pass...[/blue]")
+                rich_print(
+                    "[blue]Programmatic merge complete. Starting LLM consolidation pass...[/blue]"
+                )
                 final_model = self.backend.consolidate_from_pydantic_models(
                     raw_models=extracted_models,
                     programmatic_model=programmatic_model,
@@ -392,7 +386,9 @@ class ManyToOneStrategy(BaseExtractor):
                 )
                 if final_model:
                     return [final_model]
-                rich_print("[yellow]LLM consolidation failed. Falling back to programmatic merge.[/yellow]")
+                rich_print(
+                    "[yellow]LLM consolidation failed. Falling back to programmatic merge.[/yellow]"
+                )
                 return [programmatic_model]
             else:
                 return [programmatic_model]

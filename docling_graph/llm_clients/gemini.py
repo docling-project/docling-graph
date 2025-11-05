@@ -39,7 +39,6 @@ genai: Any = _genai
 types: Any = _genai_types
 
 
-
 class GeminiClient(BaseLlmClient):
     """Google Gemini API implementation with proper JSON response format."""
 

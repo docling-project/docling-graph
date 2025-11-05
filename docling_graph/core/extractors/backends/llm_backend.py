@@ -11,7 +11,7 @@ from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
 
 from ....llm_clients.base import BaseLlmClient
-from ....llm_clients.prompts import get_extraction_prompt, get_consolidation_prompt
+from ....llm_clients.prompts import get_consolidation_prompt, get_extraction_prompt
 
 
 class LlmBackend:
@@ -97,9 +97,11 @@ class LlmBackend:
                 return None
 
         except Exception as e:
-            rich_print(f"[red]Error during LLM extraction for {context}:[/red] {type(e).__name__}: {e}")
+            rich_print(
+                f"[red]Error during LLM extraction for {context}:[/red] {type(e).__name__}: {e}"
+            )
             return None
-        
+
     def consolidate_from_pydantic_models(
         self,
         raw_models: List[BaseModel],
@@ -117,9 +119,7 @@ class LlmBackend:
         Returns:
             A single, validated, LLM-consolidated Pydantic model, or None if failed.
         """
-        rich_print(
-            f"[blue][LlmBackend][/blue] Consolidating {len(raw_models)} models with LLM..."
-        )
+        rich_print(f"[blue][LlmBackend][/blue] Consolidating {len(raw_models)} models with LLM...")
         try:
             schema_json = json.dumps(template.model_json_schema(), indent=2)
 
@@ -139,14 +139,18 @@ class LlmBackend:
             # Use model_validate for proper Pydantic validation
             try:
                 validated_model = template.model_validate(parsed_json)
-                rich_print("[blue][LlmBackend][/blue] Successfully consolidated and validated model.")
+                rich_print(
+                    "[blue][LlmBackend][/blue] Successfully consolidated and validated model."
+                )
                 return validated_model
 
             except ValidationError as e:
                 rich_print(
-                    f"[blue][LlmBackend][/blue] [yellow]Validation Error during consolidation:[/yellow]"
+                    "[blue][LlmBackend][/blue] [yellow]Validation Error during consolidation:[/yellow]"
                 )
-                rich_print("  The data consolidated by the LLM does not match your Pydantic template.")
+                rich_print(
+                    "  The data consolidated by the LLM does not match your Pydantic template."
+                )
                 rich_print("[red]Details:[/red]")
 
                 for error in e.errors():

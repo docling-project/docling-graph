@@ -37,10 +37,7 @@ class VllmClient(BaseLlmClient):
     """vLLM client implementation using OpenAI-compatible API."""
 
     def __init__(
-        self,
-        model: str,
-        base_url: str = "http://localhost:8000/v1",
-        api_key: str = "EMPTY"
+        self, model: str, base_url: str = "http://localhost:8000/v1", api_key: str = "EMPTY"
     ) -> None:
         """Initialize vLLM client."""
         self.model = model

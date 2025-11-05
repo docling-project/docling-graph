@@ -7,28 +7,28 @@ IDs, edge metadata, bidirectional edges, and automatic cleanup.
 """
 
 from typing import List, Optional, Set
-from rich import print as rich_print
-from pydantic import BaseModel
+
 import networkx as nx
+from pydantic import BaseModel
+from rich import print as rich_print
 
 from ..utils.graph_cleaner import GraphCleaner, validate_graph_structure
 from ..utils.stats_calculator import calculate_graph_stats
-
+from .config import GraphConfig
 from .id_registry import NodeIDRegistry
 from .models import Edge, GraphMetadata
-from .config import GraphConfig
 
 
 class GraphConverter:
     """Converts Pydantic models to NetworkX graphs with enhanced features.
-    
+
     This converter supports:
     - Deterministic node ID generation via NodeIDRegistry
     - Automatic graph cleanup (phantom nodes, duplicates)
     - Stable node IDs across batch extractions
     - Bidirectional edges
     - Full validation
-    
+
     This converter is stateless and thread-safe. All conversion state is managed
     through method parameters rather than instance variables.
     """
@@ -43,7 +43,7 @@ class GraphConverter:
     ) -> None:
         """
         Initialize the graph converter.
-        
+
         Args:
             config: Graph configuration (optional)
             add_reverse_edges: Create bidirectional edges (default: False)
@@ -57,10 +57,10 @@ class GraphConverter:
         self.config = config or GraphConfig()
         self.add_reverse_edges = add_reverse_edges or self.config.add_reverse_edges
         self.validate_graph = validate_graph or self.config.validate_graph
-        
+
         # Initialize registry (use provided or create new)
         self.registry = registry or NodeIDRegistry()
-        
+
         # Initialize cleaner for automatic cleanup
         self.auto_cleanup = auto_cleanup
         self.cleaner = GraphCleaner(verbose=True) if auto_cleanup else None
@@ -71,7 +71,7 @@ class GraphConverter:
     ) -> tuple[nx.DiGraph, GraphMetadata]:
         """
         Convert list of Pydantic models to a NetworkX graph.
-        
+
         Process:
         1. Pre-register all models for deterministic node IDs
         2. Create nodes from models
@@ -79,10 +79,10 @@ class GraphConverter:
         4. Apply automatic cleanup (if enabled)
         5. Validate graph structure
         6. Calculate statistics
-        
+
         Args:
             model_instances: List of Pydantic model instances to convert
-        
+
         Returns:
             Tuple of (graph, metadata)
         """
@@ -110,10 +110,7 @@ class GraphConverter:
             edges_to_add.extend(edges)
 
         # Add edges to graph
-        edge_list = [
-            (e.source, e.target, {"label": e.label, **e.properties})
-            for e in edges_to_add
-        ]
+        edge_list = [(e.source, e.target, {"label": e.label, **e.properties}) for e in edges_to_add]
 
         if self.add_reverse_edges:
             reverse_edge_list = [
@@ -137,9 +134,7 @@ class GraphConverter:
         if self.validate_graph:
             try:
                 validate_graph_structure(graph, raise_on_error=True)
-                rich_print(
-                    "[green][GraphConverter][/green] Graph structure validated successfully"
-                )
+                rich_print("[green][GraphConverter][/green] Graph structure validated successfully")
             except ValueError as e:
                 rich_print(f"[red][GraphConverter][/red] Validation failed: {e}")
                 raise
@@ -241,9 +236,7 @@ class GraphConverter:
                         )
 
                         # Recursively process nested model
-                        edges.extend(
-                            self._create_edges_pass(item, visited_ids)
-                        )
+                        edges.extend(self._create_edges_pass(item, visited_ids))
 
         return edges
 
@@ -254,7 +247,7 @@ class GraphConverter:
     def _get_edge_label(self, model: BaseModel, field_name: str) -> Optional[str]:
         """
         Extract edge label from field metadata if available.
-        
+
         Looks for json_schema_extra['edge_label'] in field info.
         """
         field_info = model.model_fields.get(field_name)

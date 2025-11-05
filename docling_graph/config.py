@@ -8,19 +8,20 @@ configurations for the docling-graph pipeline programmatically.
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Union
 
-from typing_extensions import Self  # <-- use typing_extensions for Self
-
 from pydantic import BaseModel, Field, field_validator, model_validator
+from typing_extensions import Self  # <-- use typing_extensions for Self
 
 
 class ModelConfig(BaseModel):
     """Configuration for a specific model."""
+
     default_model: str = Field(..., description="The model name/path to use")
     provider: str = Field(..., description="The provider for this model")
 
 
 class LLMConfig(BaseModel):
     """LLM model configurations for local and remote inference."""
+
     local: ModelConfig = Field(
         default_factory=lambda: ModelConfig(
             default_model="ibm-granite/granite-4.0-1b",
@@ -37,6 +38,7 @@ class LLMConfig(BaseModel):
 
 class VLMConfig(BaseModel):
     """VLM model configuration."""
+
     local: ModelConfig = Field(
         default_factory=lambda: ModelConfig(
             default_model="numind/NuExtract-2.0-8B",
@@ -47,6 +49,7 @@ class VLMConfig(BaseModel):
 
 class ModelsConfig(BaseModel):
     """Complete models configuration."""
+
     llm: LLMConfig = Field(default_factory=LLMConfig)
     vlm: VLMConfig = Field(default_factory=VLMConfig)
 
@@ -136,6 +139,7 @@ class PipelineConfig(BaseModel):
     def run(self) -> None:
         """Convenience method to run the pipeline with this configuration."""
         from docling_graph.pipeline import run_pipeline
+
         run_pipeline(self.to_dict())
 
     @classmethod

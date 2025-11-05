@@ -44,12 +44,12 @@ def merge_pydantic_models(models: List[Any], template_class: type) -> Any:
         # If merge fails, return first model
         print(f"Warning: Failed to merge models: {e}")
         return models[0]
-    
+
 
 def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str, Any]:
     """
     Recursively merge dicts with smart list deduplication.
-    
+
     For lists of dicts (entities), uses content-based deduplication
     to avoid creating duplicate references.
     """
@@ -57,16 +57,16 @@ def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str
         # Skip empty values
         if source_value in (None, "", [], {}):
             continue
-        
+
         if key not in target:
             target[key] = copy.deepcopy(source_value)
         else:
             target_value = target[key]
-            
+
             # Both dicts: recursive merge
             if isinstance(target_value, dict) and isinstance(source_value, dict):
                 deep_merge_dicts(target_value, source_value)
-            
+
             # Both lists: smart merge
             elif isinstance(target_value, list) and isinstance(source_value, list):
                 # Check if this is a list of entities (dicts with identity)
@@ -77,11 +77,11 @@ def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str
                     for item in source_value:
                         if item not in target_value:
                             target_value.append(item)
-            
+
             # Overwrite
             else:
                 target[key] = copy.deepcopy(source_value)
-    
+
     return target
 
 
@@ -91,34 +91,33 @@ def _merge_entity_lists(
 ) -> List[Dict]:
     """
     Merge two lists of entity dicts, avoiding duplicates.
-    
+
     Uses content-based hashing to identify duplicates.
     """
     import hashlib
     import json
-    
+
     def entity_hash(entity: Dict) -> str:
         """Compute content hash for entity."""
         # Use stable fields for identity
         stable_fields = {
-            k: v for k, v in entity.items()
-            if k not in {'id', '__class__'} and v is not None
+            k: v for k, v in entity.items() if k not in {"id", "__class__"} and v is not None
         }
         content = json.dumps(stable_fields, sort_keys=True, default=str)
         return hashlib.blake2b(content.encode()).hexdigest()[:16]
-    
+
     # Build hash -> entity map for target
     seen_hashes = {entity_hash(e): e for e in target_list}
-    
+
     # Add source entities if not seen
     merged = list(seen_hashes.values())
-    
+
     for source_entity in source_list:
         s_hash = entity_hash(source_entity)
         if s_hash not in seen_hashes:
             merged.append(source_entity)
             seen_hashes[s_hash] = source_entity
-    
+
     return merged
 
 

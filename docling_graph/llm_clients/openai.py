@@ -20,6 +20,7 @@ load_dotenv()
 _OpenAI: Any | None = None
 try:
     from openai import OpenAI as OpenAI_module
+
     _OpenAI = OpenAI_module
 except ImportError:
     rich_print(
@@ -55,16 +56,17 @@ class OpenAIClient(BaseLlmClient):
         """
         Execute OpenAI chat completion with JSON mode.
         Official docs: https://platform.openai.com/docs/guides/structured-outputs
-        
+
         Args:
             prompt: Either a string (legacy) or dict with 'system' and 'user' keys.
             schema_json: JSON schema (for reference, not directly used by OpenAI).
-        
+
         Returns:
             Parsed JSON response from OpenAI.
         """
         if TYPE_CHECKING:
             from openai.types.chat import ChatCompletionMessageParam
+
             messages: list[ChatCompletionMessageParam]
 
         if isinstance(prompt, dict):

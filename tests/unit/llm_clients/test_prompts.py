@@ -4,7 +4,7 @@ Tests for LLM prompt generation utilities.
 
 import pytest
 
-from docling_graph.llm_clients.prompts import get_legacy_prompt, get_extraction_prompt
+from docling_graph.llm_clients.prompts import get_extraction_prompt, get_legacy_prompt
 
 
 class TestGetPrompt:

@@ -136,9 +136,7 @@ def convert_command(
         else defaults.get("llm_consolidation", True)
     )
     final_use_chunking = (
-        use_chunking
-        if use_chunking is not None
-        else defaults.get("use_chunking", True)
+        use_chunking if use_chunking is not None else defaults.get("use_chunking", True)
     )
 
     # Docling export settings - use config file as fallback

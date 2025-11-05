@@ -24,7 +24,6 @@ from .core import (
     PipelineConfig,
     ReportGenerator,
 )
-
 from .core.converters.id_registry import NodeIDRegistry
 
 # Import LLM clients
@@ -95,7 +94,7 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
     conf: Dict[str, Any] = cfg.to_dict()
 
     rich_print("\n--- [blue]Starting Docling-Graph Pipeline[/blue] ---")
-    
+
     # Create shared registry for deterministic node IDs across batches
     node_registry = NodeIDRegistry()
 
@@ -124,7 +123,9 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
         elif isinstance(template_val, type):
             template_class = template_val
         else:
-            raise TypeError("Template must be a dotted path string or a Pydantic BaseModel subclass.")
+            raise TypeError(
+                "Template must be a dotted path string or a Pydantic BaseModel subclass."
+            )
 
         # 2. Get model configuration
         models_config = cast(Dict[str, Any], conf["models"])
@@ -174,11 +175,17 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
         )
 
         # 5. Export Docling outputs (if configured)
-        if conf.get("export_docling", True) or conf.get("export_docling_json", True) or conf.get("export_markdown", True):
+        if (
+            conf.get("export_docling", True)
+            or conf.get("export_docling_json", True)
+            or conf.get("export_markdown", True)
+        ):
             rich_print("[blue][Pipeline][/blue] Exporting Docling document and markdown...")
             docling_exporter = DoclingExporter(output_dir=output_dir)
 
-            if hasattr(extractor, "doc_processor") and hasattr(extractor.doc_processor, "converter"):
+            if hasattr(extractor, "doc_processor") and hasattr(
+                extractor.doc_processor, "converter"
+            ):
                 doc_result = extractor.doc_processor.converter.convert(conf["source"])
                 docling_document = doc_result.document
                 docling_exporter.export_document(
@@ -212,7 +219,9 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
 
         # 7. Export graph
         export_format = cast(str, conf.get("export_format", "csv"))
-        rich_print(f"[blue][Pipeline][/blue] Exporting graph data in [cyan]{export_format.upper()}[/cyan] format...")
+        rich_print(
+            f"[blue][Pipeline][/blue] Exporting graph data in [cyan]{export_format.upper()}[/cyan] format..."
+        )
 
         if export_format == "csv":
             CSVExporter().export(knowledge_graph, output_dir)
@@ -232,7 +241,9 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
         # 8. Reports and visualization
         rich_print("[blue][Pipeline][/blue] Generating reports and visualizations...")
         report_path = output_dir / f"{base_name}_report"
-        ReportGenerator().visualize(knowledge_graph, report_path, source_model_count=len(extracted_models))
+        ReportGenerator().visualize(
+            knowledge_graph, report_path, source_model_count=len(extracted_models)
+        )
         rich_print(f"[green]→[/green] Generated markdown report at {report_path}")
 
         html_path = output_dir / f"{base_name}_graph"
@@ -246,15 +257,21 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
         rich_print("Cleaning up resources...")
         if extractor and hasattr(extractor, "backend") and hasattr(extractor.backend, "cleanup"):
             extractor.backend.cleanup()
-        if extractor and hasattr(extractor, "doc_processor") and hasattr(extractor.doc_processor, "cleanup"):
+        if (
+            extractor
+            and hasattr(extractor, "doc_processor")
+            and hasattr(extractor.doc_processor, "cleanup")
+        ):
             extractor.doc_processor.cleanup()
         if llm_client is not None:
             del llm_client
 
         import gc
+
         gc.collect()
         try:
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         except ImportError:

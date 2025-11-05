@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from rich import print as rich_print
 
 from .base import BaseLlmClient
-from .config import get_model_config, get_context_limit
+from .config import get_context_limit, get_model_config
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +20,7 @@ load_dotenv()
 _Mistral: Any | None = None
 try:
     from mistralai import Mistral as Mistral_module
+
     _Mistral = Mistral_module
 except ImportError:
     rich_print(
@@ -55,11 +56,11 @@ class MistralClient(BaseLlmClient):
         """
         Execute Mistral chat.complete with proper message structure.
         Official example: https://docs.mistral.ai/api/endpoint/chat
-        
+
         Args:
             prompt: Either a string (legacy) or dict with 'system' and 'user' keys.
             schema_json: JSON schema (for reference).
-        
+
         Returns:
             Parsed JSON response from Mistral.
         """
