@@ -32,7 +32,8 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 - **🧠 Extraction**:
   - Local `VLM` (Docling's information extraction pipeline - ideal for small documents with key-value focus)  
   - `LLM` (local via vLLM/Ollama or remote via Mistral/OpenAI/Gemini API)  
-  - Page-wise or whole-document conversion strategies
+  - `Hybrid Chunking` Combines Docling segmentation with semantic LLM chunking for more context-aware extraction
+  - Page-wise or whole-document conversion strategies for flexible processing
 - **🔨 Graph Construction**:
   - Markdown to Graph: Convert validated Pydantic instances to a `NetworkX DiGraph` with rich edge metadata and stable node IDs
   - Smart Merge: Combine multi-page documents into a single Pydantic instance for unified processing
@@ -49,7 +50,7 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 
 ### Coming Soon
 
-* ✂️ **Smart Chunking:** Structure-aware text splitting that keeps document logic intact.
+* ✂️ **Multi-Stage Extraction:** Let users define `extraction_stage` in Pydantic templates to control multiple extraction passes and target content for each.
 * 🧬 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 * ✍🏻 **Flexible Inputs:** Accepts `text`, `markdown`, and `DoclingDocument` directly.
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
