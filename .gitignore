@@ -81,9 +81,4 @@ Thumbs.db
 
 # Project relateds files and directories
 config.yaml
-data/*
-!data/.gitkeep
-outputs/*
-!outputs/.gitkeep
-tempaltes/*
-!tempaltes/.gitkeep
+outputs
