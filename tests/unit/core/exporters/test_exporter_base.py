@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 import networkx as nx
 import pytest
 
-from docling_graph.core.exporters.exporter_base import GraphExporterProtocol
+from docling_graph.core.exporters.base import GraphExporterProtocol
 
 
 class TestGraphExporterProtocol:

@@ -93,7 +93,7 @@ class DocumentProcessor:
                 "[blue][DocumentProcessor][/blue] Initialized with [green]Classic OCR pipeline[/green] (French)"
             )
 
-    def convert_to_markdown(self, source: str) -> DoclingDocument:
+    def convert_to_docling_doc(self, source: str) -> DoclingDocument:
         """
         Converts a document to Docling's Document format.
 
@@ -125,7 +125,7 @@ class DocumentProcessor:
         - Semantic boundaries
 
         Args:
-            document: DoclingDocument from convert_to_markdown()
+            document: DoclingDocument from convert_to_docling_doc()
             with_stats: If True, return (chunks, stats). If False, return just chunks.
 
         Returns:
@@ -186,7 +186,7 @@ class DocumentProcessor:
         rich_print(
             "[blue][DocumentProcessor][/blue] Processing document into per-page markdowns"
         )
-        document = self.convert_to_markdown(source)
+        document = self.convert_to_docling_doc(source)
         return self.extract_page_markdowns(document)
 
     def process_document_with_chunking(self, source: str) -> List[str]:
@@ -207,7 +207,7 @@ class DocumentProcessor:
         rich_print(
             "[blue][DocumentProcessor][/blue] Processing document with structure-aware chunking"
         )
-        document = self.convert_to_markdown(source)
+        document = self.convert_to_docling_doc(source)
         return self.extract_chunks(document)
 
     def extract_full_markdown(self, document: DoclingDocument) -> str:

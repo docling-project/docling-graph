@@ -257,12 +257,9 @@ class GraphConverter:
         
         Looks for json_schema_extra['edge_label'] in field info.
         """
-        try:
-            field_info = model.model_fields.get(field_name)
-            if field_info and field_info.json_schema_extra:
-                return field_info.json_schema_extra.get("edge_label")
-        except:
-            pass
+        field_info = model.model_fields.get(field_name)
+        if field_info and field_info.json_schema_extra:
+            return field_info.json_schema_extra.get("edge_label")
         return None
 
     def set_registry(self, registry: NodeIDRegistry) -> None:

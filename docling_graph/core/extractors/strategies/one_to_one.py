@@ -96,7 +96,10 @@ class OneToOneStrategy(BaseExtractor):
         for page_num, page_md in enumerate(page_markdowns, start=1):
             rich_print(f"[blue][OneToOneStrategy][/blue] Processing page {page_num}/{total_pages}")
             model = backend.extract_from_markdown(
-                markdown=page_md, template=template, context=f"page {page_num}"
+                markdown=page_md,
+                template=template,
+                context=f"page {page_num}",
+                is_partial=True,
             )
             if model:
                 extracted_models.append(model)

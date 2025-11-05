@@ -71,6 +71,7 @@ class PipelineConfig(BaseModel):
 
     # Docling settings (with defaults)
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
+    use_chunking: bool = True
 
     # Model overrides
     model_override: Optional[str] = None
@@ -78,6 +79,10 @@ class PipelineConfig(BaseModel):
 
     # Models configuration (flat only, with defaults)
     models: ModelsConfig = Field(default_factory=ModelsConfig)
+
+    # Extract settings (with defaults)
+    llm_consolidation: bool = True
+    batch_size: int = 1
 
     # Export settings (with defaults)
     export_format: Literal["csv", "cypher"] = Field(default="csv")

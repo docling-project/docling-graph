@@ -11,7 +11,7 @@ import pytest
 from pydantic import BaseModel, ConfigDict, Field
 
 from docling_graph.core.converters.config import GraphConfig
-from docling_graph.core.converters.base import GraphConverter
+from docling_graph.core.converters.graph_converter import GraphConverter
 from docling_graph.core.converters.models import GraphMetadata
 
 

@@ -141,7 +141,7 @@ class ExtractorProtocol(Protocol):
 class DocumentProcessorProtocol(Protocol):
     """Protocol for document processing and conversion."""
 
-    def convert_to_markdown(self, source: str) -> Any:
+    def convert_to_docling_doc(self, source: str) -> Any:
         """Convert document to Docling document object.
 
         Args:

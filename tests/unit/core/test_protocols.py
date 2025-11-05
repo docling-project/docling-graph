@@ -114,12 +114,12 @@ class TestExtractorProtocol:
 class TestDocumentProcessorProtocol:
     """Test document processor protocol."""
 
-    def test_document_processor_has_convert_to_markdown(self):
-        """Processor should have convert_to_markdown method."""
+    def test_document_processor_has_convert_to_docling_doc(self):
+        """Processor should have convert_to_docling_doc method."""
         processor = MagicMock()
-        processor.convert_to_markdown = MagicMock(return_value=MagicMock())
+        processor.convert_to_docling_doc = MagicMock(return_value=MagicMock())
 
-        result = processor.convert_to_markdown("doc.pdf")
+        result = processor.convert_to_docling_doc("doc.pdf")
         assert result is not None
 
     def test_document_processor_has_extract_full_markdown(self):

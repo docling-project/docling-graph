@@ -454,7 +454,7 @@ def mock_document_processor():
 
     processor = MagicMock()
     processor.process_document = MagicMock(return_value=["Page 1 content", "Page 2 content"])
-    processor.convert_to_markdown = MagicMock(return_value=MagicMock())
+    processor.convert_to_docling_doc = MagicMock(return_value=MagicMock())
     processor.extract_full_markdown = MagicMock(return_value="# Full Document\n\nContent")
     processor.extract_page_markdowns = MagicMock(return_value=["# Page 1", "# Page 2"])
     return processor

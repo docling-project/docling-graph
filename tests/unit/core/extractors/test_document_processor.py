@@ -75,10 +75,10 @@ class TestDocumentProcessorInitialization:
 
 
 class TestDocumentProcessorConvertToMarkdown:
-    """Test convert_to_markdown method."""
+    """Test convert_to_docling_doc method."""
 
     @patch("docling_graph.core.extractors.document_processor.DocumentConverter")
-    def test_convert_to_markdown_success(self, mock_converter_class, mock_document):
+    def test_convert_to_docling_doc_success(self, mock_converter_class, mock_document):
         """Should convert document to markdown."""
         mock_converter_instance = MagicMock()
         mock_result = MagicMock()
@@ -87,7 +87,7 @@ class TestDocumentProcessorConvertToMarkdown:
         mock_converter_class.return_value = mock_converter_instance
 
         processor = DocumentProcessor()
-        result = processor.convert_to_markdown("test.pdf")
+        result = processor.convert_to_docling_doc("test.pdf")
 
         assert result is mock_document
         mock_converter_instance.convert.assert_called_once_with("test.pdf")
@@ -102,7 +102,7 @@ class TestDocumentProcessorConvertToMarkdown:
         mock_converter_class.return_value = mock_converter_instance
 
         processor = DocumentProcessor()
-        processor.convert_to_markdown("document.pdf")
+        processor.convert_to_docling_doc("document.pdf")
 
         mock_converter_instance.convert.assert_called_with("document.pdf")
 
@@ -200,7 +200,7 @@ class TestDocumentProcessorProcessDocument:
 
     @patch("docling_graph.core.extractors.document_processor.DocumentConverter")
     def test_process_document_calls_convert(self, mock_converter_class, mock_document):
-        """Should call convert_to_markdown."""
+        """Should call convert_to_docling_doc."""
         mock_converter_instance = MagicMock()
         mock_result = MagicMock()
         mock_result.document = mock_document
