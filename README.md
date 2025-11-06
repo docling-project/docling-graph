@@ -50,7 +50,7 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 
 ### Coming Soon
 
-* 🪜 **Multi-Stage Extraction:** Let users define `extraction_stage` in Pydantic templates to control multiple extraction passes and target content for each.
+* 🪜 **Multi-Stage Extraction:** Define `extraction_stage` in templates to control multi-pass extraction.
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 * 🧬 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 * ✍🏻 **Flexible Inputs:** Accepts `text`, `markdown`, and `DoclingDocument` directly.
