@@ -94,7 +94,7 @@ def test_get_recommended_chunk_size():
     # gpt-4o: 128000 * 0.8 (content_ratio) * 0.8 (safety) = 81920
     assert config.get_recommended_chunk_size("openai", "gpt-4o") == 81920
     # granite-20b-multilingual: 4096 * 0.75 * 0.8 = 2457.6 -> 2457
-    assert config.get_recommended_chunk_size("ibm", "granite-20b-multilingual") == 2457
+    assert config.get_recommended_chunk_size("watsonx", "granite-20b-multilingual") == 2457
 
     # Test default fallback
     assert config.get_recommended_chunk_size("openai", "unknown-model") == 5120

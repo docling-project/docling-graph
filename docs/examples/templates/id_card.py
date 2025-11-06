@@ -6,132 +6,122 @@ the language model, improving the accuracy and consistency of the extracted data
 The schema is designed to be converted into a knowledge graph.
 """
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing import Optional, Any, List
-from datetime import date
 import re
+from datetime import date
+from typing import Any, List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # --- Edge Helper Function ---
 
-def Edge(label: str, **kwargs: Any) -> Any:
+
+def edge(label: str, **kwargs: Any) -> Any:
     """
     Helper function to create a Pydantic Field with edge metadata.
     The 'edge_label' defines the type of relationship in the graph.
     """
-    return Field(..., json_schema_extra={'edge_label': label}, **kwargs)
+    return Field(..., json_schema_extra={"edge_label": label}, **kwargs)
+
 
 # --- Reusable Component: Address ---
 
+
 class Address(BaseModel):
     """Represents a physical address entity."""
+
     model_config = ConfigDict(is_entity=False)
-    
+
     street_address: Optional[str] = Field(
         None,
         description="Street name and number",
-        examples=["123 Rue de la Paix", "90 Boulevard Voltaire"]
+        examples=["123 Rue de la Paix", "90 Boulevard Voltaire"],
     )
-    
-    city: Optional[str] = Field(
-        None,
-        description="City",
-        examples=["Paris", "Lyon"]
-    )
-    
+
+    city: Optional[str] = Field(None, description="City", examples=["Paris", "Lyon"])
+
     state_or_province: Optional[str] = Field(
-        None,
-        description="State, province, or region",
-        examples=["Île-de-France"]
+        None, description="State, province, or region", examples=["Île-de-France"]
     )
-    
+
     postal_code: Optional[str] = Field(
-        None,
-        description="Postal or ZIP code",
-        examples=["75001", "69002"]
+        None, description="Postal or ZIP code", examples=["75001", "69002"]
     )
-    
-    country: Optional[str] = Field(
-        None,
-        description="Country",
-        examples=["France"]
-    )
-    
-    def __str__(self):
-        parts = [self.street_address, self.city, self.state_or_province,
-                 self.postal_code, self.country]
+
+    country: Optional[str] = Field(None, description="Country", examples=["France"])
+
+    def __str__(self) -> str:
+        parts = [
+            self.street_address,
+            self.city,
+            self.state_or_province,
+            self.postal_code,
+            self.country,
+        ]
         return ", ".join(p for p in parts if p)
 
 
 # --- Reusable Entity: Person ---
+
 
 class Person(BaseModel):
     """
     A generic model for a person.
     A person is uniquely identified by their full name and date of birth.
     """
-    model_config = ConfigDict(graph_id_fields=['given_names', 'last_name', 'date_of_birth'])
-    
+
+    model_config = ConfigDict(graph_id_fields=["given_names", "last_name", "date_of_birth"])
+
     given_names: Optional[List[str]] = Field(
         default=None,
         description="List of given names (first names usually separated with a comma) of the person, in order",
-        examples=[["Pierre"], ["Pierre", "Louis"], ["Pierre", "Louis", "André"]]
+        examples=[["Pierre"], ["Pierre", "Louis"], ["Pierre", "Louis", "André"]],
     )
-    
+
     last_name: Optional[str] = Field(
-        None,
-        description="The person's family name (surname)",
-        examples=["Dupont", "Martin"]
+        None, description="The person's family name (surname)", examples=["Dupont", "Martin"]
     )
-    
+
     alternate_name: Optional[str] = Field(
-        None,
-        description="The person's alternate name",
-        examples=["Doe", "MJ"]
+        None, description="The person's alternate name", examples=["Doe", "MJ"]
     )
-    
+
     date_of_birth: Optional[date] = Field(
         None,
         description=(
             "The cardholder's date of birth.",
             "Look for text like 'Date of birth', 'Date de naiss.', or similar.",
-            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format."
+            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format.",
         ),
-        examples=["1990-05-15"]
+        examples=["1990-05-15"],
     )
-    
+
     place_of_birth: Optional[str] = Field(
-        None,
-        description="City and/or country of birth",
-        examples=["Paris", "Marseille (France)"]
+        None, description="City and/or country of birth", examples=["Paris", "Marseille (France)"]
     )
-    
+
     gender: Optional[str] = Field(
-        None,
-        description="Gender or sex of the person",
-        examples=["F", "M", "Female", "Male"]
+        None, description="Gender or sex of the person", examples=["F", "M", "Female", "Male"]
     )
-    
+
     # --- Edge Definition ---
-    lives_at: Optional[Address] = Edge(
-        label="LIVES_AT",
-        description="Physical address (e.g., home address)"
+    lives_at: Optional[Address] = edge(
+        label="LIVES_AT", description="Physical address (e.g., home address)"
     )
-    
+
     # --- Validators ---
-    @field_validator('given_names', mode='before')
-    def ensure_list(cls, v):
+    @field_validator("given_names", mode="before")
+    def ensure_list(self, v: Any) -> Any:
         """Ensure given_names is always a list."""
         if isinstance(v, str):
             # Handle comma-separated or space-separated names
-            if ',' in v:
-                return [name.strip() for name in v.split(',')]
+            if "," in v:
+                return [name.strip() for name in v.split(",")]
             return [v]
         return v
-    
-    @field_validator('lives_at', mode='before')
+
+    @field_validator("lives_at", mode="before")
     @classmethod
-    def parse_address(cls, v):
+    def parse_address(cls, v: Any) -> Any:
         """
         Accept both Address objects and strings.
         If string, attempt to parse into Address structure.
@@ -140,26 +130,26 @@ class Person(BaseModel):
             return v  # Let Pydantic handle dict -> Address
         if isinstance(v, str):
             # Attempt to parse the address string
-            parts = [p.strip() for p in v.split(',')]
+            parts = [p.strip() for p in v.split(",")]
             # Basic heuristic parsing
             address_dict = {
-                'street_address': parts[0] if len(parts) > 0 else None,
-                'city': None,
-                'postal_code': None,
-                'country': parts[-1] if len(parts) > 1 else None
+                "street_address": parts[0] if len(parts) > 0 else None,
+                "city": None,
+                "postal_code": None,
+                "country": parts[-1] if len(parts) > 1 else None,
             }
             # Try to extract postal code and city
             if len(parts) >= 2:
                 for part in parts:
-                    postal_match = re.search(r'\b(\d{5})\s+(.+)', part)
+                    postal_match = re.search(r"\b(\d{5})\s+(.+)", part)
                     if postal_match:
-                        address_dict['postal_code'] = postal_match.group(1)
-                        address_dict['city'] = postal_match.group(2)
+                        address_dict["postal_code"] = postal_match.group(1)
+                        address_dict["city"] = postal_match.group(2)
                         break
             return address_dict
         return v
-    
-    def __str__(self):
+
+    def __str__(self) -> str:
         # Handle given_names which is a list
         first_names = " ".join(self.given_names) if self.given_names else ""
         parts = [first_names, self.last_name]
@@ -168,50 +158,49 @@ class Person(BaseModel):
 
 # --- Root Document Model: IDCard ---
 
+
 class IDCard(BaseModel):
     """
     A model for an identification document.
     It is uniquely identified by its document number.
     """
-    model_config = ConfigDict(graph_id_fields=['document_number'])
-    
+
+    model_config = ConfigDict(graph_id_fields=["document_number"])
+
     document_number: str = Field(
         ...,
         description="The unique identifier for the document",
-        examples=["23AB12345", "19XF56789", "1234567890"]
+        examples=["23AB12345", "19XF56789", "1234567890"],
     )
-    
+
     issuing_country: Optional[str] = Field(
         None,
         description="The country that issued the document (e.g., 'France', 'République Française')",
-        examples=["France", "USA", "Deutschland"]
+        examples=["France", "USA", "Deutschland"],
     )
-    
+
     issue_date: Optional[date] = Field(
         None,
         description=(
             "Date the document was issued.",
             "Look for text like 'Date of Issue', 'Date de délivrance', or similar.",
-            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format."
+            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format.",
         ),
-        examples=["2023-10-20"]
+        examples=["2023-10-20"],
     )
-    
+
     expiry_date: Optional[date] = Field(
         None,
         description=(
             "Date the document expires.",
-            "Look for text like 'Expiry Date', 'Date d\'expiration', or similar.",
-            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format."
+            "Look for text like 'Expiry Date', 'Date d'expiration', or similar.",
+            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format.",
         ),
-        examples=["2033-10-19"]
+        examples=["2033-10-19"],
     )
-    
+
     # --- Edge Definition ---
-    holder: Person = Edge(
-        label="BELONGS_TO",
-        description="The person this ID card belongs to"
-    )
-    
-    def __str__(self):
+    holder: Person = edge(label="BELONGS_TO", description="The person this ID card belongs to")
+
+    def __str__(self) -> str:
         return f"{self.issuing_country} {self.document_number}"

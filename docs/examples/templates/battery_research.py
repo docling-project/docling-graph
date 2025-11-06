@@ -12,19 +12,20 @@ This version incorporates improvements for:
 - Research metadata (authors, DOI, institution)
 """
 
-from typing import List, Optional, Union, Any
-from enum import Enum
 import re
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from enum import Enum
+from typing import Any, List, Optional, Self, Type, Union
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 
 # --- Edge Helper Function ---
-def Edge(label: str, **kwargs: Any) -> Any:
-    return Field(..., json_schema_extra={'edge_label': label}, **kwargs)
+def edge(label: str, **kwargs: Any) -> Any:
+    return Field(..., json_schema_extra={"edge_label": label}, **kwargs)
 
 
 # --- Helpers: normalization and parsing ---
-def _normalize_enum(enum_cls, v):
+def _normalize_enum(enum_cls: Type[Enum], v: Any) -> Any:
     """
     Accept:
     - enum instance
@@ -35,12 +36,12 @@ def _normalize_enum(enum_cls, v):
     if isinstance(v, enum_cls):
         return v
     if isinstance(v, str):
-        key = re.sub(r'[^A-Za-z0-9]+', '', v).lower()
+        key = re.sub(r"[^A-Za-z0-9]+", "", v).lower()
         mapping = {}
         for m in enum_cls:
             # map by member name and value
-            mapping[re.sub(r'[^A-Za-z0-9]+', '', m.name).lower()] = m
-            mapping[re.sub(r'[^A-Za-z0-9]+', '', m.value).lower()] = m
+            mapping[re.sub(r"[^A-Za-z0-9]+", "", m.name).lower()] = m
+            mapping[re.sub(r"[^A-Za-z0-9]+", "", m.value).lower()] = m
         if key in mapping:
             return mapping[key]
         # last-ditch attempt
@@ -48,13 +49,15 @@ def _normalize_enum(enum_cls, v):
             return enum_cls(v)
         except Exception:
             # Prefer safe fallback to OTHER if present
-            if 'OTHER' in getattr(enum_cls, '__members__', {}):
-                return enum_cls.__members__['OTHER']
+            if "OTHER" in getattr(enum_cls, "__members__", {}):
+                return enum_cls.__members__["OTHER"]
             raise
     raise ValueError(f"Cannot normalize {v} to {enum_cls}")
 
 
-def _parse_measurement_string(s: str, default_name: Optional[str] = None, strict: bool = False):
+def _parse_measurement_string(
+    s: str, default_name: Optional[str] = None, strict: bool = False
+) -> Any:
     """
     Parse strings like:
     "1.6 mPa.s", "38 wt%", "25 °C", "12 wt %", "80C", "80-90 °C" (ranges)
@@ -70,32 +73,32 @@ def _parse_measurement_string(s: str, default_name: Optional[str] = None, strict
         return s
 
     # Try to parse range (e.g., "80-90 °C")
-    range_match = re.match(r'^\s*([+-]?\d+(?:\.\d+)?)\s*-\s*([+-]?\d+(?:\.\d+)?)\s*([^\d]+)?$', s)
+    range_match = re.match(r"^\s*([+-]?\d+(?:\.\d+)?)\s*-\s*([+-]?\d+(?:\.\d+)?)\s*([^\d]+)?$", s)
     if range_match:
         min_val = float(range_match.group(1))
         max_val = float(range_match.group(2))
-        unit = (range_match.group(3) or '').strip() or None
+        unit = (range_match.group(3) or "").strip() or None
         return {
-            'name': default_name or 'Value',
-            'numeric_value': None,
-            'numeric_value_min': min_val,
-            'numeric_value_max': max_val,
-            'text_value': None,
-            'unit': unit,
+            "name": default_name or "Value",
+            "numeric_value": None,
+            "numeric_value_min": min_val,
+            "numeric_value_max": max_val,
+            "text_value": None,
+            "unit": unit,
         }
 
     # Try to parse single value
-    single_match = re.match(r'^\s*([+-]?\d+(?:\.\d+)?)\s*([^\d]+)?$', s)
+    single_match = re.match(r"^\s*([+-]?\d+(?:\.\d+)?)\s*([^\d]+)?$", s)
     if single_match:
         num = float(single_match.group(1))
-        unit = (single_match.group(2) or '').strip() or None
+        unit = (single_match.group(2) or "").strip() or None
         return {
-            'name': default_name or 'Value',
-            'numeric_value': num,
-            'numeric_value_min': None,
-            'numeric_value_max': None,
-            'text_value': None,
-            'unit': unit,
+            "name": default_name or "Value",
+            "numeric_value": num,
+            "numeric_value_min": None,
+            "numeric_value_max": None,
+            "text_value": None,
+            "unit": unit,
         }
 
     # No numeric part found
@@ -104,18 +107,19 @@ def _parse_measurement_string(s: str, default_name: Optional[str] = None, strict
 
     # Fallback: keep raw as text
     return {
-        'name': default_name or 'Value',
-        'numeric_value': None,
-        'numeric_value_min': None,
-        'numeric_value_max': None,
-        'text_value': s.strip(),
-        'unit': None,
+        "name": default_name or "Value",
+        "numeric_value": None,
+        "numeric_value_min": None,
+        "numeric_value_max": None,
+        "text_value": s.strip(),
+        "unit": None,
     }
 
 
 # 1. --- Foundational Building Blocks ---
 class Measurement(BaseModel):
     """A flexible model for any named property with a value and optional unit."""
+
     model_config = ConfigDict(is_entity=False)
 
     name: str = Field(
@@ -159,18 +163,20 @@ class Measurement(BaseModel):
         examples=["at 10 s⁻¹ shear rate", "after 5 min rest", "storage temperature 25°C"],
     )
 
-    @model_validator(mode='after')
-    def validate_value_consistency(self):
+    @model_validator(mode="after")
+    def validate_value_consistency(self) -> Self:
         """Ensure value fields are used consistently."""
         has_single = self.numeric_value is not None
         has_min = self.numeric_value_min is not None
         has_max = self.numeric_value_max is not None
-        
+
         # Allow: single value alone, explicit range (min+max), or implicit range (value+max or value+min)
         # Only reject if all three are set (ambiguous)
         if has_single and has_min and has_max:
-            raise ValueError("Cannot specify numeric_value, numeric_value_min, and numeric_value_max simultaneously")
-        
+            raise ValueError(
+                "Cannot specify numeric_value, numeric_value_min, and numeric_value_max simultaneously"
+            )
+
         # If using implicit range pattern (numeric_value with min or max), treat numeric_value as the other bound
         if has_single and (has_min or has_max):
             if has_max and not has_min:
@@ -181,13 +187,14 @@ class Measurement(BaseModel):
                 # Treat numeric_value as max
                 self.numeric_value_max = self.numeric_value
                 self.numeric_value = None
-        
+
         return self
 
 
 class MaterialProperty(Measurement):
     """Represents a material property, inherits from Measurement."""
-    model_config = ConfigDict(graph_id_fields=['name', 'text_value', 'numeric_value', 'unit'])
+
+    model_config = ConfigDict(graph_id_fields=["name", "text_value", "numeric_value", "unit"])
 
 
 # 2. --- Materials and Composition ---
@@ -212,7 +219,8 @@ class MaterialRole(str, Enum):
 
 class Material(BaseModel):
     """Any chemical or substance part of the composition."""
-    model_config = ConfigDict(graph_id_fields=['name'])
+
+    model_config = ConfigDict(graph_id_fields=["name"])
 
     name: str = Field(
         description="Canonical name of the material.",
@@ -258,17 +266,19 @@ class Material(BaseModel):
 
 class ComponentAmount(Measurement):
     """Amount of a component, inherits Measurement."""
-    pass
 
 
 class Component(BaseModel):
     """Links a material to its role and amount."""
-    model_config = ConfigDict(graph_id_fields=['material', 'role', 'amount'])
 
-    material: Material = Edge(
+    model_config = ConfigDict(graph_id_fields=["material", "role", "amount"])
+
+    material: Material = edge(
         label="USES_MATERIAL",
         description="Material used in this component.",
-        examples=[{"name": "LiFePO4", "chemical_formula": "LiFePO4", "category": "Olivine Phosphate"}],
+        examples=[
+            {"name": "LiFePO4", "chemical_formula": "LiFePO4", "category": "Olivine Phosphate"}
+        ],
     )
 
     role: MaterialRole = Field(
@@ -281,14 +291,14 @@ class Component(BaseModel):
         examples=[{"name": "Weight Fraction", "numeric_value": 12.0, "unit": "wt%"}],
     )
 
-    @field_validator('role', mode='before')
+    @field_validator("role", mode="before")
     @classmethod
-    def _role_norm(cls, v):
+    def _role_norm(cls, v: Any) -> Any:
         return _normalize_enum(MaterialRole, v)
 
-    @field_validator('amount', mode='before')
+    @field_validator("amount", mode="before")
     @classmethod
-    def _amount_coerce(cls, v):
+    def _amount_coerce(cls, v: Any) -> Any:
         # Accept strings like "12 wt%" and coerce into ComponentAmount
         if isinstance(v, dict) or v is None:
             return v
@@ -299,11 +309,13 @@ class Component(BaseModel):
 
 class Property(Measurement):
     """Represents a slurry property."""
-    model_config = ConfigDict(graph_id_fields=['name', 'text_value', 'numeric_value', 'unit'])
+
+    model_config = ConfigDict(graph_id_fields=["name", "text_value", "numeric_value", "unit"])
 
 
 class SlurryType(str, Enum):
     """Type of battery slurry."""
+
     CATHODE = "Cathode"
     ANODE = "Anode"
     ELECTROLYTE = "Electrolyte"
@@ -313,7 +325,8 @@ class SlurryType(str, Enum):
 
 class Slurry(BaseModel):
     """Collection of slurry components."""
-    model_config = ConfigDict(graph_id_fields=['slurry_id'])
+
+    model_config = ConfigDict(graph_id_fields=["slurry_id"])
 
     slurry_id: Optional[str] = Field(
         default=None,
@@ -333,21 +346,31 @@ class Slurry(BaseModel):
         examples=["Control formulation", "High solid content variant", "Low binder optimization"],
     )
 
-    components: List[Component] = Edge(
+    components: List[Component] = edge(
         label="HAS_COMPONENT",
         description="Slurry components list.",
-        examples=[[
-            {
-                "material": {"name": "LiFePO4", "chemical_formula": "LiFePO4", "category": "Olivine Phosphate"},
-                "role": "Active Material",
-                "amount": {"name": "Weight Fraction", "numeric_value": 12.0, "unit": "wt%"},
-            },
-            {
-                "material": {"name": "Polyvinylidene Fluoride", "category": "Fluoropolymer", "chemical_formula": "(C2H2F2)n"},
-                "role": "Binder",
-                "amount": {"name": "Weight Fraction", "numeric_value": 2.0, "unit": "wt%"},
-            }
-        ]],
+        examples=[
+            [
+                {
+                    "material": {
+                        "name": "LiFePO4",
+                        "chemical_formula": "LiFePO4",
+                        "category": "Olivine Phosphate",
+                    },
+                    "role": "Active Material",
+                    "amount": {"name": "Weight Fraction", "numeric_value": 12.0, "unit": "wt%"},
+                },
+                {
+                    "material": {
+                        "name": "Polyvinylidene Fluoride",
+                        "category": "Fluoropolymer",
+                        "chemical_formula": "(C2H2F2)n",
+                    },
+                    "role": "Binder",
+                    "amount": {"name": "Weight Fraction", "numeric_value": 2.0, "unit": "wt%"},
+                },
+            ]
+        ],
     )
 
     properties: List[Property] = Field(
@@ -356,9 +379,9 @@ class Slurry(BaseModel):
         examples=[[{"name": "Solid Content", "numeric_value": 38.0, "unit": "wt%"}]],
     )
 
-    @field_validator('slurry_type', mode='before')
+    @field_validator("slurry_type", mode="before")
     @classmethod
-    def _slurry_type_norm(cls, v):
+    def _slurry_type_norm(cls, v: Any) -> Any:
         if v is None:
             return v
         return _normalize_enum(SlurryType, v)
@@ -386,12 +409,12 @@ class ProcessStepType(str, Enum):
 
 class Parameter(Measurement):
     """Represents a process parameter."""
-    pass
 
 
 class ProcessStep(BaseModel):
     """Describes a process step."""
-    model_config = ConfigDict(graph_id_fields=['step_type', 'name', 'sequence_order'])
+
+    model_config = ConfigDict(graph_id_fields=["step_type", "name", "sequence_order"])
 
     step_type: ProcessStepType = Field(
         description="Type of step.",
@@ -437,15 +460,17 @@ class ProcessStep(BaseModel):
     environmental_conditions: List[Parameter] = Field(
         default_factory=list,
         description="Environmental parameters like humidity, pressure.",
-        examples=[[
-            {"name": "Relative Humidity", "numeric_value": 5, "unit": "%"},
-            {"name": "Dew Point", "numeric_value": -40, "unit": "°C"}
-        ]],
+        examples=[
+            [
+                {"name": "Relative Humidity", "numeric_value": 5, "unit": "%"},
+                {"name": "Dew Point", "numeric_value": -40, "unit": "°C"},
+            ]
+        ],
     )
 
-    @field_validator('step_type', mode='before')
+    @field_validator("step_type", mode="before")
     @classmethod
-    def _step_type_norm(cls, v):
+    def _step_type_norm(cls, v: Any) -> Any:
         return _normalize_enum(ProcessStepType, v)
 
 
@@ -481,12 +506,14 @@ class MetricType(str, Enum):
 
 class EvaluationMetric(Measurement):
     """Represents an evaluation metric value."""
-    model_config = ConfigDict(graph_id_fields=['name', 'text_value', 'numeric_value', 'unit'])
+
+    model_config = ConfigDict(graph_id_fields=["name", "text_value", "numeric_value", "unit"])
 
 
 class EvaluationResult(BaseModel):
     """Captures experimental outcome or metric."""
-    model_config = ConfigDict(graph_id_fields=['metric_type', 'metric', 'time_point'])
+
+    model_config = ConfigDict(graph_id_fields=["metric_type", "metric", "time_point"])
 
     metric_type: MetricType = Field(
         description="Type of performance metric.",
@@ -504,7 +531,7 @@ class EvaluationResult(BaseModel):
         description="Time after slurry preparation when measured (for temporal stability tracking).",
         examples=[
             {"name": "Storage Time", "numeric_value": 24, "unit": "hours"},
-            {"name": "Age", "numeric_value": 7, "unit": "days"}
+            {"name": "Age", "numeric_value": 7, "unit": "days"},
         ],
     )
 
@@ -526,20 +553,20 @@ class EvaluationResult(BaseModel):
         examples=["Increasing", "Stable", "Decreasing"],
     )
 
-    @field_validator('metric_type', mode='before')
+    @field_validator("metric_type", mode="before")
     @classmethod
-    def _metric_type_norm(cls, v):
+    def _metric_type_norm(cls, v: Any) -> Any:
         return _normalize_enum(MetricType, v)
 
-    @field_validator('metric', mode='before')
+    @field_validator("metric", mode="before")
     @classmethod
-    def _metric_coerce(cls, v, info):
+    def _metric_coerce(cls, v: Any, info: ValidationInfo) -> Any:
         # Accept strings like "1.6 mPa.s" and coerce to an object.
         if v is None or isinstance(v, dict):
             return v
         if isinstance(v, str):
             # try to name the metric according to metric_type if available
-            mt = info.data.get('metric_type')
+            mt = info.data.get("metric_type")
             if isinstance(mt, Enum):
                 name = mt.value
             else:
@@ -552,7 +579,8 @@ class EvaluationResult(BaseModel):
 # 4. --- Main Ontology Entry Points ---
 class Experiment(BaseModel):
     """Main experiment instance for battery slurry research."""
-    model_config = ConfigDict(graph_id_fields=['experiment_id'])
+
+    model_config = ConfigDict(graph_id_fields=["experiment_id"])
 
     experiment_id: Optional[str] = Field(
         default=None,
@@ -563,44 +591,60 @@ class Experiment(BaseModel):
     objective: Optional[str] = Field(
         default=None,
         description="Goal of the experiment.",
-        examples=["Improve viscosity for better coating quality", "Reduce binder amount for cost optimization"],
+        examples=[
+            "Improve viscosity for better coating quality",
+            "Reduce binder amount for cost optimization",
+        ],
     )
 
     hypothesis: Optional[str] = Field(
         default=None,
         description="Hypothesis explored or tested.",
-        examples=["Adjusting binder ratio will lower viscosity", "Adding dispersant increases stability"],
+        examples=[
+            "Adjusting binder ratio will lower viscosity",
+            "Adding dispersant increases stability",
+        ],
     )
 
-    slurries: List[Slurry] = Edge(
+    slurries: List[Slurry] = edge(
         label="HAS_SLURRY",
         description="All slurries tested in this experiment (anode, cathode, variants).",
-        examples=[[
-            {
-                "slurry_id": "CATH-001",
-                "slurry_type": "Cathode",
-                "description": "Control cathode formulation",
-                "components": [
-                    {
-                        "material": {"name": "LiFePO4", "chemical_formula": "LiFePO4"},
-                        "role": "Active Material",
-                        "amount": {"name": "Weight Fraction", "numeric_value": 91.0, "unit": "wt%"},
-                    }
-                ]
-            },
-            {
-                "slurry_id": "AN-001",
-                "slurry_type": "Anode",
-                "description": "Graphite anode",
-                "components": [
-                    {
-                        "material": {"name": "Graphite", "chemical_formula": "C"},
-                        "role": "Active Material",
-                        "amount": {"name": "Weight Fraction", "numeric_value": 94.0, "unit": "wt%"},
-                    }
-                ]
-            }
-        ]],
+        examples=[
+            [
+                {
+                    "slurry_id": "CATH-001",
+                    "slurry_type": "Cathode",
+                    "description": "Control cathode formulation",
+                    "components": [
+                        {
+                            "material": {"name": "LiFePO4", "chemical_formula": "LiFePO4"},
+                            "role": "Active Material",
+                            "amount": {
+                                "name": "Weight Fraction",
+                                "numeric_value": 91.0,
+                                "unit": "wt%",
+                            },
+                        }
+                    ],
+                },
+                {
+                    "slurry_id": "AN-001",
+                    "slurry_type": "Anode",
+                    "description": "Graphite anode",
+                    "components": [
+                        {
+                            "material": {"name": "Graphite", "chemical_formula": "C"},
+                            "role": "Active Material",
+                            "amount": {
+                                "name": "Weight Fraction",
+                                "numeric_value": 94.0,
+                                "unit": "wt%",
+                            },
+                        }
+                    ],
+                },
+            ]
+        ],
     )
 
     control_slurry_id: Optional[str] = Field(
@@ -615,27 +659,47 @@ class Experiment(BaseModel):
         examples=["20% viscosity reduction vs. control", "Improved stability compared to baseline"],
     )
 
-    fabrication_process: List[ProcessStep] = Edge(
+    fabrication_process: List[ProcessStep] = edge(
         label="HAS_PROCESS_STEP",
         description="List of manufacturing process steps.",
-        examples=[[
-            {"step_type": "Mixing", "name": "High-shear Mixing", "sequence_order": 1, "parameters": [
-                {"name": "Speed", "numeric_value": 2000, "unit": "rpm"}
-            ]},
-            {"step_type": "Coating", "name": "Slot-die Coating", "sequence_order": 2},
-            {"step_type": "Drying", "name": "Convection Drying", "sequence_order": 3, "parameters": [
-                {"name": "Temperature", "numeric_value": 80.0, "unit": "°C"}
-            ]}
-        ]],
+        examples=[
+            [
+                {
+                    "step_type": "Mixing",
+                    "name": "High-shear Mixing",
+                    "sequence_order": 1,
+                    "parameters": [{"name": "Speed", "numeric_value": 2000, "unit": "rpm"}],
+                },
+                {"step_type": "Coating", "name": "Slot-die Coating", "sequence_order": 2},
+                {
+                    "step_type": "Drying",
+                    "name": "Convection Drying",
+                    "sequence_order": 3,
+                    "parameters": [{"name": "Temperature", "numeric_value": 80.0, "unit": "°C"}],
+                },
+            ]
+        ],
     )
 
-    evaluation_results: List[EvaluationResult] = Edge(
+    evaluation_results: List[EvaluationResult] = edge(
         label="HAS_EVALUATION",
         description="Experiment evaluation results.",
-        examples=[[
-            {"metric_type": "Viscosity", "metric": {"name": "Viscosity", "numeric_value": 1.6, "unit": "mPa.s"}, "method": "Rheometer", "trend": "Stable"},
-            {"metric_type": "pH", "metric": {"name": "pH", "numeric_value": 12.3}, "method": "pH Meter", "trend": "Stable"},
-        ]],
+        examples=[
+            [
+                {
+                    "metric_type": "Viscosity",
+                    "metric": {"name": "Viscosity", "numeric_value": 1.6, "unit": "mPa.s"},
+                    "method": "Rheometer",
+                    "trend": "Stable",
+                },
+                {
+                    "metric_type": "pH",
+                    "metric": {"name": "pH", "numeric_value": 12.3},
+                    "method": "pH Meter",
+                    "trend": "Stable",
+                },
+            ]
+        ],
     )
 
     conclusion: Optional[str] = Field(
@@ -653,11 +717,14 @@ class Experiment(BaseModel):
     limitations: Optional[List[str]] = Field(
         default_factory=list,
         description="Stated limitations of the experiment.",
-        examples=["Limited range of binder ratios tested", "Single temperature condition evaluated"]
+        examples=[
+            "Limited range of binder ratios tested",
+            "Single temperature condition evaluated",
+        ],
     )
 
-    @field_validator('limitations', mode='before')
-    def coerce_limitations(cls, v):
+    @field_validator("limitations", mode="before")
+    def coerce_limitations(self, v: Any) -> List[str]:
         if v is None:
             return []
         if isinstance(v, str):
@@ -669,11 +736,15 @@ class Experiment(BaseModel):
 
 class Research(BaseModel):
     """Root model for source document of battery slurry experiments."""
-    model_config = ConfigDict(graph_id_fields=['title'])
+
+    model_config = ConfigDict(graph_id_fields=["title"])
 
     title: str = Field(
         description="Title of the scientific document.",
-        examples=["Preparation and Characterization of Novel Battery Slurries", "Large-Scale Manufacturing of Lithium-Ion Cathodes"],
+        examples=[
+            "Preparation and Characterization of Novel Battery Slurries",
+            "Large-Scale Manufacturing of Lithium-Ion Cathodes",
+        ],
     )
 
     authors: List[str] = Field(
@@ -700,7 +771,7 @@ class Research(BaseModel):
         examples=["MIT", "Stanford University", "Fraunhofer Institute"],
     )
 
-    experiments: List[Experiment] = Edge(
+    experiments: List[Experiment] = edge(
         label="HAS_EXPERIMENT",
         description="List of experiments included in the document.",
         examples=[[{"experiment_id": "EXP2024-001"}, {"experiment_id": "BATTERY-SLURRY-001"}]],
