@@ -80,5 +80,5 @@ ehthumbs.db
 Thumbs.db
 
 # Project relateds files and directories
-config.yaml
-outputs
+/config.yaml
+/outputs/

@@ -1,7 +1,0 @@
-source,target,label
-Invoice_821367a7521f,Issuer_cbde7c22ccff,issued_by
-Invoice_821367a7521f,Client_71315459b04f,sent_to
-Invoice_821367a7521f,LineItem_09179e37999d,contains_items
-Invoice_821367a7521f,LineItem_337ce9d620c7,contains_items
-Issuer_cbde7c22ccff,Address_e1310a233dad,located_at
-Client_71315459b04f,Address_440085a1073f,lives_at

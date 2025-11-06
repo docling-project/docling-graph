@@ -133,9 +133,9 @@ class Invoice(BaseModel):
         description="The total amount before tax or other fees",
         examples=[3667.35, 1725.0]
     )
-    vat_rate: Optional[float] = Field( # Made optional as slack_invoice has 0
+    vat_rate: Optional[float] = Field(
         default=None,
-        description="The Value Added Tax rate as a percentage",
+        description="The numeric Value Added Tax rate as a percentage without the '%' symbol",
         examples=[7.7, 0.0]
     )
     vat_amount: float = Field(

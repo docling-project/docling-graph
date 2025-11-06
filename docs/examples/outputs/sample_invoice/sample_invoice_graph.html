@@ -254,23 +254,21 @@
   "nodes": [
     {
       "data": {
-        "id": "Invoice_821367a7521f",
-        "label": "Invoice",
+        "id": "Address_470628575eee4fec",
+        "label": "Address",
         "type": "entity",
-        "bill_no": 3139.0,
-        "date": "01.07.2020",
-        "currency": "CHF",
-        "subtotal": 3667.35,
-        "vat_rate": 7.7,
-        "vat_amount": 282.4,
-        "total": 3949.75
+        "__class__": "Address",
+        "street": "Rue du Lac 1268",
+        "postal_code": "2501",
+        "city": "Biel"
       }
     },
     {
       "data": {
-        "id": "Issuer_cbde7c22ccff",
+        "id": "Issuer_e519693c8a8c7295",
         "label": "Issuer",
         "type": "entity",
+        "__class__": "Issuer",
         "name": "Robert Schneider AG",
         "phone": "059/987 6540",
         "email": "robert@rschneider.ch",
@@ -279,113 +277,122 @@
     },
     {
       "data": {
-        "id": "Address_e1310a233dad",
+        "id": "Address_ccb46e76cabd2931",
         "label": "Address",
         "type": "entity",
-        "street": "Rue du Lac 1268",
-        "postal_code": 2501.0,
-        "city": "Biel"
-      }
-    },
-    {
-      "data": {
-        "id": "Client_71315459b04f",
-        "label": "Client",
-        "type": "entity",
-        "name": "Pia Rutschmann"
-      }
-    },
-    {
-      "data": {
-        "id": "Address_440085a1073f",
-        "label": "Address",
-        "type": "entity",
+        "__class__": "Address",
         "street": "Marktgasse 28",
-        "postal_code": 9400.0,
+        "postal_code": "9400",
         "city": "Rorschach"
       }
     },
     {
       "data": {
-        "id": "LineItem_09179e37999d",
-        "label": "LineItem",
+        "id": "Client_e6998cd84d020d7a",
+        "label": "Client",
         "type": "entity",
-        "total": 3360.0,
-        "description": "Garden work",
-        "quantity": 28.0,
-        "unit": "Std.",
-        "unit_price": 120.0
+        "__class__": "Client",
+        "name": "Ms Pia Rutschmann"
       }
     },
     {
       "data": {
-        "id": "LineItem_337ce9d620c7",
+        "id": "LineItem_8f9869d4897d82dd",
         "label": "LineItem",
         "type": "entity",
-        "total": 307.35,
+        "__class__": "LineItem",
+        "description": "Garden work",
+        "quantity": 28.0,
+        "unit": "Std.",
+        "unit_price": 120.0,
+        "total": 3360.0
+      }
+    },
+    {
+      "data": {
+        "id": "LineItem_f40d665171e08acf",
+        "label": "LineItem",
+        "type": "entity",
+        "__class__": "LineItem",
         "description": "Disposal of cuttings",
         "quantity": 1.0,
-        "unit_price": 307.35
+        "unit_price": 307.35,
+        "total": 307.35
+      }
+    },
+    {
+      "data": {
+        "id": "Invoice_ee6ad218c42b3847",
+        "label": "Invoice",
+        "type": "entity",
+        "__class__": "Invoice",
+        "total": 3949.75,
+        "bill_no": "3139",
+        "date": "01.07.2020",
+        "currency": "CHF",
+        "subtotal": 3667.35,
+        "vat_rate": 7.7,
+        "vat_amount": 282.4
       }
     }
   ],
   "edges": [
     {
       "data": {
-        "source": "Invoice_821367a7521f",
-        "target": "Issuer_cbde7c22ccff",
-        "label": "issued_by",
-        "id": "Invoice_821367a7521f-Issuer_cbde7c22ccff-0"
+        "source": "Issuer_e519693c8a8c7295",
+        "target": "Address_470628575eee4fec",
+        "label": "LOCATED_AT",
+        "id": "Issuer_e519693c8a8c7295-Address_470628575eee4fec-0"
       }
     },
     {
       "data": {
-        "source": "Invoice_821367a7521f",
-        "target": "Client_71315459b04f",
-        "label": "sent_to",
-        "id": "Invoice_821367a7521f-Client_71315459b04f-1"
+        "source": "Client_e6998cd84d020d7a",
+        "target": "Address_ccb46e76cabd2931",
+        "label": "LIVES_AT",
+        "id": "Client_e6998cd84d020d7a-Address_ccb46e76cabd2931-1"
       }
     },
     {
       "data": {
-        "source": "Invoice_821367a7521f",
-        "target": "LineItem_09179e37999d",
-        "label": "contains_items",
-        "id": "Invoice_821367a7521f-LineItem_09179e37999d-2"
+        "source": "Invoice_ee6ad218c42b3847",
+        "target": "Issuer_e519693c8a8c7295",
+        "label": "ISSUED_BY",
+        "id": "Invoice_ee6ad218c42b3847-Issuer_e519693c8a8c7295-2"
       }
     },
     {
       "data": {
-        "source": "Invoice_821367a7521f",
-        "target": "LineItem_337ce9d620c7",
-        "label": "contains_items",
-        "id": "Invoice_821367a7521f-LineItem_337ce9d620c7-3"
+        "source": "Invoice_ee6ad218c42b3847",
+        "target": "Client_e6998cd84d020d7a",
+        "label": "SENT_TO",
+        "id": "Invoice_ee6ad218c42b3847-Client_e6998cd84d020d7a-3"
       }
     },
     {
       "data": {
-        "source": "Issuer_cbde7c22ccff",
-        "target": "Address_e1310a233dad",
-        "label": "located_at",
-        "id": "Issuer_cbde7c22ccff-Address_e1310a233dad-4"
+        "source": "Invoice_ee6ad218c42b3847",
+        "target": "LineItem_8f9869d4897d82dd",
+        "label": "CONTAINS_ITEM",
+        "id": "Invoice_ee6ad218c42b3847-LineItem_8f9869d4897d82dd-4"
       }
     },
     {
       "data": {
-        "source": "Client_71315459b04f",
-        "target": "Address_440085a1073f",
-        "label": "lives_at",
-        "id": "Client_71315459b04f-Address_440085a1073f-5"
+        "source": "Invoice_ee6ad218c42b3847",
+        "target": "LineItem_f40d665171e08acf",
+        "label": "CONTAINS_ITEM",
+        "id": "Invoice_ee6ad218c42b3847-LineItem_f40d665171e08acf-5"
       }
     }
   ],
   "meta": {
     "node_types": {
-      "Invoice": 1,
-      "Issuer": 1,
       "Address": 2,
+      "Issuer": 1,
       "Client": 1,
-      "LineItem": 2
+      "LineItem": 2,
+      "Invoice": 1
     },
     "node_count": 7,
     "edge_count": 6

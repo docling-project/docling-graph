@@ -50,10 +50,10 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 
 ### Coming Soon
 
-* ✂️ **Multi-Stage Extraction:** Let users define `extraction_stage` in Pydantic templates to control multiple extraction passes and target content for each.
+* 🪜 **Multi-Stage Extraction:** Let users define `extraction_stage` in Pydantic templates to control multiple extraction passes and target content for each.
+* 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 * 🧬 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 * ✍🏻 **Flexible Inputs:** Accepts `text`, `markdown`, and `DoclingDocument` directly.
-* 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 * ⚡ **Batch Optimization:** Faster GPU inference with better memory handling.
 * 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
@@ -119,11 +119,11 @@ To run a conversion programmatically, you define a configuration dictionary and 
 
 ```python
 from docling_graph import run_pipeline, PipelineConfig
-from examples.templates.battery_research import Research  # Pydantic model to use as an extraction template
+from docs.examples.templates.battery_research import Research  # Pydantic model to use as an extraction template
 
 # Create typed config
 config = PipelineConfig(
-    source="examples/data/battery_research/bauer2014.pdf",
+    source="docs/examples/data/battery_research/bauer2014.pdf",
     template=Research,
     backend="llm",
     inference="remote",
@@ -162,8 +162,8 @@ You can use: `docling-graph convert --help` to see the full list of available op
 ```bash
 # uv run docling-graph convert <SOURCE_FILE_PATH> --template "<TEMPLATE_DOTTED_PATH>" [OPTIONS]
 
-uv run docling-graph convert "examples/data/battery_research/bauer2014.pdf" \
-    --template "examples.templates.battery_research.Research" \
+uv run docling-graph convert "docs/examples/data/battery_research/bauer2014.pdf" \
+    --template "docs.examples.templates.battery_research.Research" \
     --output-dir "outputs/battery_research"  \
     --processing-mode "many-to-one" \
     --use-chunking \
@@ -206,7 +206,9 @@ class Person(BaseModel):
     date_of_birth: str = Field(description="Date of birth (YYYY-MM-DD)")
 ```
 
-For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](docs/guides/pydantic_templates_for_knowledge_graph_extraction.md)
+Reference Pydantic [templates](docs/examples/templates) are available to help you get started quickly.
+
+For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](docs/guides/create_pydantic_templates_for_kg_extraction.md)
 
 
 
@@ -218,9 +220,7 @@ For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](
 
 ## Examples
 
-* *Work In Progress...*
-
-
+Get hands-on with Docling Graph [examples](docs/examples/scripts) to convert documents into knowledge graphs through `VLM` or `LLM`-based processing.
 
 ## License
 

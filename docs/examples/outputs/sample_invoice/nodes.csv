@@ -1,0 +1,8 @@
+id,label,type,__class__,street,postal_code,city,country,name,phone,email,website,located_at,lives_at,description,quantity,unit,unit_price,total,bill_no,date,currency,subtotal,vat_rate,vat_amount,issued_by,sent_to,contains_items
+Address_470628575eee4fec,Address,entity,Address,Rue du Lac 1268,2501,Biel,,,,,,,,,,,,,,,,,,,,,
+Issuer_e519693c8a8c7295,Issuer,entity,Issuer,,,,,Robert Schneider AG,059/987 6540,robert@rschneider.ch,www.rschneider.ch,,,,,,,,,,,,,,,,
+Address_ccb46e76cabd2931,Address,entity,Address,Marktgasse 28,9400,Rorschach,,,,,,,,,,,,,,,,,,,,,
+Client_e6998cd84d020d7a,Client,entity,Client,,,,,Ms Pia Rutschmann,,,,,,,,,,,,,,,,,,,
+LineItem_8f9869d4897d82dd,LineItem,entity,LineItem,,,,,,,,,,,Garden work,28.0,Std.,120.0,3360.0,,,,,,,,,
+LineItem_f40d665171e08acf,LineItem,entity,LineItem,,,,,,,,,,,Disposal of cuttings,1.0,,307.35,307.35,,,,,,,,,
+Invoice_ee6ad218c42b3847,Invoice,entity,Invoice,,,,,,,,,,,,,,,3949.75,3139,01.07.2020,CHF,3667.35,7.7,282.4,,,

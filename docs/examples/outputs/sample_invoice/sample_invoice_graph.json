@@ -1,0 +1,120 @@
+{
+  "nodes": [
+    {
+      "id": "Address_470628575eee4fec",
+      "label": "Address",
+      "type": "entity",
+      "__class__": "Address",
+      "street": "Rue du Lac 1268",
+      "postal_code": "2501",
+      "city": "Biel",
+      "country": null
+    },
+    {
+      "id": "Issuer_e519693c8a8c7295",
+      "label": "Issuer",
+      "type": "entity",
+      "__class__": "Issuer",
+      "name": "Robert Schneider AG",
+      "phone": "059/987 6540",
+      "email": "robert@rschneider.ch",
+      "website": "www.rschneider.ch",
+      "located_at": null
+    },
+    {
+      "id": "Address_ccb46e76cabd2931",
+      "label": "Address",
+      "type": "entity",
+      "__class__": "Address",
+      "street": "Marktgasse 28",
+      "postal_code": "9400",
+      "city": "Rorschach",
+      "country": null
+    },
+    {
+      "id": "Client_e6998cd84d020d7a",
+      "label": "Client",
+      "type": "entity",
+      "__class__": "Client",
+      "name": "Ms Pia Rutschmann",
+      "phone": null,
+      "email": null,
+      "website": null,
+      "lives_at": null
+    },
+    {
+      "id": "LineItem_8f9869d4897d82dd",
+      "label": "LineItem",
+      "type": "entity",
+      "__class__": "LineItem",
+      "description": "Garden work",
+      "quantity": 28.0,
+      "unit": "Std.",
+      "unit_price": 120.0,
+      "total": 3360.0
+    },
+    {
+      "id": "LineItem_f40d665171e08acf",
+      "label": "LineItem",
+      "type": "entity",
+      "__class__": "LineItem",
+      "description": "Disposal of cuttings",
+      "quantity": 1.0,
+      "unit": null,
+      "unit_price": 307.35,
+      "total": 307.35
+    },
+    {
+      "id": "Invoice_ee6ad218c42b3847",
+      "label": "Invoice",
+      "type": "entity",
+      "__class__": "Invoice",
+      "bill_no": "3139",
+      "date": "01.07.2020",
+      "currency": "CHF",
+      "subtotal": 3667.35,
+      "vat_rate": 7.7,
+      "vat_amount": 282.4,
+      "total": 3949.75,
+      "issued_by": null,
+      "sent_to": null,
+      "contains_items": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "Issuer_e519693c8a8c7295",
+      "target": "Address_470628575eee4fec",
+      "label": "LOCATED_AT"
+    },
+    {
+      "source": "Client_e6998cd84d020d7a",
+      "target": "Address_ccb46e76cabd2931",
+      "label": "LIVES_AT"
+    },
+    {
+      "source": "Invoice_ee6ad218c42b3847",
+      "target": "Issuer_e519693c8a8c7295",
+      "label": "ISSUED_BY"
+    },
+    {
+      "source": "Invoice_ee6ad218c42b3847",
+      "target": "Client_e6998cd84d020d7a",
+      "label": "SENT_TO"
+    },
+    {
+      "source": "Invoice_ee6ad218c42b3847",
+      "target": "LineItem_8f9869d4897d82dd",
+      "label": "CONTAINS_ITEM"
+    },
+    {
+      "source": "Invoice_ee6ad218c42b3847",
+      "target": "LineItem_f40d665171e08acf",
+      "label": "CONTAINS_ITEM"
+    }
+  ],
+  "metadata": {
+    "node_count": 7,
+    "edge_count": 6
+  }
+}
