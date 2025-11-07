@@ -13,8 +13,10 @@ If you need GPU support, follow these manual steps:
 
    ```bash
    python -m venv venv
+
    # On Windows PowerShell
    .\venv\Scripts\Activate
+   
    # On Linux/macOS
    source venv/bin/activate
    ```

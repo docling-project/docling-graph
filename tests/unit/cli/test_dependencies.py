@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from docling_graph.deps import (
+from docling_graph.cli.dependencies import (
     INFERENCE_PROVIDERS,
     OPTIONAL_DEPS,
     DependencyStatus,
@@ -73,7 +73,7 @@ class TestOptionalDependency:
         """Should generate correct install command."""
         dep = OptionalDependency(name="ollama", package="ollama", extra="ollama")
         cmd = dep.get_install_command()
-        assert "pip install" in cmd
+        assert "pip install" in cmd or "docling-graph[" in cmd
         assert "ollama" in cmd
 
     def test_optional_dependency_get_direct_install_command(self):

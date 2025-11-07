@@ -609,6 +609,7 @@ class Experiment(BaseModel):
     slurries: List[Slurry] = edge(
         label="HAS_SLURRY",
         description="All slurries tested in this experiment (anode, cathode, variants).",
+        default_factory=list,
         examples=[
             [
                 {
@@ -662,6 +663,7 @@ class Experiment(BaseModel):
     fabrication_process: List[ProcessStep] = edge(
         label="HAS_PROCESS_STEP",
         description="List of manufacturing process steps.",
+        default_factory=list,
         examples=[
             [
                 {
@@ -684,6 +686,7 @@ class Experiment(BaseModel):
     evaluation_results: List[EvaluationResult] = edge(
         label="HAS_EVALUATION",
         description="Experiment evaluation results.",
+        default_factory=list,
         examples=[
             [
                 {

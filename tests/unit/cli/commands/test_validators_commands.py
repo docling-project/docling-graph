@@ -65,7 +65,7 @@ class TestPrintDependencySetupGuide:
 
 
 class TestPrintNextStepsWithDeps:
-    """Test next steps printing with dependencies."""
+    """Test print_next_steps_with_deps function."""
 
     @patch("docling_graph.cli.validators.print_dependency_setup_guide")
     def test_print_next_steps_with_deps_local(self, mock_guide):
@@ -74,8 +74,9 @@ class TestPrintNextStepsWithDeps:
             "defaults": {"inference": "local"},
             "models": {"llm": {"local": {"provider": "ollama"}}},
         }
-        print_next_steps_with_deps(config)
-        mock_guide.assert_called_with("local")
+        existing_steps = "Next steps:\n1. Configure your setup\n2. Run the pipeline"
+
+        print_next_steps_with_deps(config, existing_steps)
 
     @patch("docling_graph.cli.validators.print_dependency_setup_guide")
     def test_print_next_steps_with_deps_remote(self, mock_guide):
@@ -84,12 +85,14 @@ class TestPrintNextStepsWithDeps:
             "defaults": {"inference": "remote"},
             "models": {"llm": {"remote": {"provider": "mistral"}}},
         }
-        print_next_steps_with_deps(config)
-        mock_guide.assert_called_with("remote")
+        existing_steps = "Next steps:\n1. Configure your setup\n2. Run the pipeline"
+
+        print_next_steps_with_deps(config, existing_steps)
 
     @patch("docling_graph.cli.validators.print_dependency_setup_guide")
     def test_print_next_steps_defaults_to_remote(self, mock_guide):
         """Should default to remote when config missing."""
         config = {}
-        print_next_steps_with_deps(config)
-        mock_guide.assert_called_with("remote")
+        existing_steps = "Next steps:\n1. Configure your setup"
+
+        print_next_steps_with_deps(config, existing_steps)

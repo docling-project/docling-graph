@@ -3,7 +3,7 @@ Tests for init command.
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 import typer
@@ -21,7 +21,7 @@ class TestInitCommand:
     @patch("docling_graph.cli.commands.init.validate_and_warn_dependencies")
     @patch("docling_graph.cli.commands.init.build_config_interactive")
     @patch("docling_graph.cli.commands.init.Path.cwd")
-    def test_init_command_success(
+    def test_init_command_success_deps_valid(
         self,
         mock_cwd,
         mock_build_config,
@@ -30,7 +30,7 @@ class TestInitCommand:
         mock_print_next_deps,
         tmp_path,
     ):
-        """Should successfully initialize config."""
+        """Should successfully initialize config when dependencies are valid."""
         mock_cwd.return_value = tmp_path
         mock_build_config.return_value = {
             "defaults": {"backend": "llm", "inference": "local"},
@@ -42,7 +42,40 @@ class TestInitCommand:
 
         # Verify config was saved
         assert (tmp_path / CONFIG_FILE_NAME).exists()
-        mock_print_next.assert_called_once()
+        # When deps are valid, only print_next_steps is called (via rich_print)
+        mock_print_next.assert_called_once_with(mock_build_config.return_value, return_text=True)
+        # print_next_steps_with_deps should NOT be called when deps are valid
+        mock_print_next_deps.assert_not_called()
+
+    @patch("docling_graph.cli.commands.init.print_next_steps_with_deps")
+    @patch("docling_graph.cli.commands.init.print_next_steps")
+    @patch("docling_graph.cli.commands.init.validate_and_warn_dependencies")
+    @patch("docling_graph.cli.commands.init.build_config_interactive")
+    @patch("docling_graph.cli.commands.init.Path.cwd")
+    def test_init_command_success_deps_invalid(
+        self,
+        mock_cwd,
+        mock_build_config,
+        mock_validate_deps,
+        mock_print_next,
+        mock_print_next_deps,
+        tmp_path,
+    ):
+        """Should successfully initialize config when dependencies are invalid."""
+        mock_cwd.return_value = tmp_path
+        mock_build_config.return_value = {
+            "defaults": {"backend": "llm", "inference": "local"},
+            "docling": {"pipeline": "ocr"},
+        }
+        mock_validate_deps.return_value = False
+
+        init_command()
+
+        # Verify config was saved
+        assert (tmp_path / CONFIG_FILE_NAME).exists()
+        # When deps are invalid, print_next_steps_with_deps is called
+        mock_print_next.assert_called_once_with(mock_build_config.return_value, return_text=True)
+        # print_next_steps_with_deps SHOULD be called
         mock_print_next_deps.assert_called_once()
 
     @patch("docling_graph.cli.commands.init.Path.cwd")
@@ -77,7 +110,6 @@ class TestInitCommand:
         config_file = tmp_path / CONFIG_FILE_NAME
         config_file.write_text("old: config\n")
         mock_cwd.return_value = tmp_path
-
         mock_build_config.return_value = {
             "defaults": {"backend": "llm", "inference": "local"},
             "docling": {"pipeline": "ocr"},
@@ -118,7 +150,6 @@ class TestInitCommand:
         # Verify config was saved (with fallback)
         config_file = tmp_path / CONFIG_FILE_NAME
         assert config_file.exists()
-
         with open(config_file) as f:
             config = yaml.safe_load(f)
         # Should have default values from fallback
@@ -149,7 +180,6 @@ class TestInitCommand:
         # Verify config was saved (with fallback)
         config_file = tmp_path / CONFIG_FILE_NAME
         assert config_file.exists()
-
         with open(config_file) as f:
             config = yaml.safe_load(f)
         # Should have default values from fallback

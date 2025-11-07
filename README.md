@@ -155,6 +155,9 @@ A wizard will walk you through setting up the right configfor your use case.
 uv run docling-graph init
 ```
 
+Note: This command may take a little longer to start on the first run, as it checks for installed dependencies.
+
+
 #### 2.2. Run Conversion
 
 You can use: `docling-graph convert --help` to see the full list of available options and usage details
