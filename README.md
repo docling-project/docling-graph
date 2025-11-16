@@ -17,6 +17,7 @@
 [![Rich](https://img.shields.io/badge/Rich-terminal-purple)](https://github.com/Textualize/rich)
 [![vLLM](https://img.shields.io/badge/vLLM-compatible-brightgreen)](https://vllm.ai/)
 [![Ollama](https://img.shields.io/badge/Ollama-compatible-brightgreen)](https://ollama.ai/)
+[![WatsonX](https://img.shields.io/badge/IBM%20WatsonX-compatible-green)](https://www.ibm.com/watsonx)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License MIT](https://img.shields.io/github/license/ayoub-ibm/docling-graph)](https://opensource.org/licenses/MIT)
 [![LF AI & Data](https://img.shields.io/badge/LF%20AI%20%26%20Data-003778?logo=linuxfoundation&logoColor=fff&color=0094ff&labelColor=003778)](https://lfaidata.foundation/projects/)
@@ -25,7 +26,7 @@ Docling-Graph converts documents into validated **Pydantic** objects and then in
 
 This transformation of unstructured documents into validated knowledge graphs with precise semantic relationships—essential for complex domains like **chemistry, finance, and physics** where AI systems must understand exact entity connections (e.g., chemical compounds and their reactions, financial instruments and their dependencies, physical properties and their measurements) rather than approximate text vectors, **enabling explainable reasoning over technical document collections**.
 
-The toolkit supports two extraction families: **local VLM** via Docling and **LLM-based extraction** via local (vLLM, Ollama) or API providers (Mistral, OpenAI, Gemini), all orchestrated by a flexible, config-driven pipeline.
+The toolkit supports two extraction families: **local VLM** via Docling and **LLM-based extraction** via local (vLLM, Ollama) or API providers (Mistral, OpenAI, Gemini, IBM WatsonX), all orchestrated by a flexible, config-driven pipeline.
 
 
 
@@ -33,7 +34,7 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 
 - **🧠 Extraction**:
   - Local `VLM` (Docling's information extraction pipeline - ideal for small documents with key-value focus)  
-  - `LLM` (local via vLLM/Ollama or remote via Mistral/OpenAI/Gemini API)  
+  - `LLM` (local via vLLM/Ollama or remote via Mistral/OpenAI/Gemini/IBM WatsonX API)
   - `Hybrid Chunking` Combines Docling segmentation with semantic LLM chunking for more context-aware extraction
   - Page-wise or whole-document conversion strategies for flexible processing
 - **🔨 Graph Construction**:
@@ -81,12 +82,13 @@ cd docling-graph
 
 Choose the installation option that matches your use case:
 
-| Option          | Command                   | Description                                                         |
-| :---            | :---                      | :---                                                                |
-| **Minimal**     | `uv sync`                 | Includes core VLM features (Docling), **no** LLM inference          |
-| **Full**        | `uv sync --extra all`     | Includes **all** features, VLM, and all local/remote LLM providers  |
-| **Local LLM**   | `uv sync --extra local`   | Adds support for vLLM and Ollama (requires GPU for vLLM)            |
-| **Remote API**  | `uv sync --extra remote`  | Adds support for Mistral, OpenAI, and Google Gemini APIs            |
+| Option          | Command                   | Description                                                                |
+| :---            | :---                      | :---                                                                       |
+| **Minimal**     | `uv sync`                 | Includes core VLM features (Docling), **no** LLM inference                 |
+| **Full**        | `uv sync --extra all`     | Includes **all** features, VLM, and all local/remote LLM providers         |
+| **Local LLM**   | `uv sync --extra local`   | Adds support for vLLM and Ollama (requires GPU for vLLM)                   |
+| **Remote API**  | `uv sync --extra remote`  | Adds support for Mistral, OpenAI, Gemini, and IBM WatsonX APIs            |
+| **WatsonX**     | `uv sync --extra watsonx` | Adds support for IBM WatsonX foundation models (Granite, Llama, Mixtral)   |
 
 
 #### 3. OPTIONAL - GPU Support (PyTorch)
@@ -97,17 +99,22 @@ Follow the steps in [this guide](docs/guides/setup_with_gpu_support.md) to insta
 
 ### API Key Setup (for Remote Inference)
 
-If you’re using **Option C** or **Option D** (remote/cloud inference), set your API keys for the providers you plan to use:
+If you're using remote/cloud inference, set your API keys for the providers you plan to use:
 
 ```bash
-export OPENAI_API_KEY="..."   # OpenAI
-export MISTRAL_API_KEY="..."  # Mistral
-export GEMINI_API_KEY="..."   # Google Gemini
+export OPENAI_API_KEY="..."        # OpenAI
+export MISTRAL_API_KEY="..."       # Mistral
+export GEMINI_API_KEY="..."        # Google Gemini
+export WATSONX_API_KEY="..."       # IBM WatsonX
+export WATSONX_PROJECT_ID="..."    # IBM WatsonX Project ID
+export WATSONX_URL="..."           # IBM WatsonX URL (optional, defaults to US South)
 ```
 
 On Windows, replace `export` with `set` in Command Prompt or `$env:` in PowerShell.
 
 Alternatively, add them to your `.env` file.
+
+**Note:** For IBM WatsonX setup and available models, see the [WatsonX Integration Guide](docs/guides/watsonx_integration.md).
 
 
 
