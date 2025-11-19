@@ -3,6 +3,7 @@
 - Ayoub El Bouchtili - [@ayoub-ibm](https://github.com/ayoub-ibm)
 - Sophie Lang - [@sophielang-ibm](https://github.com/sophielang-ibm)
 - Maxime Gillot - [@maxlo24](https://github.com/Maxlo24)
+- Guilhaume Leroy-Meline - [@guilhaumelm](https://github.com/guilhaumelm)
 - Michele Dolfi - [@dolfim-ibm](https://github.com/dolfim-ibm)
 - Peter Staar - [@PeterStaar-IBM](https://github.com/PeterStaar-IBM)
 
