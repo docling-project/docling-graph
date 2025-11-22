@@ -92,7 +92,7 @@ class DocumentProcessor:
                 }
             )
             rich_print(
-                "[blue][DocumentProcessor][/blue] Initialized with [green]Classic OCR pipeline[/green] (French)"
+                "[blue][DocumentProcessor][/blue] Initialized with [green]Classic OCR pipeline[/green] (English, French)"
             )
 
     def convert_to_docling_doc(self, source: str) -> DoclingDocument:
