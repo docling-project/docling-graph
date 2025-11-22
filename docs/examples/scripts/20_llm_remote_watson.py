@@ -20,44 +20,22 @@ workspace_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(workspace_root))
 
 from docling_graph import PipelineConfig, run_pipeline
-from examples.templates.battery_research import Research
+from examples.templates.rheology_research import Research
+
+# Define Source document :
+source_doc="docs/examples/data/research_paper/rheology.pdf"
 
 # Example 1: Using WatsonX with default Granite model
-config_default = PipelineConfig(
-    source="docs/examples/data/battery_research/bauer2014.pdf",
+config_default: PipelineConfig = PipelineConfig(
+    source=source_doc,
     template=Research,
     backend="llm",
     inference="remote",
-    processing_mode="many-to-one",
+    processing_mode="many-to-one",  # Change to one-to-one if needed
     provider_override="watsonx",
     model_override="ibm/granite-4-h-small",  # Default Granite model
     output_dir="outputs/watsonx_example_default",
 )
-
-# Example 2: Using WatsonX with Llama model
-config_llama = PipelineConfig(
-    source="docs/examples/data/battery_research/bauer2014.pdf",
-    template=Research,
-    backend="llm",
-    inference="remote",
-    processing_mode="many-to-one",
-    provider_override="watsonx",
-    model_override="meta-llama/llama-4-maverick-17b-128e-instruct-fp8",  # Llama model on WatsonX
-    output_dir="outputs/watsonx_example_llama",
-)
-
-# Example 3: Using WatsonX with Mixtral model
-config_mixtral = PipelineConfig(
-    source="docs/examples/data/battery_research/bauer2014.pdf",
-    template=Research,
-    backend="llm",
-    inference="remote",
-    processing_mode="many-to-one",
-    provider_override="watsonx",
-    model_override="mistralai/mistral-small-3-1-24b-instruct-2503",  # Mixtral on WatsonX
-    output_dir="outputs/watsonx_example_mixtral",
-)
-
 
 def main() -> None:
     """Run the WatsonX extraction examples."""
@@ -66,32 +44,12 @@ def main() -> None:
     print("=" * 80)
 
     # Run Example 1: Default Granite model
-    print("\n[1/3] Running extraction with Granite 4.0 H Small...")
+    print("\n[1/1] Running extraction with Granite 4.0 H Small...")
     try:
         run_pipeline(config_default)
         print(f"✓ Success! Output saved to: {config_default.output_dir}")
     except Exception as e:
         print(f"✗ Error: {e}")
-
-    # Run Example 2: Llama model
-    print("\n[2/3] Running extraction with Llama 3 70B...")
-    try:
-        run_pipeline(config_llama)
-        print(f"✓ Success! Output saved to: {config_llama.output_dir}")
-    except Exception as e:
-        print(f"✗ Error: {e}")
-
-    # Run Example 3: Mixtral model
-    print("\n[3/3] Running extraction with Mixtral 8x7B...")
-    try:
-        run_pipeline(config_mixtral)
-        print(f"✓ Success! Output saved to: {config_mixtral.output_dir}")
-    except Exception as e:
-        print(f"✗ Error: {e}")
-
-    print("\n" + "=" * 80)
-    print("All examples completed!")
-    print("=" * 80)
 
 
 if __name__ == "__main__":
