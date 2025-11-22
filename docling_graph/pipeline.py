@@ -183,17 +183,22 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
             rich_print("[blue][Pipeline][/blue] Exporting Docling document and markdown...")
             docling_exporter = DoclingExporter(output_dir=output_dir)
 
-            if hasattr(extractor, "doc_processor") and hasattr(
-                extractor.doc_processor, "converter"
-            ):
-                doc_result = extractor.doc_processor.converter.convert(conf["source"])
-                docling_document = doc_result.document
+            # Reuse the already-converted document from the extraction phase
+            if hasattr(extractor, "doc_processor") and extractor.doc_processor.last_document:
+                docling_document = extractor.doc_processor.last_document
+                rich_print(
+                    "[blue][Pipeline][/blue] Reusing cached DoclingDocument (avoiding duplicate conversion)"
+                )
                 docling_exporter.export_document(
                     docling_document,
                     base_name=base_name,
                     include_json=conf.get("export_docling_json", True),
                     include_markdown=conf.get("export_markdown", True),
                     per_page=conf.get("export_per_page_markdown", False),
+                )
+            else:
+                rich_print(
+                    "[yellow][Pipeline][/yellow] No cached document available, skipping Docling export"
                 )
 
         # 6. Convert to Graph

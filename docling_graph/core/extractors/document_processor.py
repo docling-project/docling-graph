@@ -47,6 +47,8 @@ class DocumentProcessor:
                 }
         """
         self.docling_config = docling_config
+        self._last_document: Optional[DoclingDocument] = None
+        self._last_source: Optional[str] = None
 
         # Initialize chunker if config provided
         self.chunker = None
@@ -107,10 +109,35 @@ class DocumentProcessor:
             f"[blue][DocumentProcessor][/blue] Converting document: [yellow]{source}[/yellow]"
         )
         result = self.converter.convert(source)
+        
+        # Cache the document and source for potential reuse
+        self._last_document = result.document
+        self._last_source = source
+        
         rich_print(
             f"[blue][DocumentProcessor][/blue] Converted [cyan]{result.document.num_pages()}[/cyan] pages"
         )
         return result.document
+
+    @property
+    def last_document(self) -> Optional[DoclingDocument]:
+        """
+        Get the last converted DoclingDocument.
+        
+        Returns:
+            The last converted document, or None if no document has been converted yet.
+        """
+        return self._last_document
+
+    @property
+    def last_source(self) -> Optional[str]:
+        """
+        Get the source path of the last converted document.
+        
+        Returns:
+            The source path of the last converted document, or None.
+        """
+        return self._last_source
 
     @overload
     def extract_chunks(
@@ -235,6 +262,10 @@ class DocumentProcessor:
     def cleanup(self) -> None:
         """Clean up document converter resources."""
         try:
+            # Clear cached document
+            self._last_document = None
+            self._last_source = None
+            
             if hasattr(self, "converter"):
                 del self.converter
             gc.collect()
