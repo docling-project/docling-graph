@@ -72,6 +72,15 @@ class ModelsConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     vlm: VLMConfig = Field(default_factory=VLMConfig)
 
+class Neo4jConfig(BaseModel):
+    """Configuration for Neo4j database connection."""
+    
+    uri: str = Field(default="bolt://localhost:7687", description="Neo4j URI")
+    username: str = Field(default="neo4j", description="Database username")
+    password: str = Field(default="password", description="Database password")
+    database: str = Field(default="neo4j", description="Target database name")
+    batch_size: int = Field(default=1000, description="Batch size for ingestion")
+    write_mode: Literal["merge", "create"] = Field(default="merge", description="Write strategy")
 
 class PipelineConfig(BaseModel):
     """
@@ -101,13 +110,15 @@ class PipelineConfig(BaseModel):
     # Models configuration (flat only, with defaults)
     models: ModelsConfig = Field(default_factory=ModelsConfig)
 
+    neo4j: Neo4jConfig = Field(default_factory=Neo4jConfig)
+
     # Extract settings (with defaults)
     use_chunking: bool = True
     llm_consolidation: bool = False
     max_batch_size: int = 1
 
     # Export settings (with defaults)
-    export_format: Literal["csv", "cypher"] = Field(default="csv")
+    export_format: Literal["csv", "cypher", "neo4j"] = Field(default="csv")
     export_docling: bool = Field(default=True)
     export_docling_json: bool = Field(default=True)
     export_markdown: bool = Field(default=True)
@@ -153,6 +164,7 @@ class PipelineConfig(BaseModel):
             "reverse_edges": self.reverse_edges,
             "output_dir": self.output_dir,
             "models": self.models.model_dump(),
+            "neo4j": self.neo4j.model_dump(),
         }
 
     def run(self) -> None:
@@ -185,6 +197,7 @@ class PipelineConfig(BaseModel):
                 },
             },
             "models": default_config.models.model_dump(),
+            "neo4j": default_config.neo4j.model_dump(),
             "output": {
                 "directory": str(default_config.output_dir),
             },

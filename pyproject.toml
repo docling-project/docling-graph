@@ -38,6 +38,7 @@ dependencies = [
     "rich>=13,<14",
     "typer[all]>=0.12,<1.0.0",
     "python-dotenv>=1.0,<2.0",
+    "neo4j>=5.0.0",
 ]
 
 [project.urls]
