@@ -1,5 +1,7 @@
 # MAINTAINERS
 
+Current maintainers (in alphabetical order):
+
 - Michele Dolfi - [@dolfim-ibm](https://github.com/dolfim-ibm)
 - Ayoub El Bouchtili - [@ayoub-ibm](https://github.com/ayoub-ibm)
 - Maxime Gillot - [@maxlo24](https://github.com/Maxlo24)
