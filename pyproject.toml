@@ -21,10 +21,10 @@ classifiers = [
     "Programming Language :: Python :: 3.13",    
 ]
 readme = "README.md"
-authors = [ # In alphabetical order
-  { name = "Michele Dolfi", email = "dol@zurich.ibm.com" },
+authors = [
   { name = "Ayoub El Bouchtili", email = "ayoub.elbouchtili@fr.ibm.com" },
-  { name = "Maxime Gillot", email = "Maxime.Gillot@ibm.com" },  
+  { name = "Michele Dolfi", email = "dol@zurich.ibm.com" },
+  { name = "Maxime Gillot", email = "Maxime.Gillot@ibm.com" },
   { name = "Sophie Lang", email = "sophie.lang@de.ibm.com" },
   { name = "Guilhaume Leroy Meline", email = "guilhaume@fr.ibm.com" },
   { name = "Peter Staar", email = "taa@zurich.ibm.com" },
