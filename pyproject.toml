@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docling_graph"
-version = "0.2.0"
+version = "0.1.0"
 description = "A tool to convert documents into knowledge graphs using Docling."
 
 license = { text = "MIT License" }
@@ -85,7 +85,7 @@ dev = [
     "pytest-xdist~=3.3",
     "ipykernel~=6.29",
     "nbqa~=1.9",
-    "python-semantic-release~=7.32",
+    "python-semantic-release>=9.0.0",
     "mypy>=1.4.0",
     "ruff>=0.0.280",
 ]
@@ -216,28 +216,42 @@ module = [
 ignore_missing_imports = true
 
 [tool.semantic_release]
-# Version management
-version_toml = "pyproject.toml:project.version"
-version_variable = "docling_graph/__init__.py:__version__"
-branch = "main"
-upload_to_pypi = false
-upload_to_release = true
-build_command = "uv build"
+version_toml = ["pyproject.toml:project.version"]
+version_variables = ["docling_graph/__init__.py:__version__"]
 
-# Commit and tag configuration
-commit_message = "chore(release): {version}\n\n[skip ci]"
-commit_parser = "angular"
-tag_commit = true
-tag_format = "v{version}"
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
 
-# Changelog configuration
+[tool.semantic_release.changelog]
+template_dir = "templates"
 changelog_file = "CHANGELOG.md"
-changelog_placeholder = "<!--next-version-placeholder-->"
+exclude_commit_patterns = []
 
-# Commit type configuration for version bumps
-parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
-parser_angular_minor_types = "feat"
-parser_angular_patch_types = "fix,perf"
+[tool.semantic_release.changelog.environment]
+block_start_string = "{%"
+block_end_string = "%}"
+variable_start_string = "{{"
+variable_end_string = "}}"
+comment_start_string = "{#"
+comment_end_string = "#}"
+trim_blocks = false
+lstrip_blocks = false
+newline_sequence = "\n"
+keep_trailing_newline = false
+extensions = []
+autoescape = true
 
-# GitHub release configuration
-hvcs = "github"
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+
+[tool.semantic_release.remote]
+name = "origin"
+type = "github"
+ignore_token_for_push = false
+
+[tool.semantic_release.publish]
+dist_glob_patterns = ["dist/*"]
+upload_to_vcs_release = true
