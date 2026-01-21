@@ -217,10 +217,10 @@ ignore_missing_imports = true
 
 [tool.semantic_release]
 # Version management
-version_toml = ["pyproject.toml:project.version"]
+version_toml = "pyproject.toml:project.version"
 version_variable = "docling_graph/__init__.py:__version__"
 branch = "main"
-upload_to_pypi = false  # Handled by separate release workflow
+upload_to_pypi = false
 upload_to_release = true
 build_command = "uv build"
 
