@@ -42,9 +42,13 @@ jobs:
       
       - name: Test installation from TestPyPI
         run: |
+          # Strip 'v' prefix from tag name to get actual version
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          
           python -m pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            docling-graph==${{ github.ref_name }}
+            docling-graph==${VERSION}
           python -c "import docling_graph; print(f'Version: {docling_graph.__version__}')"
       
       - name: Upload build artifacts
