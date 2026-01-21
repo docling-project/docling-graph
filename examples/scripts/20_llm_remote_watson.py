@@ -49,9 +49,9 @@ def main() -> None:
     print("\n[1/1] Running extraction with Granite 4.0 H Small...")
     try:
         run_pipeline(config_default)
-        print(f"✓ Success! Output saved to: {config_default.output_dir}")
+        print(f"Success! Output saved to: {config_default.output_dir}")
     except Exception as e:
-        print(f"✗ Error: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
