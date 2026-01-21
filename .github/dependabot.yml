@@ -6,13 +6,18 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "ci/cd"
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
+    # This groups all action updates into one PR
+    groups:
+      all-actions:
+        patterns:
+          - "*"
 
   # Python dependencies via pip
   - package-ecosystem: "pip"
@@ -27,7 +32,6 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
     groups:
-      # Group development dependencies
       dev-dependencies:
         patterns:
           - "pytest*"
@@ -35,13 +39,14 @@ updates:
           - "ruff*"
           - "pre-commit*"
           - "types-*"
-      # Group test dependencies
+          - "ipykernel*"
+          - "python-semantic-release*"
+          - "rich"
       test-dependencies:
         patterns:
           - "pytest*"
           - "coverage*"
           - "hypothesis*"
-      # Group LLM client dependencies
       llm-clients:
         patterns:
           - "openai*"
@@ -49,4 +54,3 @@ updates:
           - "google-*"
           - "ollama*"
           - "ibm-watsonx-ai*"
-
