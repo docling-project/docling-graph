@@ -22,20 +22,9 @@ A *committer* is a contributor who has the additional privilege to commit code d
 
 Current committers (in alphabetical order):
 
-- [Christoph Auer](https://github.com/cau-git)
-- [Cesar Berrospi Ramis](https://github.com/ceberam)
-- [Kasper Dinkla](https://github.com/kdinkla)
-- [Michele Dolfi](https://github.com/dolfim-ibm)
-- [Yusik Kim](https://github.com/kmyusk)
-- [Viktor Kuropiatnyk](https://github.com/vku-ibm)
-- [Nikos Livathinos](https://github.com/nikos-livathinos)
-- [Maxim Lysak](https://github.com/maxmnemonic)
-- [Ahmed Nassar](https://github.com/nassarofficial)
-- [Matteo Omenetti](https://github.com/Matteo-Omenetti)
-- [Peter Staar](https://github.com/PeterStaar-IBM)
-- [Rafael Teixeira de Lima](https://github.com/rateixei)
-- [Panos Vagenas](https://github.com/vagenas)
-- [Anil Vishnoi](https://github.com/vishnoianil)
+- Michele Dolfi - [@dolfim-ibm](https://github.com/dolfim-ibm)
+- Ayoub El Bouchtili - [@ayoub-ibm](https://github.com/ayoub-ibm)
+- Peter Staar - [@PeterStaar-IBM](https://github.com/PeterStaar-IBM)
 
 #### Process for becoming a committer
 
