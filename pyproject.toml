@@ -216,14 +216,28 @@ module = [
 ignore_missing_imports = true
 
 [tool.semantic_release]
-# for default values check:
-# https://github.com/python-semantic-release/python-semantic-release/blob/v7.32.2/semantic_release/defaults.cfg
+# Version management
+version_toml = ["pyproject.toml:project.version"]
+version_variable = "docling_graph/__init__.py:__version__"
+branch = "main"
+upload_to_pypi = false  # Handled by separate release workflow
+upload_to_release = true
+build_command = "uv build"
 
-# version_source = "tag_only"
-# branch = "main"
+# Commit and tag configuration
+commit_message = "chore(release): {version}\n\n[skip ci]"
+commit_parser = "angular"
+tag_commit = true
+tag_format = "v{version}"
 
-# configure types which should trigger minor and patch version bumps respectively
-# (note that they must be a subset of the configured allowed types):
-# parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
-# parser_angular_minor_types = "feat"
-# parser_angular_patch_types = "fix,perf"
+# Changelog configuration
+changelog_file = "CHANGELOG.md"
+changelog_placeholder = "<!--next-version-placeholder-->"
+
+# Commit type configuration for version bumps
+parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
+parser_angular_minor_types = "feat"
+parser_angular_patch_types = "fix,perf"
+
+# GitHub release configuration
+hvcs = "github"

@@ -1,6 +1,8 @@
 from .config import LLMConfig, ModelConfig, ModelsConfig, PipelineConfig, VLMConfig
 from .pipeline import run_pipeline
 
+__version__ = "0.2.0"
+
 __all__ = [
     "LLMConfig",
     "ModelConfig",
@@ -8,4 +10,5 @@ __all__ = [
     "PipelineConfig",
     "VLMConfig",
     "run_pipeline",
+    "__version__",
 ]

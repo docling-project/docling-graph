@@ -291,7 +291,6 @@ WatsonX.ai pricing is based on:
 - [IBM WatsonX.ai Documentation](https://www.ibm.com/docs/en/watsonx-as-a-service)
 - [WatsonX Python SDK](https://ibm.github.io/watsonx-ai-python-sdk/)
 - [IBM Cloud API Keys](https://cloud.ibm.com/docs/account?topic=account-userapikey)
-- [Docling Graph Examples](../../examples/)
 
 ## Support
 
