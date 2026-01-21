@@ -1,6 +1,167 @@
 # CHANGELOG
 
 
+## v0.2.2 (2026-01-21)
+
+### Bug Fixes
+
+- **ci**: Add retry logic for TestPyPI package availability
+  ([`d9b9bd7`](https://github.com/IBM/docling-graph/commit/d9b9bd736bb9e81ed4ce91b5c380bf4b9d4549df))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **ci**: Improve release workflow and commit message
+  ([`2ce1ac6`](https://github.com/IBM/docling-graph/commit/2ce1ac6f5c6082e29fb52636b0056dd7cec2c4dc))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **deps**: Clean up Dependabot commit message configuration
+  ([`1a4b46d`](https://github.com/IBM/docling-graph/commit/1a4b46df97d72fd83b108f7d7de30b1fc4c41306))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps)(deps**: Bump the all-actions group across 1 directory with 7 updates
+  ([#29](https://github.com/IBM/docling-graph/pull/29),
+  [`0a26352`](https://github.com/IBM/docling-graph/commit/0a26352e656bacee444be753bb9786a24bfe49c7))
+
+Bumps the all-actions group with 7 updates in the / directory:
+
+| Package | From | To | | --- | --- | --- | |
+  [actions/checkout](https://github.com/actions/checkout) | `4` | `6` | |
+  [actions/setup-python](https://github.com/actions/setup-python) | `5` | `6` | |
+  [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) | `4` | `7` | |
+  [codecov/codecov-action](https://github.com/codecov/codecov-action) | `4` | `5` | |
+  [actions/upload-artifact](https://github.com/actions/upload-artifact) | `4` | `6` | |
+  [actions/labeler](https://github.com/actions/labeler) | `5` | `6` | |
+  [actions/download-artifact](https://github.com/actions/download-artifact) | `4` | `7` |
+
+Updates `actions/checkout` from 4 to 6 - [Release
+  notes](https://github.com/actions/checkout/releases) -
+  [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/checkout/compare/v4...v6)
+
+Updates `actions/setup-python` from 5 to 6 - [Release
+  notes](https://github.com/actions/setup-python/releases) -
+  [Commits](https://github.com/actions/setup-python/compare/v5...v6)
+
+Updates `astral-sh/setup-uv` from 4 to 7 - [Release
+  notes](https://github.com/astral-sh/setup-uv/releases) -
+  [Commits](https://github.com/astral-sh/setup-uv/compare/v4...v7)
+
+Updates `codecov/codecov-action` from 4 to 5 - [Release
+  notes](https://github.com/codecov/codecov-action/releases) -
+  [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/codecov/codecov-action/compare/v4...v5)
+
+Updates `actions/upload-artifact` from 4 to 6 - [Release
+  notes](https://github.com/actions/upload-artifact/releases) -
+  [Commits](https://github.com/actions/upload-artifact/compare/v4...v6)
+
+Updates `actions/labeler` from 5 to 6 - [Release notes](https://github.com/actions/labeler/releases)
+  - [Commits](https://github.com/actions/labeler/compare/v5...v6)
+
+Updates `actions/download-artifact` from 4 to 7 - [Release
+  notes](https://github.com/actions/download-artifact/releases) -
+  [Commits](https://github.com/actions/download-artifact/compare/v4...v7)
+
+--- updated-dependencies: - dependency-name: actions/checkout dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions
+
+- dependency-name: actions/setup-python dependency-version: '6'
+
+- dependency-name: astral-sh/setup-uv dependency-version: '7'
+
+- dependency-name: codecov/codecov-action dependency-version: '5'
+
+- dependency-name: actions/upload-artifact dependency-version: '6'
+
+- dependency-name: actions/labeler dependency-version: '6'
+
+- dependency-name: actions/download-artifact dependency-version: '7'
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+Co-authored-by: Ayoub El Bouchtili <Ayoub.elbouchtili@fr.ibm.com>
+
+- **deps)(deps**: Bump the dev-dependencies group with 6 updates
+  ([#27](https://github.com/IBM/docling-graph/pull/27),
+  [`1bcdd58`](https://github.com/IBM/docling-graph/commit/1bcdd5850a1bed61ffb249cd1ac0761b5504e19c))
+
+Updates the requirements on [rich](https://github.com/Textualize/rich),
+  [pre-commit](https://github.com/pre-commit/pre-commit),
+  [types-setuptools](https://github.com/typeshed-internal/stub_uploader),
+  [pytest](https://github.com/pytest-dev/pytest), [ipykernel](https://github.com/ipython/ipykernel)
+  and [python-semantic-release](https://github.com/python-semantic-release/python-semantic-release)
+  to permit the latest version.
+
+Updates `rich` to 14.2.0 - [Release notes](https://github.com/Textualize/rich/releases) -
+  [Changelog](https://github.com/Textualize/rich/blob/master/CHANGELOG.md) -
+  [Commits](https://github.com/Textualize/rich/compare/v13.0.0...v14.2.0)
+
+Updates `pre-commit` to 4.5.1 - [Release notes](https://github.com/pre-commit/pre-commit/releases) -
+  [Changelog](https://github.com/pre-commit/pre-commit/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/pre-commit/pre-commit/compare/v3.7.0...v4.5.1)
+
+Updates `types-setuptools` to 80.9.0.20251223 -
+  [Commits](https://github.com/typeshed-internal/stub_uploader/commits)
+
+Updates `pytest` to 9.0.2 - [Release notes](https://github.com/pytest-dev/pytest/releases) -
+  [Changelog](https://github.com/pytest-dev/pytest/blob/main/CHANGELOG.rst) -
+  [Commits](https://github.com/pytest-dev/pytest/compare/8.3.0...9.0.2)
+
+Updates `ipykernel` to 7.1.0 - [Release notes](https://github.com/ipython/ipykernel/releases) -
+  [Changelog](https://github.com/ipython/ipykernel/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/ipython/ipykernel/compare/v6.29.0...v7.1.0)
+
+Updates `python-semantic-release` to 10.5.3 - [Release
+  notes](https://github.com/python-semantic-release/python-semantic-release/releases) -
+  [Changelog](https://github.com/python-semantic-release/python-semantic-release/blob/master/CHANGELOG.rst)
+  -
+  [Commits](https://github.com/python-semantic-release/python-semantic-release/compare/v7.32.0...v10.5.3)
+
+--- updated-dependencies: - dependency-name: rich dependency-version: 14.2.0
+
+dependency-type: direct:production
+
+dependency-group: dev-dependencies
+
+- dependency-name: pre-commit dependency-version: 4.5.1
+
+dependency-type: direct:development
+
+- dependency-name: types-setuptools dependency-version: 80.9.0.20251223
+
+- dependency-name: pytest dependency-version: 9.0.2
+
+- dependency-name: ipykernel dependency-version: 7.1.0
+
+- dependency-name: python-semantic-release dependency-version: 10.5.3
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+Co-authored-by: Ayoub El Bouchtili <Ayoub.elbouchtili@fr.ibm.com>
+
+- **lint**: Update Ruff linter configuration
+  ([`c452d5d`](https://github.com/IBM/docling-graph/commit/c452d5df17e658bd8b28014bd38661329a200dad))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v0.2.1 (2026-01-21)
 
 ### Bug Fixes
