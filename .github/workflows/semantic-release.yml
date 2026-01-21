@@ -1,0 +1,87 @@
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    concurrency: release
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+          uv pip install python-semantic-release
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Check for release
+        id: check_release
+        run: |
+          # Run semantic-release in dry-run mode to check if a release is needed
+          if uv run semantic-release version --noop 2>&1 | grep -q "No release will be made"; then
+            echo "release_needed=false" >> $GITHUB_OUTPUT
+            echo "No release needed - no relevant commits since last release"
+          else
+            echo "release_needed=true" >> $GITHUB_OUTPUT
+            echo "Release will be created"
+          fi
+      
+      - name: Python Semantic Release
+        if: steps.check_release.outputs.release_needed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run semantic-release version
+          uv run semantic-release changelog
+          uv run semantic-release publish
+      
+      - name: Push changes
+        if: steps.check_release.outputs.release_needed == 'true'
+        run: |
+          git push --follow-tags
+      
+      - name: Summary
+        run: |
+          if [ "${{ steps.check_release.outputs.release_needed }}" == "true" ]; then
+            echo "- New version released and tagged" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The release workflow will now be triggered by the new tag." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- No release created" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No conventional commits found that warrant a release." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Commit types that trigger releases:**" >> $GITHUB_STEP_SUMMARY
+            echo "- \`feat:\` - New feature (minor version bump)" >> $GITHUB_STEP_SUMMARY
+            echo "- \`fix:\` - Bug fix (patch version bump)" >> $GITHUB_STEP_SUMMARY
+            echo "- \`perf:\` - Performance improvement (patch version bump)" >> $GITHUB_STEP_SUMMARY
+            echo "- \`BREAKING CHANGE:\` - Breaking change (major version bump)" >> $GITHUB_STEP_SUMMARY
+          fi

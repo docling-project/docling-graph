@@ -1,0 +1,116 @@
+site_name: Docling Graph Documentation
+site_description: Convert documents into knowledge graphs using Docling
+site_author: IBM Research
+site_url: https://ibm.github.io/docling-graph
+
+repo_name: IBM/docling-graph
+repo_url: https://github.com/IBM/docling-graph
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Concepts:
+    - Overview: concepts/index.md
+    - Architecture: concepts/architecture.md
+    - Extraction Backends: concepts/extraction-backends.md
+    - Processing Strategies: concepts/processing-strategies.md
+    - Pydantic Templates: concepts/pydantic-templates.md
+    - Graph Construction: concepts/graph-construction.md
+    - Export Formats: concepts/export-formats.md
+    - Configuration System: concepts/configuration.md
+    - Pipeline Flowchart: concepts/pipeline-flowchart.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+  - Guides:
+    - Pydantic Templates: guides/create_pydantic_templates_for_kg_extraction.md
+    - GPU Setup: guides/setup_with_gpu_support.md
+    - WatsonX Integration: guides/watsonx_integration.md
+  - Examples:
+    - Overview: examples/README.md
+    - CLI Recipes: examples/scripts/10_cli_recipes.md
+  - Reference:
+    - Pipeline: api/pipeline.md
+    - Configuration: api/config.md
+    - Converters: api/converters.md
+    - Extractors: api/extractors.md
+    - Exporters: api/exporters.md
+    - LLM Clients: api/llm-clients.md
+
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/IBM/docling-graph
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/docling-graph/
+  version:
+    provider: mike
