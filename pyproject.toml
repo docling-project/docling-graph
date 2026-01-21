@@ -85,7 +85,7 @@ dev = [
     "pytest-xdist~=3.3",
     "ipykernel~=6.29",
     "nbqa~=1.9",
-    "python-semantic-release~=7.32",
+    "python-semantic-release~=10.5",
     "mypy>=1.4.0",
     "ruff>=0.0.280",
 ]
