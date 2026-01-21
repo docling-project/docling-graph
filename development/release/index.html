@@ -1831,56 +1831,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#changelog-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Changelog Format
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Changelog Format">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#new-clean-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Clean Format
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cleaning-up-existing-changelog" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cleaning Up Existing Changelog
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#template-location" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template Location
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1909,7 +1859,6 @@
 <li><strong>Python Semantic Release</strong> - Automatic version bumping and changelog generation</li>
 <li><strong>GitHub Actions</strong> - Automated testing, building, and publishing</li>
 <li><strong>Conventional Commits</strong> - Standardized commit messages for version determination</li>
-<li><strong>Custom Templates</strong> - Clean, readable changelog format without clutter</li>
 </ul>
 <h2 id="release-workflow">Release Workflow<a class="headerlink" href="#release-workflow" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>graph TB
@@ -2302,58 +2251,9 @@
 <li><a href="https://semver.org/">Semantic Versioning</a></li>
 <li><a href="https://www.conventionalcommits.org/">Conventional Commits</a></li>
 <li><a href="https://python-semantic-release.readthedocs.io/">Python Semantic Release</a></li>
+<li><a href="https://docs.pypi.org/trusted-publishers/">PyPI Trusted Publishing</a></li>
+<li><a href="https://docs.github.com/en/actions">GitHub Actions</a></li>
 </ul>
-<h2 id="changelog-format">Changelog Format<a class="headerlink" href="#changelog-format" title="Permanent link">&para;</a></h2>
-<h3 id="new-clean-format">New Clean Format<a class="headerlink" href="#new-clean-format" title="Permanent link">&para;</a></h3>
-<p>Starting from version 0.2.5, the changelog uses a cleaner, more readable format:</p>
-<p><strong>Key Improvements:</strong>
-- No "Signed-off-by:" or "Co-authored-by:" lines
-- Simplified dependency updates (single line per package)
-- Better section organization
-- Consistent formatting throughout</p>
-<p><strong>Example Entry:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="gu">## v0.3.0 (2026-01-22)</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="gu">### Breaking Changes</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">-</span><span class="w"> </span><span class="gs">**config**</span>: Configuration API redesigned - see migration guide
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="gu">### Features</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="k">-</span><span class="w"> </span><span class="gs">**cli**</span>: Add batch processing command ([#123](link))
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="k">-</span><span class="w"> </span><span class="gs">**extractor**</span>: Support for custom chunking strategies
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="gu">### Bug Fixes</span>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="k">-</span><span class="w"> </span><span class="gs">**converter**</span>: Resolve memory leak in graph construction
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="k">-</span><span class="w"> </span><span class="gs">**pipeline**</span>: Fix race condition in parallel processing
-<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>
-<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="gu">### Dependencies</span>
-<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>
-<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="k">-</span><span class="w"> </span>Bump docling from 2.60.0 to 2.61.0
-<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="k">-</span><span class="w"> </span>Bump pydantic from 2.5.0 to 2.6.0
-<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="k">-</span><span class="w"> </span>Update 7 GitHub Actions packages
-<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>
-<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="gu">### Documentation</span>
-<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>
-<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="k">-</span><span class="w"> </span>Update installation guide with GPU setup
-<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="k">-</span><span class="w"> </span>Add examples for custom templates
-</code></pre></div>
-<h3 id="cleaning-up-existing-changelog">Cleaning Up Existing Changelog<a class="headerlink" href="#cleaning-up-existing-changelog" title="Permanent link">&para;</a></h3>
-<p>To clean up the existing CHANGELOG.md and remove historical clutter:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Run the cleanup script</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>python<span class="w"> </span>scripts/cleanup_changelog.py
-</code></pre></div>
-<p>This script will:
-1. Create a backup of the original changelog (CHANGELOG.md.backup)
-2. Remove all "Signed-off-by:" and "Co-authored-by:" lines
-3. Simplify verbose dependency update messages
-4. Remove excessive metadata from Dependabot PRs
-5. Improve overall formatting</p>
-<h3 id="template-location">Template Location<a class="headerlink" href="#template-location" title="Permanent link">&para;</a></h3>
-<p>Custom changelog templates are located in <code>.github/templates/</code>:
-- <code>CHANGELOG.md.j2</code> - Main changelog template
-- <code>.release_notes.md.j2</code> - GitHub release notes template</p>
 
 
 
