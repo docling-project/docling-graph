@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.2.5 (2026-01-21)
+
+### Bug Fixes
+
+- **ci**: Disable attestations for TestPyPI to prevent conflict
+  ([`2f2d79b`](https://github.com/IBM/docling-graph/commit/2f2d79bc44e9419453332be0b7bf02adf8be6aa4))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v0.2.4 (2026-01-21)
 
 ### Bug Fixes
