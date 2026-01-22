@@ -56,9 +56,9 @@ graph TB
 | `feat` | New feature | Minor (0.x.0) | `feat: add PDF batch processing` |
 | `fix` | Bug fix | Patch (0.0.x) | `fix: resolve memory leak in chunker` |
 | `perf` | Performance improvement | Patch (0.0.x) | `perf: optimize graph construction` |
+| `refactor` | Code refactoring | Minor (0.x.0) | `refactor: simplify config loading` |
 | `docs` | Documentation only | None | `docs: update installation guide` |
 | `style` | Code style changes | None | `style: format with ruff` |
-| `refactor` | Code refactoring | None | `refactor: simplify config loading` |
 | `test` | Test additions/changes | None | `test: add integration tests` |
 | `chore` | Maintenance tasks | None | `chore: update dependencies` |
 | `ci` | CI/CD changes | None | `ci: add caching to workflows` |

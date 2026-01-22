@@ -1,7 +1,7 @@
 # CHANGELOG
 
 
-## Unreleased
+## v0.2.6 (2026-01-21)
 
 ### Chores
 

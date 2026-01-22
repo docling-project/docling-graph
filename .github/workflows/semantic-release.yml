@@ -69,6 +69,7 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Commit types that trigger releases:**" >> $GITHUB_STEP_SUMMARY
             echo "- \`feat:\` - New feature (minor version bump)" >> $GITHUB_STEP_SUMMARY
+            echo "- \`refactor:\` - Code refactoring (minor version bump)" >> $GITHUB_STEP_SUMMARY
             echo "- \`fix:\` - Bug fix (patch version bump)" >> $GITHUB_STEP_SUMMARY
             echo "- \`perf:\` - Performance improvement (patch version bump)" >> $GITHUB_STEP_SUMMARY
             echo "- \`BREAKING CHANGE:\` - Breaking change (major version bump)" >> $GITHUB_STEP_SUMMARY
