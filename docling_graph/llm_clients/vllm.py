@@ -4,139 +4,113 @@ Uses OpenAI-compatible API server from vLLM.
 Cross-platform (Linux/Windows) via vLLM server mode.
 """
 
-import json
-from typing import TYPE_CHECKING, Any, Dict, cast
+import logging
+from typing import TYPE_CHECKING, Any, Dict
 
-from rich import print as rich_print
-
+from ..exceptions import ClientError, ConfigurationError
 from .base import BaseLlmClient
-from .config import get_context_limit
 
-# Requires `pip install openai`
-# Make the lazy import optional to satisfy type checkers when assigning None
+logger = logging.getLogger(__name__)
+
 _OpenAI: Any | None = None
 try:
     from openai import OpenAI as OpenAI_module
 
     _OpenAI = OpenAI_module
 except ImportError:
-    rich_print(
-        "[red]Error:[/red] `openai` package not found. "
-        "Please run `pip install openai` to use the vLLM client."
+    logger.warning(
+        "openai package not found. Please run `pip install openai` to use the vLLM client."
     )
     _OpenAI = None
 
-# Expose as Any to allow None fallback without mypy issues
 OpenAI: Any = _OpenAI
 
-if TYPE_CHECKING:  # Only imported for type checking; avoids runtime dependency at import
+if TYPE_CHECKING:
     from openai.types.chat import ChatCompletionMessageParam
 
 
 class VllmClient(BaseLlmClient):
     """vLLM client implementation using OpenAI-compatible API."""
 
-    def __init__(
-        self, model: str, base_url: str = "http://localhost:8000/v1", api_key: str = "EMPTY"
-    ) -> None:
-        """Initialize vLLM client."""
-        self.model = model
-        self.base_url = base_url
-        self.api_key = api_key
+    def _provider_id(self) -> str:
+        """Return provider ID for config lookup."""
+        return "vllm"
 
-        # Initialize OpenAI client pointing to vLLM server
-        self.client = OpenAI(base_url=base_url, api_key=api_key)
-
-        # Use centralized config registry (vllm provider)
-        self._context_limit = get_context_limit("vllm", model)
-
-        # Test connection
-        try:
-            rich_print(
-                f"[blue][VllmClient][/blue] Connecting to vLLM server at: [cyan]{self.base_url}[/cyan]"
+    def _setup_client(self, **kwargs: Any) -> None:
+        """Initialize vLLM-specific client."""
+        if OpenAI is None:
+            raise ConfigurationError(
+                "openai package not installed",
+                details={"package": "openai", "install": "pip install openai"},
             )
-            self.client.models.list()
-            rich_print("[blue][VllmClient][/blue] Connected successfully")
-            rich_print(f"[blue][VllmClient][/blue] Using model: [blue]{self.model}[/blue]")
-        except Exception as e:
-            rich_print(f"[red]vLLM connection failed:[/red] {e}")
-            rich_print("\n[yellow]Setup instructions:[/yellow]")
-            rich_print("  1. Start vLLM server in a separate terminal:")
-            rich_print(f"     [cyan]vllm serve {self.model}[/cyan]")
-            rich_print("  2. Wait for server to load (may take 1-2 minutes)")
-            rich_print(f"  3. Ensure server is accessible at: [cyan]{self.base_url}[/cyan]")
-            rich_print("\n[dim]On Windows: Run vLLM server in WSL2 or Docker[/dim]")
-            raise
 
-    def get_json_response(self, prompt: str | dict[str, str], schema_json: str) -> Dict[str, Any]:
+        self.base_url = kwargs.get("base_url", "http://localhost:8000/v1")
+        self.api_key = kwargs.get("api_key", "EMPTY")
+
+        self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
+
+        try:
+            logger.info(f"Connecting to vLLM server at: {self.base_url}")
+            self.client.models.list()
+            logger.info("vLLM client connected successfully")
+            logger.info(f"Using model: {self.model}")
+        except Exception as e:
+            raise ConfigurationError(
+                f"vLLM connection failed: {e}",
+                details={
+                    "base_url": self.base_url,
+                    "model": self.model,
+                    "error": str(e),
+                    "instructions": [
+                        "1. Start vLLM server in a separate terminal:",
+                        f"   vllm serve {self.model}",
+                        "2. Wait for server to load (may take 1-2 minutes)",
+                        f"3. Ensure server is accessible at: {self.base_url}",
+                        "",
+                        "On Windows: Run vLLM server in WSL2 or Docker",
+                    ],
+                },
+            ) from e
+
+    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
         """
-        Execute vLLM chat with JSON format using OpenAI-compatible API.
+        Call vLLM API via OpenAI-compatible interface.
 
         Args:
-            prompt: Either a string (legacy) or dict with 'system' and 'user' keys.
-            schema_json: JSON schema (can be used for guided decoding).
+            messages: List of message dicts with 'role' and 'content'
+            **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Parsed JSON response from vLLM.
-        """
-        # Handle both legacy string prompts and new dict prompts
-        # Define once to avoid mypy no-redef when annotating in both branches
-        messages: list[ChatCompletionMessageParam]
-        if isinstance(prompt, dict):
-            messages = [
-                {"role": "system", "content": prompt.get("system", "")},
-                {"role": "user", "content": prompt.get("user", "")},
-            ]
-        else:
-            # Legacy: treat entire prompt as user message
-            messages = [{"role": "user", "content": prompt}]
+            Raw response string from vLLM
 
+        Raises:
+            ClientError: If API call fails
+        """
         try:
-            # Call vLLM via OpenAI-compatible API with JSON mode
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=0.1,  # Low temperature for consistent extraction
-                response_format={"type": "json_object"},  # Force JSON output
-                # vLLM supports extra_body for additional parameters like guided_json
-                # extra_body={"guided_json": schema_json}  # Uncomment for schema validation
+                temperature=0.1,
+                response_format={"type": "json_object"},
             )
 
-            # Get response content
             raw_json = response.choices[0].message.content
 
-            # Parse JSON
             if not raw_json:
-                rich_print("[red]Error:[/red] vLLM returned empty content")
-                return {}
+                raise ClientError(
+                    "vLLM returned empty content",
+                    details={"model": self.model, "base_url": self.base_url},
+                )
 
-            try:
-                parsed_json = json.loads(raw_json)
-
-                # Validate it's not empty
-                if not parsed_json or (
-                    isinstance(parsed_json, dict) and not any(parsed_json.values())
-                ):
-                    rich_print("[yellow]Warning:[/yellow] vLLM returned empty or all-null JSON")
-
-                # Ensure return type matches Dict[str, Any]
-                if isinstance(parsed_json, dict):
-                    return cast(Dict[str, Any], parsed_json)
-                else:
-                    rich_print(
-                        "[yellow]Warning:[/yellow] Expected a JSON object; got non-dict. Returning empty dict."
-                    )
-                    return {}
-            except json.JSONDecodeError as e:
-                rich_print(f"[red]Error:[/red] Failed to parse vLLM response as JSON: {e}")
-                rich_print(f"[yellow]Raw response:[/yellow] {raw_json}")
-                return {}
+            return str(raw_json)
 
         except Exception as e:
-            rich_print(f"[red]Error:[/red] vLLM API call failed: {type(e).__name__}: {e}")
-            return {}
+            if isinstance(e, ClientError):
+                raise
+            raise ClientError(
+                f"vLLM API call failed: {type(e).__name__}",
+                details={"model": self.model, "base_url": self.base_url, "error": str(e)},
+            ) from e
 
-    @property
-    def context_limit(self) -> int:
-        """Return context window size."""
-        return self._context_limit
+
+# Made with Bob

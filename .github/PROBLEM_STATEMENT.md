@@ -6,7 +6,7 @@
 
 1. **Loss of Semantic Relationships**: Converting documents to text vectors or embeddings loses the precise relationships between entities (e.g., "who issued what to whom" or "which chemical reacts with which compound")
 
-2. **Domain Complexity**: Technical domains like chemistry, finance, physics, and legal documents require exact understanding of entity connections and dependencies, not approximate similarity matching
+2. **Domain Complexity**: Technical domains like chemistry, finance, legal, and legal documents require exact understanding of entity connections and dependencies, not approximate similarity matching
 
 3. **Lack of Explainability**: Vector-based approaches cannot explain *why* two pieces of information are related or trace the reasoning path through document relationships
 

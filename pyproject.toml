@@ -38,6 +38,7 @@ dependencies = [
     "rich>=13,<15",
     "typer[all]>=0.12,<1.0.0",
     "python-dotenv>=1.0,<2.0",
+    "pyyaml>=6.0,<7.0",
 ]
 
 [project.urls]
@@ -263,3 +264,11 @@ ignore_token_for_push = false
 [tool.semantic_release.publish]
 dist_glob_patterns = ["dist/*"]
 upload_to_vcs_release = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    # Ignore warnings from external dependencies
+    "ignore:.*Use BaseMetaSerializer.*:DeprecationWarning",
+    "ignore:.*Using `@model_validator` with mode='after' on a classmethod is deprecated.*:pydantic.warnings.PydanticDeprecatedSince212",
+]

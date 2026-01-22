@@ -1,0 +1,219 @@
+# LLM Provider and Model Configuration
+# This file centralizes all model configurations, replacing 547 lines of Python code
+
+providers:
+  mistral:
+    tokenizer: "mistralai/Mistral-7B-Instruct-v0.2"
+    content_ratio: 0.8
+    models:
+      mistral-large-latest:
+        context_limit: 128000
+        max_new_tokens: 8192
+        description: "Mistral's largest model, optimized for complex reasoning"
+        notes: "Recommended for comprehensive document extraction"
+      mistral-medium-latest:
+        context_limit: 128000
+        max_new_tokens: 8192
+        description: "Mistral's medium model, balanced performance"
+        notes: "Good general-purpose choice"
+      mistral-small-latest:
+        context_limit: 32000
+        max_new_tokens: 4096
+        description: "Mistral's smaller model, faster inference"
+        notes: "Use for real-time or cost-sensitive tasks"
+
+  openai:
+    tokenizer: "tiktoken"
+    content_ratio: 0.8
+    models:
+      gpt-4o:
+        context_limit: 128000
+        max_new_tokens: 16384
+        description: "GPT-4 Omni, vision + text, best performance"
+        notes: "Latest flagship model, supports vision"
+      gpt-4o-mini:
+        context_limit: 128000
+        max_new_tokens: 16384
+        description: "Smaller, faster GPT-4o variant"
+        notes: "Good cost/performance tradeoff"
+      gpt-4-turbo:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Previous GPT-4 variant"
+        notes: "Older but still powerful"
+      gpt-4:
+        context_limit: 8192
+        max_new_tokens: 4096
+        description: "Base GPT-4, smaller context"
+        notes: "Limited context window"
+      gpt-3.5-turbo:
+        context_limit: 16000
+        max_new_tokens: 4096
+        description: "Fast and cost-effective"
+        notes: "Popular for real-time tasks"
+      gpt-3.5-turbo-16k:
+        context_limit: 16000
+        max_new_tokens: 4096
+        description: "Extended context version"
+        notes: "Better for longer documents"
+
+  google:
+    tokenizer: "sentence-transformers/all-MiniLM-L6-v2"
+    content_ratio: 0.8
+    models:
+      gemini-2.5-pro:
+        context_limit: 1000000
+        max_new_tokens: 8192
+        description: "Google's latest flagship model"
+        notes: "Massive context window, multimodal"
+      gemini-2.0-flash:
+        context_limit: 1000000
+        max_new_tokens: 8192
+        description: "Fast Gemini 2.0 variant"
+        notes: "Excellent for real-time extraction"
+      gemini-1.5-pro:
+        context_limit: 1000000
+        max_new_tokens: 8192
+        description: "Gemini 1.5 Pro model"
+        notes: "Million token context"
+      gemini-1.5-flash:
+        context_limit: 1000000
+        max_new_tokens: 8192
+        description: "Fast Gemini 1.5 variant"
+        notes: "Fast inference"
+
+  anthropic:
+    tokenizer: "cl100k_base"
+    content_ratio: 0.8
+    models:
+      claude-3-opus:
+        context_limit: 200000
+        max_new_tokens: 4096
+        description: "Claude 3 Opus, most capable"
+        notes: "Best for complex reasoning"
+      claude-3-sonnet:
+        context_limit: 200000
+        max_new_tokens: 4096
+        description: "Claude 3 Sonnet, balanced"
+        notes: "Good general-purpose choice"
+      claude-3-haiku:
+        context_limit: 200000
+        max_new_tokens: 4096
+        description: "Claude 3 Haiku, fastest"
+        notes: "Use for real-time tasks"
+
+  watsonx:
+    tokenizer: "ibm-granite/granite-embedding-278m-multilingual"
+    content_ratio: 0.75
+    models:
+      ibm/granite-4-h-small:
+        context_limit: 128000
+        max_new_tokens: 8192
+        description: "IBM Granite 4H Small, high-capacity model"
+        notes: "Large context window, suitable for complex extractions"
+      meta-llama/llama-3-70b-instruct:
+        context_limit: 32768
+        max_new_tokens: 4096
+        description: "Meta Llama 3 70B via WatsonX"
+        notes: "Powerful reasoning capabilities"
+      meta-llama/llama-3-8b-instruct:
+        context_limit: 32768
+        max_new_tokens: 4096
+        description: "Meta Llama 3 8B via WatsonX"
+        notes: "Efficient and fast"
+      mistralai/mixtral-8x7b-instruct-v01:
+        context_limit: 32768
+        max_new_tokens: 4096
+        description: "Mistral Mixtral 8x7B via WatsonX"
+        notes: "MoE architecture, good performance"
+      mistralai/mistral-small-3-1-24b-instruct-2503:
+        context_limit: 32768
+        max_new_tokens: 4096
+        description: "Mistral Small 3.1 24B via WatsonX"
+        notes: "Balanced model for general use"
+
+  meta:
+    tokenizer: "meta-llama/Llama-2-7b-hf"
+    content_ratio: 0.75
+    models:
+      llama-2-70b:
+        context_limit: 4096
+        max_new_tokens: 2048
+        description: "Meta's Llama 2, 70B parameters"
+        notes: "Powerful but requires good hardware"
+      llama-2-13b:
+        context_limit: 4096
+        max_new_tokens: 2048
+        description: "Meta's Llama 2, 13B parameters"
+        notes: "Good balance of performance and size"
+      llama-3-8b:
+        context_limit: 8192
+        max_new_tokens: 4096
+        description: "Meta's Llama 3, 8B parameters"
+        notes: "Improved reasoning from Llama 2"
+      llama-3.1-8b:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Meta's Llama 3.1, 8B parameters"
+        notes: "Massive context improvement, 128K tokens"
+      llama-3.1-70b:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Meta's Llama 3.1, 70B parameters"
+        notes: "Most capable Llama version"
+
+  vllm:
+    tokenizer: "sentence-transformers/all-MiniLM-L6-v2"
+    content_ratio: 0.8
+    models:
+      meta-llama/Llama-3.1-8B:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Llama 3.1 8B via vLLM"
+        notes: "Local inference, excellent for testing"
+      mistralai/Mixtral-8x7B-v0.1:
+        context_limit: 32000
+        max_new_tokens: 4096
+        description: "Mistral Mixtral via vLLM"
+        notes: "MoE architecture, efficient"
+      qwen/Qwen2-7B:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Qwen 2 7B via vLLM"
+        notes: "Good alternative to Llama"
+      ibm-granite/granite-4.0-1b:
+        context_limit: 128000
+        max_new_tokens: 2048
+        description: "IBM Granite 1B for edge devices"
+        notes: "Tiny model for resource constraints"
+      ibm-granite/granite-4.0-350m:
+        context_limit: 32000
+        max_new_tokens: 2048
+        description: "IBM Granite 350M, lightweight"
+        notes: "Good balance for local inference"
+
+  ollama:
+    tokenizer: "sentence-transformers/all-MiniLM-L6-v2"
+    content_ratio: 0.8
+    models:
+      llama3.1:8b:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Llama 3.1 8B via Ollama"
+        notes: "Local inference, production-ready"
+      llama3.2:3b:
+        context_limit: 128000
+        max_new_tokens: 4096
+        description: "Llama 3.2 3B via Ollama"
+        notes: "Lightweight, fast local inference"
+      mistral:7b:
+        context_limit: 32000
+        max_new_tokens: 4096
+        description: "Mistral 7B via Ollama"
+        notes: "Fast and efficient"
+      mixtral:8x7b:
+        context_limit: 32000
+        max_new_tokens: 4096
+        description: "Mixtral 8x7B via Ollama"
+        notes: "MoE, powerful local inference"
+

@@ -262,7 +262,7 @@ class GraphConverter:
 
         Looks for json_schema_extra['edge_label'] in field info.
         """
-        field_info = model.model_fields.get(field_name)
+        field_info = type(model).model_fields.get(field_name)
         if field_info and isinstance(field_info.json_schema_extra, Mapping):
             value = field_info.json_schema_extra.get("edge_label")
             if isinstance(value, str):

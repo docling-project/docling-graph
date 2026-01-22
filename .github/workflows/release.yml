@@ -47,7 +47,7 @@ jobs:
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           
-          echo "✓ Package docling-graph ${VERSION} published to TestPyPI"
+          echo "- Package docling-graph ${VERSION} published to TestPyPI"
           echo "View at: https://test.pypi.org/project/docling-graph/${VERSION}/"
           echo ""
           echo "Note: TestPyPI installation test skipped due to unreliable dependency resolution."

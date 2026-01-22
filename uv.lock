@@ -1169,7 +1169,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "0.2.5"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "docling", extra = ["vlm"] },
@@ -1178,6 +1178,7 @@ dependencies = [
     { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "pyyaml" },
     { name = "rich" },
     { name = "typer" },
 ]
@@ -1291,6 +1292,7 @@ requires-dist = [
     { name = "openai", marker = "extra == 'vllm'" },
     { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
     { name = "python-dotenv", specifier = ">=1.0,<2.0" },
+    { name = "pyyaml", specifier = ">=6.0,<7.0" },
     { name = "rich", specifier = ">=13,<15" },
     { name = "typer", extras = ["all"], specifier = ">=0.12,<1.0.0" },
 ]

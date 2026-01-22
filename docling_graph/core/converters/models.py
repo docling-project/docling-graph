@@ -3,11 +3,13 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Edge(BaseModel):
     """Model representing a graph edge with metadata."""
+
+    model_config = ConfigDict(frozen=True)
 
     source: str = Field(..., description="Source node ID")
     target: str = Field(..., description="Target node ID")
@@ -16,14 +18,11 @@ class Edge(BaseModel):
         default_factory=dict, description="Additional edge properties"
     )
 
-    class Config:
-        """Pydantic model configuration."""
-
-        frozen = True
-
 
 class GraphMetadata(BaseModel):
     """Metadata about a generated graph."""
+
+    model_config = ConfigDict(frozen=True)
 
     node_count: int = Field(..., description="Total number of nodes")
     edge_count: int = Field(..., description="Total number of edges")
@@ -41,8 +40,3 @@ class GraphMetadata(BaseModel):
     average_degree: float | None = Field(
         default=None, description="Average degree of nodes in the graph"
     )
-
-    class Config:
-        """Pydantic model configuration."""
-
-        frozen = True

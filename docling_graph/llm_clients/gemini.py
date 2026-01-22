@@ -3,21 +3,18 @@ Google Gemini API client implementation.
 Based on https://ai.google.dev/gemini-api/docs/structured-output
 """
 
-import json
-import os
+import logging
 from typing import Any, Dict
 
 from dotenv import load_dotenv
-from rich import print as rich_print
 
+from ..exceptions import ClientError, ConfigurationError
 from .base import BaseLlmClient
-from .config import get_context_limit
 
-# Load environment variables
 load_dotenv()
 
-# Requires `pip install google-generativeai`
-# Make the lazy import optional to satisfy type checkers when assigning None
+logger = logging.getLogger(__name__)
+
 _genai: Any | None = None
 _genai_types: Any | None = None
 try:
@@ -27,99 +24,85 @@ try:
     _genai = genai_module
     _genai_types = types_module
 except ImportError:
-    rich_print(
-        "[red]Error:[/red] `google-genai` package not found. "
+    logger.warning(
+        "google-genai package not found. "
         "Please run `pip install google-genai` to use Gemini client."
     )
     _genai = None
     _genai_types = None
 
-# Expose as Any to allow None fallback without mypy issues
 genai: Any = _genai
 types: Any = _genai_types
 
 
 class GeminiClient(BaseLlmClient):
-    """Google Gemini API implementation with proper JSON response format."""
+    """Google Gemini API implementation using template method pattern."""
 
-    def __init__(self, model: str) -> None:
-        self.model = model
-        self.api_key = os.getenv("GEMINI_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "[GeminiClient] [red]Error:[/red] GEMINI_API_KEY not set. "
-                "Please set it in your environment or .env file."
+    def _provider_id(self) -> str:
+        """Return provider ID for config lookup."""
+        return "google"
+
+    def _setup_client(self, **kwargs: Any) -> None:
+        """Initialize Gemini-specific client."""
+        if genai is None or types is None:
+            raise ConfigurationError(
+                "google-genai package not installed",
+                details={"package": "google-genai", "install": "pip install google-genai"},
             )
 
-        # Initialize Gemini client
+        self.api_key = self._get_required_env("GEMINI_API_KEY")
         self.client = genai.Client(api_key=self.api_key)
 
-        # Use centralized config registry
-        self._context_limit = get_context_limit("google", model)
+        logger.info(f"Gemini client initialized for model: {self.model}")
 
-        rich_print(f"[GeminiClient] Initialized for [blue]{self.model}[/blue]")
-
-    def get_json_response(self, prompt: str | dict[str, str], schema_json: str) -> Dict[str, Any]:
+    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
         """
-        Execute Gemini generate_content with JSON response mode.
+        Call Gemini API.
 
-        Official docs: https://ai.google.dev/gemini-api/docs/structured-output
+        Gemini doesn't use message arrays - it combines system and user into single content.
 
         Args:
-            prompt: Either a string (legacy) or dict with 'system' and 'user' keys.
-            schema_json: JSON schema (for reference).
+            messages: List of message dicts with 'role' and 'content'
+            **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Parsed JSON response from Gemini.
-        """
-        # Handle both legacy string prompts and new dict prompts
-        if isinstance(prompt, dict):
-            # Combine system and user into single content
-            contents = f"{prompt['system']}\n\n{prompt['user']}"
-        else:
-            contents = prompt
+            Raw response string from Gemini
 
+        Raises:
+            ClientError: If API call fails
+        """
         try:
-            # Configure JSON response mode (official method)
+            contents_parts = []
+            for msg in messages:
+                content = msg.get("content", "")
+                if content:
+                    contents_parts.append(content)
+
+            contents = "\n\n".join(contents_parts)
+
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
-                temperature=0.1,  # Low temperature for consistent extraction
+                temperature=0.1,
             )
 
-            # Generate content
             response = self.client.models.generate_content(
                 model=self.model, contents=contents, config=config
             )
 
-            # Get response text
             response_text = response.text
 
-            # Parse JSON
-            try:
-                parsed: Any = json.loads(response_text)
-                # Normalize to a dict for return type consistency
-                if isinstance(parsed, dict):
-                    result: Dict[str, Any] = parsed
-                elif isinstance(parsed, list):
-                    result = {"result": parsed}
-                else:
-                    result = {"value": parsed}
+            if not response_text:
+                raise ClientError("Gemini returned empty response", details={"model": self.model})
 
-                # Validate it's not empty
-                if not result or (isinstance(result, dict) and not any(result.values())):
-                    rich_print("[yellow]Warning:[/yellow] Gemini returned empty or all-null JSON")
-
-                return result
-
-            except json.JSONDecodeError as e:
-                rich_print(f"[red]Error:[/red] Failed to parse Gemini response as JSON: {e}")
-                rich_print(f"[yellow]Raw response:[/yellow] {response_text}")
-                return {}
+            return str(response_text)
 
         except Exception as e:
-            rich_print(f"[red]Error:[/red] Gemini API call failed: {type(e).__name__}: {e}")
-            return {}
+            if isinstance(e, ClientError):
+                raise
+            raise ClientError(
+                f"Gemini API call failed: {type(e).__name__}",
+                details={"model": self.model, "error": str(e)},
+            ) from e
 
-    @property
-    def context_limit(self) -> int:
-        return self._context_limit
+
+# Made with Bob

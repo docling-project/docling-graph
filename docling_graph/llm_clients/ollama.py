@@ -3,120 +3,98 @@ Ollama (local LLM) client implementation.
 Based on https://ollama.com/blog/structured-outputs
 """
 
-import json
-from typing import Any, Dict, cast
+import logging
+from typing import Any, Dict
 
-from rich import print as rich_print
-
+from ..exceptions import ClientError, ConfigurationError
 from .base import BaseLlmClient
-from .config import get_context_limit
 
-# Requires `pip install ollama`
-# Make the lazy import optional to satisfy type checkers when assigning None
+logger = logging.getLogger(__name__)
+
 _ollama: Any | None = None
 try:
-    import ollama as ollama_module  # Import to a temporary name
+    import ollama as ollama_module
 
-    _ollama = ollama_module  # Assign to the existing variable
+    _ollama = ollama_module
 except ImportError:
-    rich_print(
-        "[red]Error:[/red] `ollama` package not found. "
-        "Please run `pip install ollama` to use Ollama client."
+    logger.warning(
+        "ollama package not found. Please run `pip install ollama` to use Ollama client."
     )
     _ollama = None
 
-# Expose as Any to allow None fallback without mypy issues
 ollama: Any = _ollama
 
 
 class OllamaClient(BaseLlmClient):
-    """Ollama (local LLM) implementation with proper message structure."""
+    """Ollama (local LLM) implementation using template method pattern."""
 
-    def __init__(self, model: str) -> None:
+    def _provider_id(self) -> str:
+        """Return provider ID for config lookup."""
+        return "ollama"
+
+    def _setup_client(self, **kwargs: Any) -> None:
+        """Initialize Ollama-specific client."""
         if ollama is None:
-            raise ImportError(
-                "Ollama client could not be imported. Please install it with: pip install ollama"
+            raise ConfigurationError(
+                "ollama package not installed",
+                details={"package": "ollama", "install": "pip install ollama"},
             )
 
-        self.model = model
-
-        # Use centralized config registry (ollama provider)
-        self._context_limit = get_context_limit("ollama", model)
-
         try:
-            rich_print(f"[OllamaClient] Checking Ollama connection and model '{self.model}'...")
+            logger.info(f"Checking Ollama connection and model '{self.model}'...")
             ollama.show(self.model)
-            rich_print(f"[OllamaClient] Initialized with Ollama model: [blue]{self.model}[/blue]")
+            logger.info(f"Ollama client initialized with model: {self.model}")
         except Exception as e:
-            rich_print(f"[red]Ollama connection error:[/red] {e}")
-            rich_print("Please ensure:")
-            rich_print("  1. Ollama is running: ollama serve")
-            rich_print(f"  2. Model is available: ollama pull {self.model}")
-            raise RuntimeError(str(e)) from e
+            raise ConfigurationError(
+                f"Ollama connection failed: {e}",
+                details={
+                    "model": self.model,
+                    "error": str(e),
+                    "instructions": [
+                        "1. Ensure Ollama is running: ollama serve",
+                        f"2. Model is available: ollama pull {self.model}",
+                    ],
+                },
+            ) from e
 
-    def get_json_response(self, prompt: str | dict[str, str], schema_json: str) -> Dict[str, Any]:
+    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
         """
-        Execute Ollama chat with JSON format.
-
-        Official docs: https://ollama.com/blog/structured-outputs
+        Call Ollama API.
 
         Args:
-            prompt: Either a string (legacy) or dict with 'system' and 'user' keys.
-            schema_json: JSON schema (can be used as format parameter).
+            messages: List of message dicts with 'role' and 'content'
+            **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Parsed JSON response from Ollama.
-        """
-        # Handle both legacy string prompts and new dict prompts
-        if isinstance(prompt, dict):
-            messages = [
-                {"role": "system", "content": prompt["system"]},
-                {"role": "user", "content": prompt["user"]},
-            ]
-        else:
-            # Legacy: treat entire prompt as user message
-            messages = [{"role": "user", "content": prompt}]
+            Raw response string from Ollama
 
+        Raises:
+            ClientError: If API call fails
+        """
         try:
-            # Call Ollama with JSON format (official method)
-            res = ollama.chat(
+            response = ollama.chat(
                 model=self.model,
                 messages=messages,
-                format="json",  # Official JSON mode - ensures valid JSON
+                format="json",
                 options={
-                    "temperature": 0.1,  # Low temperature for consistent extraction
+                    "temperature": 0.1,
                 },
             )
 
-            # Get response content
-            raw_json = res["message"]["content"]
+            raw_json = response["message"]["content"]
 
-            # Parse JSON
-            try:
-                parsed = json.loads(raw_json)
+            if not raw_json:
+                raise ClientError("Ollama returned empty content", details={"model": self.model})
 
-                # Validate it's not empty
-                if not parsed or (isinstance(parsed, dict) and not any(parsed.values())):
-                    rich_print("[yellow]Warning:[/yellow] Ollama returned empty or all-null JSON")
-
-                # Ensure return type matches Dict[str, Any]
-                if isinstance(parsed, dict):
-                    return cast(Dict[str, Any], parsed)
-                else:
-                    rich_print(
-                        "[yellow]Warning:[/yellow] Expected a JSON object; got non-dict. Returning empty dict."
-                    )
-                    return {}
-
-            except json.JSONDecodeError as e:
-                rich_print(f"[red]Error:[/red] Failed to parse Ollama response as JSON: {e}")
-                rich_print(f"[yellow]Raw response:[/yellow] {raw_json}")
-                return {}
+            return str(raw_json)
 
         except Exception as e:
-            rich_print(f"[red]Error:[/red] Ollama API call failed: {type(e).__name__}: {e}")
-            return {}
+            if isinstance(e, ClientError):
+                raise
+            raise ClientError(
+                f"Ollama API call failed: {type(e).__name__}",
+                details={"model": self.model, "error": str(e)},
+            ) from e
 
-    @property
-    def context_limit(self) -> int:
-        return self._context_limit
+
+# Made with Bob

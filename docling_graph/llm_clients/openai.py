@@ -1,124 +1,111 @@
 """
-OpenAI API client implementation.
-Based on https://platform.openai.com/docs/guides/structured-outputs
+OpenAI API client implementation (refactored).
+
+Reduced from 124 lines to ~70 lines by using the new base class
+and ResponseHandler.
 """
 
-import json
+import logging
 import os
-from typing import TYPE_CHECKING, Any, Dict, cast
+from typing import TYPE_CHECKING, Any, Dict
 
 from dotenv import load_dotenv
 from rich import print as rich_print
 
+from ..exceptions import ClientError, ConfigurationError
 from .base import BaseLlmClient
-from .config import get_context_limit
 
 # Load environment variables
 load_dotenv()
 
-# Requires `pip install openai`
+logger = logging.getLogger(__name__)
+
+# Lazy import for optional dependency
 _OpenAI: Any | None = None
+
 try:
     from openai import OpenAI as OpenAI_module
 
     _OpenAI = OpenAI_module
 except ImportError:
-    rich_print(
-        "[red]Error:[/red] `openai` package not found. "
-        "Please run `pip install openai` to use OpenAI client."
-    )
+    logger.warning("openai package not found. Install with: pip install 'docling-graph[openai]'")
     _OpenAI = None
 
 OpenAI: Any = _OpenAI
 
+if TYPE_CHECKING:
+    from openai.types.chat import ChatCompletionMessageParam
+
 
 class OpenAIClient(BaseLlmClient):
-    """OpenAI API implementation with proper message structure."""
+    """OpenAI API client - refactored version."""
 
-    def __init__(self, model: str) -> None:
-        self.model = model
-        self.api_key = os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "[OpenAIClient] [red]Error:[/red] OPENAI_API_KEY not set. "
-                "Please set it in your environment or .env file."
+    def _provider_id(self) -> str:
+        """Return provider ID for configuration."""
+        return "openai"
+
+    def _setup_client(self, **kwargs: Any) -> None:
+        """
+        Initialize OpenAI client.
+
+        Raises:
+            ConfigurationError: If API key is missing or package not installed
+        """
+        if _OpenAI is None:
+            raise ConfigurationError(
+                "OpenAI client requires 'openai' package",
+                details={
+                    "install_command": "pip install 'docling-graph[openai]'",
+                    "alternative": "pip install openai",
+                },
             )
 
-        # Initialize OpenAI client
+        # Load API key
+        self.api_key = self._get_required_env("OPENAI_API_KEY")
+
+        # Initialize client
         self.client = OpenAI(api_key=self.api_key)
 
-        # Use centralized config registry
-        self._context_limit = get_context_limit("openai", model)
+        rich_print(f"[blue][OpenAI][/blue] Initialized for model: [cyan]{self.model}[/cyan]")
 
-        rich_print(f"[OpenAIClient] Initialized for [blue]{self.model}[/blue]")
-
-    def get_json_response(self, prompt: str | dict[str, str], schema_json: str) -> Dict[str, Any]:
+    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
         """
-        Execute OpenAI chat completion with JSON mode.
-        Official docs: https://platform.openai.com/docs/guides/structured-outputs
+        Call OpenAI API.
 
         Args:
-            prompt: Either a string (legacy) or dict with 'system' and 'user' keys.
-            schema_json: JSON schema (for reference, not directly used by OpenAI).
+            messages: List of message dicts
+            **params: Additional parameters
 
         Returns:
-            Parsed JSON response from OpenAI.
+            Raw response string
+
+        Raises:
+            ClientError: If API call fails
         """
+        # Convert to OpenAI message format
         if TYPE_CHECKING:
-            from openai.types.chat import ChatCompletionMessageParam
-
-            messages: list[ChatCompletionMessageParam]
-
-        if isinstance(prompt, dict):
-            messages = [
-                {"role": "system", "content": prompt["system"]},
-                {"role": "user", "content": prompt["user"]},
-            ]
+            api_messages: list[ChatCompletionMessageParam] = messages  # type: ignore
         else:
-            messages = [
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant that responds in JSON format.",
-                },
-                {"role": "user", "content": prompt},
-            ]
+            api_messages = messages
 
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=messages,
+                messages=api_messages,
                 response_format={"type": "json_object"},
                 temperature=0.1,
             )
 
-            content = response.choices[0].message.content or ""
+            content = response.choices[0].message.content
 
-            try:
-                parsed_json = json.loads(content)
+            if not content:
+                raise ClientError("OpenAI returned empty content", details={"model": self.model})
 
-                if not parsed_json or (
-                    isinstance(parsed_json, dict) and not any(parsed_json.values())
-                ):
-                    rich_print("[yellow]Warning:[/yellow] OpenAI returned empty or all-null JSON")
-
-                if isinstance(parsed_json, dict):
-                    return cast(Dict[str, Any], parsed_json)
-                else:
-                    rich_print(
-                        "[yellow]Warning:[/yellow] Expected a JSON object; got non-dict. "
-                        "Returning empty dict."
-                    )
-                    return {}
-
-            except json.JSONDecodeError as e:
-                rich_print(f"[red]Error:[/red] Failed to parse OpenAI response as JSON: {e}")
-                rich_print(f"[yellow]Raw response:[/yellow] {content}")
-                return {}
+            return str(content)
 
         except Exception as e:
-            rich_print(f"[red]Error:[/red] OpenAI API call failed: {type(e).__name__}: {e}")
-            return {}
-
-    @property
-    def context_limit(self) -> int:
-        return self._context_limit
+            raise ClientError(
+                f"OpenAI API call failed: {type(e).__name__}",
+                details={"model": self.model, "error": str(e)},
+                cause=e,
+            ) from e

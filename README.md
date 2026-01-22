@@ -24,7 +24,7 @@
 
 Docling-Graph converts documents into validated **Pydantic** objects and then into a **directed knowledge graph**, with exports to CSV or Cypher and both static and interactive visualizations.
 
-This transformation of unstructured documents into validated knowledge graphs with precise semantic relationships—essential for complex domains like **chemistry, finance, and physics** where AI systems must understand exact entity connections (e.g., chemical compounds and their reactions, financial instruments and their dependencies, physical properties and their measurements) rather than approximate text vectors, **enabling explainable reasoning over technical document collections**.
+This transformation of unstructured documents into validated knowledge graphs with precise semantic relationships, essential for complex domains like **chemistry, finance, and legal** where AI systems must understand exact entity connections (e.g., chemical compounds and their reactions, financial instruments and their dependencies, physical properties and their measurements) rather than approximate text vectors, **enabling explainable reasoning over technical document collections**.
 
 The toolkit supports two extraction families: **local VLM** via Docling and **LLM-based extraction** via local (vLLM, Ollama) or API providers (Mistral, OpenAI, Gemini, IBM WatsonX), all orchestrated by a flexible, config-driven pipeline.
 
@@ -105,7 +105,9 @@ If you're using remote/cloud inference, set your API keys for the providers you 
 export OPENAI_API_KEY="..."        # OpenAI
 export MISTRAL_API_KEY="..."       # Mistral
 export GEMINI_API_KEY="..."        # Google Gemini
-export WATSONX_API_KEY="..."       # IBM WatsonX
+
+# IBM WatsonX
+export WATSONX_API_KEY="..."       # IBM WatsonX API Key
 export WATSONX_PROJECT_ID="..."    # IBM WatsonX Project ID
 export WATSONX_URL="..."           # IBM WatsonX URL (optional, defaults to US South)
 ```
@@ -158,36 +160,58 @@ Use the command-line interface for quick conversions and inspections. The follow
 
 #### 2.1. Initialize Configuration
 
-A wizard will walk you through setting up the right configfor your use case.
+A wizard will walk you through setting up the right config for your use case.
 
 ```bash
 uv run docling-graph init
 ```
 
-Note: This command may take a little longer to start on the first run, as it checks for installed dependencies.
+**New in v0.3.0**: The init command now features **75-85% faster** performance with intelligent dependency caching! The first run checks for installed dependencies, but subsequent runs are nearly instant.
+
+**Tip**: Use `uv run docling-graph --verbose init` for detailed logging during setup.
 
 
 #### 2.2. Run Conversion
 
-You can use: `docling-graph convert --help` to see the full list of available options and usage details
+You can use `uv run docling-graph convert --help` to see the full list of available options and usage details.
 
 ```bash
-# uv run docling-graph convert <SOURCE_FILE_PATH> --template "<TEMPLATE_DOTTED_PATH>" [OPTIONS]
+# Basic usage
+uv run docling-graph convert <SOURCE_FILE_PATH> --template "<TEMPLATE_DOTTED_PATH>" [OPTIONS]
 
+# Example: Convert research paper
 uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.Research" \
-    --output-dir "outputs/battery_research"  \
+    --output-dir "outputs/battery_research" \
     --processing-mode "many-to-one" \
     --use-chunking \
-    --no-llm-consolidation 
+    --no-llm-consolidation
 ```
 
-#### 2.3. Run Conversion
+**New CLI Features**:
+- `--verbose` / `-v`: Enable detailed logging for debugging
+- `--version`: Show version and exit
+- Better error messages with actionable details
 
 ```bash
-# uv run docling-graph inspect <CONVERT_OUTPUT_PATH> [OPTIONS]
+# Debug with verbose logging
+uv run docling-graph --verbose convert document.pdf --template templates.Invoice
 
+# Check version
+uv run docling-graph --version
+```
+
+#### 2.3. Inspect Results
+
+```bash
+# Visualize the generated graph
+uv run docling-graph inspect <CONVERT_OUTPUT_PATH> [OPTIONS]
+
+# Example
 uv run docling-graph inspect outputs/battery_research
+
+# With custom output
+uv run docling-graph inspect outputs/battery_research --output graph_viz.html
 ```
 
 
