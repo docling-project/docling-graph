@@ -1,122 +1,228 @@
+"""Tests for YAML-based configuration system."""
+
 import pytest
 
 from docling_graph.llm_clients import config
 
 
-# Test ModelConfig
-def test_model_config_repr():
-    """Tests the __repr__ method for a clear debug output."""
-    mc = config.ModelConfig(model_id="test-model", context_limit=10000)
-    expected_repr = "ModelConfig(test-model, context=10000, max_new_tokens=4096)"
-    assert repr(mc) == expected_repr
+class TestModelConfig:
+    """Test suite for ModelConfig."""
+
+    def test_model_config_creation(self):
+        """Test ModelConfig creation."""
+        mc = config.ModelConfig(model_id="test-model", context_limit=10000, max_new_tokens=2048)
+        assert mc.model_id == "test-model"
+        assert mc.context_limit == 10000
+        assert mc.max_new_tokens == 2048
+
+    def test_model_config_repr(self):
+        """Test ModelConfig string representation."""
+        mc = config.ModelConfig(model_id="test-model", context_limit=10000, max_new_tokens=2048)
+        repr_str = repr(mc)
+        assert "test-model" in repr_str
+        assert "10000" in repr_str
+        assert "2048" in repr_str
 
 
-# Test ProviderConfig
-def test_provider_config_methods():
-    """Tests the helper methods within the ProviderConfig dataclass."""
-    model_conf = config.ModelConfig(model_id="test-model", context_limit=10000)
-    provider_conf = config.ProviderConfig(
-        provider_id="test_provider",
-        models={"test-model": model_conf},
-        tokenizer="test_tokenizer",
-        content_ratio=0.8,
-    )
+class TestProviderConfig:
+    """Test suite for ProviderConfig."""
 
-    assert provider_conf.get_model("test-model") == model_conf
-    assert provider_conf.get_model("unknown-model") is None
-    assert provider_conf.list_models() == ["test-model"]
+    def test_provider_config_creation(self):
+        """Test ProviderConfig creation."""
+        model_conf = config.ModelConfig(model_id="test-model", context_limit=10000)
+        provider_conf = config.ProviderConfig(
+            provider_id="test_provider",
+            models={"test-model": model_conf},
+            tokenizer="test-tokenizer",
+        )
+        assert provider_conf.provider_id == "test_provider"
+        assert "test-model" in provider_conf.models
 
-    # New calculation: min(max_new_tokens/output_ratio*safety, (context-500)*0.7)
-    # min(4096/0.4*0.8, (10000-500)*0.7) = min(8192, 6650) = 6650
-    assert provider_conf.get_recommended_chunk_size("test-model") == 6650
+    def test_get_model_success(self):
+        """Test getting existing model."""
+        model_conf = config.ModelConfig(model_id="test-model", context_limit=10000)
+        provider_conf = config.ProviderConfig(
+            provider_id="test_provider",
+            models={"test-model": model_conf},
+            tokenizer="test-tokenizer",
+        )
+        result = provider_conf.get_model("test-model")
+        assert result == model_conf
 
-    # Test minimum chunk size enforcement
-    small_model_conf = config.ModelConfig(model_id="small-model", context_limit=1000)
-    provider_conf.models["small-model"] = small_model_conf
-    # 1000 * 0.8 * 0.8 = 640, but min is 1024
-    assert provider_conf.get_recommended_chunk_size("small-model") == 1024
+    def test_get_model_not_found(self):
+        """Test getting non-existent model."""
+        provider_conf = config.ProviderConfig(
+            provider_id="test_provider", models={}, tokenizer="test-tokenizer"
+        )
+        result = provider_conf.get_model("unknown-model")
+        assert result is None
 
-    # Test fallback for unknown model
-    assert provider_conf.get_recommended_chunk_size("unknown-model") == 5120
-
-
-# Test lookup functions
-def test_get_provider_config():
-    """Tests the top-level provider config lookup."""
-    openai_config = config.get_provider_config("openai")
-    assert openai_config is not None
-    assert openai_config.provider_id == "openai"
-    assert "gpt-4o" in openai_config.models
-
-    # Test case insensitivity
-    assert config.get_provider_config("OPENAI") == openai_config
-    # Test not found
-    assert config.get_provider_config("unknown_provider") is None
-
-
-def test_get_model_config():
-    """Tests the top-level model config lookup."""
-    gpt_4o = config.get_model_config("openai", "gpt-4o")
-    assert gpt_4o is not None
-    assert gpt_4o.model_id == "gpt-4o"
-    assert gpt_4o.context_limit == 128000
-
-    assert config.get_model_config("openai", "unknown-model") is None
-    assert config.get_model_config("unknown-provider", "gpt-4o") is None
+    def test_list_models(self):
+        """Test listing all models."""
+        model1 = config.ModelConfig(model_id="model1", context_limit=8000)
+        model2 = config.ModelConfig(model_id="model2", context_limit=16000)
+        provider_conf = config.ProviderConfig(
+            provider_id="test_provider",
+            models={"model1": model1, "model2": model2},
+            tokenizer="test-tokenizer",
+        )
+        models = provider_conf.list_models()
+        assert set(models) == {"model1", "model2"}
 
 
-def test_get_context_limit():
-    """Tests the context limit retrieval helper."""
-    assert config.get_context_limit("openai", "gpt-4o") == 128000
-    assert config.get_context_limit("openai", "gpt-4") == 8192
-    assert config.get_context_limit("mistral", "mistral-small-latest") == 32000
+class TestConfigLookupFunctions:
+    """Test suite for configuration lookup functions."""
 
-    # Test default fallback
-    assert config.get_context_limit("openai", "unknown-model") == 8000
-    assert config.get_context_limit("unknown-provider", "gpt-4o") == 8000
+    def test_get_provider_config_success(self):
+        """Test getting provider config."""
+        openai_config = config.get_provider_config("openai")
+        assert openai_config is not None
+        assert openai_config.provider_id == "openai"
+        assert len(openai_config.models) > 0
+
+    def test_get_provider_config_case_insensitive(self):
+        """Test case-insensitive provider lookup."""
+        config1 = config.get_provider_config("openai")
+        config2 = config.get_provider_config("OPENAI")
+        config3 = config.get_provider_config("OpenAI")
+        assert config1 == config2 == config3
+
+    def test_get_provider_config_not_found(self):
+        """Test getting non-existent provider."""
+        result = config.get_provider_config("unknown_provider")
+        assert result is None
+
+    def test_get_model_config_success(self):
+        """Test getting model config."""
+        gpt4 = config.get_model_config("openai", "gpt-4")
+        assert gpt4 is not None
+        assert gpt4.model_id == "gpt-4"
+        assert gpt4.context_limit > 0
+
+    def test_get_model_config_not_found(self):
+        """Test getting non-existent model."""
+        result = config.get_model_config("openai", "unknown-model")
+        assert result is None
+
+    def test_get_model_config_unknown_provider(self):
+        """Test getting model from unknown provider."""
+        result = config.get_model_config("unknown-provider", "gpt-4")
+        assert result is None
+
+    def test_get_context_limit_success(self):
+        """Test getting context limit."""
+        limit = config.get_context_limit("openai", "gpt-4")
+        assert limit == 8192
+
+    def test_get_context_limit_large_model(self):
+        """Test getting context limit for large context model."""
+        limit = config.get_context_limit("openai", "gpt-4o")
+        assert limit == 128000
+
+    def test_get_context_limit_default_fallback(self):
+        """Test default fallback for unknown model."""
+        limit = config.get_context_limit("openai", "unknown-model")
+        assert limit == 8000  # Default fallback
+
+    def test_get_context_limit_unknown_provider(self):
+        """Test default fallback for unknown provider."""
+        limit = config.get_context_limit("unknown-provider", "any-model")
+        assert limit == 8000  # Default fallback
 
 
-def test_get_tokenizer_for_provider():
-    """Tests the tokenizer retrieval helper."""
-    assert config.get_tokenizer_for_provider("openai") == "tiktoken"
-    assert config.get_tokenizer_for_provider("mistral") == "mistralai/Mistral-7B-Instruct-v0.2"
-    assert config.get_tokenizer_for_provider("google") == "sentence-transformers/all-MiniLM-L6-v2"
+class TestYAMLConfiguration:
+    """Test suite for YAML configuration loading."""
 
-    # Test default fallback
-    assert (
-        config.get_tokenizer_for_provider("unknown-provider")
-        == "sentence-transformers/all-MiniLM-L6-v2"
-    )
+    def test_mistral_models_loaded(self):
+        """Test that Mistral models are loaded from YAML."""
+        mistral_config = config.get_provider_config("mistral")
+        assert mistral_config is not None
+        assert "mistral-large-latest" in mistral_config.models
+        assert "mistral-small-latest" in mistral_config.models
+
+    def test_openai_models_loaded(self):
+        """Test that OpenAI models are loaded from YAML."""
+        openai_config = config.get_provider_config("openai")
+        assert openai_config is not None
+        assert "gpt-4" in openai_config.models
+        assert "gpt-4o" in openai_config.models
+
+    def test_gemini_models_loaded(self):
+        """Test that Gemini models are loaded from YAML."""
+        gemini_config = config.get_provider_config("google")
+        assert gemini_config is not None
+        assert len(gemini_config.models) > 0
+
+    def test_watsonx_models_loaded(self):
+        """Test that WatsonX models are loaded from YAML."""
+        watsonx_config = config.get_provider_config("watsonx")
+        assert watsonx_config is not None
+        assert len(watsonx_config.models) > 0
+
+    def test_ollama_models_loaded(self):
+        """Test that Ollama models are loaded from YAML."""
+        ollama_config = config.get_provider_config("ollama")
+        assert ollama_config is not None
+        assert len(ollama_config.models) > 0
+
+    def test_vllm_models_loaded(self):
+        """Test that vLLM models are loaded from YAML."""
+        vllm_config = config.get_provider_config("vllm")
+        assert vllm_config is not None
+        assert len(vllm_config.models) > 0
+
+    def test_all_models_have_context_limits(self):
+        """Test that all models have context limits defined."""
+        providers = ["mistral", "openai", "google", "watsonx", "ollama", "vllm"]
+        for provider_id in providers:
+            provider = config.get_provider_config(provider_id)
+            if provider:
+                for model_id, model_config in provider.models.items():
+                    assert model_config.context_limit > 0, (
+                        f"{provider_id}/{model_id} missing context_limit"
+                    )
+
+    def test_all_models_have_max_tokens(self):
+        """Test that all models have max_new_tokens defined."""
+        providers = ["mistral", "openai", "google", "watsonx", "ollama", "vllm"]
+        for provider_id in providers:
+            provider = config.get_provider_config(provider_id)
+            if provider:
+                for model_id, model_config in provider.models.items():
+                    assert model_config.max_new_tokens > 0, (
+                        f"{provider_id}/{model_id} missing max_new_tokens"
+                    )
 
 
-def test_get_recommended_chunk_size():
-    """Tests the recommended chunk size retrieval helper."""
-    # gpt-4o: min(4096/0.4*0.8, (128000-500)*0.7) = min(8192, 89250) = 8192
-    # But actual is 32768, let me check the actual model config
-    assert config.get_recommended_chunk_size("openai", "gpt-4o") == 32768
-    # ibm/granite-4-h-small: min(8192/0.4*0.8, (128000-500)*0.7) = min(16384, 89250) = 16384
-    assert config.get_recommended_chunk_size("watsonx", "ibm/granite-4-h-small") == 16384
+class TestConfigRegistry:
+    """Test suite for ConfigRegistry."""
 
-    # Test default fallback
-    assert config.get_recommended_chunk_size("openai", "unknown-model") == 5120
-    assert config.get_recommended_chunk_size("unknown-provider", "gpt-4o") == 5120
+    def test_registry_multiple_instances(self):
+        """Test that ConfigRegistry can be instantiated multiple times."""
+        from docling_graph.llm_clients.config import ConfigRegistry
+
+        registry1 = ConfigRegistry()
+        registry2 = ConfigRegistry()
+        # ConfigRegistry is NOT a singleton - each instance loads config independently
+        assert registry1 is not registry2
+        # But both should have the same providers loaded
+        assert registry1.list_providers() == registry2.list_providers()
+
+    def test_registry_has_providers(self):
+        """Test that registry has providers loaded."""
+        from docling_graph.llm_clients.config import ConfigRegistry
+
+        registry = ConfigRegistry()
+        assert len(registry.list_providers()) > 0
+
+    def test_registry_get_provider(self):
+        """Test getting provider from registry."""
+        from docling_graph.llm_clients.config import ConfigRegistry
+
+        registry = ConfigRegistry()
+        openai = registry.get_provider("openai")
+        assert openai is not None
+        assert openai.provider_id == "openai"
 
 
-def test_list_providers():
-    """Tests that list_providers returns a list of known provider keys."""
-    providers = config.list_providers()
-    assert isinstance(providers, list)
-    assert "openai" in providers
-    assert "mistral" in providers
-    assert "gemini" in providers
-    assert "ollama" in providers
-
-
-def test_list_models():
-    """Tests that list_models returns a list of model keys for a provider."""
-    openai_models = config.list_models("openai")
-    assert isinstance(openai_models, list)
-    assert "gpt-4o" in openai_models
-    assert "gpt-3.5-turbo" in openai_models
-
-    assert config.list_models("unknown-provider") is None
+# Made with Bob

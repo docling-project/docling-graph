@@ -122,7 +122,7 @@ class TestInspectCommand:
 
     @patch("docling_graph.cli.commands.inspect.InteractiveVisualizer")
     def test_inspect_command_error_handling(self, mock_visualizer_class, tmp_path, capsys):
-        """Should handle visualizer error gracefully."""
+        """Should handle visualizer error and exit with code 1."""
         csv_dir = tmp_path / "graph_data"
         csv_dir.mkdir()
         (csv_dir / "nodes.csv").write_text("id,label\n1,node1")
@@ -132,11 +132,8 @@ class TestInspectCommand:
         mock_visualizer_class.return_value = mock_visualizer
         mock_visualizer.display_cytoscape_graph.side_effect = RuntimeError("Viz error")
 
-        # Command handles error gracefully without raising
-        inspect_command(path=csv_dir, open_browser=False)
+        # Command catches error and raises typer.Exit
+        with pytest.raises(typer.Exit) as exc_info:
+            inspect_command(path=csv_dir, open_browser=False)
 
-        # Verify error message was printed
-        captured = capsys.readouterr()
-        assert "Error" in captured.out
-        assert "RuntimeError" in captured.out
-        assert "Viz error" in captured.out
+        assert exc_info.value.exit_code == 1
