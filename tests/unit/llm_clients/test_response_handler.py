@@ -12,25 +12,20 @@ class TestResponseHandler:
     def test_parse_valid_json(self):
         """Test parsing valid JSON."""
         response = ResponseHandler.parse_json_response(
-            '{"key": "value", "number": 42}',
-            "TestClient"
+            '{"key": "value", "number": 42}', "TestClient"
         )
         assert response == {"key": "value", "number": 42}
 
     def test_parse_json_with_markdown_code_block(self):
         """Test parsing JSON from markdown code block."""
         response = ResponseHandler.parse_json_response(
-            '```json\n{"key": "value"}\n```',
-            "TestClient"
+            '```json\n{"key": "value"}\n```', "TestClient"
         )
         assert response == {"key": "value"}
 
     def test_parse_json_with_backticks_only(self):
         """Test parsing JSON with backticks but no json marker."""
-        response = ResponseHandler.parse_json_response(
-            '```\n{"key": "value"}\n```',
-            "TestClient"
-        )
+        response = ResponseHandler.parse_json_response('```\n{"key": "value"}\n```', "TestClient")
         assert response == {"key": "value"}
 
     def test_parse_json_with_surrounding_text(self):
@@ -38,16 +33,14 @@ class TestResponseHandler:
         response = ResponseHandler.parse_json_response(
             'Here is the JSON: {"key": "value"} and some more text',
             "TestClient",
-            aggressive_clean=True
+            aggressive_clean=True,
         )
         assert response == {"key": "value"}
 
     def test_parse_json_aggressive_clean_multiple_objects(self):
         """Test aggressive clean with multiple JSON objects (takes first)."""
         response = ResponseHandler.parse_json_response(
-            '{"first": "object"} and {"second": "object"}',
-            "TestClient",
-            aggressive_clean=True
+            '{"first": "object"} and {"second": "object"}', "TestClient", aggressive_clean=True
         )
         assert response == {"first": "object"}
 
@@ -83,10 +76,7 @@ class TestResponseHandler:
     def test_parse_invalid_json_raises_error(self):
         """Test that invalid JSON raises ClientError."""
         with pytest.raises(ClientError) as exc_info:
-            ResponseHandler.parse_json_response(
-                "not valid json at all",
-                "TestClient"
-            )
+            ResponseHandler.parse_json_response("not valid json at all", "TestClient")
         assert "Invalid JSON" in str(exc_info.value)
         assert exc_info.value.details["client_name"] == "TestClient"
 
@@ -111,18 +101,12 @@ class TestResponseHandler:
     def test_parse_json_with_trailing_comma(self):
         """Test parsing JSON with trailing comma (should fail)."""
         with pytest.raises(ClientError):
-            ResponseHandler.parse_json_response(
-                '{"key": "value",}',
-                "TestClient"
-            )
+            ResponseHandler.parse_json_response('{"key": "value",}', "TestClient")
 
     def test_parse_json_with_comments_fails(self):
         """Test that JSON with comments fails (not valid JSON)."""
         with pytest.raises(ClientError):
-            ResponseHandler.parse_json_response(
-                '{"key": "value"} // comment',
-                "TestClient"
-            )
+            ResponseHandler.parse_json_response('{"key": "value"} // comment', "TestClient")
 
     def test_aggressive_clean_extracts_from_text(self):
         """Test aggressive clean extracts JSON from prose."""
@@ -131,29 +115,20 @@ class TestResponseHandler:
         {"status": "success", "count": 42}
         This indicates a positive outcome.
         """
-        response = ResponseHandler.parse_json_response(
-            text,
-            "TestClient",
-            aggressive_clean=True
-        )
+        response = ResponseHandler.parse_json_response(text, "TestClient", aggressive_clean=True)
         assert response == {"status": "success", "count": 42}
 
     def test_aggressive_clean_with_no_json_raises_error(self):
         """Test aggressive clean with no JSON raises error."""
         with pytest.raises(ClientError):
             ResponseHandler.parse_json_response(
-                "This text contains no JSON at all",
-                "TestClient",
-                aggressive_clean=True
+                "This text contains no JSON at all", "TestClient", aggressive_clean=True
             )
 
     def test_error_includes_raw_response_snippet(self):
         """Test that error includes snippet of raw response."""
         with pytest.raises(ClientError) as exc_info:
-            ResponseHandler.parse_json_response(
-                "invalid json content here",
-                "TestClient"
-            )
+            ResponseHandler.parse_json_response("invalid json content here", "TestClient")
         # Should include snippet in details
         assert "raw_response" in exc_info.value.details
 
@@ -178,10 +153,9 @@ class TestResponseHandler:
         """Test parsing large JSON object."""
         large_obj = {f"key_{i}": f"value_{i}" for i in range(1000)}
         import json
+
         json_str = json.dumps(large_obj)
         response = ResponseHandler.parse_json_response(json_str, "TestClient")
         assert len(response) == 1000
         assert response["key_0"] == "value_0"
         assert response["key_999"] == "value_999"
-
-# Made with Bob

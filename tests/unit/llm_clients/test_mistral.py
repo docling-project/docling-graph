@@ -133,6 +133,3 @@ class TestMistralClient:
 
         assert "API Error" in str(exc_info.value)
         assert exc_info.value.details["model"] == "mistral-large-latest"
-
-
-# Made with Bob

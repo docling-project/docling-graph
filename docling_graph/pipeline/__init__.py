@@ -48,5 +48,3 @@ __all__ = [
     "VisualizationStage",
     "run_pipeline",
 ]
-
-# Made with Bob

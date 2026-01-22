@@ -53,6 +53,5 @@ class PipelineContext:
         """Initialize node registry if not provided."""
         if self.node_registry is None:
             from ..core.converters.node_id_registry import NodeIDRegistry
-            self.node_registry = NodeIDRegistry()
 
-# Made with Bob
+            self.node_registry = NodeIDRegistry()

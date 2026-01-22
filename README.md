@@ -57,49 +57,36 @@ The toolkit supports two extraction families: **local VLM** via Docling and **LL
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 * 🧬 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 * ✍🏻 **Flexible Inputs:** Accepts `text`, `markdown`, and `DoclingDocument` directly.
-* ⚡ **Batch Optimization:** Faster GPU inference with better memory handling.
+* + **Batch Optimization:** Faster GPU inference with better memory handling.
 * 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
 
 
-## Initial Setup
+## Quick Start
 
 ### Requirements
 
 - Python 3.10 or higher
-- UV package manager
+- [uv](https://docs.astral.sh/uv/) package manager
 
 ### Installation
 
-#### 1. Clone the Repository
-
 ```bash
+# Clone the repository
 git clone https://github.com/IBM/docling-graph
 cd docling-graph
+
+# Install with uv (choose your option)
+uv sync                    # Minimal: Core + VLM only
+uv sync --extra all        # Full: All features
+uv sync --extra local      # Local LLM (vLLM, Ollama)
+uv sync --extra remote     # Remote APIs (Mistral, OpenAI, Gemini)
+uv sync --extra watsonx    # IBM WatsonX support
 ```
 
-#### 2. Install Dependencies
+For detailed installation instructions, see [Installation Guide](docs/02-installation/index.md).
 
-Choose the installation option that matches your use case:
-
-| Option          | Command                   | Description                                                                |
-| :---            | :---                      | :---                                                                       |
-| **Minimal**     | `uv sync`                 | Includes core VLM features (Docling), **no** LLM inference                 |
-| **Full**        | `uv sync --extra all`     | Includes **all** features, VLM, and all local/remote LLM providers         |
-| **Local LLM**   | `uv sync --extra local`   | Adds support for vLLM and Ollama (requires GPU for vLLM)                   |
-| **Remote API**  | `uv sync --extra remote`  | Adds support for Mistral, OpenAI, Gemini, and IBM WatsonX APIs            |
-| **WatsonX**     | `uv sync --extra watsonx` | Adds support for IBM WatsonX foundation models (Granite, Llama, Mixtral)   |
-
-
-#### 3. OPTIONAL - GPU Support (PyTorch)
-
-Follow the steps in [this guide](docs/guides/setup_with_gpu_support.md) to install PyTorch with NVIDIA GPU (CUDA) support.
-
-
-
-### API Key Setup (for Remote Inference)
-
-If you're using remote/cloud inference, set your API keys for the providers you plan to use:
+### API Key Setup (Remote Inference)
 
 ```bash
 export OPENAI_API_KEY="..."        # OpenAI
@@ -109,129 +96,63 @@ export GEMINI_API_KEY="..."        # Google Gemini
 # IBM WatsonX
 export WATSONX_API_KEY="..."       # IBM WatsonX API Key
 export WATSONX_PROJECT_ID="..."    # IBM WatsonX Project ID
-export WATSONX_URL="..."           # IBM WatsonX URL (optional, defaults to US South)
+export WATSONX_URL="..."           # IBM WatsonX URL (optional)
 ```
 
-On Windows, replace `export` with `set` in Command Prompt or `$env:` in PowerShell.
+### Basic Usage
 
-Alternatively, add them to your `.env` file.
-
-**Note:** For IBM WatsonX setup and available models, see the [WatsonX Integration Guide](docs/guides/watsonx_integration.md).
-
-
-
-## Getting Started
-
-Docling Graph is primarily driven by its **CLI**, but you can easily integrate the core pipeline into Python scripts.
-
-### 1. Python Example
-
-To run a conversion programmatically, you define a configuration dictionary and pass it to the `run_pipeline` function. This example uses a **remote LLM API** in a `many-to-one` mode for a single multi-page document:
+#### Python API
 
 ```python
-from docling_graph import run_pipeline, PipelineConfig
-from docs.examples.templates.rheology_research import Research  # Pydantic model to use as an extraction template
+from docling_graph import PipelineConfig
+from docs.examples.templates.rheology_research import Research
 
-# Create typed config
+# Create configuration
 config = PipelineConfig(
     source="docs/examples/data/research_paper/rheology.pdf",
     template=Research,
     backend="llm",
     inference="remote",
     processing_mode="many-to-one",
-    provider_override="mistral",              # Specify your preferred provider and ensure its API key is set
-    model_override="mistral-medium-latest",   # Specify your preferred LLM model
-    use_chunking=True,                        # Enable docling's hybrid chunker
-    llm_consolidation=False,                  # If False, programmatically merge batch-extracted dictionaries
-    output_dir="outputs/battery_research"
+    provider_override="mistral",
+    model_override="mistral-medium-latest",
+    use_chunking=True,
+    output_dir="outputs/research"
 )
 
-try:
-    run_pipeline(config)
-    print(f"\nExtraction complete! Graph data saved to: {config.output_dir}")
-except Exception as e:
-    print(f"An error occurred: {e}")
+# Run pipeline
+config.run()
 ```
 
-
-### 2. CLI Example
-
-Use the command-line interface for quick conversions and inspections. The following command runs the conversion using the local VLM backend and outputs a graph ready for Neo4j import:
-
-#### 2.1. Initialize Configuration
-
-A wizard will walk you through setting up the right config for your use case.
+#### CLI
 
 ```bash
+# Initialize configuration
 uv run docling-graph init
+
+# Convert document
+uv run docling-graph convert "document.pdf" \
+    --template "templates.MyTemplate" \
+    --output-dir "outputs/my_graph"
+
+# Visualize results
+uv run docling-graph inspect outputs/my_graph
 ```
 
-**New in v0.3.0**: The init command now features **75-85% faster** performance with intelligent dependency caching! The first run checks for installed dependencies, but subsequent runs are nearly instant.
-
-**Tip**: Use `uv run docling-graph --verbose init` for detailed logging during setup.
-
-
-#### 2.2. Run Conversion
-
-You can use `uv run docling-graph convert --help` to see the full list of available options and usage details.
-
-```bash
-# Basic usage
-uv run docling-graph convert <SOURCE_FILE_PATH> --template "<TEMPLATE_DOTTED_PATH>" [OPTIONS]
-
-# Example: Convert research paper
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
-    --template "docs.examples.templates.rheology_research.Research" \
-    --output-dir "outputs/battery_research" \
-    --processing-mode "many-to-one" \
-    --use-chunking \
-    --no-llm-consolidation
-```
-
-**New CLI Features**:
-- `--verbose` / `-v`: Enable detailed logging for debugging
-- `--version`: Show version and exit
-- Better error messages with actionable details
-
-```bash
-# Debug with verbose logging
-uv run docling-graph --verbose convert document.pdf --template templates.Invoice
-
-# Check version
-uv run docling-graph --version
-```
-
-#### 2.3. Inspect Results
-
-```bash
-# Visualize the generated graph
-uv run docling-graph inspect <CONVERT_OUTPUT_PATH> [OPTIONS]
-
-# Example
-uv run docling-graph inspect outputs/battery_research
-
-# With custom output
-uv run docling-graph inspect outputs/battery_research --output graph_viz.html
-```
+For more examples, see [Examples](docs/09-examples/index.md).
 
 
 
 ## Pydantic Templates
 
-Templates are the foundation of Docling Graph, defining both the **extraction schema** and the resulting **graph structure**.
-
-  * Use `is_entity=True` in `model_config` to explicitly mark a class as a graph node.
-  * Leverage `model_config.graph_id_fields` to create stable, readable node IDs (natural keys).
-  * Use the `Edge()` helper to define explicit relationships between entities.
-
-**Example:**
+Templates define both the **extraction schema** and the resulting **graph structure**.
 
 ```python
 from pydantic import BaseModel, Field
-from typing import Optional
+from docling_graph.utils import edge
 
 class Person(BaseModel):
-    """Person entity with stable ID based on name and DOB."""
+    """Person entity with stable ID."""
     model_config = {
         'is_entity': True,
         'graph_id_fields': ['last_name', 'date_of_birth']
@@ -240,11 +161,19 @@ class Person(BaseModel):
     first_name: str = Field(description="Person's first name")
     last_name: str = Field(description="Person's last name")
     date_of_birth: str = Field(description="Date of birth (YYYY-MM-DD)")
+
+class Organization(BaseModel):
+    """Organization entity."""
+    model_config = {'is_entity': True}
+    
+    name: str = Field(description="Organization name")
+    employees: list[Person] = edge("EMPLOYS", description="List of employees")
 ```
 
-Reference Pydantic [templates](docs/examples/templates) are available to help you get started quickly.
-
-For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](docs/guides/create_pydantic_templates_for_kg_extraction.md)
+For complete guidance, see:
+- [Schema Definition Guide](docs/03-schema-definition/index.md)
+- [Pydantic Templates Tutorial](docs/03-schema-definition/pydantic-basics.md)
+- [Example Templates](docs/examples/templates/)
 
 
 
@@ -252,21 +181,66 @@ For complete guidance, see: [Pydantic Templates for Knowledge Graph Extraction](
 
 Comprehensive documentation can be found on [Docling Graph's Page](https://ibm.github.io/docling-graph/).
 
-### Key Resources
+### Documentation Structure
 
-- [Getting Started](https://ibm.github.io/docling-graph/getting-started/installation/) - Installation and quick start guides
-- [Concepts](https://ibm.github.io/docling-graph/concepts/) - Core concepts and architecture
-- [Guides](https://ibm.github.io/docling-graph/guides/create_pydantic_templates_for_kg_extraction/) - In-depth tutorials and best practices
-- [Examples](https://ibm.github.io/docling-graph/examples/README/) - Working code examples
-- [API Reference](https://ibm.github.io/docling-graph/api/pipeline/) - Detailed API documentation
+The documentation follows the docling-graph pipeline stages:
 
-You can also browse the documentation locally in the [`docs/`](docs/) directory.
+1. [Introduction](docs/01-introduction/index.md) - Overview and core concepts
+2. [Installation](docs/02-installation/index.md) - Setup and environment configuration
+3. [Schema Definition](docs/03-schema-definition/index.md) - Creating Pydantic templates
+4. [Pipeline Configuration](docs/04-pipeline-configuration/index.md) - Configuring the extraction pipeline
+5. [Extraction Process](docs/05-extraction-process/index.md) - Document conversion and extraction
+6. [Graph Management](docs/06-graph-management/index.md) - Exporting and visualizing graphs
+7. [CLI Reference](docs/07-cli/index.md) - Command-line interface guide
+8. [Python API](docs/08-api/index.md) - Programmatic usage
+9. [Examples](docs/09-examples/index.md) - Working code examples
+10. [Advanced Topics](docs/10-advanced/index.md) - Performance, testing, error handling
+11. [API Reference](docs/11-reference/index.md) - Detailed API documentation
+12. [Development](docs/12-development/index.md) - Contributing and development guide
 
 
 
 ## Examples
 
-Get hands-on with Docling Graph [examples](docs/examples/scripts) to convert documents into knowledge graphs through `VLM` or `LLM`-based processing.
+Explore working examples in [docs/examples/](docs/examples/):
+
+- **VLM Extraction**: [Image](docs/examples/scripts/01_vlm_from_image.py) | [PDF](docs/examples/scripts/02_vlm_from_pdf_page.py)
+- **LLM Extraction**: [Remote API](docs/examples/scripts/03_llm_remote_api.py) | [Local Ollama](docs/examples/scripts/04_llm_local_ollama.py)
+- **Advanced**: [Consolidation](docs/examples/scripts/05_llm_with_consolidation.py) | [One-to-One](docs/examples/scripts/06_llm_one_to_one.py)
+- **CLI Recipes**: [Common Workflows](docs/examples/scripts/10_cli_recipes.md)
+
+### Example Templates
+
+- [Invoice](docs/examples/templates/invoice.py) - Financial document extraction
+- [ID Card](docs/examples/templates/id_card.py) - Identity document parsing
+- [Insurance](docs/examples/templates/insurance.py) - Insurance policy extraction
+- [Research Paper](docs/examples/templates/rheology_research.py) - Scientific document analysis
+
+
+
+## Contributing
+
+We welcome contributions! Please see:
+
+- [Contributing Guidelines](.github/CONTRIBUTING.md) - How to contribute
+- [Development Guide](docs/12-development/index.md) - Development setup
+- [GitHub Workflow](docs/12-development/github-workflow.md) - Branch strategy and CI/CD
+
+### Development Setup
+
+```bash
+# Clone and setup
+git clone https://github.com/IBM/docling-graph
+cd docling-graph
+
+# Install with dev dependencies
+uv sync --extra all --extra dev
+
+# Run Execute pre-commit checks
+uv run pre-commit run --all-files
+```
+
+
 
 ## License
 
@@ -276,11 +250,11 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- Powered by [Docling](https://github.com/docling-project/docling) for advanced document processing.
-- Uses [Pydantic](https://pydantic.dev) for data validation.
-- Graph generation powered by [NetworkX](https://networkx.org/).
-- Visualizations powered by [Cytoscape.js](https://js.cytoscape.org/).
-- CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich).
+- Powered by [Docling](https://github.com/docling-project/docling) for advanced document processing
+- Uses [Pydantic](https://pydantic.dev) for data validation
+- Graph generation powered by [NetworkX](https://networkx.org/)
+- Visualizations powered by [Cytoscape.js](https://js.cytoscape.org/)
+- CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich)
 
 
 

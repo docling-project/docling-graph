@@ -152,6 +152,3 @@ class TestBaseLlmClient:
 
         assert "Parse failed" in str(exc_info.value)
         assert exc_info.value.details["error"] == "invalid"
-
-
-# Made with Bob

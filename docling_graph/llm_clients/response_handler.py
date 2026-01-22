@@ -29,9 +29,7 @@ class ResponseHandler:
 
     @staticmethod
     def parse_json_response(
-        raw_response: str,
-        client_name: str,
-        aggressive_clean: bool = False
+        raw_response: str, client_name: str, aggressive_clean: bool = False
     ) -> Dict[str, Any] | list[Any]:
         """
         Parse and validate JSON response from LLM.
@@ -53,8 +51,7 @@ class ResponseHandler:
         # Validate input
         if not raw_response or not raw_response.strip():
             raise ClientError(
-                f"{client_name} returned empty response",
-                details={"raw_response": raw_response}
+                f"{client_name} returned empty response", details={"raw_response": raw_response}
             )
 
         # Clean response
@@ -77,9 +74,9 @@ class ResponseHandler:
                     "client_name": client_name,
                     "error": str(e),
                     "raw_response": raw_response[:500],
-                    "cleaned_content_preview": content[:200]
+                    "cleaned_content_preview": content[:200],
                 },
-                cause=e
+                cause=e,
             ) from e
 
     @staticmethod
@@ -168,7 +165,7 @@ class ResponseHandler:
 
         for prefix in prefixes:
             if content.lower().startswith(prefix.lower()):
-                content = content[len(prefix):].strip()
+                content = content[len(prefix) :].strip()
 
         # Find first JSON object or array
         first_brace = content.find("{")
@@ -218,7 +215,7 @@ class ResponseHandler:
                     depth -= 1
                     if depth == 0:
                         # Found complete JSON
-                        return content[start_idx:i + 1]
+                        return content[start_idx : i + 1]
 
         # If we get here, JSON is incomplete - return from start to end
         return content[start_idx:]
@@ -241,16 +238,11 @@ class ResponseHandler:
 
         # Handle other non-dict responses by wrapping
         if not isinstance(parsed, dict):
-            rich_print(
-                f"[yellow]Warning:[/yellow] {client_name} returned non-dict JSON, wrapping"
-            )
+            rich_print(f"[yellow]Warning:[/yellow] {client_name} returned non-dict JSON, wrapping")
             return {"result": parsed}
 
         # Warn about empty responses
         if not parsed or not any(parsed.values()):
-            rich_print(
-                f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON"
-            )
+            rich_print(f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON")
 
         return parsed
-

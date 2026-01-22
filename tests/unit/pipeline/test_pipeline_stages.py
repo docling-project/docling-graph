@@ -29,10 +29,7 @@ class TestTemplateLoadingStage:
     def test_load_template_from_string(self):
         """Test loading template from string path."""
         config = PipelineConfig(
-            source="test.pdf",
-            template="pydantic.BaseModel",
-            backend="llm",
-            inference="local"
+            source="test.pdf", template="pydantic.BaseModel", backend="llm", inference="local"
         )
         context = PipelineContext(config=config)
 
@@ -47,10 +44,7 @@ class TestTemplateLoadingStage:
         from pydantic import BaseModel
 
         config = PipelineConfig(
-            source="test.pdf",
-            template=BaseModel,
-            backend="llm",
-            inference="local"
+            source="test.pdf", template=BaseModel, backend="llm", inference="local"
         )
         context = PipelineContext(config=config)
 
@@ -62,10 +56,7 @@ class TestTemplateLoadingStage:
     def test_invalid_template_path_raises_error(self):
         """Test that invalid template path raises ConfigurationError."""
         config = PipelineConfig(
-            source="test.pdf",
-            template="invalid.module.Template",
-            backend="llm",
-            inference="local"
+            source="test.pdf", template="invalid.module.Template", backend="llm", inference="local"
         )
         context = PipelineContext(config=config)
 
@@ -107,15 +98,12 @@ class TestExtractionStage:
         mock_extractor = Mock()
         mock_extractor.extract.return_value = (
             [TestModel(name="Test", value=100)],
-            Mock()  # docling_document
+            Mock(),  # docling_document
         )
         mock_factory.return_value = mock_extractor
 
         config = PipelineConfig(
-            source="test.pdf",
-            template=TestModel,
-            backend="llm",
-            inference="local"
+            source="test.pdf", template=TestModel, backend="llm", inference="local"
         )
         context = PipelineContext(config=config, template=TestModel)
 
@@ -131,7 +119,9 @@ class TestExtractionStage:
     @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
     @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
     @patch("docling_graph.llm_clients.config.get_model_config")
-    def test_extraction_no_models_raises_error(self, mock_get_model_config, mock_init_client, mock_factory):
+    def test_extraction_no_models_raises_error(
+        self, mock_get_model_config, mock_init_client, mock_factory
+    ):
         """Test that no models extracted raises ExtractionError."""
         from pydantic import BaseModel
 
@@ -153,10 +143,7 @@ class TestExtractionStage:
         mock_factory.return_value = mock_extractor
 
         config = PipelineConfig(
-            source="test.pdf",
-            template=TestModel,
-            backend="llm",
-            inference="local"
+            source="test.pdf", template=TestModel, backend="llm", inference="local"
         )
         context = PipelineContext(config=config, template=TestModel)
 
@@ -182,7 +169,7 @@ class TestDoclingExportStage:
             backend="llm",
             inference="local",
             export_docling=False,
-            output_dir=str(tmp_path)
+            output_dir=str(tmp_path),
         )
 
         # Mock the docling_document's export_to_markdown to return a string
@@ -190,11 +177,7 @@ class TestDoclingExportStage:
         mock_doc.export_to_markdown.return_value = "# Test Document"
         mock_doc.export_to_dict.return_value = {"test": "data"}
 
-        context = PipelineContext(
-            config=config,
-            docling_document=mock_doc,
-            output_dir=tmp_path
-        )
+        context = PipelineContext(config=config, docling_document=mock_doc, output_dir=tmp_path)
 
         stage = DoclingExportStage()
         result = stage.execute(context)
@@ -227,26 +210,17 @@ class TestGraphConversionStage:
         mock_graph.add_node("node1", label="Test")
 
         # Mock metadata with required source_models field
-        mock_metadata = GraphMetadata(
-            node_count=1,
-            edge_count=0,
-            source_models=1
-        )
+        mock_metadata = GraphMetadata(node_count=1, edge_count=0, source_models=1)
 
         mock_converter = Mock()
         mock_converter.pydantic_list_to_graph.return_value = (mock_graph, mock_metadata)
         mock_converter_class.return_value = mock_converter
 
         config = PipelineConfig(
-            source="test.pdf",
-            template=TestModel,
-            backend="llm",
-            inference="local"
+            source="test.pdf", template=TestModel, backend="llm", inference="local"
         )
         context = PipelineContext(
-            config=config,
-            template=TestModel,
-            extracted_models=[TestModel(name="Test")]
+            config=config, template=TestModel, extracted_models=[TestModel(name="Test")]
         )
 
         stage = GraphConversionStage()
@@ -286,13 +260,9 @@ class TestExportStage:
             backend="llm",
             inference="local",
             export_format="csv",
-            output_dir=str(tmp_path)
+            output_dir=str(tmp_path),
         )
-        context = PipelineContext(
-            config=config,
-            knowledge_graph=mock_graph,
-            output_dir=tmp_path
-        )
+        context = PipelineContext(config=config, knowledge_graph=mock_graph, output_dir=tmp_path)
 
         stage = ExportStage()
         stage.execute(context)
@@ -330,10 +300,11 @@ class TestVisualizationStage:
             template="pydantic.BaseModel",
             backend="llm",
             inference="local",
-            output_dir=str(tmp_path)
+            output_dir=str(tmp_path),
         )
 
         from docling_graph.core.converters.models import GraphMetadata
+
         metadata = GraphMetadata(node_count=1, edge_count=0, source_models=1)
 
         context = PipelineContext(
@@ -341,7 +312,7 @@ class TestVisualizationStage:
             knowledge_graph=mock_graph,
             graph_metadata=metadata,
             output_dir=tmp_path,
-            extracted_models=[Mock()]
+            extracted_models=[Mock()],
         )
 
         stage = VisualizationStage()
@@ -363,7 +334,7 @@ class TestStageInterface:
             DoclingExportStage(),
             GraphConversionStage(),
             ExportStage(),
-            VisualizationStage()
+            VisualizationStage(),
         ]
 
         for stage in stages:
@@ -381,11 +352,9 @@ class TestStageInterface:
             DoclingExportStage(),
             GraphConversionStage(),
             ExportStage(),
-            VisualizationStage()
+            VisualizationStage(),
         ]
 
         for stage in stages:
             assert hasattr(stage, "execute")
             assert callable(stage.execute)
-
-# Made with Bob

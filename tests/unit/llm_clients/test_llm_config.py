@@ -223,6 +223,3 @@ class TestConfigRegistry:
         openai = registry.get_provider("openai")
         assert openai is not None
         assert openai.provider_id == "openai"
-
-
-# Made with Bob

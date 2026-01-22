@@ -27,10 +27,7 @@ class TestDoclingGraphError:
 
     def test_error_with_details(self):
         """Test error with details dict."""
-        error = DoclingGraphError(
-            "Test error",
-            details={"key": "value", "number": 42}
-        )
+        error = DoclingGraphError("Test error", details={"key": "value", "number": 42})
         assert error.message == "Test error"
         assert error.details["key"] == "value"
         assert error.details["number"] == 42
@@ -38,20 +35,14 @@ class TestDoclingGraphError:
     def test_error_with_cause(self):
         """Test error with cause exception."""
         original = ValueError("Original error")
-        error = DoclingGraphError(
-            "Wrapped error",
-            cause=original
-        )
+        error = DoclingGraphError("Wrapped error", cause=original)
         assert error.message == "Wrapped error"
         assert error.cause is original
         assert isinstance(error.cause, ValueError)
 
     def test_error_string_representation(self):
         """Test error string representation."""
-        error = DoclingGraphError(
-            "Test error",
-            details={"field": "value"}
-        )
+        error = DoclingGraphError("Test error", details={"field": "value"})
         error_str = str(error)
         assert "Test error" in error_str
         assert "field" in error_str
@@ -76,8 +67,7 @@ class TestConfigurationError:
     def test_configuration_error_with_details(self):
         """Test configuration error with details."""
         error = ConfigurationError(
-            "Invalid configuration",
-            details={"field": "api_key", "value": None}
+            "Invalid configuration", details={"field": "api_key", "value": None}
         )
         assert error.message == "Invalid configuration"
         assert error.details["field"] == "api_key"
@@ -85,8 +75,7 @@ class TestConfigurationError:
     def test_missing_env_var_error(self):
         """Test error for missing environment variable."""
         error = ConfigurationError(
-            "Required environment variable not set",
-            details={"variable": "API_KEY"}
+            "Required environment variable not set", details={"variable": "API_KEY"}
         )
         assert "API_KEY" in error.details["variable"]
 
@@ -102,10 +91,7 @@ class TestClientError:
 
     def test_client_error_with_model_info(self):
         """Test client error with model information."""
-        error = ClientError(
-            "API call failed",
-            details={"model": "gpt-4", "status": 500}
-        )
+        error = ClientError("API call failed", details={"model": "gpt-4", "status": 500})
         assert error.details["model"] == "gpt-4"
         assert error.details["status"] == 500
 
@@ -115,7 +101,7 @@ class TestClientError:
         error = ClientError(
             "Failed to connect to API",
             details={"endpoint": "https://api.example.com"},
-            cause=original
+            cause=original,
         )
         assert error.cause is original
         assert isinstance(error.cause, ConnectionError)
@@ -133,8 +119,7 @@ class TestExtractionError:
     def test_extraction_error_with_source(self):
         """Test extraction error with source information."""
         error = ExtractionError(
-            "Failed to extract data",
-            details={"source": "document.pdf", "page": 5}
+            "Failed to extract data", details={"source": "document.pdf", "page": 5}
         )
         assert error.details["source"] == "document.pdf"
         assert error.details["page"] == 5
@@ -143,7 +128,7 @@ class TestExtractionError:
         """Test error for no models extracted."""
         error = ExtractionError(
             "No models extracted from document",
-            details={"source": "document.pdf", "template": "MyTemplate"}
+            details={"source": "document.pdf", "template": "MyTemplate"},
         )
         assert "document.pdf" in error.details["source"]
 
@@ -161,7 +146,7 @@ class TestValidationError:
         """Test validation error with field information."""
         error = ValidationError(
             "Invalid field value",
-            details={"field": "email", "value": "invalid", "expected": "email format"}
+            details={"field": "email", "value": "invalid", "expected": "email format"},
         )
         assert error.details["field"] == "email"
         assert error.details["expected"] == "email format"
@@ -179,8 +164,7 @@ class TestGraphError:
     def test_graph_error_with_stats(self):
         """Test graph error with graph statistics."""
         error = GraphError(
-            "Graph validation failed",
-            details={"nodes": 0, "edges": 0, "expected_nodes": 10}
+            "Graph validation failed", details={"nodes": 0, "edges": 0, "expected_nodes": 10}
         )
         assert error.details["nodes"] == 0
         assert error.details["expected_nodes"] == 10
@@ -198,8 +182,7 @@ class TestPipelineError:
     def test_pipeline_error_with_stage_info(self):
         """Test pipeline error with stage information."""
         error = PipelineError(
-            "Pipeline failed at stage",
-            details={"stage": "Extraction", "error": "timeout"}
+            "Pipeline failed at stage", details={"stage": "Extraction", "error": "timeout"}
         )
         assert error.details["stage"] == "Extraction"
         assert error.details["error"] == "timeout"
@@ -208,9 +191,7 @@ class TestPipelineError:
         """Test pipeline error wrapping stage exception."""
         original = ExtractionError("Extraction failed")
         error = PipelineError(
-            "Pipeline execution failed",
-            details={"stage": "Extraction"},
-            cause=original
+            "Pipeline execution failed", details={"stage": "Extraction"}, cause=original
         )
         assert error.cause is original
         assert isinstance(error.cause, ExtractionError)
@@ -227,7 +208,7 @@ class TestExceptionHierarchy:
             ExtractionError("test"),
             ValidationError("test"),
             GraphError("test"),
-            PipelineError("test")
+            PipelineError("test"),
         ]
         for exc in exceptions:
             assert isinstance(exc, DoclingGraphError)
@@ -243,6 +224,7 @@ class TestExceptionHierarchy:
 
     def test_can_catch_specific_exceptions(self):
         """Test catching specific exception types."""
+
         def raise_client_error() -> NoReturn:
             raise ClientError("API failed")
 
@@ -264,5 +246,3 @@ class TestExceptionHierarchy:
             assert exc.cause is not None
             assert isinstance(exc.cause, ValueError)
             assert exc.__cause__ is exc.cause
-
-# Made with Bob

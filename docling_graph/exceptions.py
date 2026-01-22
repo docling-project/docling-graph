@@ -20,11 +20,7 @@ class DoclingGraphError(Exception):
     """
 
     def __init__(
-        self,
-        message: str,
-        *,
-        details: dict[str, Any] | None = None,
-        cause: Exception | None = None
+        self, message: str, *, details: dict[str, Any] | None = None, cause: Exception | None = None
     ) -> None:
         """
         Initialize exception with structured information.
@@ -132,4 +128,3 @@ class PipelineError(DoclingGraphError):
         - Resource initialization error
         - Cleanup failure
     """
-

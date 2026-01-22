@@ -82,8 +82,7 @@ class TemplateLoadingStage(PipelineStage):
             context.template = template_val
         else:
             raise ConfigurationError(
-                "Invalid template type",
-                details={"type": type(template_val).__name__}
+                "Invalid template type", details={"type": type(template_val).__name__}
             )
 
         logger.info(f"[{self.name()}] Loaded: {context.template.__name__}")
@@ -106,7 +105,7 @@ class TemplateLoadingStage(PipelineStage):
         if "." not in template_str:
             raise ConfigurationError(
                 "Template path must contain at least one dot",
-                details={"template": template_str, "example": "module.Class"}
+                details={"template": template_str, "example": "module.Class"},
             )
 
         try:
@@ -138,14 +137,13 @@ class TemplateLoadingStage(PipelineStage):
             if not isinstance(obj, type) or not issubclass(obj, BaseModel):
                 raise ConfigurationError(
                     "Template must be a Pydantic BaseModel subclass",
-                    details={"template": template_str, "type": type(obj).__name__}
+                    details={"template": template_str, "type": type(obj).__name__},
                 )
 
             return obj
         except (ModuleNotFoundError, AttributeError) as e:
             raise ConfigurationError(
-                f"Failed to load template: {e}",
-                details={"template": template_str}
+                f"Failed to load template: {e}", details={"template": template_str}
             ) from e
 
 
@@ -166,20 +164,18 @@ class ExtractionStage(PipelineStage):
         if context.template is None:
             raise ExtractionError(
                 "Template is required for extraction",
-                details={"source": str(context.config.source)}
+                details={"source": str(context.config.source)},
             )
-        context.extracted_models, context.docling_document = \
-            context.extractor.extract(str(context.config.source), context.template)
+        context.extracted_models, context.docling_document = context.extractor.extract(
+            str(context.config.source), context.template
+        )
 
         if not context.extracted_models:
             raise ExtractionError(
-                "No models extracted from document",
-                details={"source": context.config.source}
+                "No models extracted from document", details={"source": context.config.source}
             )
 
-        logger.info(
-            f"[{self.name()}] Extracted {len(context.extracted_models)} items"
-        )
+        logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
         return context
 
     def _create_extractor(self, context: PipelineContext) -> Any:
@@ -194,10 +190,7 @@ class ExtractionStage(PipelineStage):
         """
         conf = context.config.to_dict()
 
-        processing_mode = cast(
-            Literal["one-to-one", "many-to-one"],
-            conf["processing_mode"]
-        )
+        processing_mode = cast(Literal["one-to-one", "many-to-one"], conf["processing_mode"])
         backend = cast(Literal["vlm", "llm"], conf["backend"])
         inference = cast(str, conf["inference"])
 
@@ -209,10 +202,7 @@ class ExtractionStage(PipelineStage):
             conf.get("provider_override"),
         )
 
-        logger.info(
-            f"Using model: {model_config['model']} "
-            f"(provider: {model_config['provider']})"
-        )
+        logger.info(f"Using model: {model_config['model']} (provider: {model_config['provider']})")
 
         if backend == "vlm":
             return ExtractorFactory.create_extractor(
@@ -223,8 +213,7 @@ class ExtractionStage(PipelineStage):
             )
         else:
             llm_client = self._initialize_llm_client(
-                model_config["provider"],
-                model_config["model"]
+                model_config["provider"], model_config["model"]
             )
             return ExtractorFactory.create_extractor(
                 processing_mode=processing_mode,
@@ -248,7 +237,7 @@ class ExtractionStage(PipelineStage):
         if not model_config:
             raise ConfigurationError(
                 f"No configuration found for backend='{backend}' with inference='{inference}'",
-                details={"backend": backend, "inference": inference}
+                details={"backend": backend, "inference": inference},
             )
 
         provider = provider_override or model_config.get(
@@ -267,8 +256,7 @@ class ExtractionStage(PipelineStage):
 
         if not model:
             raise ConfigurationError(
-                "Resolved model is empty",
-                details={"backend": backend, "inference": inference}
+                "Resolved model is empty", details={"backend": backend, "inference": inference}
             )
 
         return {"model": model, "provider": provider}
@@ -340,11 +328,11 @@ class GraphConversionStage(PipelineStage):
         # Ensure extracted_models is not None
         if context.extracted_models is None:
             raise PipelineError(
-                "No extracted models available for graph conversion",
-                details={"stage": self.name()}
+                "No extracted models available for graph conversion", details={"stage": self.name()}
             )
-        context.knowledge_graph, context.graph_metadata = \
-            converter.pydantic_list_to_graph(context.extracted_models)
+        context.knowledge_graph, context.graph_metadata = converter.pydantic_list_to_graph(
+            context.extracted_models
+        )
 
         logger.info(
             f"[{self.name()}] Created graph: "
@@ -403,31 +391,22 @@ class VisualizationStage(PipelineStage):
         # Ensure output_dir and extracted_models are not None
         if context.output_dir is None:
             raise PipelineError(
-                "Output directory is required for visualization",
-                details={"stage": self.name()}
+                "Output directory is required for visualization", details={"stage": self.name()}
             )
         if context.extracted_models is None:
             raise PipelineError(
-                "No extracted models available for visualization",
-                details={"stage": self.name()}
+                "No extracted models available for visualization", details={"stage": self.name()}
             )
 
         report_path = context.output_dir / f"{base_name}_report"
         ReportGenerator().visualize(
-            context.knowledge_graph,
-            report_path,
-            source_model_count=len(context.extracted_models)
+            context.knowledge_graph, report_path, source_model_count=len(context.extracted_models)
         )
         logger.info(f"Generated markdown report at {report_path}")
 
         html_path = context.output_dir / f"{base_name}_graph.html"
-        InteractiveVisualizer().save_cytoscape_graph(
-            context.knowledge_graph,
-            html_path
-        )
+        InteractiveVisualizer().save_cytoscape_graph(context.knowledge_graph, html_path)
         logger.info(f"Generated interactive HTML graph at {html_path}")
 
         logger.info(f"[{self.name()}] Generated visualizations")
         return context
-
-# Made with Bob

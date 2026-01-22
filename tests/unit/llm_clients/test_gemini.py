@@ -108,5 +108,3 @@ def test_get_json_response_string_prompt(
 # - test_get_json_response_invalid_json: Now raises ClientError instead of returning {}
 # - test_get_json_response_api_error: Now raises exceptions instead of returning {}
 # These behaviors are properly tested in tests/unit/llm_clients/test_response_handler.py
-
-# Made with Bob

@@ -93,6 +93,3 @@ class MistralClient(BaseLlmClient):
                 f"Mistral API call failed: {type(e).__name__}",
                 details={"model": self.model, "error": str(e)},
             ) from e
-
-
-# Made with Bob

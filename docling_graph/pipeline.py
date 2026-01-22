@@ -55,5 +55,3 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
 
 
 __all__ = ["run_pipeline"]
-
-# Made with Bob

@@ -83,11 +83,7 @@ class PipelineOrchestrator:
 
             raise PipelineError(
                 f"Pipeline failed at stage '{stage_name}': {type(e).__name__}",
-                details={
-                    "stage": stage_name,
-                    "error": str(e),
-                    "error_type": type(e).__name__
-                }
+                details={"stage": stage_name, "error": str(e), "error_type": type(e).__name__},
             ) from e
 
         finally:
@@ -117,6 +113,7 @@ class PipelineOrchestrator:
 
         try:
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         except ImportError:
@@ -151,5 +148,3 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
 
     orchestrator = PipelineOrchestrator(config)
     orchestrator.run()
-
-# Made with Bob
