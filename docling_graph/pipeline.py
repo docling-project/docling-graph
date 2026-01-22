@@ -29,6 +29,7 @@ from .core.converters.node_id_registry import NodeIDRegistry
 # Import LLM clients
 from .llm_clients import BaseLlmClient, get_client
 
+from .db_clients.neo4j_client import Neo4jExporter
 
 def _load_template_class(template_str: str) -> type[BaseModel]:
     """Dynamically imports a Pydantic model class from a string."""
@@ -222,11 +223,22 @@ def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
 
         if export_format == "csv":
             CSVExporter().export(knowledge_graph, output_dir)
-            rich_print(f"[green]→[/green] Saved CSV files to [green]{output_dir}[/green]")
+            rich_print(f"[green]✔[/green] Saved CSV files to [green]{output_dir}[/green]")
         elif export_format == "cypher":
             cypher_path = output_dir / f"{base_name}_graph.cypher"
             CypherExporter().export(knowledge_graph, cypher_path)
-            rich_print(f"[green]→[/green] Saved Cypher script to [green]{cypher_path}[/green]")
+            rich_print(f"[green]✔[/green] Saved Cypher script to [green]{cypher_path}[/green]")
+        elif export_format == "neo4j":
+            # Extract Neo4j config
+            neo_conf = conf.get("neo4j", {})
+            exporter = Neo4jExporter(
+                uri=neo_conf.get("uri", "bolt://localhost:7687"),
+                auth=(neo_conf.get("username", "neo4j"), neo_conf.get("password", "password")),
+                database=neo_conf.get("database", "neo4j"),
+                batch_size=neo_conf.get("batch_size", 1000),
+                write_mode=neo_conf.get("write_mode", "merge")
+            )
+            exporter.export(knowledge_graph)
         else:
             raise ValueError(f"Unknown export format: {export_format}")
 
