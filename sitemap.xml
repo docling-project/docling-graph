@@ -2,110 +2,110 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://ibm.github.io/docling-graph/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/api/config/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/api/converters/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/api/exporters/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/api/extractors/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/api/llm-clients/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/api/pipeline/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/architecture/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/configuration/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/export-formats/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/extraction-backends/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/graph-construction/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/mermaid_flowchat/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/pipeline-flowchart/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/processing-strategies/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/concepts/pydantic-templates/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/development/github/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/development/release/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/examples/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/examples/scripts/10_cli_recipes/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/getting-started/configuration/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/getting-started/installation/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/getting-started/quickstart/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/guides/create_pydantic_templates_for_kg_extraction/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/guides/setup_with_gpu_support/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
     <url>
          <loc>https://ibm.github.io/docling-graph/guides/watsonx_integration/</loc>
-         <lastmod>2026-01-21</lastmod>
+         <lastmod>2026-01-22</lastmod>
     </url>
 </urlset>
