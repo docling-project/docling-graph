@@ -1,11 +1,127 @@
 # CHANGELOG
 
 
+## v0.3.0 (2026-01-22)
+
+### Bug Fixes
+
+- **release**: Resolve semantic-release changelog config deprecation
+  ([`aa64dab`](https://github.com/IBM/docling-graph/commit/aa64dab707daf5225569edce98286a1702781c37))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **ci**: Exclude attestation files from GitHub releases
+  ([`1ae2685`](https://github.com/IBM/docling-graph/commit/1ae2685ccba1234ed99d6eb95e5f8f39525237bf))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Bump the all-actions group with 5 updates
+  ([#30](https://github.com/IBM/docling-graph/pull/30),
+  [`e7eace5`](https://github.com/IBM/docling-graph/commit/e7eace5eb73ef3cb2a4ddb155e1698710986b16b))
+
+Bumps the all-actions group with 5 updates:
+
+| Package | From | To | | --- | --- | --- | |
+  [actions/checkout](https://github.com/actions/checkout) | `4` | `6` | |
+  [actions/setup-python](https://github.com/actions/setup-python) | `5` | `6` | |
+  [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) | `4` | `7` | |
+  [actions/upload-artifact](https://github.com/actions/upload-artifact) | `4` | `6` | |
+  [actions/download-artifact](https://github.com/actions/download-artifact) | `4` | `7` |
+
+Updates `actions/checkout` from 4 to 6 - [Release
+  notes](https://github.com/actions/checkout/releases) -
+  [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/checkout/compare/v4...v6)
+
+Updates `actions/setup-python` from 5 to 6 - [Release
+  notes](https://github.com/actions/setup-python/releases) -
+  [Commits](https://github.com/actions/setup-python/compare/v5...v6)
+
+Updates `astral-sh/setup-uv` from 4 to 7 - [Release
+  notes](https://github.com/astral-sh/setup-uv/releases) -
+  [Commits](https://github.com/astral-sh/setup-uv/compare/v4...v7)
+
+Updates `actions/upload-artifact` from 4 to 6 - [Release
+  notes](https://github.com/actions/upload-artifact/releases) -
+  [Commits](https://github.com/actions/upload-artifact/compare/v4...v6)
+
+Updates `actions/download-artifact` from 4 to 7 - [Release
+  notes](https://github.com/actions/download-artifact/releases) -
+  [Commits](https://github.com/actions/download-artifact/compare/v4...v7)
+
+--- updated-dependencies: - dependency-name: actions/checkout dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions
+
+- dependency-name: actions/setup-python dependency-version: '6'
+
+- dependency-name: astral-sh/setup-uv dependency-version: '7'
+
+- dependency-name: actions/upload-artifact dependency-version: '6'
+
+- dependency-name: actions/download-artifact dependency-version: '7'
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **release**: Treat refactor commits as minor version bumps
+  ([`215275a`](https://github.com/IBM/docling-graph/commit/215275a90ed821fa66eadfbaed6efc59ec24a02c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
 
 ### Documentation
 
+- **deps**: Add MkDocs and documentation dependencies
+  ([`c4378d3`](https://github.com/IBM/docling-graph/commit/c4378d39b347aee266642c270f41fb9756e19d05))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
 - **readme**: Fix PyPI badge to include prereleases
   ([`ca3b14f`](https://github.com/IBM/docling-graph/commit/ca3b14fa7f960348f2d3a257173843a7dc9f81ec))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **readme**: Update documentation section with MkDocs links
+  ([`87e0990`](https://github.com/IBM/docling-graph/commit/87e09906718ac14b77dfd1a48c4161919efd6ab7))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **repo**: Move community health files to .github and update links
+  ([`2ab0471`](https://github.com/IBM/docling-graph/commit/2ab04714f85bbe24f26c0b9ef931674ce22c90ee))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Refactoring
+
+- **core**: Remove document caching for stateless operation
+  ([#32](https://github.com/IBM/docling-graph/pull/32),
+  [`3cf8bd0`](https://github.com/IBM/docling-graph/commit/3cf8bd0cbe855b022ecb9a7b056468c8fcc98b17))
+
+**Core Modifications:** - Updated extractor interface to return `(models, document)` tuple instead
+  of caching - Removed all caching logic from DocumentProcessor (_last_document, _last_source,
+  properties) - Modified pipeline to use returned document directly - Updated both ManyToOneStrategy
+  and OneToOneStrategy
+
+**Key Benefits:** - Stateless architecture - no memory accumulation - Predictable memory usage -
+  released after each request - Pod-safe for Kubernetes deployments - No performance penalty -
+  document still available without re-conversion
+
+**Impact:** Users calling `extractor.extract()` directly must update: - Old: `models =
+  extractor.extract(source, template)` - New: `models, document = extractor.extract(source,
+  template)`
+
+The `run_pipeline()` API remains unchanged.
+
+---------
 
 Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
 
