@@ -39,6 +39,7 @@ dependencies = [
     "typer[all]>=0.12,<1.0.0",
     "python-dotenv>=1.0,<2.0",
     "pyyaml>=6.0,<7.0",
+    "protobuf>=7.34.0rc1,<8.0.0",  # Security: Temporary use of pre-release with CVE-2026-0994 fix
 ]
 
 [project.urls]
