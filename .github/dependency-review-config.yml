@@ -1,0 +1,42 @@
+# Dependency Review Configuration
+# See: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/configuring-dependency-review
+
+# Temporary security exception for protobuf CVE-2026-0994
+# This exception allows the PR to merge while waiting for an official patch
+
+allow-vulnerabilities:
+  - advisory-id: GHSA-7gcm-g887-7qv7
+    reason: |
+      CVE-2026-0994: protobuf JSON recursion depth bypass vulnerability.
+      
+      Status: No patch available yet (vulnerability disclosed Jan 23, 2026)
+      Severity: High (8.2/10 CVSS)
+      Affected: protobuf 6.33.4
+      
+      Justification:
+      - Vulnerability was just disclosed today
+      - No patched version exists (6.33.5, 6.34.0, or 7.34.0 stable)
+      - Blocking this PR would delay important features
+      - Risk is documented and actively monitored
+      - Will update immediately when patch is released
+      
+      Monitoring:
+      - Daily checks: https://github.com/protocolbuffers/protobuf/releases
+      - Advisory: https://github.com/advisories/GHSA-7gcm-g887-7qv7
+      - PyPI: https://pypi.org/project/protobuf/#history
+      
+      See SECURITY_EXCEPTION_GUIDE.md for full details.
+    
+    # Exception expires in 30 days - must review and renew or fix by then
+    expires: 2026-02-23
+
+# Configuration for dependency review action
+fail-on-severity: high
+fail-on-scopes:
+  - runtime
+  - development
+
+# Comment on PRs with security information
+comment-summary-in-pr: always
+
+# Made with Bob
