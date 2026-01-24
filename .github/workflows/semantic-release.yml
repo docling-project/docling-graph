@@ -1,5 +1,14 @@
 name: Semantic Release
 
+# Automated releases for minor and patch versions only
+# - feat: commits → minor version bump (1.0.0 → 1.1.0)
+# - fix: commits → patch version bump (1.0.0 → 1.0.1)
+# - BREAKING CHANGE: commits → minor version bump (capped, not major)
+#
+# Major releases (1.x.x → 2.0.0) require manual Git tags:
+#   git tag -a v2.0.0 -m "Major release: [description]"
+#   git push origin v2.0.0
+
 on:
   push:
     branches:

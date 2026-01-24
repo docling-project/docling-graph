@@ -226,9 +226,19 @@ version_toml = ["pyproject.toml:project.version"]
 version_variables = ["docling_graph/__init__.py:__version__"]
 commit_message = "chore(release): bump package version to {version}"
 
+# Prevent automatic major version bumps - major releases require manual Git tags
+major_on_zero = false
+allow_zero_version = false
+
 [tool.semantic_release.branches.main]
 match = "main"
 prerelease = false
+
+# Custom commit parser to cap BREAKING CHANGE at minor releases
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "style", "test", "build", "ci", "chore"]
+minor_tags = ["feat", "refactor"]
+patch_tags = ["fix", "perf"]
 
 [tool.semantic_release.changelog]
 template_dir = "templates"
