@@ -1,0 +1,41 @@
+/* 1. Reset global overrides */
+:root, [data-md-color-scheme="default"], [data-md-color-scheme="slate"] {
+  --md-mermaid-label-fg-color: inherit;
+}
+
+/* 2. Unified Bold Text Style for all custom classes */
+.mermaid .input .nodeLabel, .mermaid .input foreignObject div, .mermaid .input span,
+.mermaid .config .nodeLabel, .mermaid .config foreignObject div, .mermaid .config span,
+.mermaid .output .nodeLabel, .mermaid .output foreignObject div, .mermaid .output span,
+.mermaid .decision .nodeLabel, .mermaid .decision foreignObject div, .mermaid .decision span,
+.mermaid .data .nodeLabel, .mermaid .data foreignObject div, .mermaid .data span,
+.mermaid .operator .nodeLabel, .mermaid .operator foreignObject div, .mermaid .operator span,
+.mermaid .process .nodeLabel, .mermaid .process foreignObject div, .mermaid .process span {
+  font-weight: 800 !important;
+}
+
+/* 3. Individual Color Assignments */
+.mermaid .input .nodeLabel, .mermaid .input foreignObject div, .mermaid .input span { color: #0D47A1 !important; }
+.mermaid .config .nodeLabel, .mermaid .config foreignObject div, .mermaid .config span { color: #5D4037 !important; }
+.mermaid .output .nodeLabel, .mermaid .output foreignObject div, .mermaid .output span { color: #1B5E20 !important; }
+.mermaid .decision .nodeLabel, .mermaid .decision foreignObject div, .mermaid .decision span { color: #E65100 !important; }
+.mermaid .data .nodeLabel, .mermaid .data foreignObject div, .mermaid .data span { color: #4527A0 !important; }
+.mermaid .operator .nodeLabel, .mermaid .operator foreignObject div, .mermaid .operator span { color: #6A1B9A !important; }
+.mermaid .process .nodeLabel, .mermaid .process foreignObject div, .mermaid .process span { color: #263238 !important; }
+
+/* 4. Subgraph Styling (Text only) */
+.mermaid .subgraph_style .label text,
+.mermaid .subgraph_style .cluster-label span {
+  fill: #969696 !important;
+  color: #969696 !important;
+  font-weight: 800 !important;
+}
+
+/* Target the actual subgraph rectangle */
+.mermaid .subgraph_style rect.cluster-label-bg, 
+.mermaid .subgraph_style rect {
+  fill: none !important;
+  stroke: #969696 !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5 !important;
+}
