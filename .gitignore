@@ -83,3 +83,6 @@ Thumbs.db
 # Project relateds files and directories
 /config.yaml
 /outputs/
+
+# MkDocs generated documentation
+site/
