@@ -153,36 +153,17 @@ config = PipelineConfig(
     inference="remote",
     provider_override="openai",
     model_override="gpt-4-turbo",
-    use_chunking=True  # Automatically uses 90% threshold
+    use_chunking=True  # Automatically uses threshold
 )
 
-# Google Gemini - Aggressive batching (88% threshold)
-config = PipelineConfig(
-    backend="llm",
-    inference="remote",
-    provider_override="gemini",
-    model_override="gemini-2.5-flash",
-    use_chunking=True  # Automatically uses 88% threshold
-)
-
-# Anthropic - Conservative batching (85% threshold)
-# Best for: Quality-focused processing
-config = PipelineConfig(
-    backend="llm",
-    inference="remote",
-    provider_override="anthropic",
-    model_override="claude-3-opus",
-    use_chunking=True  # Automatically uses 85% threshold
-)
-
-# Ollama/Local - Very conservative (75% threshold)
+# Ollama/Local - Conservative batching (75% threshold)
 # Best for: Variable performance local models
 config = PipelineConfig(
     backend="llm",
     inference="local",
     provider_override="ollama",
     model_override="llama3.1:8b",
-    use_chunking=True  # Automatically uses 75% threshold
+    use_chunking=True  # Automatically uses threshold
 )
 ```
 

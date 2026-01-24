@@ -46,6 +46,8 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 - **✍🏻 Input Formats**: Process [PDF and images](docs/fundamentals/pipeline-configuration/input-formats.md#pdf-documents), [text and Markdown files](docs/fundamentals/pipeline-configuration/input-formats.md#text-files), [URLs](docs/fundamentals/pipeline-configuration/input-formats.md#urls), [DoclingDocument](docs/fundamentals/pipeline-configuration/input-formats.md#docling-document-json), and [plain text](docs/usage/api/programmatic-examples.md) strings.
 
+- **⚡ Batch Optimization**: [Provider-specific batching](docs/usage/advanced/performance-tuning.md#provider-specific-batching) with [real tokenizers](docs/usage/advanced/performance-tuning.md#real-tokenizer-integration) and [improved GPU utilization](docs/usage/advanced/performance-tuning.md#clean-up-resources) for faster inference and better memory handling.
+
 ### Coming Soon
 
 * 🪜 **Multi-Stage Extraction:** Define `extraction_stage` in templates to control multi-pass extraction.
@@ -55,8 +57,6 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 * 🧬 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 
 * 🔍 **External OCR Engine:** Pass custom OCR engine URL to convert documents before graph creation.
-
-* ⚡ **Batch Optimization:** Faster GPU inference with better memory handling.
 
 * 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
