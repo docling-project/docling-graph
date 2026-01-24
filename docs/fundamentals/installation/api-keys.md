@@ -496,7 +496,7 @@ API keys configured! Now:
 
 1. **[Schema Definition](../schema-definition/index.md)** - Create your first template
 2. **[Pipeline Configuration](../pipeline-configuration/index.md)** - Configure extraction
-3. **[Quick Start](../../usage/examples/quickstart.md)** - Run your first extraction
+3. **[Quick Start](../../introduction/quickstart.md)** - Run your first extraction
 
 ## Related Documentation
 

@@ -1,8 +1,5 @@
 # Exceptions
 
-**Navigation:** [← Protocols](protocols.md) | [Converters →](converters.md)
-
----
 
 ## Overview
 
@@ -601,7 +598,3 @@ except Exception as e:
 
 - **[Python Exceptions](https://docs.python.org/3/tutorial/errors.html)** - Python error handling
 - **[Pydantic Validation](https://docs.pydantic.dev/latest/concepts/validators/)** - Pydantic errors
-
----
-
-**Navigation:** [← Protocols](protocols.md) | [Converters →](converters.md)

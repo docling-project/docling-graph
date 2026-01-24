@@ -1,8 +1,5 @@
 # Programmatic Examples
 
-**Navigation:** [← PipelineConfig](pipeline-config.md) | [Batch Processing →](batch-processing.md)
-
----
 
 ## Overview
 
@@ -727,7 +724,3 @@ for doc in Path("documents").glob("*.pdf"):
     )
     config.run()
 ```
-
----
-
-**Navigation:** [← PipelineConfig](pipeline-config.md) | [Batch Processing →](batch-processing.md)

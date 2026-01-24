@@ -1,8 +1,5 @@
 # The Extraction Process
 
-**Navigation:** [← Pipeline Configuration](../pipeline-configuration/index.md) | [Document Conversion →](document-conversion.md)
-
----
 
 ## Overview
 
@@ -19,7 +16,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 
 ## The Four-Stage Pipeline
 
-![Four-Stage Pipeline](../../assets/flowcharts/img/four_stage_pipeline.png)
+--8<-- "docs/assets/flowcharts/four_stage_pipeline.md"
 
 ### Stage 1: Document Conversion
 
@@ -176,7 +173,7 @@ print(f"Graph has {context.graph_metadata.node_count} nodes")
 
 ### Complete Flow Diagram
 
-![Extraction Flow](../../assets/flowcharts/img/extraction_flow.png){width=600px}
+--8<-- "docs/assets/flowcharts/extraction_flow.md"
 
 ---
 
@@ -500,7 +497,3 @@ Ready to dive deeper? Start with:
 1. **[Document Conversion →](document-conversion.md)** - Learn about Docling pipelines
 2. **[Chunking Strategies →](chunking-strategies.md)** - Optimize document splitting
 3. **[Extraction Backends →](extraction-backends.md)** - Choose the right backend
-
----
-
-**Navigation:** [← Pipeline Configuration](../pipeline-configuration/index.md) | [Document Conversion →](document-conversion.md)

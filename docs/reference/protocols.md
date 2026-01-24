@@ -1,8 +1,5 @@
 # Protocols
 
-**Navigation:** [← Configuration API](config.md) | [Exceptions →](exceptions.md)
-
----
 
 ## Overview
 
@@ -584,7 +581,3 @@ if isinstance(my_backend, ExtractionBackendProtocol):
 
 - **[Python Protocols](https://peps.python.org/pep-0544/)** - PEP 544
 - **[Type Hints](https://docs.python.org/3/library/typing.html)** - Python typing
-
----
-
-**Navigation:** [← Configuration API](config.md) | [Exceptions →](exceptions.md)

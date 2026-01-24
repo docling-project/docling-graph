@@ -1,8 +1,5 @@
 # Model Configuration
 
-**Navigation:** [← Backend Selection](backend-selection.md) | [Processing Modes →](processing-modes.md)
-
----
 
 ## Overview
 
@@ -646,7 +643,3 @@ config = PipelineConfig(
 - **LLM Local**: `ibm-granite/granite-4.0-1b` (vllm)
 - **LLM Remote**: `mistral-small-latest` (mistral)
 - **VLM Local**: `numind/NuExtract-2.0-8B` (docling)
-
----
-
-**Navigation:** [← Backend Selection](backend-selection.md) | [Processing Modes →](processing-modes.md)

@@ -1,8 +1,5 @@
 # Custom Exporters
 
-**Navigation:** [← Custom Backends](custom-backends.md) | [Custom Stages →](custom-stages.md)
-
----
 
 ## Overview
 
@@ -627,7 +624,3 @@ def export_dot(self) -> None:
 - **[Export Formats](../../fundamentals/graph-management/export-formats.md)** - Built-in formats
 - **[Graph Conversion](../../fundamentals/graph-management/graph-conversion.md)** - How graphs are built
 - **[Exporters API](../../reference/exporters.md)** - API reference
-
----
-
-**Navigation:** [← Custom Backends](custom-backends.md) | [Custom Stages →](custom-stages.md)

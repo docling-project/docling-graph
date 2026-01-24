@@ -309,7 +309,7 @@ rm -rf docling-graph
 - **[Requirements](requirements.md)**: Detailed system requirements
 - **[GPU Setup](gpu-setup.md)**: Configure CUDA for local inference
 - **[API Keys](api-keys.md)**: Set up remote providers
-- **[Quick Start](../../usage/examples/quickstart.md)**: Your first extraction
+- **[Quick Start](../../introduction/quickstart.md)**: Your first extraction
 
 ---
 

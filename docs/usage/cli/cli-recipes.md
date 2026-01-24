@@ -1,8 +1,5 @@
 # CLI Recipes
 
-**Navigation:** [← inspect Command](inspect-command.md) | [Python API →](../api/index.md)
-
----
 
 ## Overview
 
@@ -636,7 +633,3 @@ for pdf in docs/*.pdf; do
         --output-dir "outputs/$(basename $pdf .pdf)"
 done
 ```
-
----
-
-**Navigation:** [← inspect Command](inspect-command.md) | [Python API →](../api/index.md)

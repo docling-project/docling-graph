@@ -1,8 +1,5 @@
 # Quickstart
 
-**Navigation:** [← Introduction](index.md) | [Invoice Extraction →](../usage/examples/invoice-extraction.md)
-
----
 
 ## Overview
 
@@ -449,7 +446,3 @@ You've learned:
 **Time taken:** ~5 minutes
 
 **Next:** Try the [Invoice Extraction](../usage/examples/invoice-extraction.md) example for a more complete workflow!
-
----
-
-**Navigation:** [← Introduction](index.md) | [Invoice Extraction →](../usage/examples/invoice-extraction.md)

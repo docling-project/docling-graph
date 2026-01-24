@@ -1,8 +1,5 @@
 # Schema Definition: Pydantic Templates
 
-**Navigation:** [← Installation](../installation/api-keys.md) | [Template Basics →](template-basics.md)
-
----
 
 ## Overview
 
@@ -244,7 +241,7 @@ Before creating templates, ensure you have:
 Ready to create your first template?
 
 1. **[Template Basics →](template-basics.md)** - Learn the required structure
-2. **[Examples](../../usage/examples/quickstart.md)** - See complete working examples
+2. **[Examples](../../introduction/quickstart.md)** - See complete working examples
 3. **[Pipeline Configuration](../pipeline-configuration/index.md)** - Configure extraction after creating templates
 
 ---
@@ -254,7 +251,3 @@ Ready to create your first template?
 - **[Pydantic Documentation](https://docs.pydantic.dev/)** - Official Pydantic docs
 - **[Example Templates](../../usage/examples/index.md)** - Production-ready templates
 - **[API Reference](../../reference/config.md)** - PipelineConfig and model details
-
----
-
-**Navigation:** [← Installation](../installation/api-keys.md) | [Template Basics →](template-basics.md)

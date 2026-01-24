@@ -1,8 +1,5 @@
 # PipelineConfig
 
-**Navigation:** [← run_pipeline()](run-pipeline.md) | [Programmatic Examples →](programmatic-examples.md)
-
----
 
 ## Overview
 
@@ -669,7 +666,3 @@ config = PipelineConfig(
 ### All Parameters
 
 See [Configuration Reference](../../fundamentals/pipeline-configuration/index.md) for complete parameter list.
-
----
-
-**Navigation:** [← run_pipeline()](run-pipeline.md) | [Programmatic Examples →](programmatic-examples.md)

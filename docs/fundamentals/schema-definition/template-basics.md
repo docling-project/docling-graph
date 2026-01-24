@@ -1,8 +1,5 @@
 # Template Basics
 
-**Navigation:** [← Schema Definition](index.md) | [Entities vs Components →](entities-vs-components.md)
-
----
 
 ## Overview
 
@@ -518,7 +515,3 @@ def edge(label: str, **kwargs: Any) -> Any:
 # Entities (graph_id_fields=[...])
 # Root document
 ```
-
----
-
-**Navigation:** [← Schema Definition](index.md) | [Entities vs Components →](entities-vs-components.md)

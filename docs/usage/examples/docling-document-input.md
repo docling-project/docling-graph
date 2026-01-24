@@ -1,8 +1,5 @@
 # DoclingDocument Input Example
 
-**Navigation:** [← Markdown Input](markdown-input.md) | [Examples Index →](index.md)
-
----
 
 ## Overview
 
@@ -604,8 +601,3 @@ for stage_name, template in stages:
 
 - **[Input Formats Guide](../../fundamentals/pipeline-configuration/input-formats.md)** - Complete input format reference
 - **[Examples Index](index.md)** - Browse all examples
-- **[Quickstart](quickstart.md)** - Get started quickly
-
----
-
-**Navigation:** [← Markdown Input](markdown-input.md) | [Examples Index →](index.md)

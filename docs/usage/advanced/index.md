@@ -1,8 +1,5 @@
 # Advanced Topics
 
-**Navigation:** [← Examples](../examples/index.md) | [Custom Backends →](custom-backends.md)
-
----
 
 ## Overview
 
@@ -138,7 +135,7 @@ Don't use when:
 
 ### Extension Points
 
-![Extension Points](../../assets/flowcharts/img/extension_points.png){width=300px}
+--8<-- "docs/assets/flowcharts/extension_points.md"
 
 **Extension Points:**
 - **Custom Backends** (blue): Replace extraction logic
@@ -400,7 +397,3 @@ Choose a topic based on your needs:
 - **[Protocols](../../reference/protocols.md)** - Protocol definitions
 - **[Exceptions](../../reference/exceptions.md)** - Exception hierarchy
 - **[Pipeline Architecture](../../introduction/architecture.md)** - System design
-
----
-
-**Navigation:** [← Examples](../examples/index.md) | [Custom Backends →](custom-backends.md)

@@ -1,8 +1,5 @@
 # Backend Selection: LLM vs VLM
 
-**Navigation:** [← Configuration Basics](configuration-basics.md) | [Model Configuration →](model-configuration.md)
-
----
 
 ## Overview
 
@@ -42,7 +39,7 @@ The LLM backend uses **language models** to extract structured data from **markd
 
 ### Architecture
 
-![LLM Backend](../../assets/flowcharts/img/llm_backend.png)
+--8<-- "docs/assets/flowcharts/llm_backend.md"
 
 ### Configuration
 
@@ -121,7 +118,7 @@ The VLM backend uses **vision-language models** to extract structured data direc
 
 ### Architecture
 
-![VLM Backend](../../assets/flowcharts/img/vlm_backend.png){width=400px}
+--8<-- "docs/assets/flowcharts/vlm_backend.md"
 
 ### Configuration
 
@@ -463,7 +460,3 @@ config = PipelineConfig(
 ```
 
 **Best for:** Complex layouts, visual documents, highest accuracy
-
----
-
-**Navigation:** [← Configuration Basics](configuration-basics.md) | [Model Configuration →](model-configuration.md)

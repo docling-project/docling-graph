@@ -1,8 +1,5 @@
 # API Reference
 
-**Navigation:** [← Advanced Topics](../usage/advanced/index.md) | [Pipeline API →](pipeline.md)
-
----
 
 ## Overview
 
@@ -389,7 +386,3 @@ See [Development Guide](../community/index.md) for:
 - API design guidelines
 - Documentation standards
 - Testing requirements
-
----
-
-**Navigation:** [← Advanced Topics](../usage/advanced/index.md) | [Pipeline API →](pipeline.md)

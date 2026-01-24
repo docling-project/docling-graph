@@ -453,7 +453,7 @@ Installation complete! Now:
 1. **[GPU Setup](gpu-setup.md)** (if using local inference) - Configure CUDA
 2. **[API Keys](api-keys.md)** (if using remote) - Set up API keys
 3. **[Schema Definition](../schema-definition/index.md)** - Create your first template
-4. **[Quick Start](../../usage/examples/quickstart.md)** - Run your first extraction
+4. **[Quick Start](../../introduction/quickstart.md)** - Run your first extraction
 
 ## Related Documentation
 

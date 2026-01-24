@@ -1,8 +1,5 @@
 # Error Handling
 
-**Navigation:** [← Performance Tuning](performance-tuning.md) | [Testing →](testing.md)
-
----
 
 ## Overview
 
@@ -727,7 +724,3 @@ except:
 - **[Exceptions API](../../reference/exceptions.md)** - Exception reference
 - **[Pipeline Architecture](../../introduction/architecture.md)** - System design
 - **[Extraction Process](../../fundamentals/extraction-process/index.md)** - Extraction guide
-
----
-
-**Navigation:** [← Performance Tuning](performance-tuning.md) | [Testing →](testing.md)

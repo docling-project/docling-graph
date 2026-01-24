@@ -1,8 +1,5 @@
 # Docling Settings
 
-**Navigation:** [← Processing Modes](processing-modes.md) | [Export Configuration →](export-configuration.md)
-
----
 
 ## Overview
 
@@ -52,7 +49,7 @@ config = PipelineConfig(
 
 ### How It Works
 
-![OCR Pipeline](../../assets/flowcharts/img/ocr_pipeline.png)
+--8<-- "docs/assets/flowcharts/ocr_pipeline.md"
 
 ### When to Use OCR
 
@@ -122,7 +119,7 @@ config = PipelineConfig(
 
 ### How It Works
 
-![Vision Pipeline](../../assets/flowcharts/img/vision_pipeline.png)
+--8<-- "docs/assets/flowcharts/vision_pipeline.md"
 
 ### When to Use Vision
 
@@ -595,7 +592,3 @@ export_docling_json=True      # Export as JSON
 export_markdown=True          # Export as markdown
 export_per_page_markdown=False # Export per-page markdown
 ```
-
----
-
-**Navigation:** [← Processing Modes](processing-modes.md) | [Export Configuration →](export-configuration.md)

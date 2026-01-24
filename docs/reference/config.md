@@ -1,8 +1,5 @@
 # Configuration API
 
-**Navigation:** [← Pipeline API](pipeline.md) | [Protocols →](protocols.md)
-
----
 
 ## Overview
 
@@ -488,7 +485,3 @@ print(config.export_format)  # "csv"
 - **[Configuration Guide](../fundamentals/pipeline-configuration/index.md)** - Configuration overview
 - **[Python API](../usage/api/pipeline-config.md)** - Usage guide
 - **[Examples](../usage/examples/index.md)** - Example configurations
-
----
-
-**Navigation:** [← Pipeline API](pipeline.md) | [Protocols →](protocols.md)

@@ -1,8 +1,5 @@
 # URL Input Example
 
-**Navigation:** [← Quickstart](quickstart.md) | [Markdown Input →](markdown-input.md)
-
----
 
 ## Overview
 
@@ -443,7 +440,3 @@ else:
 - **[Markdown Input →](markdown-input.md)** - Process markdown documents
 - **[DoclingDocument Input →](docling-document-input.md)** - Use pre-processed documents
 - **[Input Formats Guide](../../fundamentals/pipeline-configuration/input-formats.md)** - Complete input format reference
-
----
-
-**Navigation:** [← Quickstart](quickstart.md) | [Markdown Input →](markdown-input.md)

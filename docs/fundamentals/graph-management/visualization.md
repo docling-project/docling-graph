@@ -1,8 +1,5 @@
 # Visualization
 
-**Navigation:** [← Export Formats](export-formats.md) | [Neo4j Integration →](neo4j-integration.md)
-
----
 
 ## Overview
 
@@ -599,7 +596,3 @@ import json
 with open("outputs/graph_stats.json") as f:
     stats = json.load(f)
 ```
-
----
-
-**Navigation:** [← Export Formats](export-formats.md) | [Neo4j Integration →](neo4j-integration.md)

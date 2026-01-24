@@ -54,7 +54,7 @@ Knowledge graphs are essential for complex domains where understanding exact ent
 
 Docling Graph follows a clear pipeline flow:
 
-![Pipeline Stages](../assets/flowcharts/img/pipeline_stages.png)
+--8<-- "docs/assets/flowcharts/pipeline_stages.md"
 
 ### Pipeline Stages
 

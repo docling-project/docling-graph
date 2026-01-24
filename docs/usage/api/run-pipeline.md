@@ -1,8 +1,5 @@
 # run_pipeline()
 
-**Navigation:** [← Python API Overview](index.md) | [PipelineConfig →](pipeline-config.md)
-
----
 
 ## Overview
 
@@ -651,7 +648,3 @@ try:
 except PipelineError as e:
     print(f"Error: {e.message}")
 ```
-
----
-
-**Navigation:** [← Python API Overview](index.md) | [PipelineConfig →](pipeline-config.md)

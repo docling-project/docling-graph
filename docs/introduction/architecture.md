@@ -11,8 +11,8 @@ This page provides a high-level overview of Docling Graph's architecture and how
 ## System Architecture
 
 Docling Graph follows a modular, pipeline-based architecture with clear separation of concerns:
-
-![Docling Graph architecture](../assets/flowcharts/img/architecture.png){width=600px}
+<br><br>
+--8<-- "docs/assets/flowcharts/architecture.md"
 
 ## Core Components
 
@@ -75,7 +75,8 @@ Document → Markdown → Chunking → LLM Extraction → Consolidation → Vali
 **Purpose**: Unified interface for multiple LLM providers
 
 **Architecture**:
-![LLM Clients](../assets/flowcharts/img/llm_clients.png)
+
+--8<-- "docs/assets/flowcharts/llm_clients.md"
 
 **Key Features**:
 - Template method pattern for consistency
@@ -120,7 +121,8 @@ Result: [Merged Model]
 **Purpose**: Split large documents while preserving semantic coherence
 
 **Hybrid Chunking Strategy**:
-![Document Chunker](../assets/flowcharts/img/doc_chunker.png)
+
+--8<-- "docs/assets/flowcharts/doc_chunker.md"
 
 **Features**:
 - Respects document structure (sections, tables)
@@ -160,7 +162,8 @@ Result: [Merged Model]
 **Purpose**: Transform Pydantic models to NetworkX graphs
 
 **Process**:
-![Graph Converter](../assets/flowcharts/img/graph_converter.png)
+
+--8<-- "docs/assets/flowcharts/graph_converter.md"
 
 **Key Features**:
 - Stable, deterministic node IDs
@@ -197,7 +200,7 @@ Address(street="123 Main", city="Boston")
 
 **Purpose**: Export graphs in multiple formats
 
-![Exporters](../assets/flowcharts/img/exporters.png)
+--8<-- "docs/assets/flowcharts/exporters.md"
 
 **Exporters**:
 - **CSV**: Neo4j admin import
@@ -219,7 +222,7 @@ Address(street="123 Main", city="Boston")
 
 ### Complete Pipeline Flow
 
-![Pipeline Flow](../assets/flowcharts/img/pipeline_flow.png){width=600px}
+--8<-- "docs/assets/flowcharts/pipeline_flow.md"
 
 
 ### Stage-by-Stage Breakdown

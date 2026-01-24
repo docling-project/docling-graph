@@ -1,8 +1,5 @@
 # Python API
 
-**Navigation:** [← CLI Recipes](../cli/cli-recipes.md) | [Examples →](../examples/index.md)
-
----
 
 ## Overview
 
@@ -535,7 +532,3 @@ try:
 except PipelineError as e:
     print(f"Error: {e.message}")
 ```
-
----
-
-**Navigation:** [← CLI Recipes](../cli/cli-recipes.md) | [Examples →](../examples/index.md)

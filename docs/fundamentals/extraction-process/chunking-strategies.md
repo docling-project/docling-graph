@@ -1,8 +1,5 @@
 # Chunking Strategies
 
-**Navigation:** [← Document Conversion](document-conversion.md) | [Extraction Backends →](extraction-backends.md)
-
----
 
 ## Overview
 
@@ -669,7 +666,3 @@ chunker = DocumentChunker(
 ```python
 chunks = chunker.chunk_text_fallback(raw_text)
 ```
-
----
-
-**Navigation:** [← Document Conversion](document-conversion.md) | [Extraction Backends →](extraction-backends.md)

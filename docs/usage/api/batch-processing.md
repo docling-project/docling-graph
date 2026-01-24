@@ -1,8 +1,5 @@
 # Batch Processing
 
-**Navigation:** [← Programmatic Examples](programmatic-examples.md) | [Examples →](../examples/index.md)
-
----
 
 ## Overview
 
@@ -806,7 +803,3 @@ with ThreadPoolExecutor(max_workers=4) as executor:
     for future in as_completed(futures):
         result = future.result()
 ```
-
----
-
-**Navigation:** [← Programmatic Examples](programmatic-examples.md) | [Examples →](../examples/index.md)

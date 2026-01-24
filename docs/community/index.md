@@ -1,8 +1,5 @@
 # Development Guide
 
-**Navigation:** [← API Reference](../reference/index.md) | [GitHub Workflow →](github-workflow.md)
-
----
 
 ## Overview
 
@@ -374,7 +371,3 @@ docling-graph/
 1. **[GitHub Workflow →](github-workflow.md)** - Understand the workflow
 2. **[Release Process →](release-process.md)** - Learn about releases
 3. **[GitHub Workflow →](github-workflow.md)** - Development workflow
-
----
-
-**Navigation:** [← API Reference](../reference/index.md) | [GitHub Workflow →](github-workflow.md)

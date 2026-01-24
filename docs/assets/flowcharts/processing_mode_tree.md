@@ -1,0 +1,39 @@
+```mermaid
+%%{init: {'theme': 'redux-dark', 'look': 'default', 'layout': 'elk'}}%%
+flowchart TD
+    %% 1. Define Classes
+    classDef input fill:#E3F2FD,stroke:#90CAF9,color:#0D47A1
+    classDef config fill:#FFF8E1,stroke:#FFECB3,color:#5D4037
+    classDef output fill:#E8F5E9,stroke:#A5D6A7,color:#1B5E20
+    classDef decision fill:#FFE0B2,stroke:#FFB74D,color:#E65100
+    classDef data fill:#EDE7F6,stroke:#B39DDB,color:#4527A0
+    classDef operator fill:#F3E5F5,stroke:#CE93D8,color:#6A1B9A
+    classDef process fill:#ECEFF1,stroke:#B0BEC5,color:#263238
+
+    %% 2. Define Nodes
+    A("Start")
+    
+    B{"Are pages<br/>independent?"}
+    D{"Single entity<br/>across pages?"}
+    F{"Need page-level<br/>tracking?"}
+    
+    C@{ shape: tag-proc, label: "One-to-One" }
+    E@{ shape: tag-proc, label: "Many-to-One" }
+
+    %% 3. Define Connections
+    A --> B
+    
+    B -- Yes --> C
+    B -- No --> D
+    
+    D -- Yes --> E
+    D -- No --> F
+    
+    F -- Yes --> C
+    F -- No --> E
+
+    %% 4. Apply Classes
+    class A input
+    class B,D,F decision
+    class C,E output
+```

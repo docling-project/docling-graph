@@ -1,8 +1,5 @@
 # Performance Tuning
 
-**Navigation:** [← Custom Stages](custom-stages.md) | [Error Handling →](error-handling.md)
-
----
 
 ## Overview
 
@@ -62,9 +59,9 @@ config = PipelineConfig(
 
 | Model Size | Speed | Accuracy | Memory | Use Case |
 |------------|-------|----------|--------|----------|
-| 1B params | +++ | ++ | 2-4 GB | Simple forms, fast processing |
-| 7-8B params | ++ | +++ | 8-16 GB | General documents |
-| 13B+ params | + | ++++ | 16-32 GB | Complex documents |
+| 1B params | ⚡ Very Fast | 🟡 Moderate Accuracy | 2-4 GB | Simple forms, fast processing |
+| 7-8B params | ⚡ Fast | 🟢 Acceptable Accuracy | 8-16 GB | General documents |
+| 13B+ params | 🐢 Slow | 💎 High Accuracy | 16-32 GB | Complex documents |
 
 **Recommendation:**
 
@@ -370,8 +367,8 @@ config = PipelineConfig(
 
 | Strategy | Speed | Accuracy | Use Case |
 |----------|-------|----------|----------|
-| Programmatic | +++ | ++ | Simple merging, lists |
-| LLM | + | ++++ | Complex conflicts, narratives |
+| Programmatic | ⚡ Very Fast | 🟡 Moderate Accuracy | Simple merging, lists |
+| LLM | 🐢 Slow | 💎 High Accuracy | Complex conflicts, narratives |
 
 
 ---
@@ -577,7 +574,3 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 - **[Pipeline Configuration](../../fundamentals/pipeline-configuration/index.md)** - Configuration options
 - **[Extraction Process](../../fundamentals/extraction-process/index.md)** - How extraction works
 - **[GPU Setup](../../fundamentals/installation/gpu-setup.md)** - GPU configuration
-
----
-
-**Navigation:** [← Custom Stages](custom-stages.md) | [Error Handling →](error-handling.md)

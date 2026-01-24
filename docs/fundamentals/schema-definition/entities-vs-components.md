@@ -1,8 +1,5 @@
 # Entities vs Components
 
-**Navigation:** [← Template Basics](template-basics.md) | [Field Definitions →](field-definitions.md)
-
----
 
 ## Overview
 
@@ -371,7 +368,7 @@ MonetaryAmount(value=100.00, currency="USD")
 
 Use this decision tree to classify your models:
 
-![Model Decision Tree](../../assets/flowcharts/img/model_decision_tree.png){width=500px}
+--8<-- "docs/assets/flowcharts/model_decision_tree.md"
 
 ### Questions to Ask
 
@@ -676,7 +673,3 @@ class MyComponent(BaseModel):
     field2: str = Field(...)
     # All fields used for deduplication
 ```
-
----
-
-**Navigation:** [← Template Basics](template-basics.md) | [Field Definitions →](field-definitions.md)

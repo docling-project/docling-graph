@@ -1,8 +1,5 @@
 # Exporters API
 
-**Navigation:** [← Extractors](extractors.md) | [LLM Clients →](llm-clients.md)
-
----
 
 ## Overview
 
@@ -250,7 +247,3 @@ See [Custom Exporters Guide](../usage/advanced/custom-exporters.md) for details.
 - **[Export Formats](../fundamentals/graph-management/export-formats.md)** - Usage guide
 - **[Custom Exporters](../usage/advanced/custom-exporters.md)** - Create exporters
 - **[Converters](converters.md)** - Graph conversion
-
----
-
-**Navigation:** [← Extractors](extractors.md) | [LLM Clients →](llm-clients.md)

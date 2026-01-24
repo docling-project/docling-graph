@@ -1,8 +1,5 @@
 # Validation and Normalization
 
-**Navigation:** [← Relationships](relationships.md) | [Advanced Patterns →](advanced-patterns.md)
-
----
 
 ## Overview
 
@@ -748,7 +745,3 @@ def validator_name(self) -> Self:
         raise ValueError("Error message")
     return self
 ```
-
----
-
-**Navigation:** [← Relationships](relationships.md) | [Advanced Patterns →](advanced-patterns.md)

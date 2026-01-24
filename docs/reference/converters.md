@@ -1,8 +1,5 @@
 # Converters API
 
-**Navigation:** [← Exceptions](exceptions.md) | [Extractors →](extractors.md)
-
----
 
 ## Overview
 
@@ -124,7 +121,3 @@ class GraphConverterConfig(BaseModel):
 
 - **[Graph Management](../fundamentals/graph-management/graph-conversion.md)** - Usage guide
 - **[Exporters](exporters.md)** - Export graphs
-
----
-
-**Navigation:** [← Exceptions](exceptions.md) | [Extractors →](extractors.md)

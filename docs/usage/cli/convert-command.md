@@ -1,8 +1,5 @@
 # convert Command
 
-**Navigation:** [← init Command](init-command.md) | [inspect Command →](inspect-command.md)
-
----
 
 ## Overview
 
@@ -734,7 +731,3 @@ uv run docling-graph convert SOURCE \
     --reverse-edges \
     --output-dir PATH
 ```
-
----
-
-**Navigation:** [← init Command](init-command.md) | [inspect Command →](inspect-command.md)

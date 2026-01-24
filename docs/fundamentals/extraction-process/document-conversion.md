@@ -1,8 +1,5 @@
 # Document Conversion
 
-**Navigation:** [← Extraction Process](index.md) | [Chunking Strategies →](chunking-strategies.md)
-
----
 
 ## Overview
 
@@ -632,7 +629,3 @@ pages = processor.extract_page_markdowns(document)
 ```python
 processor.cleanup()
 ```
-
----
-
-**Navigation:** [← Extraction Process](index.md) | [Chunking Strategies →](chunking-strategies.md)

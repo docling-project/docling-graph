@@ -1,8 +1,5 @@
 # Model Merging
 
-**Navigation:** [← Extraction Backends](extraction-backends.md) | [Batch Processing →](batch-processing.md)
-
----
 
 ## Overview
 
@@ -62,7 +59,7 @@ final_model = merge(model_1, model_2, model_3)
 
 ### How It Works
 
-![Programmatic Merging](../../assets/flowcharts/img/programmatic_merge.png)
+--8<-- "docs/assets/flowcharts/programmatic_merge.md"
 
 ### Basic Usage
 
@@ -219,7 +216,7 @@ entity_3 = {"name": "Acme Corp", "city": "London"}
 
 ### How It Works
 
-![LLM Consolidation](../../assets/flowcharts/img/llm_backend.png)
+--8<-- "docs/assets/flowcharts/llm_backend.md"
 
 ### Configuration
 
@@ -646,7 +643,3 @@ final = backend.consolidate_from_pydantic_models(
     template=template
 )
 ```
-
----
-
-**Navigation:** [← Extraction Backends](extraction-backends.md) | [Batch Processing →](batch-processing.md)

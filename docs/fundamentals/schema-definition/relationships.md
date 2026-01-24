@@ -1,8 +1,5 @@
 # Relationships: Edge Definitions
 
-**Navigation:** [← Field Definitions](field-definitions.md) | [Validation →](validation.md)
-
----
 
 ## Overview
 
@@ -711,7 +708,3 @@ field: List[TargetType] = edge(
 - Location: `LOCATED_AT`, `LIVES_AT`, `BASED_AT`
 - Composition: `CONTAINS_ITEM`, `HAS_COMPONENT`, `INCLUDES_PART`
 - Membership: `BELONGS_TO`, `PART_OF`, `MEMBER_OF`
-
----
-
-**Navigation:** [← Field Definitions](field-definitions.md) | [Validation →](validation.md)

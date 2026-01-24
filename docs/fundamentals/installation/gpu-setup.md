@@ -411,7 +411,7 @@ GPU setup complete! Now:
 
 1. **[API Keys](api-keys.md)** (optional) - Set up remote providers
 2. **[Schema Definition](../schema-definition/index.md)** - Create your first template
-3. **[Quick Start](../../usage/examples/quickstart.md)** - Run your first extraction
+3. **[Quick Start](../../introduction/quickstart.md)** - Run your first extraction
 
 ## Related Documentation
 
@@ -419,7 +419,3 @@ GPU setup complete! Now:
 - **[Basic Setup](basic-setup.md)**: Installation without GPU
 - **[API Keys](api-keys.md)**: Remote provider setup (no GPU needed)
 - **[Troubleshooting](index.md#common-issues)**: Common issues
-
----
-
-**GPU working?** Continue to [schema definition](../schema-definition/index.md) or try the [quickstart](../../usage/examples/quickstart.md)!

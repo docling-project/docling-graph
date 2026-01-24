@@ -1,8 +1,5 @@
 # Custom Pipeline Stages
 
-**Navigation:** [← Custom Exporters](custom-exporters.md) | [Performance Tuning →](performance-tuning.md)
-
----
 
 ## Overview
 
@@ -652,7 +649,3 @@ class MyStage:
 - **[Pipeline Architecture](../../introduction/architecture.md)** - System design
 - **[Python API](../api/index.md)** - Programmatic usage
 - **[Exceptions](../../reference/exceptions.md)** - Exception hierarchy
-
----
-
-**Navigation:** [← Custom Exporters](custom-exporters.md) | [Performance Tuning →](performance-tuning.md)

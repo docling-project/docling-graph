@@ -1,8 +1,5 @@
 # Examples
 
-**Navigation:** [← Batch Processing](../api/batch-processing.md) | [Advanced Topics →](../advanced/index.md)
-
----
 
 ## Overview
 
@@ -21,21 +18,21 @@ This section provides **complete, end-to-end examples** organized by both **inpu
 
 ### By Input Format
 
-| Example | Input Type | Time | Backend |
-|---------|-----------|------|---------|
-| **[Quickstart](quickstart.md)** | PDF/Image | 5 min | VLM/LLM |
-| **[URL Input](url-input.md)** | URL (PDF) | 10 min | LLM |
-| **[Markdown Input](markdown-input.md)** | Markdown | 10 min | LLM |
-| **[DoclingDocument Input](docling-document-input.md)** | JSON | 10 min | LLM |
+| Example                                                | Input Type | Backend |
+| ------------------------------------------------------ | ---------- | ------- |
+| **[Quickstart](../../introduction/quickstart.md)**                        | PDF/Image  | VLM/LLM |
+| **[URL](url-input.md)**                          | URL (PDF)  | LLM     |
+| **[Markdown](markdown-input.md)**                | Markdown   | LLM     |
+| **[DoclingDocument](docling-document-input.md)** | JSON       | LLM     |
 
 ### By Domain/Use Case
 
-| Example | Domain | Input Type | Time |
-|---------|--------|-----------|------|
-| **[Invoice Extraction](invoice-extraction.md)** | Business | PDF/Image | 15 min |
-| **[ID Card](id-card.md)** | Identity | Image | 15 min |
-| **[Insurance Policy](insurance-policy.md)** | Legal | PDF | 20 min |
-| **[Research Paper](research-paper.md)** | Academic | PDF | 20 min |
+| Example                                         | Domain   | Input Type |
+| ----------------------------------------------- | -------- | ---------- |
+| **[Invoice Extraction](invoice-extraction.md)** | Business | PDF/Image  |
+| **[ID Card](id-card.md)**                       | Identity | Image      |
+| **[Insurance Policy](insurance-policy.md)**     | Legal    | PDF        |
+| **[Research Paper](research-paper.md)**         | Academic | PDF        |
 
 ---
 
@@ -43,7 +40,7 @@ This section provides **complete, end-to-end examples** organized by both **inpu
 
 Learn how to work with different input types and understand the pipeline's flexibility.
 
-### 1. [Quickstart](quickstart.md)
+### 1. [Quickstart](../../introduction/quickstart.md)
 **5-Minute Introduction**
 
 Get started quickly with a simple document extraction example using traditional PDF or image inputs.
@@ -205,11 +202,11 @@ Extract structured data from academic papers including authors, methodology, and
 
 | Format | OCR Required | Processing Speed | Backend Support | Best For |
 |--------|--------------|------------------|-----------------|----------|
-| **PDF** | ✅ Yes | 🐢 Slower | LLM + VLM | Scanned documents, forms |
-| **Image** | ✅ Yes | 🐢 Slower | LLM + VLM | Photos, scans |
+| **PDF** | ✅ Yes | 🐢 Slow | LLM + VLM | Scanned documents, forms |
+| **Image** | ✅ Yes | 🐢 Slow | LLM + VLM | Photos, scans |
 | **URL** | Depends | ⚡ Variable | LLM + VLM | Remote documents |
 | **Markdown** | ❌ No | ⚡ Fast | LLM only | Documentation, notes |
-| **DoclingDocument** | ❌ No | ⚡ Very Fast | LLM + VLM | Reprocessing, experimentation |
+| **DoclingDocument** | ❌ No | ⚡ Very Fast | LLM only | Reprocessing, experimentation |
 
 ---
 
@@ -218,7 +215,7 @@ Extract structured data from academic papers including authors, methodology, and
 ### Start Here
 
 **New to Docling Graph?**
-→ Start with [Quickstart](quickstart.md)
+→ Start with [Quickstart](../../introduction/quickstart.md)
 
 ### By Input Format
 
@@ -385,10 +382,5 @@ See individual example pages for complete, domain-specific templates.
 
 ## Next Steps
 
-1. **Try the [Quickstart](quickstart.md)** - Get hands-on experience
-2. **Explore [Input Formats](../../fundamentals/pipeline-configuration/input-formats.md)** - Learn about all supported formats
-3. **Read [Advanced Topics](../advanced/index.md)** - Optimize your workflows
-
----
-
-**Navigation:** [← Batch Processing](../api/batch-processing.md) | [Advanced Topics →](../advanced/index.md)
+1. **Explore [Input Formats](../../fundamentals/pipeline-configuration/input-formats.md)** - Learn about all supported formats
+2. **Read [Advanced Topics](../advanced/index.md)** - Optimize your workflows

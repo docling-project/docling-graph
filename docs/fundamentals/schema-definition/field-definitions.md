@@ -1,8 +1,5 @@
 # Field Definitions
 
-**Navigation:** [← Entities vs Components](entities-vs-components.md) | [Relationships →](relationships.md)
-
----
 
 ## Overview
 
@@ -719,7 +716,3 @@ field: List[str] = Field(default_factory=list, description="...", examples=[[...
 # Field with default
 field: str = Field("default", description="...", examples=[...])
 ```
-
----
-
-**Navigation:** [← Entities vs Components](entities-vs-components.md) | [Relationships →](relationships.md)

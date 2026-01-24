@@ -1,8 +1,5 @@
 # Neo4j Integration
 
-**Navigation:** [← Visualization](visualization.md) | [Graph Analysis →](graph-analysis.md)
-
----
 
 ## Overview
 
@@ -630,7 +627,3 @@ MATCH (n) RETURN n LIMIT 10
 ```cypher
 MATCH (n) DETACH DELETE n
 ```
-
----
-
-**Navigation:** [← Visualization](visualization.md) | [Graph Analysis →](graph-analysis.md)

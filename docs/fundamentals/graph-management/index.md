@@ -1,8 +1,5 @@
 # Knowledge Graph Management
 
-**Navigation:** [← Extraction Process](../extraction-process/index.md) | [Graph Conversion →](graph-conversion.md)
-
----
 
 ## Overview
 
@@ -19,7 +16,7 @@
 
 ## The Graph Pipeline
 
-![Graph Pipeline](../../assets/flowcharts/img/graph_pipeline.png)
+--8<-- "docs/assets/flowcharts/graph_pipeline.md"
 
 ---
 
@@ -494,7 +491,3 @@ CSVExporter().export(graph, output_dir)
 # Cypher
 CypherExporter().export(graph, output_file)
 ```
-
----
-
-**Navigation:** [← Extraction Process](../extraction-process/index.md) | [Graph Conversion →](graph-conversion.md)

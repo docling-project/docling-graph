@@ -1,8 +1,5 @@
 # Release Process
 
-**Navigation:** [← GitHub Workflow](github-workflow.md) | [Development Guide](index.md)
-
----
 
 ## Overview
 
@@ -268,7 +265,7 @@ Update all documentation to reflect breaking changes:
 
 ```bash
 # Update examples
-vim docs/examples/quickstart.md
+vim docs/introduction/quickstart.md
 
 # Update API documentation
 vim docs/api/run-pipeline.md
@@ -879,7 +876,3 @@ uv publish
 1. **[Development Guide](index.md)** - Back to overview
 2. **[GitHub Workflow](github-workflow.md)** - Development workflow
 3. **[Testing Guide](../usage/advanced/testing.md)** - Testing practices
-
----
-
-**Navigation:** [← GitHub Workflow](github-workflow.md) | [Development Guide](index.md)

@@ -1,8 +1,5 @@
 # Complete Configuration Examples
 
-**Navigation:** [← Export Configuration](export-configuration.md) | [Extraction Process →](../extraction-process/index.md)
-
----
 
 ## Overview
 
@@ -914,7 +911,3 @@ PipelineConfig(
     docling_config="vision"
 )
 ```
-
----
-
-**Navigation:** [← Export Configuration](export-configuration.md) | [Extraction Process →](../extraction-process/index.md)

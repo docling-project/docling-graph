@@ -1,8 +1,5 @@
 # Advanced Patterns
 
-**Navigation:** [← Validation](validation.md) | [Best Practices →](best-practices.md)
-
----
 
 ## Overview
 
@@ -739,7 +736,3 @@ Now that you understand advanced patterns:
 - [ ] Reusable component library
 - [ ] String representations for all entities
 - [ ] Template composition for large projects
-
----
-
-**Navigation:** [← Validation](validation.md) | [Best Practices →](best-practices.md)

@@ -1,8 +1,5 @@
 # Extraction Backends
 
-**Navigation:** [← Chunking Strategies](chunking-strategies.md) | [Model Merging →](model-merging.md)
-
----
 
 ## Overview
 
@@ -41,7 +38,7 @@ The **LLM (Language Model) backend** processes documents as text, using markdown
 
 ### Architecture
 
-![LLM Backend](../../assets/flowcharts/img/llm_backend.png)
+--8<-- "docs/assets/flowcharts/llm_backend.md"
 
 ### Configuration
 
@@ -228,7 +225,7 @@ The **VLM (Vision-Language Model) backend** processes documents visually, unders
 
 ### Architecture
 
-![VLM Backend](../../assets/flowcharts/img/vlm_backend.png){width=400px}
+--8<-- "docs/assets/flowcharts/vlm_backend.md"
 
 ### Configuration
 
@@ -721,7 +718,3 @@ config = PipelineConfig(
     model_override="numind/NuExtract-2.0-8B"
 )
 ```
-
----
-
-**Navigation:** [← Chunking Strategies](chunking-strategies.md) | [Model Merging →](model-merging.md)

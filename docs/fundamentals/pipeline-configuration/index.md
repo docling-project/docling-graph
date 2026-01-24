@@ -1,8 +1,5 @@
 # Pipeline Configuration
 
-**Navigation:** [← Schema Definition](../schema-definition/best-practices.md) | [Configuration Basics →](configuration-basics.md)
-
----
 
 ## Overview
 
@@ -162,7 +159,7 @@ config = PipelineConfig(
 
 ### Configuration Flow
 
-![Configuration Flow](../../assets/flowcharts/img/config_flow.png){width=600px}
+--8<-- "docs/assets/flowcharts/config_flow.md"
 
 ### Configuration Hierarchy
 
@@ -434,7 +431,3 @@ uv run docling-graph convert document.pdf \
 - **inference**: `"local"` (GPU) or `"remote"` (API)
 - **processing_mode**: `"one-to-one"` or `"many-to-one"`
 - **export_format**: `"csv"` or `"cypher"`
-
----
-
-**Navigation:** [← Schema Definition](../schema-definition/best-practices.md) | [Configuration Basics →](configuration-basics.md)

@@ -1,8 +1,5 @@
 # Batch Processing
 
-**Navigation:** [← Model Merging](model-merging.md) | [Graph Management →](../graph-management/index.md)
-
----
 
 ## Overview
 
@@ -56,7 +53,7 @@ for batch in batches:  # 3 iterations
 
 ### Architecture
 
-![ChunkBatcher](../../assets/flowcharts/img/chunk_batcher.png)
+--8<-- "docs/assets/flowcharts/chunk_batcher.md"
 
 ---
 
@@ -653,7 +650,3 @@ for batch in batches:
         is_partial=True
     )
 ```
-
----
-
-**Navigation:** [← Model Merging](model-merging.md) | [Graph Management →](../graph-management/index.md)

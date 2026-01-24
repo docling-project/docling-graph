@@ -1,8 +1,5 @@
 # Invoice Extraction
 
-**Navigation:** [← Quickstart](quickstart.md) | [Research Paper →](research-paper.md)
-
----
 
 ## Overview
 
@@ -606,7 +603,3 @@ uv run docling-graph inspect outputs/invoice/
 cat outputs/invoice/nodes.csv
 cat outputs/invoice/edges.csv
 ```
-
----
-
-**Navigation:** [← Quickstart](quickstart.md) | [Research Paper →](research-paper.md)

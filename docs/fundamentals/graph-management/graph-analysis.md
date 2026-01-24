@@ -1,8 +1,5 @@
 # Graph Analysis
 
-**Navigation:** [← Neo4j Integration](neo4j-integration.md) | [CLI Guide →](../../usage/cli/index.md)
-
----
 
 ## Overview
 
@@ -554,7 +551,3 @@ print(f"Isolated nodes: {len(isolated)}")
 from docling_graph.core.utils import validate_graph_structure
 validate_graph_structure(graph, raise_on_error=True)
 ```
-
----
-
-**Navigation:** [← Neo4j Integration](neo4j-integration.md) | [CLI Guide →](../../usage/cli/index.md)

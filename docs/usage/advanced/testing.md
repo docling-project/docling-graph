@@ -1,8 +1,5 @@
 # Testing
 
-**Navigation:** [← Error Handling](error-handling.md) | [Advanced Topics Index](index.md)
-
----
 
 ## Overview
 
@@ -728,7 +725,3 @@ def test_api_call():
 - **[Schema Definition](../../fundamentals/schema-definition/index.md)** - Template creation
 - **[Python API](../api/index.md)** - API usage
 - **[Examples](../examples/index.md)** - Example templates
-
----
-
-**Navigation:** [← Error Handling](error-handling.md) | [Advanced Topics Index](index.md)

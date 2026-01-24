@@ -1,8 +1,5 @@
 # Processing Modes
 
-**Navigation:** [← Model Configuration](model-configuration.md) | [Docling Settings →](docling-settings.md)
-
----
 
 ## Overview
 
@@ -53,7 +50,7 @@ config = PipelineConfig(
 
 ### How It Works
 
-![One-to-One Mode](../../assets/flowcharts/img/one_to_one_mode.png){width=600px}
+--8<-- "docs/assets/flowcharts/one_to_one_mode.md"
 
 ### When to Use One-to-One
 
@@ -163,7 +160,7 @@ config = PipelineConfig(
 
 ### How It Works
 
-![Many-to-One Mode](../../assets/flowcharts/img/many_to_one_mode.png)
+--8<-- "docs/assets/flowcharts/many_to_one_mode.md"
 
 ### When to Use Many-to-One
 
@@ -317,7 +314,7 @@ Many-to-One:
 
 ### Decision Tree
 
-![Processing Decision Tree](../../assets/flowcharts/img/processing_mode_tree.png){width=400px}
+--8<-- "docs/assets/flowcharts/processing_mode_tree.md"
 
 ### By Document Type
 
@@ -553,7 +550,3 @@ config = PipelineConfig(
 ```
 
 **Use for:** Single entity, multi-page documents, document-wide context
-
----
-
-**Navigation:** [← Model Configuration](model-configuration.md) | [Docling Settings →](docling-settings.md)

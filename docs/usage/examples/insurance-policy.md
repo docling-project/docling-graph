@@ -1,8 +1,5 @@
 # Insurance Policy Extraction
 
-**Navigation:** [← ID Card](id-card.md) | [Examples Index](index.md)
-
----
 
 ## Overview
 
@@ -667,7 +664,3 @@ cat outputs/insurance/edges.csv
 ```
 docs/examples/templates/insurance.py
 ```
-
----
-
-**Navigation:** [← ID Card](id-card.md) | [Examples Index](index.md)

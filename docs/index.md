@@ -37,7 +37,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
     Set up your environment with uv package manager
 
-- **[Quick Start →](usage/examples/quickstart.md)**
+- **[Quick Start →](introduction/quickstart.md)**
 
     Run your first extraction in 5 minutes
 
@@ -272,7 +272,7 @@ class Organization(BaseModel):
 ## Next Steps
 
 1. **[Install Docling Graph →](fundamentals/installation/index.md)**
-2. **[Follow the Quick Start →](usage/examples/quickstart.md)**
+2. **[Follow the Quick Start →](introduction/quickstart.md)**
 3. **[Create Your First Template →](fundamentals/schema-definition/index.md)**
 4. **[Explore Examples →](usage/examples/index.md)**
 

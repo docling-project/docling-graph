@@ -1,8 +1,5 @@
 # Extractors API
 
-**Navigation:** [← Converters](converters.md) | [Exporters →](exporters.md)
-
----
 
 ## Overview
 
@@ -255,7 +252,3 @@ extractor = create_extractor(
 - **[Extraction Process](../fundamentals/extraction-process/index.md)** - Usage guide
 - **[Protocols](protocols.md)** - Backend protocols
 - **[Custom Backends](../usage/advanced/custom-backends.md)** - Create backends
-
----
-
-**Navigation:** [← Converters](converters.md) | [Exporters →](exporters.md)

@@ -1,8 +1,5 @@
 # Export Formats
 
-**Navigation:** [← Graph Conversion](graph-conversion.md) | [Visualization →](visualization.md)
-
----
 
 ## Overview
 
@@ -669,7 +666,3 @@ edges = pd.read_csv("outputs/edges.csv")
 ```bash
 cat outputs/graph.cypher | cypher-shell -u neo4j -p password
 ```
-
----
-
-**Navigation:** [← Graph Conversion](graph-conversion.md) | [Visualization →](visualization.md)

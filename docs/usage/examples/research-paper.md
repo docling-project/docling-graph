@@ -1,8 +1,5 @@
 # Research Paper Extraction
 
-**Navigation:** [← Invoice Extraction](invoice-extraction.md) | [ID Card →](id-card.md)
-
----
 
 ## Overview
 
@@ -418,7 +415,3 @@ cat outputs/research/graph_stats.json
 ```
 docs/examples/templates/rheology_research.py
 ```
-
----
-
-**Navigation:** [← Invoice Extraction](invoice-extraction.md) | [ID Card →](id-card.md)

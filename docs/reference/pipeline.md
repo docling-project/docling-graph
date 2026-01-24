@@ -1,8 +1,5 @@
 # Pipeline API
 
-**Navigation:** [← API Reference](index.md) | [Configuration API →](config.md)
-
----
 
 ## Overview
 
@@ -416,7 +413,3 @@ with open(graph_path) as f:
 - **[Python API Guide](../usage/api/run-pipeline.md)** - Usage guide
 - **[CLI Reference](../usage/cli/convert-command.md)** - CLI equivalent
 - **[Examples](../usage/examples/index.md)** - Example usage
-
----
-
-**Navigation:** [← API Reference](index.md) | [Configuration API →](config.md)

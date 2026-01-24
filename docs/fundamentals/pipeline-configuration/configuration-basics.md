@@ -1,8 +1,5 @@
 # Configuration Basics
 
-**Navigation:** [← Pipeline Configuration](index.md) | [Backend Selection →](backend-selection.md)
-
----
 
 ## Overview
 
@@ -737,7 +734,3 @@ config = PipelineConfig(
     processing_mode="one-to-one"
 )
 ```
-
----
-
-**Navigation:** [← Pipeline Configuration](index.md) | [Backend Selection →](backend-selection.md)

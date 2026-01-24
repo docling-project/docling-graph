@@ -1,8 +1,5 @@
 # LLM Clients API
 
-**Navigation:** [← Exporters](exporters.md) | [API Reference Index](index.md)
-
----
 
 ## Overview
 
@@ -436,7 +433,3 @@ except ClientError as e:
 - **[API Keys Setup](../fundamentals/installation/api-keys.md)** - Configure API keys including WatsonX
 - **[Model Configuration](../fundamentals/pipeline-configuration/model-configuration.md)** - Model setup
 - **[Remote Inference](../fundamentals/pipeline-configuration/backend-selection.md)** - Backend selection
-
----
-
-**Navigation:** [← Exporters](exporters.md) | [API Reference Index](index.md)

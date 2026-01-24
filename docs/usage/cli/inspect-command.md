@@ -1,8 +1,5 @@
 # inspect Command
 
-**Navigation:** [← convert Command](convert-command.md) | [CLI Recipes →](cli-recipes.md)
-
----
 
 ## Overview
 
@@ -578,7 +575,3 @@ uv run docling-graph inspect PATH \
     --output PATH \
     --open / --no-open
 ```
-
----
-
-**Navigation:** [← convert Command](convert-command.md) | [CLI Recipes →](cli-recipes.md)

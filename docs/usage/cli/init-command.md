@@ -1,8 +1,5 @@
 # init Command
 
-**Navigation:** [← CLI Overview](index.md) | [convert Command →](convert-command.md)
-
----
 
 ## Overview
 
@@ -543,7 +540,3 @@ cat config.yaml
 # After init, install as prompted
 uv sync --extra remote  # or local, watsonx, all
 ```
-
----
-
-**Navigation:** [← CLI Overview](index.md) | [convert Command →](convert-command.md)

@@ -1,8 +1,5 @@
 # Custom Backends
 
-**Navigation:** [← Advanced Topics](index.md) | [Custom Exporters →](custom-exporters.md)
-
----
 
 ## Overview
 
@@ -731,7 +728,3 @@ def _call_api_with_retry(self, *args, **kwargs):
 - **[Protocols Reference](../../reference/protocols.md)** - Protocol definitions
 - **[Exceptions Reference](../../reference/exceptions.md)** - Exception hierarchy
 - **[Extraction Process](../../fundamentals/extraction-process/index.md)** - How extraction works
-
----
-
-**Navigation:** [← Advanced Topics](index.md) | [Custom Exporters →](custom-exporters.md)

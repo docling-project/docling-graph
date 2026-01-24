@@ -1,8 +1,5 @@
 # Markdown Input Example
 
-**Navigation:** [← URL Input](url-input.md) | [DoclingDocument Input →](docling-document-input.md)
-
----
 
 ## Overview
 
@@ -493,7 +490,3 @@ config = PipelineConfig(
 - **[DoclingDocument Input →](docling-document-input.md)** - Use pre-processed documents
 - **[Input Formats Guide](../../fundamentals/pipeline-configuration/input-formats.md)** - Complete input format reference
 - **[LLM Backend Configuration](../../fundamentals/pipeline-configuration/backend-selection.md)** - Configure LLM settings
-
----
-
-**Navigation:** [← URL Input](url-input.md) | [DoclingDocument Input →](docling-document-input.md)

@@ -1,8 +1,5 @@
 # ID Card Extraction
 
-**Navigation:** [← Research Paper](research-paper.md) | [Insurance Policy →](insurance-policy.md)
-
----
 
 ## Overview
 
@@ -532,7 +529,3 @@ cat outputs/id_card/nodes.csv
 ```
 docs/examples/templates/id_card.py
 ```
-
----
-
-**Navigation:** [← Research Paper](research-paper.md) | [Insurance Policy →](insurance-policy.md)

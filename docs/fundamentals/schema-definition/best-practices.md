@@ -1,8 +1,5 @@
 # Best Practices and Checklist
 
-**Navigation:** [← Advanced Patterns](advanced-patterns.md) | [Pipeline Configuration →](../pipeline-configuration/index.md)
-
----
 
 ## Overview
 
@@ -592,7 +589,3 @@ Before moving to Pipeline Configuration, ensure:
 <br>✅ Validators ensure data quality
 <br>✅ Tests pass successfully
 <br>✅ Template tested with sample documents
-
----
-
-**Navigation:** [← Advanced Patterns](advanced-patterns.md) | [Pipeline Configuration →](../pipeline-configuration/index.md)

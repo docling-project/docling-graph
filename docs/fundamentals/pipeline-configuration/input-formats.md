@@ -6,7 +6,7 @@ Docling Graph supports multiple input formats, allowing you to process various t
 
 The pipeline automatically detects and validates input types, routing them through the appropriate processing stages:
 
-![Input Normalization Flow](../../assets/flowcharts/img/input_normalization.png)
+--8<-- "docs/assets/flowcharts/input_normalization.md"
 
 **Key Features**:
 - **Automatic Type Detection**: Identifies input format from file extension, URL, or content

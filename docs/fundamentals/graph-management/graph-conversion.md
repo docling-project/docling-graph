@@ -1,8 +1,5 @@
 # Graph Conversion
 
-**Navigation:** [← Graph Management](index.md) | [Export Formats →](export-formats.md)
-
----
 
 ## Overview
 
@@ -21,7 +18,7 @@
 
 ### High-Level Flow
 
-![Conversion Process](../../assets/flowcharts/img/conversion_process.png)
+--8<-- "docs/assets/flowcharts/conversion_process.md"
 
 ---
 
@@ -549,7 +546,3 @@ from docling_graph.core.converters import NodeIDRegistry
 registry = NodeIDRegistry()
 converter = GraphConverter(registry=registry)
 ```
-
----
-
-**Navigation:** [← Graph Management](index.md) | [Export Formats →](export-formats.md)
