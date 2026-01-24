@@ -1,32 +1,67 @@
 """
 LLM (Language Model) extraction backend.
-Handles document extraction using LLM models (local or API).
+Handles document extraction using LLM models (local or API) with model-aware prompting.
 """
 
 import gc
 import json
+import logging
 from typing import List, Optional, Type
 
 from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
 
 from ....llm_clients.base import BaseLlmClient
+from ....llm_clients.config import ModelConfig, detect_model_capability, get_model_config
 from ....llm_clients.prompts import get_consolidation_prompt, get_extraction_prompt
+
+logger = logging.getLogger(__name__)
 
 
 class LlmBackend:
-    """Backend for LLM-based extraction (local or API)."""
+    """Backend for LLM-based extraction with model-aware prompting and multi-turn consolidation."""
 
     def __init__(self, llm_client: BaseLlmClient) -> None:
         """
-        Initialize LLM backend with a client.
+        Initialize LLM backend with a client and model configuration.
 
         Args:
             llm_client (BaseLlmClient): LLM client instance (Mistral, Ollama, etc.)
         """
         self.client = llm_client
+
+        # Get model configuration from centralized registry
+        self.model_config = None
+        # Support both model_name and model_id attributes
+        model_attr = getattr(llm_client, "model_name", None) or getattr(
+            llm_client, "model_id", None
+        )
+        if hasattr(llm_client, "provider") and model_attr:
+            self.model_config = get_model_config(llm_client.provider, model_attr)
+
+        # Fallback: auto-detect from context limit
+        if not self.model_config:
+            context_limit = getattr(llm_client, "context_limit", 8000)
+            model_name = getattr(llm_client, "model_name", None) or getattr(
+                llm_client, "model_id", ""
+            )
+            # Ensure model_name is a string for detect_model_capability
+            model_name_str = str(model_name) if model_name else ""
+            capability = detect_model_capability(context_limit, model_name_str)
+
+            # Create minimal config
+            self.model_config = ModelConfig(
+                model_id=model_name or "unknown",
+                context_limit=context_limit,
+                capability=capability,
+            )
+
         rich_print(
-            f"[blue][LlmBackend][/blue] Initialized with client: [cyan]{self.client.__class__.__name__}[/cyan]"
+            f"[blue][LlmBackend][/blue] Initialized with:\n"
+            f"  • Client: [cyan]{self.client.__class__.__name__}[/cyan]\n"
+            f"  • Model capability: [yellow]{self.model_config.capability.value}[/yellow]\n"
+            f"  • Context limit: {self.model_config.context_limit:,} tokens\n"
+            f"  • Chain of Density: {'enabled' if self.model_config.supports_chain_of_density else 'disabled'}"
         )
 
     def extract_from_markdown(
@@ -37,7 +72,7 @@ class LlmBackend:
         is_partial: bool = False,
     ) -> BaseModel | None:
         """
-        Extract structured data from markdown content using LLM.
+        Extract structured data from markdown content using LLM with model-aware prompting.
 
         Args:
             markdown (str): Markdown content to extract from.
@@ -63,9 +98,12 @@ class LlmBackend:
             # Get the Pydantic schema as JSON
             schema_json = json.dumps(template.model_json_schema(), indent=2)
 
-            # Generate prompt using the correct signature
+            # Generate prompt with model configuration
             prompt = get_extraction_prompt(
-                markdown_content=markdown, schema_json=schema_json, is_partial=is_partial
+                markdown_content=markdown,
+                schema_json=schema_json,
+                is_partial=is_partial,
+                model_config=self.model_config,
             )
 
             # Call LLM with correct method name
@@ -109,7 +147,10 @@ class LlmBackend:
         template: Type[BaseModel],
     ) -> BaseModel | None:
         """
-        Uses an LLM to consolidate multiple extracted models into a final one.
+        Uses an LLM to consolidate multiple extracted models with multi-turn support.
+
+        Handles both single-prompt and Chain of Density (multi-turn) consolidation
+        based on model capability.
 
         Args:
             raw_models: The list of raw models from each batch/page.
@@ -119,18 +160,61 @@ class LlmBackend:
         Returns:
             A single, validated, LLM-consolidated Pydantic model, or None if failed.
         """
-        rich_print(f"[blue][LlmBackend][/blue] Consolidating {len(raw_models)} models with LLM...")
+        capability_str = self.model_config.capability.value if self.model_config else "unknown"
+        rich_print(
+            f"[blue][LlmBackend][/blue] Consolidating {len(raw_models)} models "
+            f"(capability: {capability_str})..."
+        )
+
         try:
             schema_json = json.dumps(template.model_json_schema(), indent=2)
 
-            prompt = get_consolidation_prompt(
+            # Get prompt(s) - may be string or list for Chain of Density
+            prompts = get_consolidation_prompt(
                 schema_json=schema_json,
                 raw_models=raw_models,
                 programmatic_model=programmatic_model,
+                model_config=self.model_config,
             )
 
-            # Call LLM
-            parsed_json = self.client.get_json_response(prompt=prompt, schema_json=schema_json)
+            # Handle multi-turn consolidation (Chain of Density)
+            if isinstance(prompts, list):
+                rich_print(
+                    f"[blue][LlmBackend][/blue] Using Chain of Density ({len(prompts)} stages)..."
+                )
+
+                # Stage 1: Initial merge
+                stage1_result = self.client.get_json_response(
+                    prompt=prompts[0], schema_json=schema_json
+                )
+
+                if not stage1_result:
+                    rich_print("[yellow]Warning:[/yellow] Stage 1 consolidation failed")
+                    return None
+
+                # Stage 2: Refinement (inject stage1 result)
+                raw_jsons = "\n\n---\n\n".join(m.model_dump_json(indent=2) for m in raw_models)
+                stage2_prompt = prompts[1].format(
+                    schema=schema_json,
+                    stage1_result=json.dumps(stage1_result, indent=2),
+                    originals=raw_jsons,
+                )
+
+                final_result = self.client.get_json_response(
+                    prompt=stage2_prompt, schema_json=schema_json
+                )
+
+                if not final_result:
+                    rich_print(
+                        "[yellow]Warning:[/yellow] Stage 2 refinement failed, using stage 1 result"
+                    )
+                    parsed_json = stage1_result
+                else:
+                    parsed_json = final_result
+
+            else:
+                # Single-turn consolidation
+                parsed_json = self.client.get_json_response(prompt=prompts, schema_json=schema_json)
 
             if not parsed_json:
                 rich_print("[yellow]Warning:[/yellow] LLM consolidation returned no valid JSON.")
@@ -164,13 +248,21 @@ class LlmBackend:
             return None
 
     def cleanup(self) -> None:
-        """Clean up LLM client resources."""
+        """
+        Clean up LLM client resources.
+
+        Note: Most LLM clients use stateless HTTP APIs and don't require cleanup.
+        This method is provided for consistency with VlmBackend and handles any
+        clients that may have cleanup methods.
+        """
         try:
             # Release the client reference
             if hasattr(self, "client"):
                 # If the client has its own cleanup method, call it
-                if hasattr(self.client, "cleanup"):
-                    self.client.cleanup()
+                # Use getattr to avoid type checker issues with protocol
+                cleanup_fn = getattr(self.client, "cleanup", None)
+                if callable(cleanup_fn):
+                    cleanup_fn()
                 del self.client
 
             # Force garbage collection

@@ -942,7 +942,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "0.4.1"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "docling", extra = ["vlm"] },

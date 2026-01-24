@@ -7,6 +7,13 @@ Document extraction strategies and backends.
 
 **Module:** `docling_graph.core.extractors`
 
+!!! tip "Recent Improvements"
+    - **Model Capability Detection**: Automatic tier detection and adaptive prompting
+    - **Chain of Density**: Multi-turn consolidation for ADVANCED tier models
+    - **Zero Data Loss**: Returns partial models instead of empty results on failures
+    - **Real Tokenizers**: Accurate token counting with 20% safety margins
+    - **Enhanced GPU Cleanup**: Better memory management for VLM backends
+
 ---
 
 ## Extraction Strategies
@@ -58,7 +65,7 @@ print(f"Extracted {len(results)} pages")
 
 ### ManyToOne
 
-Consolidated extraction strategy.
+Consolidated extraction strategy with zero data loss.
 
 ```python
 class ManyToOne(ExtractorProtocol):
@@ -84,7 +91,8 @@ class ManyToOne(ExtractorProtocol):
         Extract and consolidate.
         
         Returns:
-            List with single consolidated model
+            List with single consolidated model (success)
+            or multiple partial models (merge failure - zero data loss)
         """
 ```
 
@@ -92,6 +100,11 @@ class ManyToOne(ExtractorProtocol):
 - Single entity across document
 - Consolidated information
 - Summary extraction
+
+**Features:**
+- **Zero Data Loss**: Returns partial models if consolidation fails
+- **Adaptive Consolidation**: Uses Chain of Density for ADVANCED tier models
+- **Schema-Aware Chunking**: Dynamically adjusts chunk size based on schema
 
 **Example:**
 
@@ -107,7 +120,12 @@ extractor = ManyToOne(
 )
 
 results = extractor.extract("document.pdf", MyTemplate)
-print(f"Consolidated model: {results[0]}")
+
+# Check if consolidation succeeded
+if len(results) == 1:
+    print(f"✓ Consolidated model: {results[0]}")
+else:
+    print(f"⚠ Got {len(results)} partial models (data preserved)")
 ```
 
 ---
@@ -116,7 +134,7 @@ print(f"Consolidated model: {results[0]}")
 
 ### LLMBackend
 
-LLM-based extraction backend.
+LLM-based extraction backend with adaptive prompting.
 
 ```python
 class LLMBackend(TextExtractionBackendProtocol):
@@ -130,18 +148,47 @@ class LLMBackend(TextExtractionBackendProtocol):
     ):
         """Initialize LLM backend."""
         self.client = client
+        self.model_capability = self._detect_capability()  # Auto-detect tier
 ```
 
 **Methods:**
-- `extract_from_markdown()` - Extract from markdown
-- `consolidate_from_pydantic_models()` - Consolidate models
+
+- `extract_from_markdown(markdown, template, context, is_partial)` - Extract from markdown with adaptive prompting
+- `consolidate_from_pydantic_models(raw_models, programmatic_model, template)` - Consolidate models (uses Chain of Density for ADVANCED tier)
 - `cleanup()` - Clean up resources
+
+**Model Capability Tiers:**
+
+| Tier | Model Size | Prompt Style | Consolidation |
+|:-----|:-----------|:-------------|:--------------|
+| **SIMPLE** | 1B-7B | Minimal | Single-turn |
+| **STANDARD** | 7B-13B | Balanced | Single-turn |
+| **ADVANCED** | 13B+ | Detailed | Chain of Density (3 turns) |
+
+**Example:**
+
+```python
+from docling_graph.core.extractors.backends import LLMBackend
+from docling_graph.llm_clients import OllamaClient
+
+# STANDARD tier model (7B-13B)
+client = OllamaClient(model="llama3.1:8b")
+backend = LLMBackend(llm_client=client)
+
+# Automatically uses STANDARD tier prompts
+model = backend.extract_from_markdown(
+    markdown=markdown,
+    template=MyTemplate,
+    context="full document",
+    is_partial=False
+)
+```
 
 ---
 
 ### VLMBackend
 
-Vision-Language Model backend.
+Vision-Language Model backend with enhanced GPU cleanup.
 
 ```python
 class VLMBackend(ExtractionBackendProtocol):
@@ -149,11 +196,35 @@ class VLMBackend(ExtractionBackendProtocol):
     
     def __init__(self, model: str):
         """Initialize VLM backend."""
+        self.model_name = model
+        self.model = None  # Loaded on first use
 ```
 
 **Methods:**
-- `extract_from_document()` - Extract from document
-- `cleanup()` - Clean up resources
+
+- `extract_from_document(source, template)` - Extract from document
+- `cleanup()` - Enhanced GPU memory cleanup
+
+**Enhanced GPU Cleanup:**
+
+The `cleanup()` method now includes:
+- Model-to-CPU transfer before deletion
+- Explicit CUDA cache clearing
+- Memory usage tracking and logging
+- Multi-GPU device support
+
+**Example:**
+
+```python
+from docling_graph.core.extractors.backends import VLMBackend
+
+backend = VLMBackend(model_name="numind/NuExtract-2.0-8B")
+
+try:
+    models = backend.extract_from_document("document.pdf", MyTemplate)
+finally:
+    backend.cleanup()  # Properly releases GPU memory
+```
 
 ---
 
@@ -183,11 +254,28 @@ class DocumentProcessor(DocumentProcessorProtocol):
 
 ### DocumentChunker
 
-Handles document chunking for large documents.
+Handles document chunking with real tokenizers and schema-aware sizing.
 
 ```python
 class DocumentChunker:
     """Chunk documents for processing."""
+    
+    def __init__(
+        self,
+        provider: str,
+        max_tokens: int = None,
+        tokenizer_name: str = None,
+        schema_size: int = 0
+    ):
+        """
+        Initialize chunker.
+        
+        Args:
+            provider: LLM provider (for tokenizer selection)
+            max_tokens: Maximum tokens per chunk
+            tokenizer_name: Specific tokenizer to use
+            schema_size: Schema size for dynamic adjustment
+        """
     
     def chunk_markdown(
         self,
@@ -195,7 +283,7 @@ class DocumentChunker:
         max_tokens: int
     ) -> List[str]:
         """
-        Chunk markdown by tokens.
+        Chunk markdown by tokens using real tokenizer.
         
         Args:
             markdown: Markdown content
@@ -204,6 +292,40 @@ class DocumentChunker:
         Returns:
             List of markdown chunks
         """
+    
+    def update_schema_config(self, schema_size: int):
+        """
+        Update schema configuration dynamically.
+        
+        Args:
+            schema_size: New schema size in bytes
+        """
+```
+
+**Features:**
+
+- **Real Tokenizers**: Uses provider-specific tokenizers for accurate token counting
+- **Safety Margins**: Applies 20% safety margin to prevent context overflows
+- **Schema-Aware**: Dynamically adjusts chunk size based on schema complexity
+- **Provider-Specific**: Optimized for each LLM provider
+
+**Example:**
+
+```python
+from docling_graph.core.extractors import DocumentChunker
+
+# Create chunker with real tokenizer
+chunker = DocumentChunker(
+    provider="mistral",
+    max_tokens=4096,
+    schema_size=len(MyTemplate.model_json_schema())
+)
+
+# Chunk with accurate token counting
+chunks = chunker.chunk_markdown(markdown, max_tokens=4096)
+
+# Update for different schema
+chunker.update_schema_config(schema_size=8000)
 ```
 
 ---
@@ -247,8 +369,69 @@ extractor = create_extractor(
 
 ---
 
+---
+
+## New Features Summary
+
+### Model Capability Detection
+
+Automatic detection of model capabilities based on parameter count:
+
+```python
+# Automatically detected
+backend = LLMBackend(llm_client=client)
+# backend.model_capability = ModelCapability.STANDARD (for 8B model)
+```
+
+### Chain of Density Consolidation
+
+Multi-turn consolidation for ADVANCED tier models (13B+):
+
+```python
+# Automatically enabled for large models
+backend = LLMBackend(llm_client=openai_client)  # GPT-4
+final = backend.consolidate_from_pydantic_models(
+    raw_models=models,
+    programmatic_model=draft,
+    template=MyTemplate
+)
+# Uses 3-turn Chain of Density process
+```
+
+### Zero Data Loss
+
+Returns partial models instead of empty results:
+
+```python
+results = extractor.extract("document.pdf", MyTemplate)
+
+if len(results) == 1:
+    # Success: merged model
+    model = results[0]
+else:
+    # Partial: multiple models (data preserved!)
+    for model in results:
+        process_partial(model)
+```
+
+### Real Tokenizer Integration
+
+Accurate token counting with safety margins:
+
+```python
+chunker = DocumentChunker(
+    provider="mistral",
+    max_tokens=4096  # Uses real Mistral tokenizer
+)
+# Applies 20% safety margin automatically
+```
+
+---
+
 ## Related APIs
 
+- **[Model Capabilities](../fundamentals/extraction-process/model-capabilities.md)** - Capability tiers
 - **[Extraction Process](../fundamentals/extraction-process/index.md)** - Usage guide
+- **[Model Merging](../fundamentals/extraction-process/model-merging.md)** - Zero data loss
 - **[Protocols](protocols.md)** - Backend protocols
 - **[Custom Backends](../usage/advanced/custom-backends.md)** - Create backends

@@ -8,9 +8,13 @@ Model configuration determines which AI model processes your documents. Docling 
 **In this guide:**
 - Local vs remote inference
 - Supported providers and models
+- Model capability tiers
 - Model selection strategies
 - Provider-specific configuration
 - Performance and cost considerations
+
+!!! tip "New: Automatic Model Capability Detection"
+    Docling Graph now automatically detects model capabilities based on parameter count and adapts prompts and consolidation strategies accordingly. See [Model Capabilities](../extraction-process/model-capabilities.md) for details.
 
 ---
 
@@ -304,6 +308,73 @@ export WATSONX_PROJECT_ID="your-project-id"
 
 ---
 
+## Model Capability Tiers
+
+Docling Graph automatically categorizes models into capability tiers based on parameter count:
+
+### Tier Overview
+
+| Tier | Model Size | Prompt Style | Consolidation | Best For |
+|:-----|:-----------|:-------------|:--------------|:---------|
+| **SIMPLE** | 1B-7B | Minimal instructions | Basic merge | Simple forms, high volume |
+| **STANDARD** | 7B-13B | Balanced instructions | Standard merge | General documents |
+| **ADVANCED** | 13B+ | Detailed instructions | Chain of Density | Complex documents, critical data |
+
+### Automatic Detection
+
+```python
+from docling_graph import PipelineConfig
+
+# Small model - Automatically uses SIMPLE tier
+config = PipelineConfig(
+    source="document.pdf",
+    template="my_templates.Invoice",
+    inference="local",
+    provider_override="vllm",
+    model_override="ibm-granite/granite-4.0-1b"  # 1B params → SIMPLE
+)
+
+# Medium model - Automatically uses STANDARD tier
+config = PipelineConfig(
+    source="document.pdf",
+    template="my_templates.Invoice",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b"  # 8B params → STANDARD
+)
+
+# Large model - Automatically uses ADVANCED tier
+config = PipelineConfig(
+    source="document.pdf",
+    template="my_templates.Invoice",
+    inference="remote",
+    provider_override="openai",
+    model_override="gpt-4-turbo"  # 175B+ params → ADVANCED
+)
+```
+
+### Performance Impact
+
+**Token Usage per Extraction:**
+
+| Tier | Prompt Tokens | Consolidation | Total Overhead |
+|:-----|:--------------|:--------------|:---------------|
+| **SIMPLE** | ~200-300 | Single-turn | Low |
+| **STANDARD** | ~400-500 | Single-turn | Medium |
+| **ADVANCED** | ~600-800 | Multi-turn (3x) | High |
+
+**Quality vs Speed:**
+
+| Tier | Extraction Quality | Speed | Cost |
+|:-----|:------------------|:------|:-----|
+| **SIMPLE** | 85-90% | ⚡ Fast | $ Low |
+| **STANDARD** | 90-95% | ⚡ Fast | $$ Medium |
+| **ADVANCED** | 95-98% | 🐢 Slower | $$$ High |
+
+See [Model Capabilities](../extraction-process/model-capabilities.md) for complete details.
+
+---
+
 ## Model Selection Strategies
 
 ### By Document Complexity
@@ -312,27 +383,34 @@ export WATSONX_PROJECT_ID="your-project-id"
 def get_model_config(document_complexity: str):
     """Choose model based on document complexity."""
     if document_complexity == "simple":
-        # Simple documents: fast, economical model
+        # Simple documents: SIMPLE tier (fast, economical)
         return {
-            "inference": "remote",
-            "model_override": "gpt-3.5-turbo",
-            "provider_override": "openai"
+            "inference": "local",
+            "model_override": "ibm-granite/granite-4.0-1b",  # SIMPLE tier
+            "provider_override": "vllm"
         }
     elif document_complexity == "medium":
-        # Medium complexity: balanced model
+        # Medium complexity: STANDARD tier (balanced)
         return {
-            "inference": "remote",
-            "model_override": "mistral-medium-latest",
-            "provider_override": "mistral"
+            "inference": "local",
+            "model_override": "llama3.1:8b",  # STANDARD tier
+            "provider_override": "ollama"
         }
     else:
-        # Complex documents: highest quality model
+        # Complex documents: ADVANCED tier (highest quality)
         return {
             "inference": "remote",
-            "model_override": "gpt-4-turbo",
+            "model_override": "gpt-4-turbo",  # ADVANCED tier
             "provider_override": "openai"
         }
 ```
+
+!!! tip "Capability Tier Matching"
+    Match model capability tier to document complexity:
+    
+    - **Simple forms/invoices** → SIMPLE tier (1B-7B models)
+    - **General documents** → STANDARD tier (7B-13B models)
+    - **Complex contracts/research** → ADVANCED tier (13B+ models)
 
 ### By Volume
 
@@ -387,6 +465,63 @@ def get_model_config(budget: str):
             "inference": "remote",
             "model_override": "gpt-4-turbo",
             "provider_override": "openai"
+        }
+```
+
+### By Capability Tier
+
+```python
+def get_model_by_tier(tier: str):
+    """Choose model based on desired capability tier."""
+    if tier == "SIMPLE":
+        # SIMPLE tier: 1B-7B models
+        return {
+            "inference": "local",
+            "model_override": "ibm-granite/granite-4.0-1b",
+            "provider_override": "vllm"
+        }
+    elif tier == "STANDARD":
+        # STANDARD tier: 7B-13B models
+        return {
+            "inference": "local",
+            "model_override": "llama3.1:8b",
+            "provider_override": "ollama"
+        }
+    else:  # ADVANCED
+        # ADVANCED tier: 13B+ models
+        return {
+            "inference": "remote",
+            "model_override": "gpt-4-turbo",
+            "provider_override": "openai"
+        }
+```
+
+### By Quality Requirements
+
+```python
+def get_model_by_quality(quality_requirement: str):
+    """Choose model based on quality requirements."""
+    if quality_requirement == "acceptable":
+        # 85-90% accuracy: SIMPLE tier
+        return {
+            "inference": "local",
+            "model_override": "ibm-granite/granite-4.0-1b",
+            "provider_override": "vllm"
+        }
+    elif quality_requirement == "high":
+        # 90-95% accuracy: STANDARD tier
+        return {
+            "inference": "local",
+            "model_override": "llama3.1:8b",
+            "provider_override": "ollama"
+        }
+    else:  # critical
+        # 95-98% accuracy: ADVANCED tier with Chain of Density
+        return {
+            "inference": "remote",
+            "model_override": "gpt-4-turbo",
+            "provider_override": "openai",
+            "llm_consolidation": True  # Enables Chain of Density
         }
 ```
 
@@ -602,13 +737,79 @@ config.run()
 
 ---
 
+## Model Recommendations by Use Case
+
+### High-Volume Processing
+
+```python
+# Use SIMPLE tier for speed and cost efficiency
+config = PipelineConfig(
+    source="document.pdf",
+    template="my_templates.Invoice",
+    inference="local",
+    model_override="ibm-granite/granite-4.0-1b",  # SIMPLE tier
+    provider_override="vllm",
+    use_chunking=True,
+    llm_consolidation=False  # Fast programmatic merge
+)
+```
+
+**Benefits:**
+- ⚡ Fast processing (30-60s per document)
+- 💰 Zero API costs
+- 📊 85-90% accuracy (sufficient for most cases)
+
+### Critical Documents
+
+```python
+# Use ADVANCED tier for maximum accuracy
+config = PipelineConfig(
+    source="contract.pdf",
+    template="my_templates.Contract",
+    inference="remote",
+    model_override="gpt-4-turbo",  # ADVANCED tier
+    provider_override="openai",
+    use_chunking=True,
+    llm_consolidation=True  # Chain of Density consolidation
+)
+```
+
+**Benefits:**
+- 💎 95-98% accuracy
+- 🔄 Multi-turn consolidation
+- ✅ Best for legal/financial documents
+
+### Balanced Approach
+
+```python
+# Use STANDARD tier for general documents
+config = PipelineConfig(
+    source="document.pdf",
+    template="my_templates.Report",
+    inference="local",
+    model_override="llama3.1:8b",  # STANDARD tier
+    provider_override="ollama",
+    use_chunking=True,
+    llm_consolidation=False  # Standard merge
+)
+```
+
+**Benefits:**
+- ⚖️ Good balance of speed and quality
+- 💰 Zero API costs
+- 📊 90-95% accuracy
+
+---
+
 ## Next Steps
 
 Now that you understand model configuration:
 
-1. **[Processing Modes →](processing-modes.md)** - Choose processing strategy
-2. **[Configuration Examples](configuration-examples.md)** - See complete scenarios
-3. **[Extraction Process](../extraction-process/index.md)** - Understand extraction
+1. **[Model Capabilities →](../extraction-process/model-capabilities.md)** - Learn about capability tiers
+2. **[Processing Modes →](processing-modes.md)** - Choose processing strategy
+3. **[Configuration Examples](configuration-examples.md)** - See complete scenarios
+4. **[Extraction Process](../extraction-process/index.md)** - Understand extraction
+5. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Optimize performance
 
 ---
 

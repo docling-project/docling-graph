@@ -116,7 +116,7 @@ def convert_command(
         f"CLI args - Backend: {backend}, Inference: {inference}, Processing: {processing_mode}"
     )
 
-    rich_print("--- [blue]Docling-Graph Conversion[/blue] ---")
+    rich_print("[green]--- Starting Docling-Graph Conversion ---[/green]")
 
     # Load YAML configuration (flat)
     logger.debug("Loading configuration from config.yaml")
@@ -184,7 +184,7 @@ def convert_command(
         input_type_display = "Unknown"
 
     # Display configuration
-    rich_print("\n[bold]Configuration:[/bold]")
+    rich_print("[yellow][PipelineConfiguration][/yellow]")
     rich_print(f" • Source: [cyan]{source}[/cyan]")
     rich_print(f" • Input Type: [cyan]{input_type_display}[/cyan]")
     rich_print(f" • Template: [cyan]{template}[/cyan]")
@@ -196,12 +196,12 @@ def convert_command(
     rich_print(f" • Reverse edges: [cyan]{reverse_edges}[/cyan]")
 
     # Display Extraction settings
-    rich_print("\n[bold]Extraction Settings:[/bold]")
+    rich_print("[yellow][ExtractionSettings][/yellow]")
     rich_print(f" • LLM Consolidation: [cyan]{final_llm_consolidation}[/cyan]")
     rich_print(f" • Use Chunking: [cyan]{final_use_chunking}[/cyan]")
 
     # Display Docling export settings
-    rich_print("\n[bold]Docling Export:[/bold]")
+    rich_print("[yellow][DoclingExport][/yellow]")
     rich_print(f" • Document JSON: [cyan]{final_export_docling_json}[/cyan]")
     rich_print(f" • Markdown: [cyan]{final_export_markdown}[/cyan]")
     rich_print(f" • Per-page MD: [cyan]{final_export_per_page}[/cyan]")
@@ -238,7 +238,7 @@ def convert_command(
         logger.debug("Calling run_pipeline() in CLI mode")
         run_pipeline(cfg, mode="cli")
         logger.info("--- Pipeline execution Completed Successfully ---")
-        rich_print("\n[green]--- Conversion Completed Successfully ---[/green]")
+        rich_print("[green]--- Docling-Graph Conversion Successfull ---[/green]")
     except ConfigurationError as e:
         logger.error(f"Configuration error: {e.message}", exc_info=True)
         rich_print(f"\n[red]Configuration Error:[/red] {e.message}")

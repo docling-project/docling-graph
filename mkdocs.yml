@@ -116,6 +116,7 @@ nav:
       - Document Conversion: fundamentals/extraction-process/document-conversion.md
       - Chunking Strategies: fundamentals/extraction-process/chunking-strategies.md
       - Extraction Backends: fundamentals/extraction-process/extraction-backends.md
+      - Model Capabilities: fundamentals/extraction-process/model-capabilities.md
       - Model Merging: fundamentals/extraction-process/model-merging.md
       - Batch Processing: fundamentals/extraction-process/batch-processing.md
     - Graph Management:
@@ -175,6 +176,9 @@ nav:
     - Overview: community/index.md
     - GitHub Workflow: community/github-workflow.md
     - Release Process: community/release-process.md
+
+extra_css:
+  - stylesheets/extra.css
 
 extra:
   social:

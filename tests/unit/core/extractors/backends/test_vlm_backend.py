@@ -101,7 +101,7 @@ class TestVlmBackendCleanup:
         backend = VlmBackend(model_name="test-model")
         backend.cleanup()
 
-        assert not hasattr(backend, "doc_extractor") or backend.doc_extractor is None
+        assert backend.doc_extractor is None
 
     @patch("docling_graph.core.extractors.backends.vlm_backend.torch")
     @patch("docling_graph.core.extractors.backends.vlm_backend.DocumentExtractor")
@@ -113,3 +113,74 @@ class TestVlmBackendCleanup:
         backend.cleanup()
 
         mock_torch.cuda.empty_cache.assert_called()
+
+
+# ============================================================================
+# Fix 7: Enhanced GPU Cleanup Tests
+# ============================================================================
+
+
+class TestEnhancedGPUCleanup:
+    """Tests for Fix 7: Enhanced GPU cleanup with memory tracking."""
+
+    @patch("torch.cuda.is_available")
+    @patch("torch.cuda.memory_allocated")
+    @patch("torch.cuda.empty_cache")
+    @patch("torch.cuda.synchronize")
+    def test_cleanup_with_gpu(self, mock_sync, mock_empty, mock_mem_alloc, mock_cuda_available):
+        """Test cleanup when GPU is available."""
+        mock_cuda_available.return_value = True
+        mock_mem_alloc.side_effect = [1024 * 1024 * 100, 1024 * 1024 * 10]  # 100MB -> 10MB
+
+        backend = VlmBackend(model_name="test-model")
+        backend.cleanup()
+
+        # Verify CUDA operations were called
+        mock_empty.assert_called_once()
+        mock_sync.assert_called_once()
+        assert mock_mem_alloc.call_count == 2  # Before and after
+
+    @patch("torch.cuda.is_available")
+    def test_cleanup_without_gpu(self, mock_cuda_available):
+        """Test cleanup when GPU is not available."""
+        mock_cuda_available.return_value = False
+
+        backend = VlmBackend(model_name="test-model")
+        backend.cleanup()
+
+        # Should complete without errors
+        assert True
+
+    @patch("torch.cuda.is_available")
+    @patch("torch.cuda.device_count")
+    @patch("torch.cuda.memory_allocated")
+    @patch("torch.cuda.empty_cache")
+    @patch("torch.cuda.synchronize")
+    def test_cleanup_all_gpus(
+        self, mock_sync, mock_empty, mock_mem_alloc, mock_device_count, mock_cuda_available
+    ):
+        """Test multi-GPU cleanup."""
+        mock_cuda_available.return_value = True
+        mock_device_count.return_value = 2
+        mock_mem_alloc.side_effect = [
+            1024 * 1024 * 50,  # GPU 0 before
+            1024 * 1024 * 5,  # GPU 0 after
+            1024 * 1024 * 30,  # GPU 1 before
+            1024 * 1024 * 3,  # GPU 1 after
+        ]
+
+        backend = VlmBackend(model_name="test-model")
+        backend.cleanup_all_gpus()
+
+        # Should clear cache for each GPU
+        assert mock_empty.call_count == 2
+        assert mock_sync.call_count == 2
+
+    @patch("torch.cuda.is_available")
+    def test_cleanup_error_handling(self, mock_cuda_available):
+        """Test cleanup handles errors gracefully."""
+        mock_cuda_available.side_effect = Exception("CUDA error")
+
+        backend = VlmBackend(model_name="test-model")
+        # Should not raise exception
+        backend.cleanup()

@@ -3,12 +3,20 @@ Adaptive chunk batching for efficient LLM extraction.
 
 Groups multiple chunks into batches that fit within context window,
 reducing API calls while preserving semantic boundaries.
+
+Integrates with real tokenizers from DocumentChunker for accurate token counting.
+Supports provider-specific configurations from centralized registry.
 """
 
+import logging
 from dataclasses import dataclass
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 from rich import print as rich_print
+
+from docling_graph.llm_clients.config import ProviderConfig, get_provider_config
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,42 +49,163 @@ class ChunkBatch:
 
 
 class ChunkBatcher:
-    """Intelligently batch chunks to optimize context window usage."""
+    """
+    Intelligently batch chunks with real tokenizer integration.
 
-    # Overhead per chunk when batched (metadata, separators, etc.)
-    CHUNK_OVERHEAD_TOKENS = 50
+    Supports provider-specific configurations from centralized registry.
+    """
+
+    # Conservative fallback ratios (only used if tokenizer fails)
+    TOKENIZER_RATIOS = {
+        "llama": 3.5,  # Llama/Mistral family
+        "gpt": 4.0,  # GPT family
+        "small_model": 2.5,  # 1B-5B models (more verbose tokenization)
+        "multilingual": 3.0,  # Multilingual models
+        "default": 3.0,  # Conservative default
+    }
+
+    SAFETY_MARGIN = 1.2  # 20% buffer for all estimates
+    CHUNK_OVERHEAD_TOKENS = 50  # Overhead per chunk when batched
 
     def __init__(
         self,
         context_limit: int,
         system_prompt_tokens: int = 500,
         response_buffer_tokens: int = 500,
-        merge_threshold: float = 0.85,
+        merge_threshold: float | None = None,
+        tokenizer_type: str = "default",
+        provider: str | None = None,
     ) -> None:
         """
-        Initialize batcher with context constraints.
+        Initialize batcher with context constraints and provider configuration.
 
         Args:
-            context_limit: Total context window (e.g., 3500 for granite-4.0-1b)
+            context_limit: Total context window in tokens
             system_prompt_tokens: Tokens for system prompt (default: 500)
             response_buffer_tokens: Tokens reserved for response (default: 500)
             merge_threshold: Merge chunks if batch is <this% of available context
-                (default: 0.85 = 85%, prevents many tiny batches)
+                (default: provider-specific or 0.85)
+            tokenizer_type: Fallback tokenizer family (llama, gpt, small_model, etc.)
+            provider: LLM provider name (openai, anthropic, google, etc.)
+                     Used to apply provider-specific optimizations
         """
         self.context_limit = context_limit
         self.system_prompt_tokens = system_prompt_tokens
         self.response_buffer_tokens = response_buffer_tokens
-        self.merge_threshold = merge_threshold
+
+        # Get provider configuration from centralized registry
+        self.provider_name = provider or "unknown"
+        self.provider_config = self._get_provider_config(self.provider_name)
+
+        # Use provider-specific merge threshold if not explicitly set
+        self.merge_threshold = (
+            merge_threshold if merge_threshold is not None else self.provider_config.merge_threshold
+        )
+
+        # Fallback heuristic configuration
+        self.char_per_token = self.TOKENIZER_RATIOS.get(
+            tokenizer_type, self.TOKENIZER_RATIOS["default"]
+        )
 
         # Available tokens for content
         self.available_tokens = context_limit - system_prompt_tokens - response_buffer_tokens
 
         rich_print(
             f"[blue][ChunkBatcher][/blue] Initialized with:\n"
+            f" • Provider: [cyan]{self.provider_config.provider_id}[/cyan]\n"
             f" • Context limit: [yellow]{context_limit:,}[/yellow] tokens\n"
             f" • Available for content: [cyan]{self.available_tokens:,}[/cyan] tokens\n"
-            f" • Merge threshold: {merge_threshold * 100:.0f}%"
+            f" • Merge threshold: {self.merge_threshold * 100:.0f}% "
+            f"({'provider default' if merge_threshold is None else 'custom'})\n"
+            f" • Fallback tokenizer: {tokenizer_type} ({self.char_per_token} chars/token)"
         )
+
+    def _get_provider_config(self, provider: str) -> ProviderConfig:
+        """
+        Get provider configuration from centralized registry.
+
+        Args:
+            provider: Provider name (case-insensitive)
+
+        Returns:
+            ProviderConfig from registry, or default config if not found
+        """
+        if not provider:
+            provider = "unknown"
+
+        provider_lower = provider.lower()
+
+        # Try direct lookup first
+        config = get_provider_config(provider_lower)
+        if config:
+            return config
+
+        # Try common name mappings
+        provider_mappings = {
+            "gpt": "openai",
+            "claude": "anthropic",
+            "gemini": "google",
+            "watson": "watsonx",
+        }
+
+        for key, mapped_provider in provider_mappings.items():
+            if key in provider_lower:
+                config = get_provider_config(mapped_provider)
+                if config:
+                    return config
+
+        # Return default config if provider not found
+        logger.warning(f"Provider '{provider}' not found in registry, using default configuration")
+        # Create a minimal default config
+        from docling_graph.llm_clients.config import ProviderConfig as LLMProviderConfig
+
+        return LLMProviderConfig(
+            provider_id="unknown",
+            models={},
+            tokenizer="sentence-transformers/all-MiniLM-L6-v2",
+            content_ratio=0.8,
+            merge_threshold=0.85,
+            rate_limit_rpm=None,
+            supports_batching=True,
+        )
+
+    def _estimate_tokens(
+        self,
+        text: str,
+        tokenizer_fn: Callable[[str], int] | None = None,
+    ) -> int:
+        """
+        Estimate tokens using real tokenizer or conservative fallback.
+
+        Priority:
+        1. Real tokenizer (from DocumentChunker)
+        2. Conservative heuristic with safety margin
+
+        Args:
+            text: Text to estimate
+            tokenizer_fn: Optional real tokenizer function
+
+        Returns:
+            Estimated token count with safety margin applied
+        """
+        # Try real tokenizer first
+        if tokenizer_fn:
+            try:
+                tokens = tokenizer_fn(text)
+                # Apply safety margin to real tokenizer too
+                return int(tokens * self.SAFETY_MARGIN)
+            except Exception as e:
+                logger.warning(
+                    f"Tokenizer function failed: {e}. Falling back to heuristic estimation."
+                )
+
+        # Fallback: conservative heuristic with safety margin
+        estimated = int(len(text) / self.char_per_token * self.SAFETY_MARGIN)
+        logger.debug(
+            f"Using heuristic token estimation: {len(text)} chars → {estimated} tokens "
+            f"(ratio: {self.char_per_token}, margin: {self.SAFETY_MARGIN})"
+        )
+        return estimated
 
     def batch_chunks(
         self,
@@ -93,8 +222,8 @@ class ChunkBatcher:
 
         Args:
             chunks: List of chunk texts
-            tokenizer_fn: Optional function to count tokens accurately.
-                If None, uses rough heuristic (tokens ≈ chars / 4)
+            tokenizer_fn: Optional real tokenizer function from DocumentChunker
+                         (e.g., self.doc_processor.chunker.tokenizer.count_tokens)
 
         Returns:
             List of ChunkBatch objects ready for LLM extraction
@@ -102,15 +231,14 @@ class ChunkBatcher:
         if not chunks:
             return []
 
-        # Helper: estimate tokens for a string
-        def count_tokens(text: str) -> int:
-            if tokenizer_fn:
-                try:
-                    return tokenizer_fn(text)
-                except Exception:
-                    pass
-            # Fallback: rough heuristic
-            return len(text) // 4
+        # Log tokenizer source
+        if tokenizer_fn:
+            rich_print("[blue][ChunkBatcher][/blue] Using real tokenizer from DocumentChunker")
+        else:
+            rich_print(
+                f"[yellow][ChunkBatcher][/yellow] No tokenizer provided, "
+                f"using conservative heuristic ({self.char_per_token} chars/token)"
+            )
 
         # Phase 1: Create candidate batches (greedy packing)
         batches: List[ChunkBatch] = []
@@ -119,7 +247,10 @@ class ChunkBatcher:
         current_tokens = 0
 
         for chunk_idx, chunk_text in enumerate(chunks):
-            chunk_tokens = count_tokens(chunk_text) + self.CHUNK_OVERHEAD_TOKENS
+            # Estimate tokens for this chunk (with overhead)
+            chunk_tokens = (
+                self._estimate_tokens(chunk_text, tokenizer_fn) + self.CHUNK_OVERHEAD_TOKENS
+            )
 
             # Check if adding this chunk exceeds available context
             potential_total = current_tokens + chunk_tokens
@@ -174,6 +305,12 @@ class ChunkBatcher:
         Merge batches that are below merge_threshold of available context.
 
         This prevents many small API calls and improves context utilization.
+
+        Args:
+            batches: List of batches to potentially merge
+
+        Returns:
+            List of optimally merged batches
         """
         if len(batches) <= 1:
             return batches
@@ -231,14 +368,14 @@ class ChunkBatcher:
         batches: List[ChunkBatch],
         total_tokens: int,
     ) -> None:
-        """Log batching statistics."""
+        """Log batching statistics with cost information."""
         reduction = (total_chunks - len(batches)) / max(1, total_chunks) * 100
         avg_batch_size = sum(b.chunk_count for b in batches) / max(1, len(batches))
         avg_utilization = (
             total_tokens / (len(batches) * self.available_tokens) * 100 if batches else 0
         )
 
-        rich_print(
+        summary = (
             f"[blue][ChunkBatcher][/blue] Batching summary:\n"
             f"  • Total chunks: [cyan]{total_chunks}[/cyan]\n"
             f"  • Batches created: [yellow]{len(batches)}[/yellow] ([green]-{reduction:.0f}%[/green] API calls)\n"
@@ -246,11 +383,15 @@ class ChunkBatcher:
             f"  • Context utilization: {avg_utilization:.1f}%"
         )
 
+        rich_print(summary)
+
         # Log per-batch details
         for batch in batches:
             utilization = batch.total_tokens / self.available_tokens * 100
-            rich_print(
+            batch_info = (
                 f"  └─ Batch {batch.batch_id}: "
                 f"{batch.chunk_count} chunks "
                 f"({batch.total_tokens:,} tokens, {utilization:.0f}% utilized)"
             )
+
+            rich_print(batch_info)

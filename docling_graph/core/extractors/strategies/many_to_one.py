@@ -3,7 +3,7 @@ Many-to-one extraction strategy.
 Processes entire document and returns single consolidated model.
 """
 
-from typing import List, Tuple, Type
+from typing import List, Tuple, Type, cast
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
@@ -58,6 +58,11 @@ class ManyToOneStrategy(BaseExtractor):
         self.llm_consolidation = llm_consolidation
         self.use_chunking = use_chunking
 
+        # Cache protocol checks (optimization: avoid repeated isinstance checks)
+        self._is_llm = is_llm_backend(self.backend)
+        self._is_vlm = is_vlm_backend(self.backend)
+        self._backend_type = get_backend_type(self.backend)
+
         # Auto-configure chunker based on backend if not provided
         # Note: schema_size will be set dynamically in extract() method
         if use_chunking and chunker_config is None:
@@ -91,12 +96,11 @@ class ManyToOneStrategy(BaseExtractor):
             chunker_config=chunker_config if use_chunking else None,
         )
 
-        backend_type = get_backend_type(self.backend)
         rich_print(
-            f"[blue][ManyToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
+            f"[blue][ManyToOneStrategy][/blue] Initialized with {self._backend_type.upper()} backend: "
             f"[cyan]{self.backend.__class__.__name__}[/cyan]\n"
             f"  • Chunking: {'enabled' if self.use_chunking else 'disabled'}\n"
-            f"  • LLM Consolidation: {'enabled' if self.llm_consolidation and is_llm_backend(self.backend) else 'disabled'}"
+            f"  • LLM Consolidation: {'enabled' if self.llm_consolidation and self._is_llm else 'disabled'}"
         )
 
     # Public extraction entry point
@@ -114,12 +118,17 @@ class ManyToOneStrategy(BaseExtractor):
                 - The DoclingDocument object used during extraction (or None if extraction failed).
         """
         try:
-            if is_vlm_backend(self.backend):
+            # Use cached protocol checks (optimization)
+            if self._is_vlm:
                 rich_print("[blue][ManyToOneStrategy][/blue] Using VLM backend for extraction")
-                return self._extract_with_vlm(self.backend, source, template)
-            elif is_llm_backend(self.backend):
+                return self._extract_with_vlm(
+                    cast(ExtractionBackendProtocol, self.backend), source, template
+                )
+            elif self._is_llm:
                 rich_print("[blue][ManyToOneStrategy][/blue] Using LLM backend for extraction")
-                return self._extract_with_llm(self.backend, source, template)
+                return self._extract_with_llm(
+                    cast(TextExtractionBackendProtocol, self.backend), source, template
+                )
             else:
                 backend_class = self.backend.__class__.__name__
                 raise TypeError(
@@ -164,12 +173,19 @@ class ManyToOneStrategy(BaseExtractor):
                 return [merged_model], None
             else:
                 rich_print(
-                    "[yellow][ManyToOneStrategy][/yellow] Merge failed — returning first page result"
+                    "[yellow][ManyToOneStrategy][/yellow] Merge failed — "
+                    "returning all page models (zero data loss: preserving partial results)"
                 )
-                return [models[0]], None
+                return models, None
 
         except Exception as e:
-            rich_print(f"[red][ManyToOneStrategy][/red] VLM extraction failed: {e}")
+            rich_print(
+                f"[red][ManyToOneStrategy][/red] VLM extraction failed: {e}. "
+                "Returning empty list (catastrophic failure: no data to preserve)."
+            )
+            import traceback
+
+            rich_print(f"[red]Traceback:[/red]\n{traceback.format_exc()}")
             return [], None
 
     # LLM backend extraction
@@ -223,37 +239,12 @@ class ManyToOneStrategy(BaseExtractor):
     ) -> List[BaseModel]:
         """Extract using structure-aware chunks with adaptive batching."""
         try:
-            # Update chunker with schema size for dynamic adjustment if not already configured
-            if self.doc_processor.chunker and hasattr(backend, "client"):
-                schema_size = len(template.model_json_schema())
-                # Recreate chunker with schema_size if it seems to be using defaults
-                # Check if max_tokens is the default 5120
-                if self.doc_processor.chunker.max_tokens == 5120:
-                    from ..document_chunker import DocumentChunker
+            # Update chunker configuration based on schema size (no recreation)
+            if self.doc_processor.chunker:
+                import json
 
-                    provider = None
-                    # Try to determine provider from backend client
-                    if hasattr(backend.client, "__class__"):
-                        client_name = backend.client.__class__.__name__.lower()
-                        if "watsonx" in client_name:
-                            provider = "watsonx"
-                        elif "openai" in client_name:
-                            provider = "openai"
-                        elif "mistral" in client_name:
-                            provider = "mistral"
-                        elif "ollama" in client_name:
-                            provider = "ollama"
-                        elif "gemini" in client_name:
-                            provider = "google"
-
-                    if provider:
-                        self.doc_processor.chunker = DocumentChunker(
-                            provider=provider, schema_size=schema_size, merge_peers=True
-                        )
-                        rich_print(
-                            f"[blue][ManyToOneStrategy][/blue] Updated chunker with schema size: "
-                            f"[cyan]{schema_size}[/cyan] bytes for provider: [yellow]{provider}[/yellow]"
-                        )
+                schema_size = len(json.dumps(template.model_json_schema()))
+                self.doc_processor.chunker.update_schema_config(schema_size)
 
             chunks = self.doc_processor.extract_chunks(document)
             total_chunks = len(chunks)
@@ -263,6 +254,17 @@ class ManyToOneStrategy(BaseExtractor):
                 backend.client, "context_limit", 3500
             )  # Fallback for unknown backends
 
+            # Get tokenizer from chunker for accurate token counting
+            tokenizer_fn = None
+            if self.doc_processor.chunker and hasattr(self.doc_processor.chunker, "tokenizer"):
+                # Extract the count_tokens method from the tokenizer object
+                tokenizer_obj = self.doc_processor.chunker.tokenizer
+                if hasattr(tokenizer_obj, "count_tokens"):
+                    tokenizer_fn = tokenizer_obj.count_tokens
+                    rich_print(
+                        "[blue][ManyToOneStrategy][/blue] Using real tokenizer from DocumentChunker"
+                    )
+
             # Create batcher
             batcher = ChunkBatcher(
                 context_limit=context_limit,
@@ -271,8 +273,8 @@ class ManyToOneStrategy(BaseExtractor):
                 merge_threshold=0.85,
             )
 
-            # Batch chunks for efficient processing
-            batches = batcher.batch_chunks(chunks)
+            # Batch chunks for efficient processing with real tokenizer
+            batches = batcher.batch_chunks(chunks, tokenizer_fn=tokenizer_fn)
 
             rich_print(
                 f"[blue][ManyToOneStrategy][/blue] Starting batch extraction "
@@ -301,7 +303,10 @@ class ManyToOneStrategy(BaseExtractor):
                     )
 
             if not extracted_models:
-                rich_print("[red][ManyToOneStrategy][/red] No models extracted from any batch")
+                rich_print(
+                    "[yellow][ManyToOneStrategy][/yellow] No models extracted from any batch. "
+                    "Returning empty list (zero data loss: no partial data to preserve)."
+                )
                 return []
 
             if len(extracted_models) == 1:
@@ -318,16 +323,19 @@ class ManyToOneStrategy(BaseExtractor):
 
             if not programmatic_model:
                 rich_print(
-                    "[yellow][ManyToOneStrategy][/yellow] Programmatic merge failed. Returning first extracted model."
+                    "[yellow][ManyToOneStrategy][/yellow] Programmatic merge failed. "
+                    "Returning all extracted batch models (zero data loss: preserving partial results)."
                 )
-                return [extracted_models[0]]
+                return extracted_models
 
-            # Consolidation step
-            if self.llm_consolidation and is_llm_backend(self.backend):
+            # Consolidation step (use cached protocol check)
+            if self.llm_consolidation and self._is_llm:
                 rich_print(
                     "[green][ManyToOneStrategy][/green] Programmatic merge complete. Starting LLM consolidation pass..."
                 )
-                final_model = self.backend.consolidate_from_pydantic_models(
+                final_model = cast(
+                    TextExtractionBackendProtocol, self.backend
+                ).consolidate_from_pydantic_models(
                     raw_models=extracted_models,
                     programmatic_model=programmatic_model,
                     template=template,
@@ -335,14 +343,21 @@ class ManyToOneStrategy(BaseExtractor):
                 if final_model:
                     return [final_model]
                 rich_print(
-                    "[yellow][ManyToOneStrategy][/yellow] LLM consolidation failed. Falling back to programmatic merge."
+                    "[yellow][ManyToOneStrategy][/yellow] LLM consolidation failed. "
+                    "Falling back to programmatic merge (zero data loss: preserving merged result)."
                 )
                 return [programmatic_model]
             else:
                 return [programmatic_model]
 
         except Exception as e:
-            rich_print(f"[red][ManyToOneStrategy][/red] Batch extraction failed: {e}")
+            rich_print(
+                f"[red][ManyToOneStrategy][/red] Batch extraction failed: {e}. "
+                "Returning empty list (catastrophic failure: no data to preserve)."
+            )
+            import traceback
+
+            rich_print(f"[red]Traceback:[/red]\n{traceback.format_exc()}")
             return []
 
     # Full-document extraction (LLM)
@@ -370,7 +385,13 @@ class ManyToOneStrategy(BaseExtractor):
                 return []
 
         except Exception as e:
-            rich_print(f"[red][ManyToOneStrategy][/red] Full-document extraction failed: {e}")
+            rich_print(
+                f"[red][ManyToOneStrategy][/red] Full-document extraction failed: {e}. "
+                "Returning empty list (catastrophic failure: no data to preserve)."
+            )
+            import traceback
+
+            rich_print(f"[red]Traceback:[/red]\n{traceback.format_exc()}")
             return []
 
     # Page-by-page extraction + merging (LLM)
@@ -411,7 +432,10 @@ class ManyToOneStrategy(BaseExtractor):
                     )
 
             if not extracted_models:
-                rich_print("[red][ManyToOneStrategy][/red] No models extracted from any page")
+                rich_print(
+                    "[yellow][ManyToOneStrategy][/yellow] No models extracted from any page. "
+                    "Returning empty list (zero data loss: no partial data to preserve)."
+                )
                 return []
 
             if len(extracted_models) == 1:
@@ -428,17 +452,19 @@ class ManyToOneStrategy(BaseExtractor):
 
             if not programmatic_model:
                 rich_print(
-                    "[yellow][ManyToOneStrategy][/yellow] "
-                    "Programmatic merge failed. Returning first extracted model."
+                    "[yellow][ManyToOneStrategy][/yellow] Programmatic merge failed. "
+                    "Returning all extracted page models (zero data loss: preserving partial results)."
                 )
-                return [extracted_models[0]]
+                return extracted_models
 
-            # Consolidation step
-            if self.llm_consolidation and is_llm_backend(self.backend):
+            # Consolidation step (use cached protocol check)
+            if self.llm_consolidation and self._is_llm:
                 rich_print(
                     "[blue]Programmatic merge complete. Starting LLM consolidation pass...[/blue]"
                 )
-                final_model = self.backend.consolidate_from_pydantic_models(
+                final_model = cast(
+                    TextExtractionBackendProtocol, self.backend
+                ).consolidate_from_pydantic_models(
                     raw_models=extracted_models,
                     programmatic_model=programmatic_model,
                     template=template,
@@ -446,12 +472,19 @@ class ManyToOneStrategy(BaseExtractor):
                 if final_model:
                     return [final_model]
                 rich_print(
-                    "[yellow]LLM consolidation failed. Falling back to programmatic merge.[/yellow]"
+                    "[yellow][ManyToOneStrategy][/yellow] LLM consolidation failed. "
+                    "Falling back to programmatic merge (zero data loss: preserving merged result)."
                 )
                 return [programmatic_model]
             else:
                 return [programmatic_model]
 
         except Exception as e:
-            rich_print(f"[red][ManyToOneStrategy][/red] Page-by-page extraction failed: {e}")
+            rich_print(
+                f"[red][ManyToOneStrategy][/red] Page-by-page extraction failed: {e}. "
+                "Returning empty list (catastrophic failure: no data to preserve)."
+            )
+            import traceback
+
+            rich_print(f"[red]Traceback:[/red]\n{traceback.format_exc()}")
             return []

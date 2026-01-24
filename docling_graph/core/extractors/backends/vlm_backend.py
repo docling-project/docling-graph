@@ -18,6 +18,8 @@ from rich import print as rich_print
 class VlmBackend:
     """Backend for VLM-based extraction (local only)."""
 
+    doc_extractor: DocumentExtractor | None
+
     def __init__(self, model_name: str) -> None:
         """
         Initialize VLM backend with specified model.
@@ -79,6 +81,9 @@ class VlmBackend:
         """
         rich_print(f"[blue][VlmBackend][/blue] Extracting from: [yellow]{source}[/yellow]")
 
+        if self.doc_extractor is None:
+            raise RuntimeError("DocumentExtractor is not initialized")
+
         try:
             # Extract using VLM
             extraction_result = self.doc_extractor.extract(source=source, template=template)
@@ -128,23 +133,120 @@ class VlmBackend:
             return []
 
     def cleanup(self) -> None:
-        """Clean up GPU memory and release resources."""
+        """
+        Enhanced GPU cleanup with memory tracking.
+
+        Performs:
+        1. Memory tracking (before cleanup)
+        2. Model-to-CPU transfer (if model exists)
+        3. Resource deletion
+        4. CUDA cache clearing
+        5. Garbage collection
+        6. Memory tracking (after cleanup)
+        """
         try:
-            # Delete the extractor to release document objects
-            if hasattr(self, "doc_extractor"):
-                del self.doc_extractor
+            # Track memory before cleanup
+            memory_before = 0.0
+            try:
+                if torch.cuda.is_available():
+                    memory_before = torch.cuda.memory_allocated() / 1024**2  # MB
+                    rich_print(
+                        f"[blue][VlmBackend][/blue] GPU memory before cleanup: {memory_before:.2f} MB"
+                    )
+            except Exception:
+                # Torch operations may fail in test environments
+                pass
+
+            # Move models to CPU before deletion (if accessible)
+            if hasattr(self, "doc_extractor") and self.doc_extractor is not None:
+                # Try to access the model through the extractor's pipeline
+                try:
+                    # Docling's extractor may have models in pipelines
+                    if hasattr(self.doc_extractor, "_pipelines"):
+                        for pipeline in self.doc_extractor._pipelines.values():
+                            if hasattr(pipeline, "model") and pipeline.model is not None:
+                                if hasattr(pipeline.model, "to"):
+                                    rich_print("[blue][VlmBackend][/blue] Moving model to CPU...")
+                                    pipeline.model.to("cpu")
+                except Exception as e:
+                    # Model access may fail, continue with cleanup
+                    try:
+                        rich_print(
+                            f"[yellow][VlmBackend][/yellow] Could not move model to CPU: {e}"
+                        )
+                    except Exception:
+                        # Even printing might fail with mocks
+                        pass
+
+                # Clear the extractor reference
+                self.doc_extractor = None
+                rich_print("[blue][VlmBackend][/blue] Extractor deleted")
 
             # Force garbage collection
             gc.collect()
 
             # Clear CUDA cache if available
+            try:
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.synchronize()
+                    rich_print("[blue][VlmBackend][/blue] CUDA cache cleared")
+            except Exception:
+                # Torch operations may fail in test environments
+                pass
+
+            # Track memory after cleanup
             if torch.cuda.is_available():
+                memory_after = torch.cuda.memory_allocated() / 1024**2  # MB
+                memory_freed = memory_before - memory_after
+                rich_print(
+                    f"[green][VlmBackend][/green] GPU cleanup complete:\n"
+                    f"  • Memory freed: {memory_freed:.2f} MB\n"
+                    f"  • Memory remaining: {memory_after:.2f} MB"
+                )
+            else:
+                rich_print("[green][VlmBackend][/green] Cleanup complete (no GPU detected)")
+
+        except Exception as e:
+            rich_print(f"[yellow][VlmBackend][/yellow] Warning during cleanup: {e}")
+
+    def cleanup_all_gpus(self) -> None:
+        """
+        Cleanup all available GPUs.
+
+        Useful for multi-GPU setups or when model was distributed across devices.
+        """
+        if not torch.cuda.is_available():
+            rich_print("[blue][VlmBackend][/blue] No CUDA devices available")
+            return
+
+        device_count = torch.cuda.device_count()
+        rich_print(f"[blue][VlmBackend][/blue] Cleaning up {device_count} GPU(s)...")
+
+        for device_id in range(device_count):
+            try:
+                # Try to clear cache for this device
+                memory_before = 0.0
+                try:
+                    memory_before = torch.cuda.memory_allocated(device_id) / 1024**2
+                except Exception:
+                    pass
+
+                # Clear cache - this is the critical operation
                 torch.cuda.empty_cache()
                 torch.cuda.synchronize()
 
-            rich_print(
-                "[blue][VlmBackend][/blue] [green]Cleaned up resources and GPU memory[/green]"
-            )
+                memory_after = 0.0
+                try:
+                    memory_after = torch.cuda.memory_allocated(device_id) / 1024**2
+                except Exception:
+                    pass
 
-        except Exception as e:
-            rich_print(f"[blue][VlmBackend][/blue] [yellow]Warning during cleanup:[/yellow] {e}")
+                memory_freed = memory_before - memory_after
+                rich_print(
+                    f"[blue][VlmBackend][/blue] GPU {device_id}: freed {memory_freed:.2f} MB"
+                )
+            except Exception as e:
+                rich_print(f"[yellow][VlmBackend][/yellow] Could not clear GPU {device_id}: {e}")
+
+        rich_print("[green][VlmBackend][/green] Multi-GPU cleanup complete")

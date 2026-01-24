@@ -101,6 +101,7 @@ class DocumentChunker:
         )
 
         self.max_tokens = max_tokens
+        self.original_max_tokens = max_tokens  # Store original for schema adjustments
         self.tokenizer_name = tokenizer_name
         self.merge_peers = merge_peers
 
@@ -109,6 +110,65 @@ class DocumentChunker:
             f" • Tokenizer: [cyan]{tokenizer_name}[/cyan]\n"
             f" • Max tokens/chunk: [yellow]{max_tokens}[/yellow]\n"
             f" • Merge peers: {merge_peers}"
+        )
+
+    def update_schema_config(self, schema_size: int) -> None:
+        """
+        Update chunker configuration based on schema size.
+
+        Adjusts max_tokens to reserve space for schema in context window,
+        preventing context overflow when schema is large.
+
+        Args:
+            schema_size: Size of the JSON schema in bytes
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        if not self.tokenizer:
+            logger.warning("No tokenizer available for schema config update")
+            return
+
+        # Estimate schema tokens (conservative: 3.5 chars per token)
+        schema_tokens = int(schema_size / 3.5)
+
+        # Adjust max_tokens to reserve space for schema
+        # Keep at least 50% of original capacity
+        min_tokens = int(self.original_max_tokens * 0.5)
+        adjusted_max = self.original_max_tokens - schema_tokens
+
+        if adjusted_max < min_tokens:
+            logger.warning(
+                f"Schema is very large ({schema_tokens} tokens, {schema_size} bytes). "
+                f"Reducing chunk size from {self.original_max_tokens} to minimum {min_tokens}"
+            )
+            self.max_tokens = min_tokens
+        elif adjusted_max < self.original_max_tokens:
+            logger.info(
+                f"Adjusted chunk size from {self.original_max_tokens} to {adjusted_max} "
+                f"to accommodate schema ({schema_tokens} tokens)"
+            )
+            self.max_tokens = adjusted_max
+        else:
+            # Schema is small, no adjustment needed
+            self.max_tokens = self.original_max_tokens
+
+        # Update the tokenizer's max_tokens
+        if hasattr(self.tokenizer, "max_tokens"):
+            self.tokenizer.max_tokens = self.max_tokens
+
+        # Update the chunker's tokenizer max_tokens as well
+        if hasattr(self.chunker, "tokenizer") and hasattr(self.chunker.tokenizer, "max_tokens"):
+            self.chunker.tokenizer.max_tokens = self.max_tokens
+
+        # Note: chunker.max_tokens is a read-only property derived from tokenizer.max_tokens
+        # so we don't need to (and can't) set it directly
+
+        rich_print(
+            f"[blue][DocumentChunker][/blue] Schema config updated:\n"
+            f" • Schema size: {schema_size} bytes (~{schema_tokens} tokens)\n"
+            f" • Adjusted max_tokens: {self.max_tokens} (was {self.original_max_tokens})"
         )
 
     @staticmethod

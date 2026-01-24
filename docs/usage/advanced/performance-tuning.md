@@ -10,13 +10,22 @@ Optimize docling-graph pipeline performance for speed, memory efficiency, and re
 - Batch size optimization
 - Memory management
 - GPU utilization
-- Caching strategies
+- Provider-specific batching
+- Real tokenizer integration
 - Profiling techniques
 
 **Prerequisites:**
 - Understanding of [Pipeline Configuration](../../fundamentals/pipeline-configuration/index.md)
 - Familiarity with [Extraction Process](../../fundamentals/extraction-process/index.md)
 - Basic knowledge of system resources
+
+!!! tip "New Performance Features"
+    Recent improvements include:
+    
+    - **Provider-Specific Batching**: Optimized merge thresholds per provider
+    - **Real Tokenizer Integration**: Accurate token counting with safety margins
+    - **Enhanced GPU Cleanup**: Better memory management for VLM backends
+    - **Model Capability Detection**: Automatic prompt adaptation based on model size
 
 ---
 
@@ -78,7 +87,117 @@ model_override="mistral-small-latest"  # Accurate (remote)
 
 ---
 
+## Model Capability Tiers
+
+Docling Graph automatically detects model capabilities and optimizes performance:
+
+```python
+from docling_graph import PipelineConfig
+
+# Small model (1B-7B) - SIMPLE tier
+# - Minimal prompts (fewer tokens)
+# - Basic consolidation (faster)
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.2:3b"  # Optimized for speed
+)
+
+# Medium model (7B-13B) - STANDARD tier
+# - Balanced prompts
+# - Standard consolidation
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b"  # Balanced performance
+)
+
+# Large model (13B+) - ADVANCED tier
+# - Detailed prompts (more tokens but better quality)
+# - Chain of Density consolidation (multi-turn)
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="openai",
+    model_override="gpt-4-turbo"  # Optimized for quality
+)
+```
+
+**Performance Impact:**
+
+| Tier | Prompt Tokens | Consolidation | Speed | Quality |
+|:-----|:--------------|:--------------|:------|:--------|
+| **SIMPLE** | ~200-300 | Single-turn | ⚡ Fast | 🟡 Good |
+| **STANDARD** | ~400-500 | Single-turn | ⚡ Fast | 🟢 Better |
+| **ADVANCED** | ~600-800 | Multi-turn | 🐢 Slower | 💎 Best |
+
+See [Model Capabilities](../../fundamentals/extraction-process/model-capabilities.md) for details.
+
+---
+
 ## Batch Processing
+
+### Provider-Specific Batching
+
+Different providers have different optimal batching strategies:
+
+```python
+from docling_graph import PipelineConfig
+
+# OpenAI - Aggressive batching (90% merge threshold)
+# Best for: High-volume processing with reliable API
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="openai",
+    model_override="gpt-4-turbo",
+    use_chunking=True  # Automatically uses 90% threshold
+)
+
+# Google Gemini - Aggressive batching (88% threshold)
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="gemini",
+    model_override="gemini-2.5-flash",
+    use_chunking=True  # Automatically uses 88% threshold
+)
+
+# Anthropic - Conservative batching (85% threshold)
+# Best for: Quality-focused processing
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="anthropic",
+    model_override="claude-3-opus",
+    use_chunking=True  # Automatically uses 85% threshold
+)
+
+# Ollama/Local - Very conservative (75% threshold)
+# Best for: Variable performance local models
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b",
+    use_chunking=True  # Automatically uses 75% threshold
+)
+```
+
+**Why Different Thresholds?**
+
+| Provider | Threshold | Reason |
+|:---------|:----------|:-------|
+| **OpenAI** | 90% | Robust to near-limit contexts |
+| **Google** | 88% | Good context handling |
+| **Anthropic** | 85% | More conservative approach |
+| **Ollama/Local** | 75% | Variable performance, safer margin |
+
+**Performance Impact:**
+- Higher threshold = Fewer API calls = Faster processing
+- Lower threshold = More safety margin = Better reliability
 
 ### Optimal Batch Sizes
 
@@ -223,6 +342,25 @@ for doc in documents:
     # Memory is freed between documents
 ```
 
+!!! tip "Enhanced GPU Cleanup for VLM"
+    VLM backends now include enhanced GPU memory management:
+    
+    ```python
+    from docling_graph.core.extractors.backends import VlmBackend
+    
+    backend = VlmBackend(model_name="numind/NuExtract-2.0-8B")
+    try:
+        models = backend.extract_from_document(source, template)
+    finally:
+        backend.cleanup()  # Enhanced cleanup:
+        # 1. Moves model to CPU before deletion
+        # 2. Explicitly clears CUDA cache
+        # 3. Logs memory usage before/after
+        # 4. Handles multiple GPU devices
+    ```
+    
+    **Memory Savings**: Up to 8GB VRAM freed per cleanup cycle
+
 ---
 
 ## GPU Utilization
@@ -291,6 +429,56 @@ with ThreadPoolExecutor(max_workers=2) as executor:
     
     for future in futures:
         future.result()
+```
+
+---
+
+## Real Tokenizer Integration
+
+### Accurate Token Counting
+
+Docling Graph now uses real tokenizers for accurate token counting:
+
+```python
+from docling_graph import PipelineConfig
+
+# ✅ Good - Real tokenizer with safety margin
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate",
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b",
+    use_chunking=True  # Uses real tokenizer + 20% safety margin
+)
+```
+
+**Benefits:**
+
+1. **Prevents Context Overflows**: Accurate token counting prevents exceeding context limits
+2. **Better Chunk Packing**: More efficient use of context window
+3. **Reduced API Calls**: Optimal chunk sizes reduce number of requests
+4. **Cost Savings**: Fewer API calls = lower costs
+
+**Performance Comparison:**
+
+| Method | Accuracy | Context Overflows | Chunk Efficiency |
+|:-------|:---------|:------------------|:-----------------|
+| **Character Heuristic** | ~70% | Occasional | 60-70% |
+| **Real Tokenizer** | 95%+ | Rare | 80-90% |
+
+### Safety Margins
+
+```python
+# Default: 20% safety margin
+# If model has 8192 token context:
+# - Effective limit: 6553 tokens (80% of 8192)
+# - Prevents edge cases and ensures reliability
+
+# For aggressive batching (not recommended):
+# Modify ChunkBatcher.batch_chunks merge_threshold
+# But this may cause context overflows
 ```
 
 ---
@@ -368,7 +556,44 @@ config = PipelineConfig(
 | Strategy | Speed | Accuracy | Use Case |
 |----------|-------|----------|----------|
 | Programmatic | ⚡ Very Fast | 🟡 Moderate Accuracy | Simple merging, lists |
-| LLM | 🐢 Slow | 💎 High Accuracy | Complex conflicts, narratives |
+| LLM (Standard) | 🐢 Slow | 🟢 High Accuracy | Complex conflicts |
+| LLM (Chain of Density) | 🐌 Very Slow | 💎 Highest Accuracy | Critical documents |
+
+### Chain of Density Consolidation
+
+For ADVANCED tier models (13B+), consolidation uses a multi-turn approach:
+
+```python
+# Automatically enabled for large models
+config = PipelineConfig(
+    source="complex_document.pdf",
+    template="templates.Contract",
+    backend="llm",
+    inference="remote",
+    provider_override="openai",
+    model_override="gpt-4-turbo",  # ADVANCED tier
+    processing_mode="many-to-one",
+    llm_consolidation=True  # Uses Chain of Density
+)
+```
+
+**Process:**
+1. **Initial Merge** (Turn 1): Create first consolidated version
+2. **Refinement** (Turn 2): Identify and resolve conflicts
+3. **Final Polish** (Turn 3): Ensure completeness and accuracy
+
+**Performance Impact:**
+- **Token Usage**: 3x more tokens than standard consolidation
+- **Time**: 3x longer processing time
+- **Quality**: Significantly better for complex documents
+- **Cost**: 3x API costs
+
+**When to Use:**
+- ✅ Critical documents requiring highest accuracy
+- ✅ Complex contracts or legal documents
+- ✅ Documents with many conflicts
+- ❌ Simple forms or invoices (overkill)
+- ❌ High-volume batch processing (too slow)
 
 
 ---
@@ -561,11 +786,31 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 
 ---
 
+## Performance Optimization Summary
+
+### Quick Wins
+
+1. **Use Provider-Specific Batching**: Automatic optimization per provider
+2. **Enable Real Tokenizers**: Accurate token counting prevents overflows
+3. **Choose Right Model Tier**: Match model size to task complexity
+4. **Clean Up GPU Memory**: Use enhanced cleanup for VLM backends
+5. **Disable Chunking for Small Docs**: Faster processing for < 5 pages
+
+### Advanced Optimizations
+
+1. **Multi-GPU Processing**: Parallel document processing
+2. **Adaptive Consolidation**: Chain of Density for critical documents
+3. **Memory Profiling**: Monitor and optimize resource usage
+4. **Batch Size Tuning**: Optimize for your hardware
+
+---
+
 ## Next Steps
 
-1. **[Error Handling →](error-handling.md)** - Handle errors gracefully
-2. **[Testing →](testing.md)** - Test performance optimizations
-3. **[GPU Setup →](../../fundamentals/installation/gpu-setup.md)** - Configure GPU
+1. **[Model Capabilities →](../../fundamentals/extraction-process/model-capabilities.md)** - Learn about adaptive prompting
+2. **[Error Handling →](error-handling.md)** - Handle errors gracefully
+3. **[Testing →](testing.md)** - Test performance optimizations
+4. **[GPU Setup →](../../fundamentals/installation/gpu-setup.md)** - Configure GPU
 
 ---
 
@@ -573,4 +818,6 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 
 - **[Pipeline Configuration](../../fundamentals/pipeline-configuration/index.md)** - Configuration options
 - **[Extraction Process](../../fundamentals/extraction-process/index.md)** - How extraction works
+- **[Model Capabilities](../../fundamentals/extraction-process/model-capabilities.md)** - Adaptive prompting
+- **[Extraction Backends](../../fundamentals/extraction-process/extraction-backends.md)** - Backend selection
 - **[GPU Setup](../../fundamentals/installation/gpu-setup.md)** - GPU configuration

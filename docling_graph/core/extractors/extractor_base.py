@@ -26,7 +26,20 @@ class BaseExtractor(ABC):
         Returns:
             Tuple[List[BaseModel], Optional[DoclingDocument]]: A tuple containing:
                 - List of Pydantic model instances:
-                    - For "One-to-One", this list may contain N models (one per page).
-                    - For "Many-to-One", this list will contain 1 model.
+                    - For "One-to-One": Contains N models (one per page).
+                    - For "Many-to-One":
+                        * Success: Contains 1 consolidated model
+                        * Partial failure: May contain multiple models (batch/page results)
+                          when merge/consolidation fails (zero data loss strategy)
+                        * Complete failure: Empty list
                 - The DoclingDocument object used during extraction (or None if extraction failed).
+
+        Note:
+            The Many-to-One strategy implements a zero data loss policy. When consolidation
+            or merging fails, it returns all successfully extracted partial models rather
+            than discarding data. Consumers should handle cases where len(models) > 1 for
+            Many-to-One extractions by either:
+                1. Using the first model as the primary result
+                2. Implementing custom merge logic
+                3. Processing all partial models independently
         """

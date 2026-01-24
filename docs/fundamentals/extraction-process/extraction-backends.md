@@ -9,8 +9,12 @@
 - LLM vs VLM comparison
 - Backend selection criteria
 - Configuration and usage
+- Model capability tiers
 - Performance optimization
 - Error handling
+
+!!! tip "New: Model Capability Detection"
+    Docling Graph now automatically detects model capabilities and adapts prompts and consolidation strategies based on model size. See [Model Capabilities](model-capabilities.md) for details.
 
 ---
 
@@ -54,6 +58,50 @@ config = PipelineConfig(
     model_override="llama3.1:8b"
 )
 ```
+
+---
+
+### Model Capability Detection
+
+Docling Graph automatically detects model capabilities based on parameter count and adapts its behavior:
+
+```python
+from docling_graph import PipelineConfig
+
+# Small model (1B-7B) - Uses SIMPLE tier
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.2:3b"  # Automatically detected as SIMPLE
+)
+
+# Medium model (7B-13B) - Uses STANDARD tier
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b"  # Automatically detected as STANDARD
+)
+
+# Large model (13B+) - Uses ADVANCED tier
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="openai",
+    model_override="gpt-4-turbo"  # Automatically detected as ADVANCED
+)
+```
+
+**Capability Tiers:**
+
+| Tier | Model Size | Prompt Style | Consolidation |
+|:-----|:-----------|:-------------|:--------------|
+| **SIMPLE** | 1B-7B | Minimal instructions | Basic merge |
+| **STANDARD** | 7B-13B | Balanced instructions | Standard merge |
+| **ADVANCED** | 13B+ | Detailed instructions | Chain of Density |
+
+See [Model Capabilities](model-capabilities.md) for complete details.
 
 ---
 
@@ -214,6 +262,15 @@ final_model = backend.consolidate_from_pydantic_models(
     template=InvoiceTemplate
 )
 ```
+
+!!! info "Chain of Density Consolidation"
+    For ADVANCED tier models (13B+), consolidation uses a multi-turn "Chain of Density" approach:
+    
+    1. **Initial Merge**: Create first consolidated version
+    2. **Refinement**: Identify and resolve conflicts
+    3. **Final Polish**: Ensure completeness and accuracy
+    
+    This produces higher quality results but uses more tokens. See [Model Capabilities](model-capabilities.md#chain-of-density-consolidation).
 
 ---
 
@@ -628,6 +685,36 @@ finally:
     backend.cleanup()  # Free GPU memory
 ```
 
+!!! tip "Enhanced GPU Cleanup"
+    VLM backend now includes enhanced GPU memory management:
+    
+    - **Model-to-CPU Transfer**: Moves model to CPU before deletion
+    - **CUDA Cache Clearing**: Explicitly clears GPU cache
+    - **Memory Tracking**: Logs memory usage before/after cleanup
+    - **Multi-GPU Support**: Handles multiple GPU devices
+    
+    This ensures GPU memory is properly released, especially important for long-running processes.
+
+### 5. Use Real Tokenizers
+
+```python
+# ✅ Good - Accurate token counting
+from docling_graph import PipelineConfig
+
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b",
+    use_chunking=True  # Uses real tokenizer with 20% safety margin
+)
+```
+
+**Benefits:**
+- Prevents context window overflows
+- More efficient chunk packing
+- Better resource utilization
+
 ---
 
 ## Troubleshooting
@@ -675,13 +762,58 @@ config = PipelineConfig(
 
 ---
 
+## Advanced Features
+
+### Provider-Specific Batching
+
+Different LLM providers have different optimal batching strategies:
+
+```python
+from docling_graph import PipelineConfig
+
+# OpenAI - Aggressive batching (90% merge threshold)
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="openai",
+    model_override="gpt-4-turbo",
+    use_chunking=True  # Automatically uses 90% threshold
+)
+
+# Anthropic - Conservative batching (85% threshold)
+config = PipelineConfig(
+    backend="llm",
+    inference="remote",
+    provider_override="anthropic",
+    model_override="claude-3-opus",
+    use_chunking=True  # Automatically uses 85% threshold
+)
+
+# Ollama - Very conservative (75% threshold)
+config = PipelineConfig(
+    backend="llm",
+    inference="local",
+    provider_override="ollama",
+    model_override="llama3.1:8b",
+    use_chunking=True  # Automatically uses 75% threshold
+)
+```
+
+**Why Different Thresholds?**
+- **OpenAI/Google**: Robust to near-limit contexts → aggressive batching
+- **Anthropic**: More conservative → moderate batching
+- **Ollama/Local**: Variable performance → conservative batching
+
+---
+
 ## Next Steps
 
 Now that you understand extraction backends:
 
-1. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
-2. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
-3. **[Model Merging →](model-merging.md)** - Understand consolidation
+1. **[Model Capabilities →](model-capabilities.md)** - Learn about adaptive prompting
+2. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
+3. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
+4. **[Performance Tuning →](../advanced/performance-tuning.md)** - Advanced optimization
 
 ---
 

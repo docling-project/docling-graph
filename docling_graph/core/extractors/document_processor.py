@@ -11,7 +11,7 @@ from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
     VlmPipelineOptions,
 )
-from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
 from docling.pipeline.vlm_pipeline import VlmPipeline
 from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
@@ -87,7 +87,7 @@ class DocumentProcessor:
             self.converter = DocumentConverter(
                 format_options={
                     InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
-                    InputFormat.IMAGE: PdfFormatOption(pipeline_options=pipeline_options),
+                    InputFormat.IMAGE: ImageFormatOption(),
                 }
             )
             rich_print(

@@ -8,12 +8,21 @@ all functionality.
 
 import logging
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional
 
 import yaml
 
 logger = logging.getLogger(__name__)
+
+
+class ModelCapability(Enum):
+    """Model capability tiers for adaptive extraction strategies."""
+
+    SIMPLE = "simple"  # 1B-5B models: simplified prompts, no Chain of Density
+    STANDARD = "standard"  # 7B-13B models: standard prompts, single-pass consolidation
+    ADVANCED = "advanced"  # 13B+ models: complex prompts, Chain of Density support
 
 
 @dataclass
@@ -23,13 +32,24 @@ class ModelConfig:
     model_id: str
     context_limit: int
     max_new_tokens: int = 4096
+    capability: ModelCapability = ModelCapability.STANDARD
     description: str = ""
     notes: str = ""
+
+    @property
+    def supports_chain_of_density(self) -> bool:
+        """Check if model supports multi-turn consolidation."""
+        return self.capability == ModelCapability.ADVANCED
+
+    @property
+    def requires_strict_schema(self) -> bool:
+        """Check if model needs strict schema compliance."""
+        return self.capability == ModelCapability.SIMPLE
 
     def __repr__(self) -> str:
         return (
             f"ModelConfig({self.model_id}, context={self.context_limit}, "
-            f"max_new_tokens={self.max_new_tokens})"
+            f"max_tokens={self.max_new_tokens}, capability={self.capability.value})"
         )
 
 
@@ -41,6 +61,16 @@ class ProviderConfig:
     models: Dict[str, ModelConfig]
     tokenizer: str
     content_ratio: float = 0.8
+
+    # Batching configuration
+    merge_threshold: float = 0.85
+    """Merge batches if below this % of context (0.0-1.0)."""
+
+    rate_limit_rpm: int | None = None
+    """Rate limit in requests per minute (None = no limit)."""
+
+    supports_batching: bool = True
+    """Whether provider supports efficient batching."""
 
     def get_model(self, model_name: str) -> ModelConfig | None:
         """Get a specific model from this provider."""
@@ -141,10 +171,22 @@ class ConfigRegistry:
 
             # Parse models for this provider
             for model_id, model_data in provider_data.get("models", {}).items():
+                # Parse capability field
+                capability_str = model_data.get("capability", "standard")
+                try:
+                    capability = ModelCapability(capability_str)
+                except ValueError:
+                    logger.warning(
+                        f"Invalid capability '{capability_str}' for {model_id}, "
+                        "defaulting to 'standard'"
+                    )
+                    capability = ModelCapability.STANDARD
+
                 models[model_id] = ModelConfig(
                     model_id=model_id,
                     context_limit=model_data["context_limit"],
                     max_new_tokens=model_data.get("max_new_tokens", 4096),
+                    capability=capability,
                     description=model_data.get("description", ""),
                     notes=model_data.get("notes", ""),
                 )
@@ -155,6 +197,9 @@ class ConfigRegistry:
                 models=models,
                 tokenizer=provider_data.get("tokenizer", "sentence-transformers/all-MiniLM-L6-v2"),
                 content_ratio=provider_data.get("content_ratio", 0.8),
+                merge_threshold=provider_data.get("merge_threshold", 0.85),
+                rate_limit_rpm=provider_data.get("rate_limit_rpm"),
+                supports_batching=provider_data.get("supports_batching", True),
             )
 
         logger.info(
@@ -304,3 +349,31 @@ def list_providers() -> list[str]:
 def list_models(provider: str) -> list[str] | None:
     """List all models for a provider."""
     return _get_registry().list_models(provider)
+
+
+def detect_model_capability(context_limit: int, model_name: str = "") -> ModelCapability:
+    """
+    Auto-detect model capability from context limit and name.
+
+    Used as fallback when model not in registry.
+
+    Args:
+        context_limit: Model's context window size
+        model_name: Optional model name for heuristic detection
+
+    Returns:
+        Detected ModelCapability
+    """
+    # Check model name for size hints
+    name_lower = model_name.lower()
+    if any(size in name_lower for size in ["1b", "350m", "500m", "2b", "3b"]):
+        return ModelCapability.SIMPLE
+
+    # Use context limit as proxy for model size
+    if context_limit <= 4096:
+        return ModelCapability.SIMPLE
+    elif context_limit <= 32768:
+        return ModelCapability.STANDARD
+    else:
+        # Large context usually means capable model
+        return ModelCapability.ADVANCED

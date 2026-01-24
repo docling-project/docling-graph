@@ -165,3 +165,109 @@ def test_get_config_summary(
     assert summary["tokenizer_name"] == "test-model"
     assert summary["max_tokens"] == 1234
     assert summary["merge_peers"] is True
+
+
+# ============================================================================
+# Fix 6: Dynamic Chunker Configuration Tests
+# ============================================================================
+
+
+class TestDynamicChunkerConfiguration:
+    """Tests for Fix 6: update_schema_config() method."""
+
+    def test_update_schema_config_basic(self):
+        """Test basic schema configuration update."""
+        with (
+            patch("docling_graph.core.extractors.document_chunker.AutoTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HuggingFaceTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HybridChunker") as mock_hybrid,
+        ):
+            mock_chunker_instance = Mock()
+            mock_chunker_instance.max_tokens = 8000
+            mock_hybrid.return_value = mock_chunker_instance
+
+            # Create DocumentChunker
+            doc_chunker = DocumentChunker(max_tokens=8000)
+            doc_chunker.original_max_tokens = 8000
+
+            # Small schema (500 chars)
+            small_schema_size = 500
+            doc_chunker.update_schema_config(small_schema_size)
+
+            # Should reduce max_tokens by schema overhead
+            schema_overhead = int(small_schema_size / 3.5)
+            expected_tokens = 8000 - schema_overhead
+            assert doc_chunker.max_tokens == expected_tokens
+
+    def test_update_schema_config_large_schema(self):
+        """Test configuration update with large schema."""
+        with (
+            patch("docling_graph.core.extractors.document_chunker.AutoTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HuggingFaceTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HybridChunker") as mock_hybrid,
+        ):
+            mock_chunker_instance = Mock()
+            mock_chunker_instance.max_tokens = 8000
+            mock_hybrid.return_value = mock_chunker_instance
+
+            doc_chunker = DocumentChunker(max_tokens=8000)
+            doc_chunker.original_max_tokens = 8000
+
+            # Large schema (10000 chars)
+            large_schema_size = 10000
+            doc_chunker.update_schema_config(large_schema_size)
+
+            # Should enforce minimum chunk size
+            assert doc_chunker.chunker.max_tokens >= 1000
+
+    def test_update_schema_config_no_chunker(self):
+        """Test update when chunker is None."""
+        doc_chunker = DocumentChunker(max_tokens=None)
+        doc_chunker.chunker = None
+
+        # Should not raise error
+        doc_chunker.update_schema_config(1000)
+        assert doc_chunker.chunker is None
+
+    def test_update_schema_config_preserves_original(self):
+        """Test that original_max_tokens is preserved."""
+        with (
+            patch("docling_graph.core.extractors.document_chunker.AutoTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HuggingFaceTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HybridChunker") as mock_hybrid,
+        ):
+            mock_chunker_instance = Mock()
+            mock_chunker_instance.max_tokens = 8000
+            mock_hybrid.return_value = mock_chunker_instance
+
+            doc_chunker = DocumentChunker(max_tokens=8000)
+            doc_chunker.original_max_tokens = 8000
+
+            # Multiple updates
+            doc_chunker.update_schema_config(500)
+            doc_chunker.update_schema_config(1000)
+            doc_chunker.update_schema_config(2000)
+
+            # Original should remain unchanged
+            assert doc_chunker.original_max_tokens == 8000
+
+    def test_update_schema_config_edge_cases(self):
+        """Test edge cases for schema configuration."""
+        with (
+            patch("docling_graph.core.extractors.document_chunker.AutoTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HuggingFaceTokenizer"),
+            patch("docling_graph.core.extractors.document_chunker.HybridChunker") as mock_hybrid,
+        ):
+            mock_chunker_instance = Mock()
+            mock_chunker_instance.max_tokens = 2000
+            mock_hybrid.return_value = mock_chunker_instance
+
+            doc_chunker = DocumentChunker(max_tokens=2000)
+            doc_chunker.original_max_tokens = 2000
+
+            # Very large schema that would result in negative tokens
+            huge_schema_size = 20000
+            doc_chunker.update_schema_config(huge_schema_size)
+
+            # Should enforce minimum
+            assert doc_chunker.max_tokens == 1000

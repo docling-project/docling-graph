@@ -246,8 +246,10 @@ class Organization(BaseModel):
 
 - **VLM (Vision-Language Model)**: Local extraction using Docling's NuExtract
 - **LLM (Language Model)**: Text-based extraction using local (vLLM, Ollama) or remote APIs (Mistral, OpenAI, Gemini, WatsonX)
+- **Model Capabilities**: Automatic classification into SIMPLE/STANDARD/ADVANCED tiers for optimized extraction
 
 **[→ Learn More About Backends](fundamentals/extraction-process/extraction-backends.md)**
+**[→ Learn More About Model Capabilities](fundamentals/extraction-process/model-capabilities.md)**
 
 ---
 

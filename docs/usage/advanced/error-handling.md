@@ -8,6 +8,7 @@ Handle errors gracefully in docling-graph pipelines with structured exception ha
 **What You'll Learn:**
 - Exception hierarchy
 - Error recovery strategies
+- Zero data loss patterns
 - Retry mechanisms
 - Logging and debugging
 - Validation errors
@@ -17,6 +18,9 @@ Handle errors gracefully in docling-graph pipelines with structured exception ha
 - Understanding of [Pipeline Architecture](../../introduction/architecture.md)
 - Familiarity with [Python API](../api/index.md)
 - Basic Python exception handling
+
+!!! tip "New: Zero Data Loss"
+    Docling Graph now implements zero data loss - extraction failures return partial models instead of empty results, ensuring you never lose successfully extracted data.
 
 ---
 
@@ -466,6 +470,156 @@ debug_pipeline("document.pdf")
 
 ## Error Recovery Patterns
 
+### Zero Data Loss
+
+**Zero data loss** ensures extraction failures never result in completely empty results:
+
+```python
+"""Handle extraction with zero data loss."""
+
+from docling_graph import PipelineConfig
+from pathlib import Path
+import json
+
+def process_with_zero_data_loss(source: str):
+    """Process document with zero data loss guarantee."""
+    
+    config = PipelineConfig(
+        source=source,
+        template="templates.Invoice",
+        processing_mode="many-to-one",
+        output_dir="outputs"
+    )
+    
+    try:
+        results = config.run()
+        
+        # Check result type
+        if len(results) == 1:
+            print("✓ Successfully merged into single model")
+            return {"status": "complete", "models": results}
+        else:
+            print(f"⚠ Got {len(results)} partial models (merge failed)")
+            print("  But data is preserved!")
+            return {"status": "partial", "models": results}
+            
+    except Exception as e:
+        print(f"Pipeline failed: {e}")
+        
+        # Even on failure, check for partial results
+        output_dir = Path("outputs")
+        if output_dir.exists():
+            # Look for partial model files
+            model_files = list(output_dir.glob("*.json"))
+            if model_files:
+                print(f"✓ Found {len(model_files)} partial model files")
+                
+                # Load partial models
+                partial_models = []
+                for file in model_files:
+                    with open(file) as f:
+                        partial_models.append(json.load(f))
+                
+                return {"status": "recovered", "models": partial_models}
+        
+        return {"status": "failed", "models": []}
+
+# Usage
+result = process_with_zero_data_loss("invoice.pdf")
+
+if result["status"] == "complete":
+    # Use merged model
+    model = result["models"][0]
+    print(f"Invoice: {model.get('invoice_number')}")
+    
+elif result["status"] == "partial":
+    # Use partial models
+    print("Working with partial models:")
+    for i, model in enumerate(result["models"], 1):
+        print(f"  Model {i}: {model.get('invoice_number', 'N/A')}")
+    
+elif result["status"] == "recovered":
+    # Recovered from files
+    print("Recovered partial data from files")
+    
+else:
+    print("No data available")
+```
+
+### Partial Model Handling
+
+```python
+"""Work with partial models when merging fails."""
+
+from docling_graph import PipelineConfig
+from typing import List, Dict, Any
+
+def extract_with_partial_handling(source: str) -> Dict[str, Any]:
+    """Extract and handle partial models intelligently."""
+    
+    config = PipelineConfig(
+        source=source,
+        template="templates.Invoice",
+        processing_mode="many-to-one",
+        llm_consolidation=True  # Try LLM consolidation
+    )
+    
+    results = config.run()
+    
+    if len(results) == 1:
+        # Success: single merged model
+        return {
+            "status": "merged",
+            "invoice_number": results[0].invoice_number,
+            "total": results[0].total,
+            "line_items": len(results[0].line_items or []),
+            "completeness": 100
+        }
+    else:
+        # Partial: multiple models
+        print(f"⚠ Merge failed, got {len(results)} partial models")
+        
+        # Combine data from partial models
+        combined = {
+            "status": "partial",
+            "invoice_number": None,
+            "total": None,
+            "line_items": 0,
+            "completeness": 0
+        }
+        
+        # Extract what we can
+        for model in results:
+            if model.invoice_number and not combined["invoice_number"]:
+                combined["invoice_number"] = model.invoice_number
+            if model.total and not combined["total"]:
+                combined["total"] = model.total
+            if model.line_items:
+                combined["line_items"] += len(model.line_items)
+        
+        # Calculate completeness
+        fields_found = sum([
+            bool(combined["invoice_number"]),
+            bool(combined["total"]),
+            bool(combined["line_items"] > 0)
+        ])
+        combined["completeness"] = int((fields_found / 3) * 100)
+        
+        return combined
+
+# Usage
+result = extract_with_partial_handling("invoice.pdf")
+
+print(f"Status: {result['status']}")
+print(f"Invoice: {result['invoice_number'] or 'N/A'}")
+print(f"Total: ${result['total'] or 0}")
+print(f"Line items: {result['line_items']}")
+print(f"Completeness: {result['completeness']}%")
+
+if result['completeness'] < 100:
+    print("⚠ Incomplete extraction - consider manual review")
+```
+
 ### Graceful Degradation
 
 ```python
@@ -480,7 +634,8 @@ def process_with_degradation(source: str):
     results = {
         "success": False,
         "method": None,
-        "output_dir": None
+        "output_dir": None,
+        "models": []
     }
     
     # Try best method first
@@ -499,13 +654,15 @@ def process_with_degradation(source: str):
                 template="templates.MyTemplate",
                 **config_overrides
             )
-            config.run()
+            models = config.run()
             
             results["success"] = True
             results["method"] = method_name
             results["output_dir"] = config.output_dir
+            results["models"] = models
             
             print(f"✓ Success with {method_name}")
+            print(f"  Extracted {len(models)} model(s)")
             break
             
         except ExtractionError as e:
@@ -536,7 +693,22 @@ def process_with_partial_success(source: str):
             template="templates.MyTemplate",
             output_dir="outputs"
         )
-        config.run()
+        models = config.run()
+        
+        # Check completeness
+        if len(models) == 1:
+            return {
+                "status": "complete",
+                "models": models,
+                "output_dir": config.output_dir
+            }
+        else:
+            return {
+                "status": "partial",
+                "models": models,
+                "output_dir": config.output_dir,
+                "warning": f"Got {len(models)} partial models instead of 1"
+            }
         
     except Exception as e:
         print(f"Pipeline failed: {e}")
@@ -547,13 +719,17 @@ def process_with_partial_success(source: str):
             # Check for extracted data
             nodes_file = output_dir / "nodes.csv"
             if nodes_file.exists():
-                print("✓ Partial results available")
+                print("✓ Partial results available in files")
                 print(f"  Nodes: {nodes_file}")
                 
                 # Use partial results
-                return {"status": "partial", "output_dir": output_dir}
+                return {
+                    "status": "recovered",
+                    "models": [],
+                    "output_dir": output_dir
+                }
         
-        return {"status": "failed", "output_dir": None}
+        return {"status": "failed", "models": [], "output_dir": None}
 ```
 
 ---
@@ -711,16 +887,74 @@ except:
 
 ---
 
+## Zero Data Loss Best Practices
+
+### 1. Always Check Result Count
+
+```python
+# ✅ Good - Check if merge succeeded
+results = config.run()
+
+if len(results) == 1:
+    # Merged successfully
+    process_merged_model(results[0])
+else:
+    # Got partial models
+    process_partial_models(results)
+```
+
+### 2. Handle Partial Models Gracefully
+
+```python
+# ✅ Good - Extract what you can from partial models
+def get_invoice_number(models: List) -> str:
+    """Get invoice number from any model that has it."""
+    for model in models:
+        if model.invoice_number:
+            return model.invoice_number
+    return "N/A"
+```
+
+### 3. Log Partial Results
+
+```python
+# ✅ Good - Log when you get partial results
+import logging
+logger = logging.getLogger(__name__)
+
+results = config.run()
+if len(results) > 1:
+    logger.warning(f"Got {len(results)} partial models instead of 1")
+    logger.info("Data preserved despite merge failure")
+```
+
+### 4. Provide User Feedback
+
+```python
+# ✅ Good - Inform users about partial results
+results = config.run()
+
+if len(results) == 1:
+    print("✓ Extraction complete")
+else:
+    print(f"⚠ Extraction partially complete ({len(results)} fragments)")
+    print("  All data preserved - manual review recommended")
+```
+
+---
+
 ## Next Steps
 
-1. **[Testing →](testing.md)** - Test error handling
-2. **[Exceptions Reference →](../../reference/exceptions.md)** - Full exception API
-3. **[Extraction Process →](../../fundamentals/extraction-process/index.md)** - Extraction guide
+1. **[Model Merging →](../../fundamentals/extraction-process/model-merging.md)** - Learn about zero data loss
+2. **[Testing →](testing.md)** - Test error handling
+3. **[Exceptions Reference →](../../reference/exceptions.md)** - Full exception API
+4. **[Extraction Process →](../../fundamentals/extraction-process/index.md)** - Extraction guide
 
 ---
 
 ## Related Documentation
 
+- **[Model Merging](../../fundamentals/extraction-process/model-merging.md)** - Zero data loss details
 - **[Exceptions API](../../reference/exceptions.md)** - Exception reference
 - **[Pipeline Architecture](../../introduction/architecture.md)** - System design
 - **[Extraction Process](../../fundamentals/extraction-process/index.md)** - Extraction guide

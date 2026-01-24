@@ -261,11 +261,6 @@ keep_trailing_newline = false
 extensions = []
 autoescape = true
 
-[tool.semantic_release.commit_parser_options]
-allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
-minor_tags = ["feat", "refactor"]
-patch_tags = ["fix", "perf"]
-
 [tool.semantic_release.remote]
 name = "origin"
 type = "github"
