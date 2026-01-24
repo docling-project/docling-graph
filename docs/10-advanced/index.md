@@ -95,42 +95,42 @@ Before diving into advanced topics, ensure you understand:
 
 ### Custom Backends
 
-Use when:<br>
-✅ You have a specialized model not supported by default<br>
-✅ You need to integrate with a proprietary API<br>
-✅ You want to implement custom preprocessing<br>
-✅ You need fine-grained control over extraction
+Use when:
+<br>✅ You have a specialized model not supported by default
+<br>✅ You need to integrate with a proprietary API
+<br>✅ You want to implement custom preprocessing
+<br>✅ You need fine-grained control over extraction
 
-Don't use when:<br>
-❌ Default backends meet your needs<br>
-❌ You're just starting with docling-graph<br>
-❌ You don't need custom logic
+Don't use when:
+<br>❌ Default backends meet your needs
+<br>❌ You're just starting with docling-graph
+<br>❌ You don't need custom logic
 
 ### Custom Exporters
 
-Use when:<br>
-✅ You need a specialized output format<br>
-✅ You're integrating with a specific database<br>
-✅ You need custom data transformations<br>
-✅ Default formats don't meet requirements
+Use when:
+<br>✅ You need a specialized output format
+<br>✅ You're integrating with a specific database
+<br>✅ You need custom data transformations
+<br>✅ Default formats don't meet requirements
 
-Don't use when:<br>
-❌ CSV, Cypher, or JSON formats work<br>
-❌ You can post-process existing exports<br>
-❌ You're prototyping
+Don't use when:
+<br>❌ CSV, Cypher, or JSON formats work
+<br>❌ You can post-process existing exports
+<br>❌ You're prototyping
 
 ### Custom Stages
 
-Use when:<br>
-✅ You need custom preprocessing<br>
-✅ You want to add validation steps<br>
-✅ You need custom post-processing<br>
-✅ You're building a specialized pipeline
+Use when:
+<br>✅ You need custom preprocessing
+<br>✅ You want to add validation steps
+<br>✅ You need custom post-processing
+<br>✅ You're building a specialized pipeline
 
-Don't use when:<br>
-❌ Default pipeline stages suffice<br>
-❌ You can achieve goals with configuration<br>
-❌ You're learning the system
+Don't use when:
+<br>❌ Default pipeline stages suffice
+<br>❌ You can achieve goals with configuration
+<br>❌ You're learning the system
 
 ---
 
