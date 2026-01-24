@@ -77,20 +77,24 @@ class BaseLlmClient(ABC):
         """
 
     @abstractmethod
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Provider-specific API call.
 
-        This method should call the provider's API and return the raw
-        response as a string. All JSON parsing and validation is handled
-        by the base class.
+        This method should call the provider's API and return both the raw
+        response and metadata about the generation (e.g., finish_reason).
 
         Args:
             messages: List of message dicts with 'role' and 'content'
             **params: Additional parameters (e.g., schema_json)
 
         Returns:
-            Raw response string from the API
+            Tuple of (raw_response, metadata) where metadata contains:
+            - finish_reason: Why generation stopped (if available)
+            - usage: Token usage info (if available)
+            - other provider-specific data
 
         Raises:
             ClientError: If API call fails
@@ -114,6 +118,7 @@ class BaseLlmClient(ABC):
         This method is the same for all clients - it handles:
         - Message preparation
         - API call
+        - Truncation detection
         - Response parsing and validation
 
         Args:
@@ -129,14 +134,19 @@ class BaseLlmClient(ABC):
         # Prepare messages
         messages = self._prepare_messages(prompt)
 
-        # Call provider API
-        raw_response = self._call_api(messages, schema_json=schema_json)
+        # Call provider API (returns response + metadata)
+        raw_response, metadata = self._call_api(messages, schema_json=schema_json)
 
-        # Parse using shared handler
+        # Check for truncation
+        truncated = self._check_truncation(metadata)
+
+        # Parse using shared handler with truncation awareness
         return ResponseHandler.parse_json_response(
             raw_response,
             self.__class__.__name__,
             aggressive_clean=self._needs_aggressive_cleaning(),
+            truncated=truncated,
+            max_tokens=self.max_tokens,
         )
 
     def _prepare_messages(self, prompt: str | dict) -> list[Dict[str, str]]:
@@ -166,6 +176,25 @@ class BaseLlmClient(ABC):
         Returns:
             True if provider needs extra cleaning (e.g., WatsonX)
         """
+        return False
+
+    def _check_truncation(self, metadata: Dict[str, Any]) -> bool:
+        """
+        Check if response was truncated due to max_tokens limit.
+
+        Args:
+            metadata: Response metadata from _call_api()
+
+        Returns:
+            True if response was truncated, False otherwise
+        """
+        # Check for finish_reason (OpenAI-compatible APIs)
+        finish_reason = metadata.get("finish_reason")
+        if finish_reason:
+            return bool(finish_reason == "length")
+
+        # For providers without finish_reason, use heuristics
+        # (Conservative: don't assume truncation without evidence)
         return False
 
     def _load_model_config(self) -> None:

@@ -4,6 +4,8 @@ Centralized JSON response parsing and validation for LLM clients.
 This module eliminates 150+ lines of duplicated code across all LLM clients
 by providing a single, well-tested implementation of JSON parsing, cleaning,
 and validation logic.
+
+Enhanced with truncation detection and JSON repair capabilities.
 """
 
 import json
@@ -29,18 +31,24 @@ class ResponseHandler:
 
     @staticmethod
     def parse_json_response(
-        raw_response: str, client_name: str, aggressive_clean: bool = False
+        raw_response: str,
+        client_name: str,
+        aggressive_clean: bool = False,
+        truncated: bool = False,
+        max_tokens: int | None = None,
     ) -> Dict[str, Any] | list[Any]:
         """
         Parse and validate JSON response from LLM.
 
         This is the main entry point used by all LLM clients. It handles
-        all common response formats and edge cases.
+        all common response formats and edge cases, including truncated responses.
 
         Args:
             raw_response: Raw string response from LLM
             client_name: Name of the client (for error messages)
             aggressive_clean: Apply more aggressive cleaning (for WatsonX, etc.)
+            truncated: Whether response was truncated (hit max_tokens limit)
+            max_tokens: Max tokens limit (for warning messages)
 
         Returns:
             Parsed and validated JSON (dictionary or list)
@@ -60,9 +68,24 @@ class ResponseHandler:
         # Parse JSON
         try:
             parsed = json.loads(content)
+
+            # Success! But warn if truncated
+            if truncated:
+                ResponseHandler._warn_truncation(client_name, max_tokens, recovered=True)
+
             return ResponseHandler._validate_structure(parsed, client_name)
 
         except json.JSONDecodeError as e:
+            # If truncated, try to repair the JSON
+            if truncated:
+                repaired = ResponseHandler._attempt_json_repair(content)
+                if repaired is not None:
+                    ResponseHandler._warn_truncation(client_name, max_tokens, recovered=True)
+                    return ResponseHandler._validate_structure(repaired, client_name)
+                else:
+                    # Repair failed - show clear truncation error
+                    ResponseHandler._warn_truncation(client_name, max_tokens, recovered=False)
+
             # Provide detailed error information
             rich_print(f"[red]Error:[/red] {client_name} JSON parse failed: {e}")
             rich_print("[yellow]Raw response (first 500 chars):[/yellow]")
@@ -75,6 +98,8 @@ class ResponseHandler:
                     "error": str(e),
                     "raw_response": raw_response[:500],
                     "cleaned_content_preview": content[:200],
+                    "truncated": truncated,
+                    "max_tokens": max_tokens,
                 },
                 cause=e,
             ) from e
@@ -246,3 +271,256 @@ class ResponseHandler:
             rich_print(f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON")
 
         return parsed
+
+    @staticmethod
+    def _attempt_json_repair(content: str) -> Dict[str, Any] | list[Any] | None:
+        """
+        Attempt to repair truncated JSON.
+
+        Strategies:
+        1. Find the last complete object/array before truncation
+        2. Close unclosed brackets intelligently
+        3. Remove incomplete trailing data
+
+        Args:
+            content: Potentially truncated JSON string
+
+        Returns:
+            Repaired JSON object/array, or None if unrepairable
+        """
+        content = content.strip()
+
+        # Strategy 1: Try to find last complete structure by removing trailing incomplete data
+        # Look for common truncation patterns
+        truncation_patterns = [
+            r',\s*"[^"]*$',  # Incomplete key: , "partial_key
+            r':\s*"[^"]*$',  # Incomplete string value: : "partial_value
+            r":\s*\d+\.?\d*$",  # Incomplete number: : 123.
+            r",\s*$",  # Trailing comma
+            r":\s*$",  # Trailing colon
+        ]
+
+        for pattern in truncation_patterns:
+            cleaned = re.sub(pattern, "", content)
+            if cleaned != content:
+                # Try closing brackets
+                repaired = ResponseHandler._close_brackets(cleaned)
+                try:
+                    result = json.loads(repaired)
+                    return result if isinstance(result, dict | list) else None
+                except json.JSONDecodeError:
+                    continue
+
+        # Strategy 2: Try to close brackets on original content
+        repaired = ResponseHandler._close_brackets(content)
+        try:
+            result = json.loads(repaired)
+            return result if isinstance(result, dict | list) else None
+        except json.JSONDecodeError:
+            pass
+
+        # Strategy 3: Find last complete array/object element
+        # For arrays: find last complete element before truncation
+        if content.strip().startswith("["):
+            last_complete = ResponseHandler._find_last_complete_array_element(content)
+            if last_complete:
+                try:
+                    result = json.loads(last_complete)
+                    return result if isinstance(result, dict | list) else None
+                except json.JSONDecodeError:
+                    pass
+
+        # For objects: find last complete key-value pair
+        if content.strip().startswith("{"):
+            last_complete = ResponseHandler._find_last_complete_object(content)
+            if last_complete:
+                try:
+                    result = json.loads(last_complete)
+                    return result if isinstance(result, dict | list) else None
+                except json.JSONDecodeError:
+                    pass
+
+        # Unable to repair
+        return None
+
+    @staticmethod
+    def _close_brackets(content: str) -> str:
+        """
+        Intelligently close unclosed brackets in JSON.
+
+        Args:
+            content: JSON string with potentially unclosed brackets
+
+        Returns:
+            JSON string with brackets closed
+        """
+        # Count open/close brackets
+        content.count("{")
+        content.count("}")
+        content.count("[")
+        content.count("]")
+
+        # Track what's open (accounting for strings)
+        in_string = False
+        escape_next = False
+        stack = []
+
+        for char in content:
+            if escape_next:
+                escape_next = False
+                continue
+
+            if char == "\\":
+                escape_next = True
+                continue
+
+            if char == '"':
+                in_string = not in_string
+                continue
+
+            if not in_string:
+                if char == "{":
+                    stack.append("}")
+                elif char == "[":
+                    stack.append("]")
+                elif char == "}" and stack and stack[-1] == "}":
+                    stack.pop()
+                elif char == "]" and stack and stack[-1] == "]":
+                    stack.pop()
+
+        # Close remaining open structures
+        return content + "".join(reversed(stack))
+
+    @staticmethod
+    def _find_last_complete_array_element(content: str) -> str | None:
+        """
+        Find the last complete element in a truncated array.
+
+        Args:
+            content: Truncated array JSON
+
+        Returns:
+            Array with last complete elements, or None
+        """
+        # Find all complete elements by tracking depth
+        elements = []
+        depth = 0
+        in_string = False
+        escape_next = False
+        current_start = None
+
+        for i, char in enumerate(content):
+            if escape_next:
+                escape_next = False
+                continue
+
+            if char == "\\":
+                escape_next = True
+                continue
+
+            if char == '"':
+                in_string = not in_string
+                continue
+
+            if not in_string:
+                if char in "{[":
+                    if depth == 1 and current_start is None:
+                        current_start = i
+                    depth += 1
+                elif char in "}]":
+                    depth -= 1
+                    if depth == 1 and current_start is not None:
+                        # Complete element found
+                        elements.append(content[current_start : i + 1])
+                        current_start = None
+                elif char == "," and depth == 1:
+                    current_start = None
+
+        if elements:
+            return "[" + ",".join(elements) + "]"
+        return None
+
+    @staticmethod
+    def _find_last_complete_object(content: str) -> str | None:
+        """
+        Find the last complete key-value pairs in a truncated object.
+
+        Args:
+            content: Truncated object JSON
+
+        Returns:
+            Object with last complete pairs, or None
+        """
+        # Similar to array but for objects
+        # Find complete "key": value pairs
+        pairs = []
+        depth = 0
+        in_string = False
+        escape_next = False
+        current_start = None
+
+        for i, char in enumerate(content):
+            if escape_next:
+                escape_next = False
+                continue
+
+            if char == "\\":
+                escape_next = True
+                continue
+
+            if char == '"':
+                in_string = not in_string
+                continue
+
+            if not in_string:
+                if char in "{[":
+                    if depth == 1 and current_start is None:
+                        # Start of a value
+                        current_start = i
+                    depth += 1
+                elif char in "}]":
+                    depth -= 1
+                    if depth == 1 and current_start is not None:
+                        # Complete value found
+                        pairs.append(content[current_start : i + 1])
+                        current_start = None
+                elif char == "," and depth == 1:
+                    if current_start is not None:
+                        pairs.append(content[current_start:i])
+                    current_start = None
+
+        if pairs:
+            return "{" + ",".join(pairs) + "}"
+        return None
+
+    @staticmethod
+    def _warn_truncation(client_name: str, max_tokens: int | None, recovered: bool) -> None:
+        """
+        Display clear warning about response truncation.
+
+        Args:
+            client_name: Name of the LLM client
+            max_tokens: Maximum tokens limit that was hit
+            recovered: Whether partial data was successfully recovered
+        """
+        max_tokens_str = str(max_tokens) if max_tokens else "unknown"
+
+        if recovered:
+            rich_print(
+                f"\n[yellow]⚠️  Response Truncated[/yellow] (hit max_tokens={max_tokens_str})"
+            )
+            rich_print("[yellow]Partial data recovered - results may be incomplete[/yellow]")
+            rich_print("[dim]Suggestion: Increase max_tokens or use simpler template[/dim]\n")
+        else:
+            rich_print(f"\n[red]❌ Response Truncated[/red] (hit max_tokens={max_tokens_str})")
+            rich_print("[red]Unable to recover partial data - JSON too incomplete[/red]")
+            rich_print("\n[yellow]Solutions:[/yellow]")
+
+            if max_tokens:
+                suggested = max_tokens * 2
+                rich_print(f"  1. Increase: {client_name}(model='...', max_tokens={suggested})")
+            else:
+                rich_print(f"  1. Increase: {client_name}(model='...', max_tokens=16384)")
+
+            rich_print("  2. Use appropriate template for content type")
+            rich_print("  3. Process complete documents instead of isolated pages\n")

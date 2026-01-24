@@ -68,7 +68,9 @@ class OpenAIClient(BaseLlmClient):
 
         rich_print(f"[blue][OpenAI][/blue] Initialized for model: [cyan]{self.model}[/cyan]")
 
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Call OpenAI API.
 
@@ -77,7 +79,7 @@ class OpenAIClient(BaseLlmClient):
             **params: Additional parameters
 
         Returns:
-            Raw response string
+            Tuple of (raw_response, metadata) where metadata contains finish_reason
 
         Raises:
             ClientError: If API call fails
@@ -103,11 +105,18 @@ class OpenAIClient(BaseLlmClient):
             )
 
             content = response.choices[0].message.content
+            finish_reason = response.choices[0].finish_reason
 
             if not content:
                 raise ClientError("OpenAI returned empty content", details={"model": self.model})
 
-            return str(content)
+            # Return response and metadata
+            metadata = {
+                "finish_reason": finish_reason,
+                "model": self.model,
+            }
+
+            return str(content), metadata
 
         except Exception as e:
             raise ClientError(

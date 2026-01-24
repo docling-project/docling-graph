@@ -19,10 +19,15 @@ class MockLlmClient(BaseLlmClient):
         self.test_value = kwargs.get("test_value", "default")
         self.api_key = kwargs.get("api_key", "test_key")
 
-    def _call_api(self, messages, **params: Any) -> str:
+    def _call_api(self, messages, **params: Any) -> tuple[str, dict[str, Any]]:
         if hasattr(self, "_mock_response"):
-            return self._mock_response
-        return '{"test": "response"}'
+            response = self._mock_response
+        else:
+            response = '{"test": "response"}'
+
+        # Return tuple with metadata
+        metadata = {"finish_reason": "stop", "model": self.model}
+        return response, metadata
 
 
 class TestBaseLlmClient:

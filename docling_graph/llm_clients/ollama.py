@@ -57,7 +57,9 @@ class OllamaClient(BaseLlmClient):
                 },
             ) from e
 
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Call Ollama API.
 
@@ -66,7 +68,7 @@ class OllamaClient(BaseLlmClient):
             **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Raw response string from Ollama
+            Tuple of (raw_response, metadata) - Ollama doesn't provide finish_reason
 
         Raises:
             ClientError: If API call fails
@@ -90,7 +92,12 @@ class OllamaClient(BaseLlmClient):
             if not raw_json:
                 raise ClientError("Ollama returned empty content", details={"model": self.model})
 
-            return str(raw_json)
+            # Ollama doesn't provide finish_reason
+            metadata = {
+                "model": self.model,
+            }
+
+            return str(raw_json), metadata
 
         except Exception as e:
             if isinstance(e, ClientError):

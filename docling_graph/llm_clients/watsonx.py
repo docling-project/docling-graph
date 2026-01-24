@@ -93,7 +93,9 @@ class WatsonxClient(BaseLlmClient):
         rich_print(f"[blue][WatsonX][/blue] Connected to: [cyan]{self.url}[/cyan]")
         rich_print(f"[blue][WatsonX][/blue] Model: [cyan]{self.model}[/cyan]")
 
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Call WatsonX API.
 
@@ -105,7 +107,7 @@ class WatsonxClient(BaseLlmClient):
             **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Raw response string
+            Tuple of (raw_response, metadata) - WatsonX doesn't provide finish_reason
 
         Raises:
             ClientError: If API call fails
@@ -135,7 +137,12 @@ class WatsonxClient(BaseLlmClient):
                     details={"model": self.model, "prompt_length": len(prompt_text)},
                 )
 
-            return str(response)
+            # WatsonX doesn't provide finish_reason
+            metadata = {
+                "model": self.model,
+            }
+
+            return str(response), metadata
 
         except Exception as e:
             raise ClientError(

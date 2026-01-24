@@ -19,8 +19,12 @@ class TestMaxTokensConfiguration:
         for provider_id in providers:
             provider = get_provider_config(provider_id)
             assert provider is not None, f"Provider {provider_id} not found"
-            assert hasattr(provider, "default_max_tokens"), f"Provider {provider_id} missing default_max_tokens"
-            assert provider.default_max_tokens == 8192, f"Provider {provider_id} has wrong default_max_tokens"
+            assert hasattr(provider, "default_max_tokens"), (
+                f"Provider {provider_id} missing default_max_tokens"
+            )
+            assert provider.default_max_tokens == 8192, (
+                f"Provider {provider_id} has wrong default_max_tokens"
+            )
 
     def test_provider_has_timeout_seconds(self):
         """Verify all providers have timeout_seconds configured."""
@@ -29,8 +33,12 @@ class TestMaxTokensConfiguration:
         for provider_id in providers:
             provider = get_provider_config(provider_id)
             assert provider is not None, f"Provider {provider_id} not found"
-            assert hasattr(provider, "timeout_seconds"), f"Provider {provider_id} missing timeout_seconds"
-            assert provider.timeout_seconds in [300, 600], f"Provider {provider_id} has unexpected timeout"
+            assert hasattr(provider, "timeout_seconds"), (
+                f"Provider {provider_id} missing timeout_seconds"
+            )
+            assert provider.timeout_seconds in [300, 600], (
+                f"Provider {provider_id} has unexpected timeout"
+            )
 
     def test_vllm_provider_has_correct_timeout(self):
         """Verify vLLM provider has 600s timeout (10 minutes)."""

@@ -49,7 +49,9 @@ class MistralClient(BaseLlmClient):
 
         logger.info(f"Mistral client initialized for model: {self.model}")
 
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Call Mistral API.
 
@@ -58,7 +60,7 @@ class MistralClient(BaseLlmClient):
             **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Raw response string from Mistral
+            Tuple of (raw_response, metadata) where metadata contains finish_reason
 
         Raises:
             ClientError: If API call fails
@@ -78,19 +80,28 @@ class MistralClient(BaseLlmClient):
             )
 
             response_content = response.choices[0].message.content
+            finish_reason = response.choices[0].finish_reason
 
             if not response_content:
                 raise ClientError("Mistral returned empty content", details={"model": self.model})
 
             if isinstance(response_content, str):
-                return response_content
+                content = response_content
             else:
                 parts: list[str] = []
                 for chunk in response_content:
                     text = getattr(chunk, "text", None)
                     if isinstance(text, str):
                         parts.append(text)
-                return "".join(parts)
+                content = "".join(parts)
+
+            # Return response and metadata
+            metadata = {
+                "finish_reason": finish_reason,
+                "model": self.model,
+            }
+
+            return content, metadata
 
         except Exception as e:
             if isinstance(e, ClientError):

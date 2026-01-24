@@ -82,15 +82,18 @@ class TestMistralClient:
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = '{"result": "success"}'
+        mock_response.choices[0].finish_reason = "stop"
         mock_client.chat.complete.return_value = mock_response
         mock_mistral_class.return_value = mock_client
 
         client = MistralClient(model="mistral-large-latest")
         messages = [{"role": "user", "content": "test"}]
 
-        response = client._call_api(messages, temperature=0.1)
+        response, metadata = client._call_api(messages, temperature=0.1)
 
         assert response == '{"result": "success"}'
+        assert metadata["finish_reason"] == "stop"
+        assert metadata["model"] == "mistral-large-latest"
         mock_client.chat.complete.assert_called_once()
 
         # Verify call arguments

@@ -55,7 +55,9 @@ class GeminiClient(BaseLlmClient):
 
         logger.info(f"Gemini client initialized for model: {self.model}")
 
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Call Gemini API.
 
@@ -66,7 +68,7 @@ class GeminiClient(BaseLlmClient):
             **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Raw response string from Gemini
+            Tuple of (raw_response, metadata) - Gemini doesn't provide finish_reason
 
         Raises:
             ClientError: If API call fails
@@ -94,7 +96,12 @@ class GeminiClient(BaseLlmClient):
             if not response_text:
                 raise ClientError("Gemini returned empty response", details={"model": self.model})
 
-            return str(response_text)
+            # Gemini doesn't provide finish_reason
+            metadata = {
+                "model": self.model,
+            }
+
+            return str(response_text), metadata
 
         except Exception as e:
             if isinstance(e, ClientError):

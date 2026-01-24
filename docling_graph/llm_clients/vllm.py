@@ -73,7 +73,9 @@ class VllmClient(BaseLlmClient):
                 },
             ) from e
 
-    def _call_api(self, messages: list[Dict[str, str]], **params: Any) -> str:
+    def _call_api(
+        self, messages: list[Dict[str, str]], **params: Any
+    ) -> tuple[str, Dict[str, Any]]:
         """
         Call vLLM API via OpenAI-compatible interface.
 
@@ -82,7 +84,7 @@ class VllmClient(BaseLlmClient):
             **params: Additional parameters (schema_json, etc.)
 
         Returns:
-            Raw response string from vLLM
+            Tuple of (raw_response, metadata) where metadata contains finish_reason
 
         Raises:
             ClientError: If API call fails or times out
@@ -128,6 +130,7 @@ class VllmClient(BaseLlmClient):
                 )
 
             raw_json = response.choices[0].message.content
+            finish_reason = response.choices[0].finish_reason
 
             if not raw_json:
                 raise ClientError(
@@ -135,7 +138,13 @@ class VllmClient(BaseLlmClient):
                     details={"model": self.model, "base_url": self.base_url},
                 )
 
-            return str(raw_json)
+            # Return response and metadata
+            metadata = {
+                "finish_reason": finish_reason,
+                "model": self.model,
+            }
+
+            return str(raw_json), metadata
 
         except TimeoutError as e:
             raise ClientError(

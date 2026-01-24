@@ -53,6 +53,8 @@ plugins:
             show_root_heading: true
 
 markdown_extensions:
+  - pymdownx.tasklist:
+      clickable_checkbox: true
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
