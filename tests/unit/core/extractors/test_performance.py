@@ -1,5 +1,5 @@
 """
-Performance tests for Phase 2 & 3 optimizations.
+Performance tests for extreaction layer.
 
 Tests validate performance improvements from:
 - Cached protocol checks
@@ -51,17 +51,20 @@ class TestPerformanceImprovements:
             call_count["is_vlm"] += 1
             return False
 
-        with patch(
-            "docling_graph.core.extractors.strategies.many_to_one.is_llm_backend",
-            side_effect=count_is_llm,
-        ), patch(
-            "docling_graph.core.extractors.strategies.many_to_one.is_vlm_backend",
-            side_effect=count_is_vlm,
-        ), patch(
-            "docling_graph.core.extractors.strategies.many_to_one.get_backend_type",
-            return_value="llm",
+        with (
+            patch(
+                "docling_graph.core.extractors.strategies.many_to_one.is_llm_backend",
+                side_effect=count_is_llm,
+            ),
+            patch(
+                "docling_graph.core.extractors.strategies.many_to_one.is_vlm_backend",
+                side_effect=count_is_vlm,
+            ),
+            patch(
+                "docling_graph.core.extractors.strategies.many_to_one.get_backend_type",
+                return_value="llm",
+            ),
         ):
-
             strategy = ManyToOneStrategy(
                 backend=mock_backend,
                 use_chunking=False,
@@ -115,5 +118,3 @@ class TestPerformanceImprovements:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-
-# Made with Bob

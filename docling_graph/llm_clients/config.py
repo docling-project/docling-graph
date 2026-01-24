@@ -32,6 +32,8 @@ class ModelConfig:
     model_id: str
     context_limit: int
     max_new_tokens: int = 4096
+    max_tokens: int | None = None
+    timeout: int | None = None
     capability: ModelCapability = ModelCapability.STANDARD
     description: str = ""
     notes: str = ""
@@ -72,6 +74,12 @@ class ProviderConfig:
     supports_batching: bool = True
     """Whether provider supports efficient batching."""
 
+    default_max_tokens: int = 8192
+    """Default maximum tokens to generate for responses."""
+
+    timeout_seconds: int = 300
+    """Default request timeout in seconds."""
+
     def get_model(self, model_name: str) -> ModelConfig | None:
         """Get a specific model from this provider."""
         return self.models.get(model_name)
@@ -79,6 +87,20 @@ class ProviderConfig:
     def list_models(self) -> list[str]:
         """List all available models for this provider."""
         return list(self.models.keys())
+
+    def get_max_tokens(self, model_name: str) -> int:
+        """Get max_tokens for a model (model-specific or provider default)."""
+        model = self.get_model(model_name)
+        if model and model.max_tokens is not None:
+            return model.max_tokens
+        return self.default_max_tokens
+
+    def get_timeout(self, model_name: str) -> int:
+        """Get timeout for a model (model-specific or provider default)."""
+        model = self.get_model(model_name)
+        if model and model.timeout is not None:
+            return model.timeout
+        return self.timeout_seconds
 
     def get_recommended_chunk_size(self, model_name: str, schema_size: int = 0) -> int:
         """
@@ -186,6 +208,8 @@ class ConfigRegistry:
                     model_id=model_id,
                     context_limit=model_data["context_limit"],
                     max_new_tokens=model_data.get("max_new_tokens", 4096),
+                    max_tokens=model_data.get("max_tokens"),
+                    timeout=model_data.get("timeout"),
                     capability=capability,
                     description=model_data.get("description", ""),
                     notes=model_data.get("notes", ""),
@@ -200,6 +224,8 @@ class ConfigRegistry:
                 merge_threshold=provider_data.get("merge_threshold", 0.85),
                 rate_limit_rpm=provider_data.get("rate_limit_rpm"),
                 supports_batching=provider_data.get("supports_batching", True),
+                default_max_tokens=provider_data.get("default_max_tokens", 8192),
+                timeout_seconds=provider_data.get("timeout_seconds", 300),
             )
 
         logger.info(

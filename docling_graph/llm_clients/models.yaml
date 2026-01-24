@@ -9,6 +9,8 @@ providers:
     merge_threshold: 0.90
     rate_limit_rpm: 5000
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 300
     models:
       mistral-large-latest:
         context_limit: 128000
@@ -36,6 +38,8 @@ providers:
     merge_threshold: 0.90
     rate_limit_rpm: 10000
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 300
     models:
       gpt-4o:
         context_limit: 128000
@@ -81,6 +85,8 @@ providers:
     merge_threshold: 0.90
     rate_limit_rpm: 15000
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 300
     models:
       gemini-2.5-pro:
         context_limit: 1000000
@@ -114,6 +120,8 @@ providers:
     merge_threshold: 0.90
     rate_limit_rpm: 4000
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 300
     models:
       claude-3-opus:
         context_limit: 200000
@@ -147,6 +155,8 @@ providers:
     merge_threshold: 0.90
     rate_limit_rpm: 3000
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 600
     models:
       ibm/granite-4-h-small:
         context_limit: 128000
@@ -186,6 +196,8 @@ providers:
     merge_threshold: 0.75
     rate_limit_rpm: null
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 600
     models:
       llama-2-70b:
         context_limit: 4096
@@ -225,6 +237,8 @@ providers:
     merge_threshold: 0.75
     rate_limit_rpm: null  # Depends on deployment
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 600
     models:
       meta-llama/Llama-3.1-8B:
         context_limit: 128000
@@ -264,6 +278,8 @@ providers:
     merge_threshold: 0.75
     rate_limit_rpm: null  # No API rate limit
     supports_batching: true
+    default_max_tokens: 8192
+    timeout_seconds: 600
     models:
       llama3.1:8b:
         context_limit: 128000

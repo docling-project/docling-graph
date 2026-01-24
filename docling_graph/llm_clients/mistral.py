@@ -64,11 +64,17 @@ class MistralClient(BaseLlmClient):
             ClientError: If API call fails
         """
         try:
+            # Get max_tokens and timeout from instance
+            max_tokens = getattr(self, "_max_tokens", 8192)
+            timeout_seconds = getattr(self, "_timeout", 300)
+
             response = self.client.chat.complete(
                 model=self.model,
                 messages=cast(Any, messages),
                 response_format={"type": "json_object"},
                 temperature=0.1,
+                max_tokens=max_tokens,
+                timeout=timeout_seconds,
             )
 
             response_content = response.choices[0].message.content

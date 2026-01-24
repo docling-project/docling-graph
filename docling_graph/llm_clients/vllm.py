@@ -5,7 +5,8 @@ Cross-platform (Linux/Windows) via vLLM server mode.
 """
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, Dict, NoReturn
 
 from ..exceptions import ClientError, ConfigurationError
 from .base import BaseLlmClient
@@ -84,15 +85,47 @@ class VllmClient(BaseLlmClient):
             Raw response string from vLLM
 
         Raises:
-            ClientError: If API call fails
+            ClientError: If API call fails or times out
         """
+        import signal
+        from contextlib import contextmanager
+
+        @contextmanager
+        def timeout_handler(seconds: int) -> Generator[None, None, None]:
+            """Context manager for request timeout."""
+
+            def _timeout_handler(signum: int, frame: Any) -> NoReturn:
+                raise TimeoutError(f"vLLM request exceeded {seconds}s timeout")
+
+            # Set alarm (Unix only, will be no-op on Windows)
+            try:
+                old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+                signal.alarm(seconds)
+                try:
+                    yield
+                finally:
+                    signal.alarm(0)
+                    signal.signal(signal.SIGALRM, old_handler)
+            except AttributeError:
+                # Windows doesn't have SIGALRM, just yield without timeout
+                logger.warning("Timeout not supported on this platform (Windows)")
+                yield
+
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=0.1,
-                response_format={"type": "json_object"},
-            )
+            # Get max_tokens and timeout from instance (configured via base class)
+            max_tokens = getattr(self, "_max_tokens", 8192)
+            timeout_seconds = getattr(self, "_timeout", 300)
+
+            logger.info(f"vLLM request: max_tokens={max_tokens}, timeout={timeout_seconds}s")
+
+            with timeout_handler(timeout_seconds):
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=0.1,
+                    response_format={"type": "json_object"},
+                    max_tokens=max_tokens,
+                )
 
             raw_json = response.choices[0].message.content
 
@@ -104,6 +137,16 @@ class VllmClient(BaseLlmClient):
 
             return str(raw_json)
 
+        except TimeoutError as e:
+            raise ClientError(
+                f"vLLM request timeout after {getattr(self, '_timeout', 300)}s",
+                details={
+                    "model": self.model,
+                    "base_url": self.base_url,
+                    "timeout": getattr(self, "_timeout", 300),
+                    "max_tokens": getattr(self, "_max_tokens", 8192),
+                },
+            ) from e
         except Exception as e:
             if isinstance(e, ClientError):
                 raise

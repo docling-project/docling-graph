@@ -72,12 +72,16 @@ class OllamaClient(BaseLlmClient):
             ClientError: If API call fails
         """
         try:
+            # Get max_tokens from instance (Ollama uses num_predict)
+            max_tokens = getattr(self, "_max_tokens", 8192)
+
             response = ollama.chat(
                 model=self.model,
                 messages=messages,
                 format="json",
                 options={
                     "temperature": 0.1,
+                    "num_predict": max_tokens,
                 },
             )
 

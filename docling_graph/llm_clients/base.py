@@ -34,16 +34,22 @@ class BaseLlmClient(ABC):
     - _provider_id(): Return provider identifier for config lookup
     """
 
-    def __init__(self, model: str, **kwargs: Any) -> None:
+    def __init__(
+        self, model: str, max_tokens: int | None = None, timeout: int | None = None, **kwargs: Any
+    ) -> None:
         """
         Initialize LLM client.
 
         Args:
             model: Model identifier
+            max_tokens: Maximum tokens to generate (overrides config)
+            timeout: Request timeout in seconds (overrides config)
             **kwargs: Provider-specific parameters
         """
         self.model = model
         self._context_limit: int = 8192  # Default, will be overridden
+        self._max_tokens: int | None = max_tokens  # User override
+        self._timeout: int | None = timeout  # User override
 
         # Provider-specific setup
         self._setup_client(**kwargs)
@@ -165,24 +171,52 @@ class BaseLlmClient(ABC):
     def _load_model_config(self) -> None:
         """Load model configuration from centralized registry."""
         try:
-            from .config import get_model_config
+            from .config import get_model_config, get_provider_config
 
-            config = get_model_config(self._provider_id(), self.model)
+            provider_id = self._provider_id()
+            config = get_model_config(provider_id, self.model)
+            provider_config = get_provider_config(provider_id)
+
             if config:
                 self._context_limit = config.context_limit
                 if hasattr(config, "max_new_tokens"):
                     self._max_new_tokens = config.max_new_tokens
+
+                # Load max_tokens (use user override if provided)
+                if self._max_tokens is None:
+                    if config.max_tokens is not None:
+                        self._max_tokens = config.max_tokens
+                    elif provider_config:
+                        self._max_tokens = provider_config.default_max_tokens
+                    else:
+                        self._max_tokens = 8192
+
+                # Load timeout (use user override if provided)
+                if self._timeout is None:
+                    if config.timeout is not None:
+                        self._timeout = config.timeout
+                    elif provider_config:
+                        self._timeout = provider_config.timeout_seconds
+                    else:
+                        self._timeout = 300
+
                 logger.info(
                     f"{self.__class__.__name__}: "
                     f"context={self._context_limit}, "
-                    f"max_tokens={getattr(self, '_max_new_tokens', 'N/A')}"
+                    f"max_tokens={self._max_tokens}, "
+                    f"timeout={self._timeout}s"
                 )
             else:
+                # Fallback defaults
+                self._max_tokens = self._max_tokens or 8192
+                self._timeout = self._timeout or 300
                 logger.warning(
                     f"{self.__class__.__name__}: Model '{self.model}' not in config, using defaults"
                 )
         except Exception as e:
             logger.warning(f"Failed to load model config: {e}")
+            self._max_tokens = self._max_tokens or 8192
+            self._timeout = self._timeout or 300
 
     @staticmethod
     def _get_required_env(key: str) -> str:
@@ -209,3 +243,13 @@ class BaseLlmClient(ABC):
     def context_limit(self) -> int:
         """Return the context window size in tokens."""
         return self._context_limit
+
+    @property
+    def max_tokens(self) -> int:
+        """Return the maximum tokens to generate."""
+        return self._max_tokens if self._max_tokens is not None else 8192
+
+    @property
+    def timeout(self) -> int:
+        """Return the request timeout in seconds."""
+        return self._timeout if self._timeout is not None else 300

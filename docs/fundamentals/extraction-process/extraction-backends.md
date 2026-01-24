@@ -813,7 +813,7 @@ Now that you understand extraction backends:
 1. **[Model Capabilities →](model-capabilities.md)** - Learn about adaptive prompting
 2. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
 3. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
-4. **[Performance Tuning →](../advanced/performance-tuning.md)** - Advanced optimization
+4. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Advanced optimization
 
 ---
 

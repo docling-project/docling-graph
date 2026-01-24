@@ -16,7 +16,7 @@ This section covers advanced topics for extending and optimizing docling-graph. 
 
 ## Topics
 
-### 🔧 Extensibility
+### 🧩 Extensibility
 
 **[Custom Backends](custom-backends.md)**  
 Create custom extraction backends for specialized models or APIs.
@@ -44,7 +44,7 @@ Add custom stages to the pipeline for specialized processing.
 
 ---
 
-### + Optimization
+### 📐 Optimization
 
 **[Performance Tuning](performance-tuning.md)**  
 Optimize extraction speed and resource usage.
