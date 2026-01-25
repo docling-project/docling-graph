@@ -231,13 +231,16 @@ cat quickstart_output/graph_stats.json
 
 ```
 quickstart_output/
-├── nodes.csv                    # Extracted data
-├── edges.csv                    # Relationships (empty for simple model)
-├── graph.json                   # Complete graph
-├── graph_stats.json             # Statistics
-├── graph_visualization.html     # Interactive viz
-├── markdown_report.md           # Summary report
-└── full_document.md             # Markdown export
+├── metadata.json                # Pipeline metadata
+├── docling/                     # Docling conversion output
+│   ├── document.json            # Docling format
+│   └── document.md              # Markdown export
+└── docling_graph/               # Graph outputs
+    ├── graph.json               # Complete graph
+    ├── nodes.csv                # Extracted data
+    ├── edges.csv                # Relationships
+    ├── graph.html               # Interactive visualization
+    └── report.md                # Summary report
 ```
 
 ---

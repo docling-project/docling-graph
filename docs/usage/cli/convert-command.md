@@ -532,17 +532,16 @@ uv run docling-graph convert document.pdf \
 
 ```
 outputs/
-├── nodes.csv                    # Node data
-├── edges.csv                    # Edge data
-├── graph.json                   # Complete graph
-├── graph_stats.json             # Statistics
-├── graph_visualization.html     # Interactive viz
-├── markdown_report.md           # Summary report
-├── docling_document.json        # Docling output (optional)
-├── full_document.md             # Markdown export (optional)
-└── per_page/                    # Per-page markdown (optional)
-    ├── page_1.md
-    ├── page_2.md
+├── metadata.json                # Pipeline metadata
+├── docling/                     # Docling conversion output
+│   ├── document.json            # Docling format
+│   └── document.md              # Markdown export
+└── docling_graph/               # Graph outputs
+    ├── graph.json               # Complete graph
+    ├── nodes.csv                # Node data
+    ├── edges.csv                # Edge data
+    ├── graph.html               # Interactive visualization
+    └── report.md                # Summary report
     └── ...
 ```
 

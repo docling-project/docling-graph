@@ -116,11 +116,11 @@ class TraceExporter:
         Args:
             extraction: ExtractionData instance to export
         """
-        extractions_dir = self.output_manager.get_extractions_dir()
+        parsed_models_dir = self.output_manager.get_parsed_models_dir()
 
         self.pending_writes.append(
             (
-                extractions_dir / f"extraction_{extraction.extraction_id:03d}.json",
+                parsed_models_dir / f"extraction_{extraction.extraction_id:03d}.json",
                 {
                     "extraction_id": extraction.extraction_id,
                     "source_type": extraction.source_type,
@@ -155,7 +155,7 @@ class TraceExporter:
 
         # Queue pydantic model
         self.pending_writes.append(
-            (graph_dir / "pydantic_model.json", graph_data.pydantic_model.model_dump(), "json")
+            (graph_dir / "model.json", graph_data.pydantic_model.model_dump(), "json")
         )
 
     async def flush_async(self) -> None:
@@ -178,6 +178,3 @@ class TraceExporter:
     def get_pending_count(self) -> int:
         """Get number of pending writes."""
         return len(self.pending_writes)
-
-
-# Made with Bob

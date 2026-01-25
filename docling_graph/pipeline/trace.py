@@ -80,6 +80,3 @@ class TraceData:
     extractions: list[ExtractionData] = field(default_factory=list)
     intermediate_graphs: list[GraphData] = field(default_factory=list)
     consolidation: ConsolidationData | None = None
-
-
-# Made with Bob

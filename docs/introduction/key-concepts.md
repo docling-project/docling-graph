@@ -320,12 +320,12 @@ Paper_AdvancedAI
 
 ### JSON
 - **Purpose**: General-purpose data exchange
-- **Files**: `document_graph.json`
+- **Files**: `graph.json`
 - **Best For**: API integration, archival
 
 ### HTML
 - **Purpose**: Interactive visualization
-- **Files**: `document_graph.html`
+- **Files**: `graph.html`
 - **Best For**: Exploration and presentation
 
 ## Next Steps

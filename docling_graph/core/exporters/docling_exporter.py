@@ -45,18 +45,16 @@ class DoclingExporter:
 
         # Export document as JSON
         if include_json:
-            json_path = self.output_dir / f"{base_name}_docling.json"
+            json_path = self.output_dir / f"{base_name}.json"
             self._export_document_json(document, json_path)
             exported_files["document_json"] = str(json_path)
-            rich_print(f"[green]→[/green] Saved Docling document to [green]{json_path}[/green]")
 
         # Export full markdown
         if include_markdown:
-            md_path = self.output_dir / f"{base_name}_markdown.md"
+            md_path = self.output_dir / f"{base_name}.md"
             full_markdown = document.export_to_markdown()
             self._save_text(full_markdown, md_path)
             exported_files["markdown"] = str(md_path)
-            rich_print(f"[green]→[/green] Saved full markdown to [green]{md_path}[/green]")
 
         # Export per-page markdown
         if per_page:

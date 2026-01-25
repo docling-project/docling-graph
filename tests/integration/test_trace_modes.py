@@ -286,6 +286,3 @@ class TestTraceConfiguration:
             assert orchestrator.dump_to_disk == exp_dump, (
                 f"Failed for {include_trace}, {dump_to_disk}, {mode}"
             )
-
-
-# Made with Bob

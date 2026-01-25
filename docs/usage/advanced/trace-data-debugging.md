@@ -176,23 +176,27 @@ if trace:
 
 ## Output Structure
 
-When `dump_to_disk=True` and `include_trace=True`, trace data is exported to:
+When `dump_to_disk=True` and `include_trace=True`, debug data is exported to:
 
 ```
 outputs/document_name_timestamp/
-└── trace/
+└── debug/
     ├── pages/                    # Per-page data
-    │   ├── page_1.json
-    │   ├── page_1.md
-    │   └── page_2.json
+    │   ├── page_001.json
+    │   └── page_002.json
     │
-    ├── per_chunk/                # Per-chunk data (many-to-one mode)
-    │   ├── chunk_0/
-    │   │   ├── extraction.json
-    │   │   ├── chunk.md
-    │   │   ├── nodes.csv
-    │   │   ├── edges.csv
-    │   │   └── graph.json
+    ├── chunks/                   # Chunk data
+    │   ├── chunk_000.md
+    │   └── metadata.json
+    │
+    ├── parsed_models/            # Extraction results
+    │   ├── extraction_000.json
+    │   └── extraction_001.json
+    │
+    └── intermediate_graphs/      # Per-chunk graphs (many-to-one mode)
+        ├── chunk_000/
+        │   ├── graph.json
+        │   └── model.json
     │   └── chunk_1/
     │       └── ...
     │

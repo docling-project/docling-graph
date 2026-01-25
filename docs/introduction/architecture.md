@@ -11,8 +11,8 @@ This page provides a high-level overview of Docling Graph's architecture and how
 ## System Architecture
 
 Docling Graph follows a modular, pipeline-based architecture with clear separation of concerns:
-<br><br>
---8<-- "docs/assets/flowcharts/architecture.md"
+
+![Architecture](../assets/screenshots/architecture.png)
 
 ## Core Components
 

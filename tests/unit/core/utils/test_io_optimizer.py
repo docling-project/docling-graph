@@ -270,6 +270,3 @@ class TestOptimizedFileWriter:
         for i in range(10):
             test_file = tmp_path / f"concurrent_{i}.json"
             assert test_file.exists()
-
-
-# Made with Bob
