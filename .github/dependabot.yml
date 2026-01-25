@@ -29,8 +29,7 @@ updates:
     labels:
       - "dependencies"
     commit-message:
-      prefix: "chore"
-      include: "none"
+      prefix: "chore(deps)"
     groups:
       dev-dependencies:
         patterns:
