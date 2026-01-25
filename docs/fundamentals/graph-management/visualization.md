@@ -508,13 +508,13 @@ import os
 
 viz_path = "outputs/visualization.html"
 if os.path.exists(viz_path):
-    print(f"✓ File exists: {viz_path}")
+    print(f"✅ File exists: {viz_path}")
     
     # Open manually
     import webbrowser
     webbrowser.open(f"file://{os.path.abspath(viz_path)}")
 else:
-    print(f"✗ File not found: {viz_path}")
+    print(f"❌ File not found: {viz_path}")
 ```
 
 ### Issue: Empty Visualization
@@ -541,9 +541,9 @@ from docling_graph.core.visualizers import ReportGenerator
 generator = ReportGenerator()
 
 if generator.validate_graph(graph):
-    print("✓ Graph is valid")
+    print("✅ Graph is valid")
 else:
-    print("✗ Graph is empty")
+    print("❌ Graph is empty")
 ```
 
 ---

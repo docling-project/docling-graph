@@ -123,7 +123,7 @@ results = extractor.extract("document.pdf", MyTemplate)
 
 # Check if consolidation succeeded
 if len(results) == 1:
-    print(f"✓ Consolidated model: {results[0]}")
+    print(f"✅ Consolidated model: {results[0]}")
 else:
     print(f"⚠ Got {len(results)} partial models (data preserved)")
 ```

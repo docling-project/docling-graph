@@ -205,7 +205,7 @@ After configuration, `init` validates required dependencies:
 ### All Dependencies Installed
 
 ```
-✓ All required dependencies are installed
+✅ All required dependencies are installed
 ```
 
 ### Missing Dependencies

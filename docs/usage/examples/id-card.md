@@ -241,7 +241,7 @@ config = PipelineConfig(
 
 print("Processing ID card...")
 config.run()
-print("✓ Complete!")
+print("✅ Complete!")
 ```
 
 ---

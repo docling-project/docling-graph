@@ -122,7 +122,7 @@ config = PipelineConfig(
 
 print("Processing research paper (may take several minutes)...")
 config.run()
-print("✓ Complete!")
+print("✅ Complete!")
 ```
 
 ---

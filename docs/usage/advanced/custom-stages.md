@@ -136,7 +136,7 @@ class DocumentValidationStage:
             "validated": True
         }
         
-        print(f"✓ Document validated ({size_mb:.1f}MB)")
+        print(f"✅ Document validated ({size_mb:.1f}MB)")
 ```
 
 ### 2. Post-Processing Stage
@@ -183,7 +183,7 @@ class DataEnrichmentStage:
             "models_enriched": enriched_count
         }
         
-        print(f"✓ Enriched {enriched_count} models")
+        print(f"✅ Enriched {enriched_count} models")
     
     def _enrich_model(self, model: BaseModel) -> bool:
         """Enrich a single model."""
@@ -266,7 +266,7 @@ class QualityCheckStage:
                 details={"issues": issues[:10]}
             )
         
-        print(f"✓ Quality check complete ({len(issues)} issues)")
+        print(f"✅ Quality check complete ({len(issues)} issues)")
     
     def _check_model(self, model: BaseModel, index: int) -> List[str]:
         """Check a single model."""
@@ -419,7 +419,7 @@ def run_pipeline_with_stages(config: PipelineConfig):
     quality_stage = QualityCheckStage()
     # quality_stage.execute(context)
     
-    print("✓ Pipeline with custom stages complete")
+    print("✅ Pipeline with custom stages complete")
 
 # Usage
 config = PipelineConfig(
@@ -484,7 +484,7 @@ class CustomPipelineOrchestrator:
                 print(f"❌ Stage {stage_name} failed: {e}")
                 raise
         
-        print("\n✓ All stages complete")
+        print("\n✅ All stages complete")
 ```
 
 ---

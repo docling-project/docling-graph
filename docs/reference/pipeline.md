@@ -263,7 +263,7 @@ for doc in documents:
         "output_dir": f"outputs/{doc.stem}"
     })
     
-    print(f"✓ {doc.name} complete")
+    print(f"✅ {doc.name} complete")
 ```
 
 ### Custom Configuration

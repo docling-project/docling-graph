@@ -259,7 +259,7 @@ config = PipelineConfig(
 # Run extraction
 print("Processing invoice...")
 config.run()
-print("✓ Complete! Check outputs/invoice/")
+print("✅ Complete! Check outputs/invoice/")
 ```
 
 Run it:

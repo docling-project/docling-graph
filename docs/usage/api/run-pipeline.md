@@ -7,25 +7,52 @@ The `run_pipeline()` function is the **main entry point** for executing the docu
 
 **Function Signature:**
 ```python
-def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None
+def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> PipelineContext
 ```
+
+**Returns:** `PipelineContext` object containing the knowledge graph, Pydantic model, and other pipeline results.
 
 ---
 
 ## Basic Usage
 
-### With Dictionary
+### Default Behavior (No File Exports)
 
 ```python
 from docling_graph import run_pipeline
 
-run_pipeline({
+# Returns data directly - no file exports by default
+context = run_pipeline({
+    "source": "document.pdf",
+    "template": "my_templates.Invoice",
+    "backend": "llm",
+    "inference": "remote"
+})
+
+# Access results
+graph = context.knowledge_graph
+model = context.pydantic_model
+print(f"Extracted {graph.number_of_nodes()} nodes")
+```
+
+### With File Exports
+
+```python
+from docling_graph import run_pipeline
+
+# Enable file exports with dump_to_disk
+context = run_pipeline({
     "source": "document.pdf",
     "template": "my_templates.Invoice",
     "backend": "llm",
     "inference": "remote",
+    "dump_to_disk": True,
     "output_dir": "outputs"
 })
+
+# Results available both in memory and on disk
+graph = context.knowledge_graph
+# Files also written to outputs/
 ```
 
 ### With PipelineConfig
@@ -40,7 +67,8 @@ config = PipelineConfig(
     inference="remote"
 )
 
-run_pipeline(config)
+# Returns PipelineContext
+context = run_pipeline(config)
 ```
 
 ---
@@ -78,6 +106,7 @@ run_pipeline(config)
 | `docling_config` | `str` | `"ocr"` | Docling pipeline: `"ocr"` or `"vision"` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `llm_consolidation` | `bool` | `False` | Enable LLM consolidation |
+| `dump_to_disk` | `bool` or `None` | `None` | Control file exports (None=auto: CLI=True, API=False) |
 | `export_format` | `str` | `"csv"` | Export format: `"csv"` or `"cypher"` |
 | `output_dir` | `str` | `"outputs"` | Output directory path |
 | `model_override` | `str` | `None` | Override model name |
@@ -89,9 +118,35 @@ run_pipeline(config)
 
 ## Return Value
 
-**Type:** `None`
+**Type:** `PipelineContext`
 
-The function doesn't return a value. Results are written to the output directory.
+Returns a `PipelineContext` object containing:
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `knowledge_graph` | `nx.DiGraph` | NetworkX directed graph with extracted entities and relationships |
+| `pydantic_model` | `BaseModel` | Validated Pydantic model instance |
+| `docling_document` | `DoclingDocument` | Original Docling document object |
+| `chunks` | `list` | Document chunks (if chunking enabled) |
+| `extraction_results` | `list` | Raw extraction results from backend |
+
+**Example:**
+```python
+context = run_pipeline(config)
+
+# Access the knowledge graph
+graph = context.knowledge_graph
+print(f"Nodes: {graph.number_of_nodes()}")
+print(f"Edges: {graph.number_of_edges()}")
+
+# Access the Pydantic model
+model = context.pydantic_model
+print(f"Model type: {type(model).__name__}")
+
+# Access document chunks
+if context.chunks:
+    print(f"Chunks: {len(context.chunks)}")
+```
 
 ---
 
@@ -152,21 +207,42 @@ except PipelineError as e:
 
 ## Complete Examples
 
-### Example 1: Minimal Configuration
+### Example 1: Minimal Configuration (API Mode)
 
 ```python
 from docling_graph import run_pipeline
 
-# Minimal required configuration
-run_pipeline({
+# Minimal required configuration - returns data, no file exports
+context = run_pipeline({
     "source": "invoice.pdf",
     "template": "templates.Invoice"
 })
 
-# Output: outputs/
+# Access results in memory
+graph = context.knowledge_graph
+invoice = context.pydantic_model
+print(f"Extracted invoice with {graph.number_of_nodes()} entities")
 ```
 
-### Example 2: Remote LLM
+### Example 2: With File Exports
+
+```python
+from docling_graph import run_pipeline
+
+# Enable file exports
+context = run_pipeline({
+    "source": "invoice.pdf",
+    "template": "templates.Invoice",
+    "dump_to_disk": True,
+    "output_dir": "outputs/invoice"
+})
+
+# Results available both in memory and on disk
+graph = context.knowledge_graph
+# Files also written to outputs/invoice/
+```
+
+### Example 3: Remote LLM
 
 ```python
 import os
@@ -176,7 +252,7 @@ from docling_graph import run_pipeline
 os.environ["MISTRAL_API_KEY"] = "your-key"
 
 # Configure for remote inference
-run_pipeline({
+context = run_pipeline({
     "source": "research.pdf",
     "template": "templates.Research",
     "backend": "llm",
@@ -185,113 +261,169 @@ run_pipeline({
     "model_override": "mistral-large-latest",
     "processing_mode": "many-to-one",
     "use_chunking": True,
-    "llm_consolidation": True,
-    "output_dir": "outputs/research"
+    "llm_consolidation": True
 })
+
+# Access the knowledge graph
+graph = context.knowledge_graph
+print(f"Research paper: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
-### Example 3: Local VLM
+### Example 4: Local VLM
 
 ```python
 from docling_graph import run_pipeline
 
 # VLM for form extraction
-run_pipeline({
+context = run_pipeline({
     "source": "form.jpg",
     "template": "templates.IDCard",
     "backend": "vlm",
     "inference": "local",
     "processing_mode": "one-to-one",
-    "docling_config": "vision",
-    "output_dir": "outputs/form"
+    "docling_config": "vision"
 })
+
+# Access extracted data
+id_card = context.pydantic_model
+print(f"Name: {id_card.first_name} {id_card.last_name}")
 ```
 
-### Example 4: With Error Handling
+### Example 5: With Error Handling
 
 ```python
-from docling_graph import run_pipeline
+from docling_graph import run_pipeline, PipelineContext
 from docling_graph.exceptions import (
     ConfigurationError,
     ExtractionError,
     PipelineError
 )
 import logging
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def process_document(source: str, template: str) -> bool:
+def process_document(source: str, template: str) -> PipelineContext | None:
     """Process document with comprehensive error handling."""
     try:
-        run_pipeline({
+        context = run_pipeline({
             "source": source,
             "template": template,
             "backend": "llm",
-            "inference": "remote",
-            "output_dir": f"outputs/{Path(source).stem}"
+            "inference": "remote"
         })
-        logger.info(f"✓ Successfully processed: {source}")
-        return True
+        logger.info(f"✅ Successfully processed: {source}")
+        logger.info(f"  Nodes: {context.knowledge_graph.number_of_nodes()}")
+        return context
         
     except ConfigurationError as e:
         logger.error(f"Configuration error for {source}: {e.message}")
         if e.details:
             logger.error(f"Details: {e.details}")
-        return False
+        return None
         
     except ExtractionError as e:
         logger.error(f"Extraction failed for {source}: {e.message}")
-        return False
+        return None
         
     except PipelineError as e:
         logger.error(f"Pipeline error for {source}: {e.message}")
-        return False
+        return None
         
     except Exception as e:
         logger.exception(f"Unexpected error for {source}: {e}")
-        return False
+        return None
 
 # Use the function
-success = process_document("invoice.pdf", "templates.Invoice")
+context = process_document("invoice.pdf", "templates.Invoice")
+if context:
+    print(f"Graph has {context.knowledge_graph.number_of_nodes()} nodes")
 ```
 
-### Example 5: Batch Processing
+### Example 6: Batch Processing (Memory-Efficient)
 
 ```python
 from pathlib import Path
 from docling_graph import run_pipeline
 
 def batch_process(input_dir: str, template: str):
-    """Process all PDFs in a directory."""
+    """Process all PDFs in a directory without disk writes."""
     documents = Path(input_dir).glob("*.pdf")
     results = {"success": [], "failed": []}
+    all_graphs = []
     
     for doc in documents:
         try:
-            run_pipeline({
+            # Process without file exports
+            context = run_pipeline({
                 "source": str(doc),
-                "template": template,
-                "output_dir": f"outputs/{doc.stem}"
+                "template": template
             })
+            
+            # Store graph in memory
+            all_graphs.append({
+                "filename": doc.name,
+                "graph": context.knowledge_graph,
+                "model": context.pydantic_model
+            })
+            
             results["success"].append(doc.name)
-            print(f"✓ {doc.name}")
+            print(f"✅ {doc.name}: {context.knowledge_graph.number_of_nodes()} nodes")
             
         except Exception as e:
             results["failed"].append((doc.name, str(e)))
-            print(f"✗ {doc.name}: {e}")
+            print(f"❌ {doc.name}: {e}")
     
     # Summary
     print(f"\nProcessed: {len(results['success'])} succeeded, {len(results['failed'])} failed")
-    return results
+    return results, all_graphs
 
 # Run batch processing
-results = batch_process("documents/", "templates.Invoice")
+results, graphs = batch_process("documents/", "templates.Invoice")
+
+# Optionally export combined results
+if graphs:
+    print(f"\nTotal entities across all documents: {sum(g['graph'].number_of_nodes() for g in graphs)}")
 ```
 
 ---
 
 ## Advanced Usage
+
+### dump_to_disk Behavior
+
+The `dump_to_disk` parameter controls file exports:
+
+```python
+from docling_graph import run_pipeline
+
+# Default: No file exports (API mode)
+context = run_pipeline({
+    "source": "document.pdf",
+    "template": "templates.Invoice"
+})
+# Returns data in memory only
+
+# Explicit: Enable file exports
+context = run_pipeline({
+    "source": "document.pdf",
+    "template": "templates.Invoice",
+    "dump_to_disk": True,
+    "output_dir": "outputs"
+})
+# Returns data AND writes files
+
+# Explicit: Disable file exports
+context = run_pipeline({
+    "source": "document.pdf",
+    "template": "templates.Invoice",
+    "dump_to_disk": False
+})
+# Returns data only, even if output_dir is set
+```
+
+**Note:** CLI mode defaults to `dump_to_disk=True`, API mode defaults to `dump_to_disk=False`.
 
 ### Custom Models Configuration
 
@@ -299,7 +431,7 @@ results = batch_process("documents/", "templates.Invoice")
 from docling_graph import run_pipeline
 
 # Override models from config
-run_pipeline({
+context = run_pipeline({
     "source": "document.pdf",
     "template": "templates.Invoice",
     "backend": "llm",
@@ -313,6 +445,9 @@ run_pipeline({
         }
     }
 })
+
+# Access results
+graph = context.knowledge_graph
 ```
 
 ### Multiple Export Formats
@@ -321,14 +456,18 @@ run_pipeline({
 from docling_graph import run_pipeline
 
 # Export as Cypher for Neo4j
-run_pipeline({
+context = run_pipeline({
     "source": "document.pdf",
     "template": "templates.Invoice",
+    "dump_to_disk": True,
     "export_format": "cypher",
     "output_dir": "outputs/neo4j"
 })
 
-# Then import to Neo4j
+# Access graph in memory
+graph = context.knowledge_graph
+
+# Also import files to Neo4j
 import subprocess
 subprocess.run([
     "cypher-shell",
@@ -358,25 +497,29 @@ def smart_process(source: str):
     else:
         raise ValueError(f"Unknown document type: {path.name}")
     
-    # Process with appropriate config
-    run_pipeline({
+    # Process and return results
+    context = run_pipeline({
         "source": source,
         "template": template,
         "backend": backend,
-        "processing_mode": processing,
-        "output_dir": f"outputs/{path.stem}"
+        "processing_mode": processing
     })
+    
+    return context
 
 # Use smart processing
-smart_process("invoice_001.pdf")
-smart_process("research_paper.pdf")
+invoice_context = smart_process("invoice_001.pdf")
+research_context = smart_process("research_paper.pdf")
+
+print(f"Invoice nodes: {invoice_context.knowledge_graph.number_of_nodes()}")
+print(f"Research nodes: {research_context.knowledge_graph.number_of_nodes()}")
 ```
 
 ---
 
 ## Integration Patterns
 
-### Flask API
+### Flask API (Memory-Efficient)
 
 ```python
 from flask import Flask, request, jsonify
@@ -388,7 +531,7 @@ app = Flask(__name__)
 
 @app.route('/process', methods=['POST'])
 def process_endpoint():
-    """API endpoint for document processing."""
+    """API endpoint for document processing - returns data without disk writes."""
     file = request.files.get('document')
     template = request.form.get('template', 'templates.Invoice')
     
@@ -402,18 +545,22 @@ def process_endpoint():
     file.save(temp_path)
     
     try:
-        # Process
-        output_dir = f"outputs/{temp_id}"
-        run_pipeline({
+        # Process without file exports (memory-efficient)
+        context = run_pipeline({
             "source": temp_path,
-            "template": template,
-            "output_dir": output_dir
+            "template": template
         })
+        
+        # Extract data from context
+        graph = context.knowledge_graph
+        model = context.pydantic_model
         
         return jsonify({
             "status": "success",
-            "output_dir": output_dir,
-            "id": temp_id
+            "id": temp_id,
+            "nodes": graph.number_of_nodes(),
+            "edges": graph.number_of_edges(),
+            "data": model.model_dump() if hasattr(model, 'model_dump') else model.dict()
         })
         
     except Exception as e:
@@ -430,7 +577,7 @@ if __name__ == '__main__':
     app.run(debug=True)
 ```
 
-### Celery Task
+### Celery Task (With Return Data)
 
 ```python
 from celery import Celery
@@ -440,41 +587,61 @@ from pathlib import Path
 app = Celery('tasks', broker='redis://localhost:6379')
 
 @app.task
-def process_document_task(source: str, template: str, output_dir: str):
-    """Async document processing task."""
+def process_document_task(source: str, template: str):
+    """Async document processing task - returns graph statistics."""
     try:
-        run_pipeline({
+        context = run_pipeline({
             "source": source,
-            "template": template,
-            "output_dir": output_dir
+            "template": template
         })
-        return {"status": "success", "output_dir": output_dir}
+        
+        graph = context.knowledge_graph
+        return {
+            "status": "success",
+            "nodes": graph.number_of_nodes(),
+            "edges": graph.number_of_edges(),
+            "node_types": list(set(data.get('type') for _, data in graph.nodes(data=True)))
+        }
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 # Usage
 result = process_document_task.delay(
     "document.pdf",
-    "templates.Invoice",
-    "outputs/task_001"
+    "templates.Invoice"
 )
+# Get result
+data = result.get(timeout=300)
+print(f"Processed: {data['nodes']} nodes, {data['edges']} edges")
 ```
 
-### Airflow Operator
+### Airflow Operator (With XCom)
 
 ```python
 from airflow.operators.python import PythonOperator
 from docling_graph import run_pipeline
 
 def process_document(**context):
-    """Airflow task for document processing."""
+    """Airflow task for document processing - pushes results to XCom."""
     params = context['params']
     
-    run_pipeline({
+    # Process and get results
+    pipeline_context = run_pipeline({
         "source": params['source'],
-        "template": params['template'],
-        "output_dir": f"outputs/{context['ds']}"
+        "template": params['template']
     })
+    
+    # Push graph statistics to XCom
+    graph = pipeline_context.knowledge_graph
+    context['task_instance'].xcom_push(
+        key='graph_stats',
+        value={
+            'nodes': graph.number_of_nodes(),
+            'edges': graph.number_of_edges()
+        }
+    )
+    
+    return "Processing complete"
 
 # In DAG definition
 process_task = PythonOperator(

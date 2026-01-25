@@ -698,11 +698,11 @@ def validate_config(config_dict: dict) -> bool:
     
     try:
         config = PipelineConfig(**config_dict)
-        print("✓ Configuration valid")
+        print("✅ Configuration valid")
         return True
         
     except ValidationError as e:
-        print(f"✗ Configuration invalid:")
+        print(f"❌ Configuration invalid:")
         for error in e.errors():
             print(f"  - {error['loc']}: {error['msg']}")
         return False

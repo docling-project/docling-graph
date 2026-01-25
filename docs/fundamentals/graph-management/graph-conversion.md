@@ -197,9 +197,9 @@ from docling_graph.core.utils import validate_graph_structure
 
 try:
     validate_graph_structure(graph, raise_on_error=True)
-    print("✓ Graph structure valid")
+    print("✅ Graph structure valid")
 except ValueError as e:
-    print(f"✗ Validation failed: {e}")
+    print(f"❌ Validation failed: {e}")
 ```
 
 ---

@@ -44,15 +44,33 @@ class PipelineOrchestrator:
         """
         self.config = config
         self.mode = mode
+
+        # Auto-detect dump_to_disk based on mode if not explicitly set
+        if config.dump_to_disk is None:
+            # CLI mode: dump by default
+            # API mode: don't dump by default
+            self.dump_to_disk = mode == "cli"
+        else:
+            # User explicitly set dump_to_disk
+            self.dump_to_disk = config.dump_to_disk
+
+        # Core stages (always executed)
         self.stages: list[PipelineStage] = [
-            InputNormalizationStage(mode=mode),  # NEW: First stage
+            InputNormalizationStage(mode=mode),
             TemplateLoadingStage(),
             ExtractionStage(),
-            DoclingExportStage(),
             GraphConversionStage(),
-            ExportStage(),
-            VisualizationStage(),
         ]
+
+        # Export stages (conditional based on dump_to_disk)
+        if self.dump_to_disk:
+            self.stages.extend(
+                [
+                    DoclingExportStage(),
+                    ExportStage(),
+                    VisualizationStage(),
+                ]
+            )
 
     def run(self) -> PipelineContext:
         """
@@ -126,7 +144,7 @@ class PipelineOrchestrator:
 
 def run_pipeline(
     config: Union[PipelineConfig, Dict[str, Any]], mode: Literal["cli", "api"] = "api"
-) -> None:
+) -> PipelineContext:
     """
     Run the extraction and graph conversion pipeline.
 
@@ -137,10 +155,23 @@ def run_pipeline(
         config: Pipeline configuration as PipelineConfig or dict
         mode: Execution mode - "cli" for CLI invocations, "api" for Python API (default: "api")
 
+    Returns:
+        PipelineContext containing:
+            - knowledge_graph: NetworkX DiGraph with extracted entities and relationships
+            - extracted_models: List of Pydantic models from extraction
+            - graph_metadata: Statistics about the generated graph
+            - docling_document: Original DoclingDocument (if available)
+
     Raises:
         PipelineError: If pipeline execution fails
 
-    Example:
+    Note:
+        File exports are controlled by the dump_to_disk parameter:
+        - None (default): CLI mode exports files, API mode doesn't
+        - True: Force file exports regardless of mode
+        - False: Disable file exports regardless of mode
+
+    Example (API mode - no exports):
         >>> from docling_graph import run_pipeline
         >>> config = {
         ...     "source": "document.pdf",
@@ -148,13 +179,25 @@ def run_pipeline(
         ...     "backend": "llm",
         ...     "inference": "remote"
         ... }
-        >>> run_pipeline(config)
+        >>> context = run_pipeline(config)
+        >>> graph = context.knowledge_graph
+        >>> models = context.extracted_models
 
-        >>> # CLI mode (rejects plain text)
+    Example (API mode - with exports):
+        >>> config = {
+        ...     "source": "document.pdf",
+        ...     "template": "my_templates.MyTemplate",
+        ...     "dump_to_disk": True,
+        ...     "output_dir": "my_exports"
+        ... }
+        >>> context = run_pipeline(config)
+
+    Example (CLI mode):
+        >>> # Called internally by CLI
         >>> run_pipeline(config, mode="cli")
     """
     if isinstance(config, dict):
         config = PipelineConfig(**config)
 
     orchestrator = PipelineOrchestrator(config, mode=mode)
-    orchestrator.run()
+    return orchestrator.run()

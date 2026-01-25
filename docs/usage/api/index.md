@@ -14,37 +14,45 @@ The **docling-graph Python API** provides programmatic access to the document-to
 
 ## Quick Start
 
-### Basic Usage
+### Basic Usage (API Mode - No File Exports)
 
 ```python
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 
 # Configure pipeline
 config = PipelineConfig(
     source="document.pdf",
     template="my_templates.Invoice",
     backend="llm",
-    inference="remote",
-    output_dir="outputs"
+    inference="remote"
 )
 
-# Run pipeline
-config.run()
+# Run pipeline - returns data directly
+context = run_pipeline(config)
+
+# Access results in memory
+graph = context.knowledge_graph
+model = context.pydantic_model
+print(f"Extracted {graph.number_of_nodes()} nodes")
 ```
 
-### Using run_pipeline()
+### With File Exports
 
 ```python
 from docling_graph import run_pipeline
 
-# Run with dictionary config
-run_pipeline({
+# Enable file exports
+context = run_pipeline({
     "source": "document.pdf",
     "template": "my_templates.Invoice",
     "backend": "llm",
     "inference": "remote",
+    "dump_to_disk": True,
     "output_dir": "outputs"
 })
+
+# Results available both in memory and on disk
+graph = context.knowledge_graph
 ```
 
 ---
@@ -116,17 +124,20 @@ from docling_graph.core.visualizers import InteractiveVisualizer
 
 ## Common Patterns
 
-### Pattern 1: Simple Conversion
+### Pattern 1: Simple Conversion (Memory-Efficient)
 
 ```python
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="invoice.pdf",
     template="templates.Invoice"
 )
 
-config.run()
+# Returns data directly - no file exports
+context = run_pipeline(config)
+graph = context.knowledge_graph
+invoice = context.pydantic_model
 ```
 
 ---
@@ -134,7 +145,7 @@ config.run()
 ### Pattern 2: Custom Configuration
 
 ```python
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="research.pdf",
@@ -145,35 +156,47 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=True,
-    output_dir="outputs/research"
+    llm_consolidation=True
 )
 
-config.run()
+# Access results in memory
+context = run_pipeline(config)
+graph = context.knowledge_graph
+print(f"Research: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
 ---
 
-### Pattern 3: Batch Processing
+### Pattern 3: Batch Processing (Memory-Efficient)
 
 ```python
 from pathlib import Path
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 
 documents = Path("documents").glob("*.pdf")
+all_graphs = []
 
 for doc in documents:
     config = PipelineConfig(
         source=str(doc),
-        template="templates.Invoice",
-        output_dir=f"outputs/{doc.stem}"
+        template="templates.Invoice"
     )
     
     try:
-        config.run()
-        print(f"✓ Processed: {doc.name}")
+        # Process without file exports
+        context = run_pipeline(config)
+        all_graphs.append({
+            "filename": doc.name,
+            "graph": context.knowledge_graph,
+            "model": context.pydantic_model
+        })
+        print(f"✅ Processed: {doc.name}")
     except Exception as e:
-        print(f"✗ Failed: {doc.name} - {e}")
+        print(f"❌ Failed: {doc.name} - {e}")
+
+# Aggregate results
+total_nodes = sum(g["graph"].number_of_nodes() for g in all_graphs)
+print(f"\nTotal entities: {total_nodes}")
 ```
 
 ---
@@ -213,9 +236,13 @@ except PipelineError as e:
 | **Ease of Use** | Simple commands | Requires Python code |
 | **Flexibility** | Limited to options | Full programmatic control |
 | **Integration** | Shell scripts | Python applications |
+| **File Exports** | Always exports files | No exports by default (memory-efficient) |
+| **Return Values** | N/A | Returns `PipelineContext` with graph and model |
 | **Batch Processing** | Shell loops | Python loops with error handling |
 | **Configuration** | YAML + flags | PipelineConfig objects |
 | **Best For** | Quick tasks, scripts | Applications, notebooks, workflows |
+
+**Note:** Python API defaults to `dump_to_disk=False` for memory efficiency. Set `dump_to_disk=True` to enable file exports.
 
 ---
 

@@ -174,9 +174,9 @@ for md_file in markdown_files:
     
     try:
         config.run()
-        print(f"✓ Completed: {md_file}")
+        print(f"✅ Completed: {md_file}")
     except Exception as e:
-        print(f"✗ Failed: {md_file} - {e}")
+        print(f"❌ Failed: {md_file} - {e}")
 ```
 
 ### With Custom Provider

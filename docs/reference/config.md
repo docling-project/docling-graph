@@ -34,6 +34,7 @@ config = PipelineConfig(
     use_chunking: bool = True,
     llm_consolidation: bool = False,
     max_batch_size: int = 1,
+    dump_to_disk: bool | None = None,
     export_format: Literal["csv", "cypher"] = "csv",
     export_docling: bool = True,
     export_docling_json: bool = True,
@@ -77,6 +78,7 @@ config = PipelineConfig(
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
+| `dump_to_disk` | `bool` or `None` | `None` | Control file exports. `None`=auto-detect (CLI=True, API=False), `True`=always export, `False`=never export |
 | `export_format` | `"csv"` or `"cypher"` | `"csv"` | Graph export format |
 | `export_docling` | `bool` | `True` | Export Docling outputs |
 | `export_docling_json` | `bool` | `True` | Export Docling JSON |
@@ -316,16 +318,61 @@ config.run()
 ### Custom Export
 
 ```python
+from docling_graph import run_pipeline
+
 config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate",
+    dump_to_disk=True,  # Enable file exports
     export_format="cypher",
     export_docling_json=True,
     export_markdown=True,
     export_per_page_markdown=True,
     output_dir="custom_outputs"
 )
-config.run()
+
+# Returns data AND writes files
+context = run_pipeline(config)
+```
+
+### API Mode (No File Exports)
+
+```python
+from docling_graph import run_pipeline
+
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate"
+    # dump_to_disk defaults to None (auto-detects as False for API)
+)
+
+# Returns data only, no file exports
+context = run_pipeline(config)
+graph = context.knowledge_graph
+```
+
+### Explicit Control
+
+```python
+from docling_graph import run_pipeline
+
+# Force file exports in API mode
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate",
+    dump_to_disk=True,
+    output_dir="outputs"
+)
+context = run_pipeline(config)
+
+# Force no file exports (even if output_dir is set)
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate",
+    dump_to_disk=False,
+    output_dir="outputs"  # Ignored
+)
+context = run_pipeline(config)
 ```
 
 ### Complete Configuration

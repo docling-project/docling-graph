@@ -486,9 +486,9 @@ result = subprocess.run([
 ], capture_output=True, text=True)
 
 if result.returncode == 0:
-    print("✓ Successfully imported to Neo4j")
+    print("✅ Successfully imported to Neo4j")
 else:
-    print(f"✗ Import failed: {result.stderr}")
+    print(f"❌ Import failed: {result.stderr}")
 ```
 
 ### Example 3: JSON for API
@@ -569,7 +569,7 @@ if export_format == "csv":
 elif export_format == "cypher":
     assert os.path.exists(f"{output_dir}/graph.cypher")
 
-print("✓ Exports validated")
+print("✅ Exports validated")
 ```
 
 ---
@@ -614,9 +614,9 @@ import json
 try:
     with open("outputs/graph_data.json") as f:
         data = json.load(f)
-    print("✓ Valid JSON")
+    print("✅ Valid JSON")
 except json.JSONDecodeError as e:
-    print(f"✗ Invalid JSON: {e}")
+    print(f"❌ Invalid JSON: {e}")
 ```
 
 ---

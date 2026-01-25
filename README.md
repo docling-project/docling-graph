@@ -7,7 +7,7 @@
 # Docling Graph
 
 [![Docs](https://img.shields.io/badge/docs-live-brightgreen)](https://ibm.github.io/docling-graph)
-[![PyPI version](https://img.shields.io/pypi/v/docling-graph)](https://pypi.org/project/docling-graph/)
+[![PyPI version](https://img.shields.io/pypi/v/docling-graph?cacheSeconds=300)](https://pypi.org/project/docling-graph/)
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -101,29 +101,6 @@ export WATSONX_URL="..."           # IBM WatsonX URL (optional)
 
 ### Basic Usage
 
-#### Python API
-
-```python
-from docling_graph import PipelineConfig
-from docs.examples.templates.rheology_research import Research
-
-# Create configuration
-config = PipelineConfig(
-    source="https://arxiv.org/pdf/2207.02720",
-    template=Research,
-    backend="llm",
-    inference="remote",
-    processing_mode="many-to-one",
-    provider_override="mistral",
-    model_override="mistral-medium-latest",
-    use_chunking=True,
-    output_dir="outputs/research"
-)
-
-# Run pipeline
-config.run()
-```
-
 #### CLI
 
 ```bash
@@ -137,6 +114,56 @@ uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
 
 # Visualize results
 uv run docling-graph inspect outputs
+```
+
+#### Python API - Default Behavior
+
+```python
+from docling_graph import run_pipeline, PipelineContext
+from docs.examples.templates.rheology_research import Research
+
+# Create configuration
+config = {
+    "source": "https://arxiv.org/pdf/2207.02720",
+    "template": Research,
+    "backend": "llm",
+    "inference": "remote",
+    "processing_mode": "many-to-one",
+    "provider_override": "mistral",
+    "model_override": "mistral-medium-latest",
+    "use_chunking": True,
+}
+
+# Run pipeline - returns data directly, no files written to disk
+context: PipelineContext = run_pipeline(config)
+
+# Access results
+graph = context.knowledge_graph
+models = context.extracted_models
+metadata = context.graph_metadata
+
+print(f"Extracted {len(models)} research papers")
+print(f"Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
+```
+
+#### Python API - Optional File Export
+
+```python
+from docling_graph import run_pipeline
+
+# Enable file exports by setting dump_to_disk=True
+config = {
+    "source": "https://arxiv.org/pdf/2207.02720",
+    "template": Research,
+    "backend": "llm",
+    "inference": "remote",
+    "dump_to_disk": True,  # Enable file exports
+    "output_dir": "outputs/research",
+    "export_format": "csv"
+}
+
+# Run pipeline - writes files to disk AND returns data
+context = run_pipeline(config)
 ```
 
 For more examples, see [Examples](docs/usage/examples/index.md).

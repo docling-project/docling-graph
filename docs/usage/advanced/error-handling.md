@@ -107,7 +107,7 @@ def process_with_retry(source: str, max_retries: int = 3):
                 inference="remote"
             )
             config.run()
-            print("✓ Processing successful")
+            print("✅ Processing successful")
             return
             
         except ClientError as e:
@@ -157,7 +157,7 @@ def process_with_fallback(source: str):
             inference="local"
         )
         config.run()
-        print("✓ VLM extraction successful")
+        print("✅ VLM extraction successful")
         return
         
     except ExtractionError as e:
@@ -173,7 +173,7 @@ def process_with_fallback(source: str):
             inference="local"
         )
         config.run()
-        print("✓ LLM extraction successful")
+        print("✅ LLM extraction successful")
         
     except ExtractionError as e:
         print(f"Both methods failed: {e.message}")
@@ -496,7 +496,7 @@ def process_with_zero_data_loss(source: str):
         
         # Check result type
         if len(results) == 1:
-            print("✓ Successfully merged into single model")
+            print("✅ Successfully merged into single model")
             return {"status": "complete", "models": results}
         else:
             print(f"⚠ Got {len(results)} partial models (merge failed)")
@@ -512,7 +512,7 @@ def process_with_zero_data_loss(source: str):
             # Look for partial model files
             model_files = list(output_dir.glob("*.json"))
             if model_files:
-                print(f"✓ Found {len(model_files)} partial model files")
+                print(f"✅ Found {len(model_files)} partial model files")
                 
                 # Load partial models
                 partial_models = []
@@ -661,12 +661,12 @@ def process_with_degradation(source: str):
             results["output_dir"] = config.output_dir
             results["models"] = models
             
-            print(f"✓ Success with {method_name}")
+            print(f"✅ Success with {method_name}")
             print(f"  Extracted {len(models)} model(s)")
             break
             
         except ExtractionError as e:
-            print(f"✗ {method_name} failed: {e.message}")
+            print(f"❌ {method_name} failed: {e.message}")
             continue
     
     if not results["success"]:
@@ -719,7 +719,7 @@ def process_with_partial_success(source: str):
             # Check for extracted data
             nodes_file = output_dir / "nodes.csv"
             if nodes_file.exists():
-                print("✓ Partial results available in files")
+                print("✅ Partial results available in files")
                 print(f"  Nodes: {nodes_file}")
                 
                 # Use partial results
@@ -935,7 +935,7 @@ if len(results) > 1:
 results = config.run()
 
 if len(results) == 1:
-    print("✓ Extraction complete")
+    print("✅ Extraction complete")
 else:
     print(f"⚠ Extraction partially complete ({len(results)} fragments)")
     print("  All data preserved - manual review recommended")

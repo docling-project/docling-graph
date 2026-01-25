@@ -616,7 +616,7 @@ assert os.path.exists(f"{output_dir}/nodes.csv")
 assert os.path.exists(f"{output_dir}/edges.csv")
 assert os.path.exists(f"{output_dir}/graph_stats.json")
 
-print("✓ All outputs generated successfully")
+print("✅ All outputs generated successfully")
 ```
 
 ---

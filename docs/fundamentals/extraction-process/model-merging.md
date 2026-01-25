@@ -519,10 +519,10 @@ from docling_graph.core.utils import merge_pydantic_models
 
 try:
     merged = merge_pydantic_models(models, template)
-    print("✓ Merge successful")
+    print("✅ Merge successful")
     
 except Exception as e:
-    print(f"✗ Merge failed: {e}")
+    print(f"❌ Merge failed: {e}")
     
     # Fallback: use first model
     merged = models[0] if models else template()
@@ -617,7 +617,7 @@ results = config.run()
 
 # Check if we got merged or partial models
 if len(results) == 1:
-    print("✓ Successfully merged into single model")
+    print("✅ Successfully merged into single model")
     merged = results[0]
 else:
     print(f"⚠ Got {len(results)} partial models")

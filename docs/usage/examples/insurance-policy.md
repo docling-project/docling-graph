@@ -274,7 +274,7 @@ config = PipelineConfig(
 
 print("Processing insurance policy...")
 config.run()
-print("✓ Complete!")
+print("✅ Complete!")
 ```
 
 ---
@@ -620,7 +620,7 @@ for policy_file in policies_dir.glob("*.pdf"):
     )
     
     config.run()
-    print(f"✓ {policy_file.name} complete!")
+    print(f"✅ {policy_file.name} complete!")
 ```
 
 ---

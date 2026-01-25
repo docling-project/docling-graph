@@ -138,9 +138,9 @@ from docling_graph.core.utils import validate_graph_structure
 
 try:
     validate_graph_structure(graph, raise_on_error=True)
-    print("✓ Graph structure valid")
+    print("✅ Graph structure valid")
 except ValueError as e:
-    print(f"✗ Validation failed: {e}")
+    print(f"❌ Validation failed: {e}")
 ```
 
 ### Completeness Check
@@ -180,7 +180,7 @@ if issues:
     for issue in issues:
         print(f"  - {issue}")
 else:
-    print("✓ Graph is complete")
+    print("✅ Graph is complete")
 ```
 
 ---
@@ -348,7 +348,7 @@ if report["warnings"]:
     for warning in report["warnings"]:
         print(f"  ⚠ {warning}")
 else:
-    print("\n✓ No quality issues found")
+    print("\n✅ No quality issues found")
 ```
 
 ---

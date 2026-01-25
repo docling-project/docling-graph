@@ -56,7 +56,7 @@ config = PipelineConfig(
 # Run pipeline
 print("Processing invoice...")
 config.run()
-print(f"✓ Complete! Results in: {config.output_dir}")
+print(f"✅ Complete! Results in: {config.output_dir}")
 
 # Read results
 import pandas as pd
@@ -105,9 +105,9 @@ config = PipelineConfig(
 print("Processing with Ollama...")
 try:
     config.run()
-    print("✓ Complete!")
+    print("✅ Complete!")
 except Exception as e:
-    print(f"✗ Error: {e}")
+    print(f"❌ Error: {e}")
     print("Hint: Is Ollama running? (ollama serve)")
 ```
 
@@ -147,7 +147,7 @@ config = PipelineConfig(
 
 print("Extracting from image...")
 config.run()
-print("✓ Complete!")
+print("✅ Complete!")
 
 # Display results
 import json
@@ -197,7 +197,7 @@ config = PipelineConfig(
 
 print("Processing research paper (this may take a few minutes)...")
 config.run()
-print("✓ Complete!")
+print("✅ Complete!")
 
 # Analyze results
 import json
@@ -250,7 +250,7 @@ def process_batch(input_dir: str, template: str, output_base: str):
             
         except Exception as e:
             results["failed"].append((doc.name, str(e)))
-            tqdm.write(f"✗ {doc.name}: {e}")
+            tqdm.write(f"❌ {doc.name}: {e}")
     
     # Summary
     print(f"\n{'='*50}")
@@ -340,7 +340,7 @@ def process_document(
             )
             
             config.run()
-            logger.info(f"✓ Successfully processed: {source}")
+            logger.info(f"✅ Successfully processed: {source}")
             return True
             
         except ConfigurationError as e:
@@ -544,7 +544,7 @@ config = PipelineConfig(
 
 print("Processing document...")
 config.run()
-print("✓ Complete!")
+print("✅ Complete!")
 
 # Cell 3: Load Results
 nodes = pd.read_csv("outputs/research/nodes.csv")

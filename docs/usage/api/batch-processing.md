@@ -6,6 +6,7 @@
 **Batch processing** enables efficient processing of multiple documents with progress tracking, error handling, and result aggregation.
 
 **Key Features:**
+- Memory-efficient processing (no file exports by default)
 - Parallel processing
 - Progress tracking
 - Error recovery
@@ -16,11 +17,43 @@
 
 ## Basic Batch Processing
 
-### Simple Loop
+### Simple Loop (Memory-Efficient)
 
 ```python
 from pathlib import Path
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
+
+documents = Path("documents").glob("*.pdf")
+results = []
+
+for doc in documents:
+    config = PipelineConfig(
+        source=str(doc),
+        template="templates.Invoice"
+    )
+    
+    try:
+        # Process without file exports - memory efficient
+        context = run_pipeline(config)
+        results.append({
+            "filename": doc.name,
+            "nodes": context.knowledge_graph.number_of_nodes(),
+            "edges": context.knowledge_graph.number_of_edges()
+        })
+        print(f"✅ {doc.name}: {results[-1]['nodes']} nodes")
+    except Exception as e:
+        print(f"❌ {doc.name}: {e}")
+
+# Summary
+print(f"\nTotal documents: {len(results)}")
+print(f"Total nodes: {sum(r['nodes'] for r in results)}")
+```
+
+### With File Exports
+
+```python
+from pathlib import Path
+from docling_graph import run_pipeline, PipelineConfig
 
 documents = Path("documents").glob("*.pdf")
 
@@ -28,14 +61,15 @@ for doc in documents:
     config = PipelineConfig(
         source=str(doc),
         template="templates.Invoice",
+        dump_to_disk=True,  # Enable file exports
         output_dir=f"outputs/{doc.stem}"
     )
     
     try:
-        config.run()
-        print(f"✓ {doc.name}")
+        context = run_pipeline(config)
+        print(f"✅ {doc.name}")
     except Exception as e:
-        print(f"✗ {doc.name}: {e}")
+        print(f"❌ {doc.name}: {e}")
 ```
 
 ---
@@ -61,7 +95,7 @@ for doc in tqdm(documents, desc="Processing"):
     try:
         config.run()
     except Exception as e:
-        tqdm.write(f"✗ {doc.name}: {e}")
+        tqdm.write(f"❌ {doc.name}: {e}")
 ```
 
 **Install tqdm:**
@@ -73,44 +107,44 @@ uv add tqdm
 
 ## Error Handling
 
-### Comprehensive Error Tracking
+### Comprehensive Error Tracking (Memory-Efficient)
 
 ```python
 from pathlib import Path
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 from docling_graph.exceptions import DoclingGraphError
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def batch_process(input_dir: str, template: str, output_base: str):
-    """Process documents with error tracking."""
+def batch_process(input_dir: str, template: str):
+    """Process documents with error tracking - no file exports."""
     documents = list(Path(input_dir).glob("*.pdf"))
     results = {
         "success": [],
         "failed": [],
-        "skipped": []
+        "graphs": []
     }
     
     for doc in documents:
-        # Skip if already processed
-        output_dir = Path(output_base) / doc.stem
-        if output_dir.exists():
-            results["skipped"].append(doc.name)
-            logger.info(f"⊘ Skipped (already processed): {doc.name}")
-            continue
-        
         try:
             config = PipelineConfig(
                 source=str(doc),
-                template=template,
-                output_dir=str(output_dir)
+                template=template
             )
             
-            config.run()
+            # Process without file exports
+            context = run_pipeline(config)
+            
+            # Store results in memory
             results["success"].append(doc.name)
-            logger.info(f"✓ Success: {doc.name}")
+            results["graphs"].append({
+                "filename": doc.name,
+                "graph": context.knowledge_graph,
+                "model": context.pydantic_model
+            })
+            logger.info(f"✅ Success: {doc.name} ({context.knowledge_graph.number_of_nodes()} nodes)")
             
         except DoclingGraphError as e:
             results["failed"].append({
@@ -118,7 +152,7 @@ def batch_process(input_dir: str, template: str, output_base: str):
                 "error": e.message,
                 "details": e.details
             })
-            logger.error(f"✗ Failed: {doc.name} - {e.message}")
+            logger.error(f"❌ Failed: {doc.name} - {e.message}")
             
         except Exception as e:
             results["failed"].append({
@@ -126,7 +160,7 @@ def batch_process(input_dir: str, template: str, output_base: str):
                 "error": str(e),
                 "details": None
             })
-            logger.exception(f"✗ Unexpected error: {doc.name}")
+            logger.exception(f"❌ Unexpected error: {doc.name}")
     
     # Summary
     total = len(documents)
@@ -134,15 +168,14 @@ def batch_process(input_dir: str, template: str, output_base: str):
     logger.info(f"Total: {total}")
     logger.info(f"Success: {len(results['success'])}")
     logger.info(f"Failed: {len(results['failed'])}")
-    logger.info(f"Skipped: {len(results['skipped'])}")
+    logger.info(f"Total nodes: {sum(g['graph'].number_of_nodes() for g in results['graphs'])}")
     
     return results
 
 # Run batch processing
 results = batch_process(
     input_dir="documents/invoices",
-    template="templates.invoice.Invoice",
-    output_base="outputs/batch"
+    template="templates.invoice.Invoice"
 )
 ```
 
@@ -150,41 +183,46 @@ results = batch_process(
 
 ## Parallel Processing
 
-### Using ThreadPoolExecutor
+### Using ThreadPoolExecutor (Memory-Efficient)
 
 ```python
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 from tqdm import tqdm
 
-def process_document(doc_path: Path, template: str, output_base: str):
-    """Process single document."""
+def process_document(doc_path: Path, template: str):
+    """Process single document without file exports."""
     try:
         config = PipelineConfig(
             source=str(doc_path),
-            template=template,
-            output_dir=f"{output_base}/{doc_path.stem}"
+            template=template
         )
-        config.run()
-        return {"status": "success", "document": doc_path.name}
+        context = run_pipeline(config)
+        return {
+            "status": "success",
+            "document": doc_path.name,
+            "nodes": context.knowledge_graph.number_of_nodes(),
+            "edges": context.knowledge_graph.number_of_edges(),
+            "graph": context.knowledge_graph,
+            "model": context.pydantic_model
+        }
     except Exception as e:
         return {"status": "error", "document": doc_path.name, "error": str(e)}
 
 def parallel_batch_process(
     input_dir: str,
     template: str,
-    output_base: str,
     max_workers: int = 4
 ):
-    """Process documents in parallel."""
+    """Process documents in parallel - memory efficient."""
     documents = list(Path(input_dir).glob("*.pdf"))
-    results = {"success": [], "failed": []}
+    results = {"success": [], "failed": [], "graphs": []}
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all tasks
         futures = {
-            executor.submit(process_document, doc, template, output_base): doc
+            executor.submit(process_document, doc, template): doc
             for doc in documents
         }
         
@@ -194,6 +232,13 @@ def parallel_batch_process(
             
             if result["status"] == "success":
                 results["success"].append(result["document"])
+                results["graphs"].append({
+                    "filename": result["document"],
+                    "graph": result["graph"],
+                    "model": result["model"],
+                    "nodes": result["nodes"],
+                    "edges": result["edges"]
+                })
             else:
                 results["failed"].append({
                     "document": result["document"],
@@ -201,14 +246,16 @@ def parallel_batch_process(
                 })
     
     # Summary
+    total_nodes = sum(g["nodes"] for g in results["graphs"])
+    total_edges = sum(g["edges"] for g in results["graphs"])
     print(f"\nCompleted: {len(results['success'])} succeeded, {len(results['failed'])} failed")
+    print(f"Total entities: {total_nodes} nodes, {total_edges} edges")
     return results
 
 # Run parallel processing
 results = parallel_batch_process(
     input_dir="documents/invoices",
     template="templates.invoice.Invoice",
-    output_base="outputs/parallel",
     max_workers=4
 )
 ```
@@ -326,9 +373,9 @@ def smart_batch_process(input_dir: str, output_base: str):
         
         try:
             config.run()
-            print(f"✓ {doc.name}")
+            print(f"✅ {doc.name}")
         except Exception as e:
-            print(f"✗ {doc.name}: {e}")
+            print(f"❌ {doc.name}: {e}")
 
 smart_batch_process("documents/mixed", "outputs/smart")
 ```
@@ -386,7 +433,7 @@ def batch_with_retry(input_dir: str, template: str, output_base: str):
         result["document"] = doc.name
         results.append(result)
         
-        status = "✓" if result["status"] == "success" else "✗"
+        status = "✅" if result["status"] == "success" else "❌"
         print(f"{status} {doc.name} (attempts: {result['attempts']})")
     
     return results
@@ -443,14 +490,14 @@ def batch_with_checkpoint(
             
             # Update checkpoint
             checkpoint["processed"].append(doc.name)
-            print(f"✓ {doc.name}")
+            print(f"✅ {doc.name}")
             
         except Exception as e:
             checkpoint["failed"].append({
                 "document": doc.name,
                 "error": str(e)
             })
-            print(f"✗ {doc.name}: {e}")
+            print(f"❌ {doc.name}: {e}")
         
         # Save checkpoint after each document
         with open(checkpoint_path, 'w') as f:
@@ -498,9 +545,9 @@ def batch_with_memory_management(
         
         try:
             config.run()
-            print(f"✓ {doc.name}")
+            print(f"✅ {doc.name}")
         except Exception as e:
-            print(f"✗ {doc.name}: {e}")
+            print(f"❌ {doc.name}: {e}")
         
         # Periodic cleanup
         if i % cleanup_interval == 0:

@@ -119,6 +119,16 @@ class PipelineConfig(BaseModel):
     # Output settings (with defaults)
     output_dir: Union[str, Path] = Field(default="outputs")
 
+    # File export control (with auto-detection)
+    dump_to_disk: bool | None = Field(
+        default=None,
+        description=(
+            "Control file exports to disk. "
+            "None (default) = auto-detect: CLI mode exports, API mode doesn't. "
+            "True = force exports. False = disable exports."
+        ),
+    )
+
     @field_validator("source", "output_dir")
     @classmethod
     def _path_to_str(cls, v: Union[str, Path]) -> str:
@@ -152,6 +162,7 @@ class PipelineConfig(BaseModel):
             "export_per_page_markdown": self.export_per_page_markdown,
             "reverse_edges": self.reverse_edges,
             "output_dir": self.output_dir,
+            "dump_to_disk": self.dump_to_disk,
             "models": self.models.model_dump(),
         }
 

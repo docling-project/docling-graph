@@ -98,7 +98,7 @@ def test_basic_instantiation():
     )
     assert doc.document_id == "TEST-001"
     assert doc.issued_by.name == "Test Corp"
-    print("✓ Basic instantiation works")
+    print("✅ Basic instantiation works")
 
 if __name__ == "__main__":
     test_basic_instantiation()
@@ -120,13 +120,13 @@ def test_positive_amount():
     """Test that negative amounts are rejected."""
     with pytest.raises(ValueError, match="non-negative"):
         MonetaryAmount(value=-100, currency="EUR")
-    print("✓ Validation works")
+    print("✅ Validation works")
 
 def test_valid_amount():
     """Test that positive amounts are accepted."""
     amount = MonetaryAmount(value=100, currency="EUR")
     assert amount.value == 100
-    print("✓ Valid data accepted")
+    print("✅ Valid data accepted")
 
 if __name__ == "__main__":
     test_positive_amount()
@@ -160,14 +160,14 @@ def test_json_serialization():
     
     # Serialize to JSON
     json_str = doc.model_dump_json(indent=2)
-    print("✓ JSON serialization works")
+    print("✅ JSON serialization works")
     print(json_str)
     
     # Deserialize from JSON
     json_data = json.loads(json_str)
     doc2 = Document(**json_data)
     assert doc2.document_id == doc.document_id
-    print("✓ JSON deserialization works")
+    print("✅ JSON deserialization works")
 
 if __name__ == "__main__":
     test_json_serialization()
@@ -191,7 +191,7 @@ def test_edge_metadata():
     assert metadata is not None
     assert "edge_label" in metadata
     assert metadata["edge_label"] == "ISSUED_BY"
-    print("✓ Edge metadata present")
+    print("✅ Edge metadata present")
 
 if __name__ == "__main__":
     test_edge_metadata()
@@ -217,7 +217,7 @@ def test_extraction():
     ], capture_output=True, text=True)
     
     assert result.returncode == 0, f"Extraction failed: {result.stderr}"
-    print("✓ End-to-end extraction works")
+    print("✅ End-to-end extraction works")
 
 if __name__ == "__main__":
     test_extraction()

@@ -156,7 +156,7 @@ with driver.session() as session:
     session.run(cypher_script)
 
 driver.close()
-print("✓ Imported to Neo4j")
+print("✅ Imported to Neo4j")
 ```
 
 ---
@@ -186,9 +186,9 @@ result = subprocess.run([
 ], capture_output=True, text=True)
 
 if result.returncode == 0:
-    print("✓ Successfully imported to Neo4j")
+    print("✅ Successfully imported to Neo4j")
 else:
-    print(f"✗ Import failed: {result.stderr}")
+    print(f"❌ Import failed: {result.stderr}")
 ```
 
 ---
@@ -400,7 +400,7 @@ for pdf_file in Path("documents").glob("*.pdf"):
         "-f", cypher_file
     ])
 
-print("✓ Batch import complete")
+print("✅ Batch import complete")
 ```
 
 ### Example 3: Query and Export

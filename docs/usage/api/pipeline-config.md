@@ -75,6 +75,7 @@ config.run()
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
+| `dump_to_disk` | `bool | None` | `None` | Control file exports. `None`=auto (CLI=True, API=False), `True`=always, `False`=never |
 | `export_format` | `Literal["csv", "cypher"]` | `"csv"` | Export format |
 | `export_docling` | `bool` | `True` | Export Docling outputs |
 | `export_docling_json` | `bool` | `True` | Export Docling JSON |
@@ -108,17 +109,23 @@ config.run()
 Execute the pipeline with this configuration.
 
 ```python
+from docling_graph import run_pipeline
+
 config = PipelineConfig(
     source="document.pdf",
     template="templates.Invoice"
 )
 
-config.run()
+# Returns PipelineContext with results
+context = run_pipeline(config)
+graph = context.knowledge_graph
 ```
 
-**Returns:** `None`
+**Returns:** `PipelineContext` - Contains knowledge graph, Pydantic model, and other results
 
 **Raises:** `PipelineError`, `ConfigurationError`, `ExtractionError`
+
+**Note:** Use `run_pipeline(config)` instead of `config.run()` to access return values.
 
 ---
 
@@ -148,18 +155,38 @@ print(config_dict)
 
 ## Complete Examples
 
-### Example 1: Minimal Configuration
+### Example 1: Minimal Configuration (API Mode)
 
 ```python
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 
-# Only required parameters
+# Only required parameters - no file exports by default
 config = PipelineConfig(
     source="invoice.pdf",
     template="templates.Invoice"
 )
 
-config.run()
+# Returns data in memory
+context = run_pipeline(config)
+graph = context.knowledge_graph
+invoice = context.pydantic_model
+```
+
+### Example 1b: With File Exports
+
+```python
+from docling_graph import run_pipeline, PipelineConfig
+
+# Enable file exports
+config = PipelineConfig(
+    source="invoice.pdf",
+    template="templates.Invoice",
+    dump_to_disk=True,
+    output_dir="outputs/invoice"
+)
+
+# Returns data AND writes files
+context = run_pipeline(config)
 ```
 
 ### Example 2: Remote LLM

@@ -82,7 +82,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 ### Python API
 
 ```python
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 
 # Create configuration
 config = PipelineConfig(
@@ -90,12 +90,20 @@ config = PipelineConfig(
     template="templates.Invoice",
     backend="llm",
     inference="remote",
-    processing_mode="many-to-one",
-    output_dir="outputs/invoice"
+    processing_mode="many-to-one"
 )
 
-# Run pipeline
-config.run()
+# Run pipeline - returns data directly (no file exports by default)
+context = run_pipeline(config)
+
+# Access the knowledge graph
+graph = context.knowledge_graph
+print(f"Extracted {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges")
+
+# Optional: Export to files
+config["dump_to_disk"] = True
+config["output_dir"] = "outputs/invoice"
+context = run_pipeline(config)
 ```
 
 ### CLI
@@ -151,7 +159,7 @@ Contribute to the project and understand the development workflow.
 ### Extract Invoice Data
 
 ```python
-from docling_graph import PipelineConfig
+from docling_graph import run_pipeline, PipelineConfig
 from templates import Invoice
 
 config = PipelineConfig(
@@ -160,7 +168,10 @@ config = PipelineConfig(
     backend="llm",
     inference="remote"
 )
-config.run()
+
+# Returns data directly - no file exports
+context = run_pipeline(config)
+invoice_data = context.pydantic_model
 ```
 
 **[→ See Invoice Template](usage/examples/invoice-extraction.md)**
@@ -175,7 +186,10 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     use_chunking=True
 )
-config.run()
+
+# Access the knowledge graph
+context = run_pipeline(config)
+graph = context.knowledge_graph
 ```
 
 **[→ See Research Template](usage/examples/research-paper.md)**
@@ -189,7 +203,10 @@ config = PipelineConfig(
     backend="vlm",
     inference="local"
 )
-config.run()
+
+# Get structured data
+context = run_pipeline(config)
+id_card = context.pydantic_model
 ```
 
 **[→ See ID Card Template](usage/examples/id-card.md)**

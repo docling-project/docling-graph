@@ -385,11 +385,11 @@ Test that your template is properly structured:
 from my_template import Document, Organization, Address
 
 # 1. Check imports work
-print("✓ Imports successful")
+print("✅ Imports successful")
 
 # 2. Check edge function exists
 from my_template import edge
-print("✓ edge() function defined")
+print("✅ edge() function defined")
 
 # 3. Create test instance
 doc = Document(
@@ -402,11 +402,11 @@ doc = Document(
         )
     )
 )
-print("✓ Model instantiation works")
+print("✅ Model instantiation works")
 
 # 4. Check serialization
 json_data = doc.model_dump_json(indent=2)
-print("✓ JSON serialization works")
+print("✅ JSON serialization works")
 print(json_data)
 ```
 

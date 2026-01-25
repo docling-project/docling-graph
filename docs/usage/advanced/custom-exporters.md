@@ -110,7 +110,7 @@ class GraphMLExporter(BaseExporter):
                 prettyprint=self.pretty_print
             )
             
-            print(f"✓ GraphML exported to {output_path}")
+            print(f"✅ GraphML exported to {output_path}")
             
         except Exception as e:
             raise GraphError(
@@ -234,7 +234,7 @@ class TurtleExporter(BaseExporter):
                 # Write edges (relationships)
                 self._write_edges(f)
             
-            print(f"✓ Turtle RDF exported to {output_path}")
+            print(f"✅ Turtle RDF exported to {output_path}")
             
         except Exception as e:
             raise GraphError(
@@ -372,7 +372,7 @@ class CustomExportStage(PipelineStage):
         )
         exporter.export()
         
-        print("✓ Custom export complete")
+        print("✅ Custom export complete")
 
 # Use in custom pipeline orchestration
 # (Requires modifying pipeline code)
@@ -522,7 +522,7 @@ def export(self):
         if (i + 1) % 100 == 0:
             print(f"  Processed {i + 1}/{total_nodes} nodes")
     
-    print("✓ Export complete")
+    print("✅ Export complete")
 
 # ❌ Avoid - No feedback
 def export(self):
@@ -605,7 +605,7 @@ def export_dot(self) -> None:
     output_path = self.output_dir / "graph.dot"
     write_dot(self.graph, str(output_path))
     
-    print(f"✓ DOT exported to {output_path}")
+    print(f"✅ DOT exported to {output_path}")
     print("  Visualize with: dot -Tpng graph.dot -o graph.png")
 ```
 

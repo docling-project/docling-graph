@@ -94,7 +94,7 @@ config = PipelineConfig(
 # Run extraction
 print("Processing invoice...")
 config.run()
-print("✓ Complete! Check quickstart_output/")
+print("✅ Complete! Check quickstart_output/")
 ```
 
 Run it:

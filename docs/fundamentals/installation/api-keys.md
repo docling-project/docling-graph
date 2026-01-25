@@ -281,18 +281,18 @@ providers = {
 
 for name, var in providers.items():
     value = os.getenv(var)
-    status = '✓ Set' if value else '✗ Not set'
+    status = '✅ Set' if value else '❌ Not set'
     print(f'{name:20} {status}')
 EOF
 ```
 
 Expected output:
 ```
-OpenAI               ✓ Set
-Mistral              ✓ Set
-Gemini               ✓ Set
-WatsonX API          ✓ Set
-WatsonX Project      ✓ Set
+OpenAI               ✅ Set
+Mistral              ✅ Set
+Gemini               ✅ Set
+WatsonX API          ✅ Set
+WatsonX Project      ✅ Set
 ```
 
 ### Test Connection

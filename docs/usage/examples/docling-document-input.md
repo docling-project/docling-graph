@@ -244,9 +244,9 @@ for doc_file in docling_files:
     
     try:
         config.run()
-        print(f"✓ Completed: {doc_file}")
+        print(f"✅ Completed: {doc_file}")
     except Exception as e:
-        print(f"✗ Failed: {doc_file} - {e}")
+        print(f"❌ Failed: {doc_file} - {e}")
 ```
 
 ---
@@ -438,9 +438,9 @@ with open("invoice_docling.json") as f:
 
 try:
     validator.validate(content)
-    print("✓ Valid DoclingDocument")
+    print("✅ Valid DoclingDocument")
 except ValidationError as e:
-    print(f"✗ Invalid: {e.message}")
+    print(f"❌ Invalid: {e.message}")
 ```
 
 ### 4. Archive Original PDFs
