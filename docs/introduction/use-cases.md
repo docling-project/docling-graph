@@ -1,13 +1,5 @@
 # Use Cases
 
-**Pipeline Stage**: 1 - Introduction & Concepts
-
-**Prerequisites**: 
-- [Introduction](index.md)
-- [Key Concepts](key-concepts.md)
-
-This page demonstrates how Docling Graph solves real-world problems across different domains.
-
 ## Why Domain-Specific Knowledge Graphs?
 
 Different domains have unique requirements for knowledge representation:

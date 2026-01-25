@@ -82,8 +82,8 @@ nav:
   
   - Introduction:
     - Overview: introduction/index.md
-    - Key Concepts: introduction/key-concepts.md
     - Architecture: introduction/architecture.md
+    - Key Concepts: introduction/key-concepts.md
     - Use Cases: introduction/use-cases.md
     - Quick Start: introduction/quickstart.md
   

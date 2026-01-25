@@ -479,7 +479,7 @@ class Invoice(BaseModel):
 
 ### 🐛 Missing Line Items
 
-**🐛** Line items not extracted
+Line items not extracted
 
 **Solution:**
 ```python
@@ -492,7 +492,7 @@ contains_items: List[LineItem] = edge(
 
 ### 🐛 Address Not Parsed
 
-**🐛** Address fields empty
+Address fields empty
 
 **Solution:**
 ```python
@@ -505,7 +505,7 @@ class Address(BaseModel):
 
 ### 🐛 Wrong Currency
 
-**🐛** Currency extracted incorrectly
+Currency extracted incorrectly
 
 **Solution:**
 ```python

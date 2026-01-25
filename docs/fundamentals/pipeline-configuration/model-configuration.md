@@ -628,7 +628,7 @@ Remote (Gemini Flash):    $3-10
 
 ### Local Inference Issues
 
-#### Issue: CUDA Out of Memory
+#### 🐛 CUDA Out of Memory
 
 ```python
 # Solution: Use smaller model
@@ -641,7 +641,7 @@ config = PipelineConfig(
 )
 ```
 
-#### Issue: vLLM Server Not Running
+#### 🐛 vLLM Server Not Running
 
 ```bash
 # Check if server is running
@@ -655,7 +655,7 @@ uv run python -m vllm.entrypoints.openai.api_server \
 
 ### Remote Inference Issues
 
-#### Issue: API Key Not Found
+#### 🐛 API Key Not Found
 
 ```bash
 # Verify API key is set
@@ -665,7 +665,7 @@ echo $OPENAI_API_KEY
 export OPENAI_API_KEY="your-key"
 ```
 
-#### Issue: Rate Limit Exceeded
+#### 🐛 Rate Limit Exceeded
 
 ```python
 # Solution: Add retry logic or switch provider

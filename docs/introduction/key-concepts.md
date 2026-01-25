@@ -1,12 +1,5 @@
 # Key Concepts
 
-**Pipeline Stage**: 1 - Introduction & Concepts
-
-**Prerequisites**: 
-- [Introduction](index.md)
-
-This page explains the fundamental concepts you need to understand before using Docling Graph.
-
 ## Core Terminology
 
 ### Entity

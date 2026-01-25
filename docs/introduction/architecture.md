@@ -1,13 +1,5 @@
 # Architecture
 
-**Pipeline Stage**: 1 - Introduction & Concepts
-
-**Prerequisites**: 
-- [Introduction](index.md)
-- [Key Concepts](key-concepts.md)
-
-This page provides a high-level overview of Docling Graph's architecture and how components interact.
-
 ## System Architecture
 
 Docling Graph follows a modular, pipeline-based architecture with clear separation of concerns:

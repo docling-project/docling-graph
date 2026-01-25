@@ -518,7 +518,7 @@ if reduction < 50:
 
 ### 🐛 Too Many Batches
 
-**🐛** Batching not reducing API calls enough
+Batching not reducing API calls enough
 
 **Solution:**
 ```python
@@ -536,7 +536,7 @@ batcher = ChunkBatcher(
 
 ### 🐛 Batches Too Large
 
-**🐛** Batches exceeding context limit
+Batches exceeding context limit
 
 **Solution:**
 ```python
@@ -550,7 +550,7 @@ batcher = ChunkBatcher(
 
 ### 🐛 Low Utilization
 
-**🐛** Batches not filling context window
+Batches not filling context window
 
 **Solution:**
 ```python

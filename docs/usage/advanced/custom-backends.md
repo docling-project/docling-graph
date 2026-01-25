@@ -643,7 +643,7 @@ def extract_from_markdown(self, markdown, template, ...):
 
 ### 🐛 Protocol Not Recognized
 
-**🐛** Backend not recognized by pipeline
+Backend not recognized by pipeline
 
 **Solution:**
 ```python
@@ -662,7 +662,7 @@ class MyBackend(TextExtractionBackendProtocol):
 
 ### 🐛 Memory Leaks
 
-**🐛** Memory usage grows over time
+Memory usage grows over time
 
 **Solution:**
 ```python
@@ -683,7 +683,7 @@ def cleanup(self):
 
 ### 🐛 API Rate Limits
 
-**🐛** API calls fail due to rate limits
+API calls fail due to rate limits
 
 **Solution:**
 ```python

@@ -352,7 +352,7 @@ start graph.html  # Windows
 
 ### 🐛 Large Graph Performance
 
-**🐛** Visualization is slow with large graphs
+Visualization is slow with large graphs
 
 **Solution:**
 ```bash

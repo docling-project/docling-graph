@@ -451,7 +451,7 @@ class InsurancePolicy(BaseModel):
 
 ### 🐛 Coverage Not Extracted
 
-**🐛** Coverage list is empty
+Coverage list is empty
 
 **Solution:**
 ```python
@@ -471,7 +471,7 @@ coverages: List[Coverage] | None = edge(
 
 ### 🐛 Amounts Not Parsed
 
-**🐛** MonetaryAmount fields are None
+MonetaryAmount fields are None
 
 **Solution:**
 ```python
@@ -495,7 +495,7 @@ class MonetaryAmount(BaseModel):
 
 ### 🐛 Dates Not Recognized
 
-**🐛** Date fields are None
+Date fields are None
 
 **Solution:**
 ```python

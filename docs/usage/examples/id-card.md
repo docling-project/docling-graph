@@ -381,7 +381,7 @@ class IDCard(BaseModel):
     def validate_expiry(cls, v, info):
         """Ensure expiry date is after issue date."""
         issue = info.data.get("issue_date")
-        if issue and v and v <= issue:
+        if issue and v and v <= 🐛
             raise ValueError("Expiry date must be after issue date")
         return v
 ```
@@ -392,7 +392,7 @@ class IDCard(BaseModel):
 
 ### 🐛 Dates Not Parsed
 
-**🐛** Date fields are None or incorrect
+Date fields are None or incorrect
 
 **Solution:**
 ```python
@@ -406,7 +406,7 @@ date_of_birth: date | None = Field(
 
 ### 🐛 Name Parsing
 
-**🐛** Full name extracted as single string
+Full name extracted as single string
 
 **Solution:**
 ```python
@@ -422,7 +422,7 @@ def split_names(cls, v):
 
 ### 🐛 Address Not Structured
 
-**🐛** Address extracted as single string
+Address extracted as single string
 
 **Solution:**
 ```python

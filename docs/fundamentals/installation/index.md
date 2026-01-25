@@ -1,12 +1,5 @@
 # Installation
 
-**Pipeline Stage**: 2 - Installation
-
-**Prerequisites**: 
-- [Introduction](../../introduction/index.md)
-
-This section guides you through setting up Docling Graph on your system.
-
 ## Overview
 
 Docling Graph uses **uv** as the package manager for fast, reliable dependency management. All installation and execution commands use `uv` exclusively.
@@ -34,10 +27,11 @@ uv sync
 ```
 
 This installs:
-<br>✅ Docling (document conversion)
-<br>✅ VLM backend (NuExtract models)
-<br>✅ Core graph functionality
-<br>❌ LLM providers (not included)
+
+- ✅ Docling (document conversion)
+- ✅ VLM backend (NuExtract models)
+- ✅ Core graph functionality
+- ❌ LLM providers (not included)
 
 ### Full Installation
 
@@ -53,13 +47,14 @@ uv sync --extra all
 ```
 
 This installs:
-<br>✅ Everything from minimal
-<br>✅ vLLM (local LLM inference)
-<br>✅ Ollama client
-<br>✅ Mistral AI client
-<br>✅ OpenAI client
-<br>✅ Google Gemini client
-<br>✅ IBM WatsonX client
+
+- ✅ Everything from minimal
+- ✅ vLLM (local LLM inference)
+- ✅ Ollama client
+- ✅ Mistral AI client
+- ✅ OpenAI client
+- ✅ Google Gemini client
+- ✅ IBM WatsonX client
 
 ## Installation Options
 
@@ -210,7 +205,7 @@ After installation, you need to:
 
 ## Common Issues
 
-### Issue: `uv` not found
+### 🐛 `uv` not found
 
 **Solution**: Install uv first:
 
@@ -225,7 +220,7 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 pip install uv
 ```
 
-### Issue: Python version mismatch
+### 🐛 Python version mismatch
 
 **Solution**: Specify Python version:
 
@@ -234,7 +229,7 @@ uv python install 3.10
 uv sync
 ```
 
-### Issue: Import errors after installation
+### 🐛 Import errors after installation
 
 **Solution**: Ensure you're using `uv run`:
 
@@ -246,7 +241,7 @@ python script.py
 uv run python script.py
 ```
 
-### Issue: GPU not detected
+### 🐛 GPU not detected
 
 **Solution**: See [GPU Setup Guide](gpu-setup.md)
 
