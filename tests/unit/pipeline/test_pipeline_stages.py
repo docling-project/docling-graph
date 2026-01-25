@@ -245,6 +245,8 @@ class TestExportStage:
         """Test successful export."""
         import networkx as nx
 
+        from docling_graph.core.utils.output_manager import OutputDirectoryManager
+
         # Mock exporters
         mock_csv_instance = Mock()
         mock_json_instance = Mock()
@@ -262,7 +264,15 @@ class TestExportStage:
             export_format="csv",
             output_dir=str(tmp_path),
         )
-        context = PipelineContext(config=config, knowledge_graph=mock_graph, output_dir=tmp_path)
+
+        # Create output manager
+        output_manager = OutputDirectoryManager(tmp_path, "test.pdf")
+        context = PipelineContext(
+            config=config,
+            knowledge_graph=mock_graph,
+            output_dir=tmp_path,
+            output_manager=output_manager,
+        )
 
         stage = ExportStage()
         stage.execute(context)

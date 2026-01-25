@@ -168,8 +168,97 @@ class PipelineContext:
     extracted_models: List[BaseModel] | None = None
     graph: nx.MultiDiGraph | None = None
     
+    # Trace data (optional)
+    trace_data: TraceData | None = None
+    output_manager: OutputDirectoryManager | None = None
+    
     # Metadata
     metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+---
+
+## Trace Data Structure
+
+When `include_trace=True`, the pipeline captures intermediate data at each stage:
+
+```python
+@dataclass
+class TraceData:
+    """Container for trace data captured during pipeline execution."""
+    
+    # Page-level data
+    pages: List[PageData] = field(default_factory=list)
+    
+    # Chunk-level data (only in many-to-one mode)
+    chunks: List[ChunkData] | None = None
+    
+    # Extraction data
+    extractions: List[ExtractionData] = field(default_factory=list)
+    
+    # Intermediate graphs (before consolidation)
+    intermediate_graphs: List[GraphData] = field(default_factory=list)
+```
+
+### PageData
+
+Captures data for each document page:
+
+```python
+@dataclass
+class PageData:
+    """Data for a single page."""
+    page_number: int
+    text_content: str
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+### ChunkData
+
+Captures data for each chunk (many-to-one mode only):
+
+```python
+@dataclass
+class ChunkData:
+    """Data for a single chunk."""
+    chunk_id: int
+    text_content: str
+    page_numbers: List[int]
+    token_count: int
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+### ExtractionData
+
+Captures data for each extraction operation:
+
+```python
+@dataclass
+class ExtractionData:
+    """Data for a single extraction."""
+    extraction_id: int
+    source_type: Literal["page", "chunk"]
+    source_id: int
+    parsed_model: BaseModel | None
+    extraction_time: float
+    error: str | None = None
+```
+
+### GraphData
+
+Captures intermediate graphs before consolidation:
+
+```python
+@dataclass
+class GraphData:
+    """Data for an intermediate graph."""
+    graph_id: int
+    source_type: Literal["page", "chunk"]
+    source_id: int
+    graph: nx.DiGraph
+    pydantic_model: BaseModel
+    node_count: int
+    edge_count: int
 ```
 
 ---
@@ -302,23 +391,74 @@ run_pipeline(config)
 
 ## Output Structure
 
-After successful execution, the output directory contains:
+After successful execution with `dump_to_disk=True`, the output directory contains:
 
 ```
 outputs/
-├── nodes.csv                    # Graph nodes (if CSV export)
-├── edges.csv                    # Graph edges (if CSV export)
-├── graph.cypher                 # Cypher script (if Cypher export)
-├── graph.json                   # Graph JSON
-├── graph_visualization.html     # Interactive visualization
-├── extraction_report.md         # Extraction report
-├── docling_document.json        # Docling output (if enabled)
-└── markdown/                    # Markdown exports (if enabled)
-    ├── full_document.md
-    └── pages/
-        ├── page_1.md
-        ├── page_2.md
-        └── ...
+└── document_name_timestamp/
+    ├── docling/                      # Docling exports
+    │   ├── document.json             # Docling JSON (if enabled)
+    │   └── markdown/                 # Markdown exports (if enabled)
+    │       ├── full_document.md
+    │       └── pages/
+    │           ├── page_1.md
+    │           └── page_2.md
+    │
+    ├── consolidated_graph/           # Final consolidated graph
+    │   ├── nodes.csv                 # Graph nodes (if CSV export)
+    │   ├── edges.csv                 # Graph edges (if CSV export)
+    │   ├── graph.cypher              # Cypher script (if Cypher export)
+    │   ├── graph.json                # Graph JSON
+    │   ├── graph_visualization.html  # Interactive visualization
+    │   └── extraction_report.md      # Extraction report
+    │
+    └── trace/                        # Trace data (if include_trace=True)
+        ├── pages/                    # Per-page data
+        │   ├── page_1.json
+        │   ├── page_1.md
+        │   └── page_2.json
+        │
+        ├── per_chunk/                # Per-chunk data (many-to-one mode)
+        │   ├── chunk_0/
+        │   │   ├── extraction.json
+        │   │   ├── chunk.md
+        │   │   ├── nodes.csv
+        │   │   ├── edges.csv
+        │   │   └── graph.json
+        │   └── chunk_1/
+        │       └── ...
+        │
+        ├── per_page/                 # Per-page data (one-to-one mode)
+        │   ├── page_1/
+        │   │   ├── extraction.json
+        │   │   ├── nodes.csv
+        │   │   ├── edges.csv
+        │   │   └── graph.json
+        │   └── page_2/
+        │       └── ...
+        │
+        └── chunks_metadata.json      # Chunk metadata (many-to-one mode)
+```
+
+### Output Directory Manager
+
+The `OutputDirectoryManager` organizes all outputs into a structured hierarchy:
+
+```python
+from docling_graph.core.utils.output_manager import OutputDirectoryManager
+
+# Create manager
+manager = OutputDirectoryManager(
+    base_output_dir="outputs",
+    source_filename="document.pdf"
+)
+
+# Get directories
+docling_dir = manager.get_docling_dir()
+consolidated_dir = manager.get_consolidated_graph_dir()
+trace_dir = manager.get_trace_dir()
+per_chunk_dir = manager.get_per_chunk_dir(chunk_id=0)
+per_page_dir = manager.get_per_page_dir(page_number=1)
 ```
 
 ---

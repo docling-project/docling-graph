@@ -1,6 +1,6 @@
 ```mermaid
 %%{init: {'theme': 'redux-dark', 'look': 'default', 'layout': 'elk'}}%%
-flowchart TD
+flowchart LR
     %% 1. Define Classes
     classDef input fill:#E3F2FD,stroke:#90CAF9,color:#0D47A1
     classDef config fill:#FFF8E1,stroke:#FFECB3,color:#5D4037

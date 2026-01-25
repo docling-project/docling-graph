@@ -16,30 +16,36 @@ flowchart TB
     
     A2{"Input Type"}
     
-    B@{ shape: procs, label: "2. Docling Conversion<br/>OCR or Vision" }
+    %% Ingestion Paths
+    B@{ shape: procs, label: "2a. Docling Conversion<br/>Generates Images & Markdown" }
     B2@{ shape: lin-proc, label: "2b. Text Processing<br/>Direct to Markdown" }
-    B3@{ shape: lin-proc, label: "2c. Load DoclingDocument<br/>Skip Conversion" }
+    B3@{ shape: lin-proc, label: "2c. Load DoclingDocument<br/>Pre-parsed Content" }
     
+    %% Strategy Decision
     C{"3. Backend"}
     
-    D@{ shape: lin-proc, label: "4a. VLM Extraction<br/>Direct from Document" }
-    E@{ shape: lin-proc, label: "4b. Markdown Extraction" }
+    %% Extraction Paths
+    D@{ shape: lin-proc, label: "4a. VLM Extraction<br/>Page-by-Page (Images)" }
+    E@{ shape: lin-proc, label: "4b. Markdown Prep<br/>Merge Text Content" }
     
+    %% Chunking Logic (LLM Path)
     F{"5. Chunking"}
-    
     G@{ shape: tag-proc, label: "6a. Hybrid Chunking<br/>Semantic + Token-Aware" }
-    H@{ shape: tag-proc, label: "6b. Full Document" }
+    H@{ shape: tag-proc, label: "6b. Full Document<br/>Context Window Permitting" }
     
-    I@{ shape: procs, label: "7. Batch Extraction<br/>Process Each Chunk" }
-    J@{ shape: tag-proc, label: "8. Pydantic Validation<br/>Type Checking" }
+    I@{ shape: procs, label: "7. Batch Extraction<br/>LLM Inference" }
+    
+    %% Convergence & Validation
+    J@{ shape: tag-proc, label: "8. Pydantic Validation<br/>Per-Chunk/Page Check" }
     
     K{"9. Consolidation"}
     
-    L@{ shape: lin-proc, label: "10a. Smart Merge<br/>Rule-Based" }
-    M@{ shape: lin-proc, label: "10b. LLM Consolidation<br/>Intelligent" }
+    L@{ shape: lin-proc, label: "10a. Smart Merge<br/>Programmatic/Reduce" }
+    M@{ shape: lin-proc, label: "10b. LLM Consolidation<br/>Refinement Loop" }
     
+    %% Graph & Export
     N@{ shape: procs, label: "11. Graph Conversion<br/>Pydantic → NetworkX" }
-    O@{ shape: tag-proc, label: "12. Node ID Generation<br/>Stable Identifiers" }
+    O@{ shape: tag-proc, label: "12. Node ID Generation<br/>Stable Hashing" }
     
     P@{ shape: tag-proc, label: "13. Export<br/>CSV/Cypher/JSON" }
     Q@{ shape: tag-proc, label: "14. Visualization<br/>HTML + Reports" }
@@ -48,18 +54,20 @@ flowchart TB
     A --> A1
     A1 --> A2
     
+    %% Routing Inputs
     A2 -- "PDF/Image" --> B
-    A2 -- "Text/Markdown" --> B2
-    A2 -- "DoclingDocument" --> B3
+    A2 -- "Text/MD" --> B2
+    A2 -- "DoclingDoc" --> B3
     
+    %% Routing to Backend Strategy
     B --> C
-    B2 --> C
+    B2 & B3 --> E
     
-    B3 --> E
-    
+    %% Backend Decisions
     C -- VLM --> D
     C -- LLM --> E
     
+    %% LLM Path: Markdown -> Chunking -> Extraction
     E --> F
     F -- Yes --> G
     F -- No --> H
@@ -67,13 +75,18 @@ flowchart TB
     G --> I
     H --> I
     
+    %% VLM Path: Direct to Validation (Skips Chunking)
     D --> J
+    
+    %% LLM Path: Join Validation
     I --> J
+    
+    %% Consolidation
     J --> K
+    K -- "Rule-Based" --> L
+    K -- "AI-Based" --> M
     
-    K -- Programmatic --> L
-    K -- LLM --> M
-    
+    %% Final Stages
     L --> N
     M --> N
     

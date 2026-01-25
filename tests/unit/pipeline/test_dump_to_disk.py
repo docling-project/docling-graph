@@ -101,11 +101,15 @@ class TestStageExecution:
         config = PipelineConfig(source="test.pdf", template="test.Template")
         orchestrator = PipelineOrchestrator(config, mode="api")
 
-        assert len(orchestrator.stages) == 4, f"API mode should have 4 stages, got {len(orchestrator.stages)}"
+        assert len(orchestrator.stages) == 4, (
+            f"API mode should have 4 stages, got {len(orchestrator.stages)}"
+        )
 
     def test_cli_mode_stage_count(self):
         """Test CLI mode has correct number of stages."""
         config = PipelineConfig(source="test.pdf", template="test.Template")
         orchestrator = PipelineOrchestrator(config, mode="cli")
 
-        assert len(orchestrator.stages) == 7, f"CLI mode should have 7 stages, got {len(orchestrator.stages)}"
+        assert len(orchestrator.stages) == 8, (
+            f"CLI mode should have 8 stages, got {len(orchestrator.stages)}"
+        )

@@ -464,6 +464,64 @@ def debug_pipeline(source: str):
 
 # Usage
 debug_pipeline("document.pdf")
+
+### Trace Data for Debugging
+
+**Trace data** provides visibility into pipeline internals for debugging extraction issues:
+
+```python
+"""Use trace data to debug extraction failures."""
+
+from docling_graph import run_pipeline, PipelineConfig
+
+def debug_with_trace(source: str):
+    """Debug extraction using trace data."""
+    
+    config = PipelineConfig(
+        source=source,
+        template="templates.ComplexTemplate",
+        include_trace=True,  # Enable trace capture
+        dump_to_disk=True,   # Export for analysis
+        output_dir="debug_output"
+    )
+    
+    context = run_pipeline(config)
+    
+    # Analyze trace data
+    if context.trace_data:
+        # Check for extraction errors
+        errors = [e for e in context.trace_data.extractions if e.error]
+        
+        if errors:
+            print(f"❌ Found {len(errors)} extraction errors:")
+            for extraction in errors:
+                print(f"\n  Extraction {extraction.extraction_id}:")
+                print(f"    Source: {extraction.source_type} {extraction.source_id}")
+                print(f"    Error: {extraction.error}")
+                print(f"    Time: {extraction.extraction_time:.2f}s")
+        
+        # Check for slow extractions
+        slow = [e for e in context.trace_data.extractions if e.extraction_time > 5.0]
+        
+        if slow:
+            print(f"\n⚠️  Found {len(slow)} slow extractions (>5s):")
+            for extraction in sorted(slow, key=lambda e: e.extraction_time, reverse=True):
+                print(f"    {extraction.source_type} {extraction.source_id}: {extraction.extraction_time:.2f}s")
+        
+        # Analyze chunk boundaries (many-to-one mode)
+        if context.trace_data.chunks:
+            print(f"\n📊 Document split into {len(context.trace_data.chunks)} chunks:")
+            for chunk in context.trace_data.chunks:
+                print(f"    Chunk {chunk.chunk_id}: pages {chunk.page_numbers}, {chunk.token_count} tokens")
+    
+    return context
+
+# Usage
+context = debug_with_trace("problematic_document.pdf")
+```
+
+**See Also:** [Trace Data Debugging Guide](../advanced/trace-data-debugging.md) for comprehensive examples.
+
 ```
 
 ---

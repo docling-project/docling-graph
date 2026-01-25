@@ -17,21 +17,25 @@ flowchart TB
 
     n4@{ shape: procs, label: "Docling Graph Pipeline" }
     n35@{ shape: lin-proc, label: "Input Validator" }
-    n37@{ shape: tag-proc, label: "Multi-Input Handler" }
-    n39@{ shape: tag-proc, label: "DoclingDoc Loader" }
-    n5@{ shape: tag-proc, label: "Extraction Factory" }
+    
+    %% HANDLERS
+    n37@{ shape: lin-proc, label: "Image & PDF Handler" }
+    n39@{ shape: lin-proc, label: "DoclingDoc Loader" }
+    n40@{ shape: lin-proc, label: "MD & Text Handler" }
+
+    %% Removed n5 (Extraction Factory)
 
     n6@{ shape: procs, label: "Docling Pipeline" }
     %% Defined first to prioritize placement
     n25@{ shape: lin-proc, label: "Extract" } 
-    n7@{ shape: lin-proc, label: "OCR" }
+    n7@{ shape: lin-proc, label: "OCR Engine" }
     n8@{ shape: lin-proc, label: "Vision" }
     n9@{ shape: tag-proc, label: "Markdown Processor" }
 
     n16@{ shape: terminal, label: "Prompt" }
     n13@{ shape: procs, label: "Extraction Backend" }
-    n14@{ shape: lin-proc, label: "LLM" }
-    n15@{ shape: lin-proc, label: "VLM" }
+    n14@{ shape: lin-proc, label: "LLM Inference" }
+    n15@{ shape: lin-proc, label: "VLM Inference" }
     n17@{ shape: terminal, label: "Extracted Content" }
 
     n10@{ shape: procs, label: "Conversion Strategy" }
@@ -58,12 +62,17 @@ flowchart TB
     %% 3. Define Connections
     A & n2 & n3 --> n4
     n4 --> n35
-    n35 --> n37 & n39
     
-    n37 --> n5
-    n39 --> n6
+    %% Validator Routing
+    n35 --> n37 & n39 & n40
     
-    n5 --> n6
+    %% HANDLER CONNECTIONS
+    %% n37 (Image/PDF) -> n6 (Pipeline/OCR) -> n9 (Markdown)
+    n37 --> n6
+    
+    %% n39 (Loader) & n40 (Text) -> Direct to n9 (Markdown)
+    n39 --> n9
+    n40 --> n9
     
     %% n25 first to encourage left placement
     n6 --> n25 & n7 & n8
@@ -94,6 +103,6 @@ flowchart TB
     class A,n3 input
     class n2,n16 config
     class n4,n35,n6,n7,n8,n25,n13,n14,n15,n10,n11,n12,n33 process
-    class n37,n39,n5,n9,n18,n21,n23,n34,n24 operator
+    class n37,n39,n40,n9,n18,n21,n23,n34,n24 operator
     class n17,n20,n22,n29,n30,n31,n28,n27,n26 output
 ```

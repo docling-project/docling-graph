@@ -74,6 +74,7 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - toc:
+      toc_depth: 2-3
       permalink: true
 
 nav:
@@ -81,8 +82,8 @@ nav:
   
   - Introduction:
     - Overview: introduction/index.md
-    - Architecture: introduction/architecture.md
     - Key Concepts: introduction/key-concepts.md
+    - Architecture: introduction/architecture.md
     - Use Cases: introduction/use-cases.md
     - Quick Start: introduction/quickstart.md
   
@@ -154,6 +155,8 @@ nav:
         - ID Card: usage/examples/id-card.md
         - Insurance Policy: usage/examples/insurance-policy.md
         - Research Paper: usage/examples/research-paper.md
+      - Debugging & Analysis:
+        - Trace Data Debugging: usage/advanced/trace-data-debugging.md
     - Advanced Topics:
       - Overview: usage/advanced/index.md
       - Performance Tuning: usage/advanced/performance-tuning.md

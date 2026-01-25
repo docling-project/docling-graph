@@ -416,6 +416,28 @@ class ExtractionStage(PipelineStage):
             )
 
         logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
+
+        # Capture page data if trace is enabled
+        if context.trace_data and context.docling_document:
+            from ..pipeline.trace import PageData
+
+            for page_no in sorted(context.docling_document.pages.keys()):
+                page_md = context.docling_document.export_to_markdown(page_no=page_no)
+                page_data = PageData(
+                    page_number=page_no,
+                    text_content=page_md,
+                    metadata={
+                        "page_size": len(page_md),
+                        "has_tables": any(
+                            item.label == "table"
+                            for item in context.docling_document.pages[page_no].items  # type: ignore[union-attr]
+                        ),
+                    },
+                )
+                context.trace_data.pages.append(page_data)
+
+            logger.info(f"[{self.name()}] Captured {len(context.trace_data.pages)} pages")
+
         return context
 
     def _create_extractor(self, context: PipelineContext) -> Any:
@@ -747,22 +769,24 @@ class DoclingExportStage(PipelineStage):
             logger.warning(f"[{self.name()}] No document available for export")
             return context
 
+        if not context.output_manager:
+            logger.warning(f"[{self.name()}] No output manager available")
+            return context
+
         logger.info(f"[{self.name()}] Exporting Docling document...")
 
-        output_dir = Path(conf.get("output_dir", "outputs"))
-        output_dir.mkdir(parents=True, exist_ok=True)
-        base_name = Path(conf["source"]).stem
+        docling_dir = context.output_manager.get_docling_dir()
 
-        exporter = DoclingExporter(output_dir=output_dir)
+        exporter = DoclingExporter(output_dir=docling_dir)
         exporter.export_document(
             context.docling_document,
-            base_name=base_name,
+            base_name="document",  # Use fixed name
             include_json=conf.get("export_docling_json", True),
             include_markdown=conf.get("export_markdown", True),
             per_page=conf.get("export_per_page_markdown", False),
         )
 
-        logger.info(f"[{self.name()}] Exported to {output_dir}")
+        logger.info(f"[{self.name()}] Exported to {docling_dir}")
         return context
 
 
@@ -787,6 +811,29 @@ class GraphConversionStage(PipelineStage):
             raise PipelineError(
                 "No extracted models available for graph conversion", details={"stage": self.name()}
             )
+        # Capture intermediate graphs if trace is enabled and in many-to-one mode
+        if context.trace_data and context.config.processing_mode == "many-to-one":
+            from ..pipeline.trace import GraphData
+
+            for i, model in enumerate(context.extracted_models):
+                # Create individual graph for this model
+                temp_graph, temp_metadata = converter.pydantic_list_to_graph([model])
+
+                graph_data = GraphData(
+                    graph_id=i,
+                    source_type="chunk",
+                    source_id=i,
+                    graph=temp_graph,
+                    pydantic_model=model,
+                    node_count=temp_metadata.node_count,
+                    edge_count=temp_metadata.edge_count,
+                )
+                context.trace_data.intermediate_graphs.append(graph_data)
+
+            logger.info(
+                f"[{self.name()}] Captured {len(context.trace_data.intermediate_graphs)} intermediate graphs"
+            )
+
         context.knowledge_graph, context.graph_metadata = converter.pydantic_list_to_graph(
             context.extracted_models
         )
@@ -807,28 +854,73 @@ class ExportStage(PipelineStage):
 
     def execute(self, context: PipelineContext) -> PipelineContext:
         """Export graph to configured formats."""
+        if not context.output_manager:
+            logger.warning(f"[{self.name()}] No output manager available")
+            return context
+
         logger.info(f"[{self.name()}] Exporting graph...")
 
-        conf = context.config.to_dict()
-        context.output_dir = Path(conf.get("output_dir", "outputs"))
-        context.output_dir.mkdir(parents=True, exist_ok=True)
-        base_name = Path(conf["source"]).stem
+        # Export to consolidated directory
+        consolidated_dir = context.output_manager.get_consolidated_graph_dir()
 
+        conf = context.config.to_dict()
         export_format = conf.get("export_format", "csv")
 
         if export_format == "csv":
-            CSVExporter().export(context.knowledge_graph, context.output_dir)
-            logger.info(f"Saved CSV files to {context.output_dir}")
+            CSVExporter().export(context.knowledge_graph, consolidated_dir)
+            logger.info(f"Saved CSV files to {consolidated_dir}")
         elif export_format == "cypher":
-            cypher_path = context.output_dir / f"{base_name}_graph.cypher"
+            cypher_path = consolidated_dir / "graph.cypher"
             CypherExporter().export(context.knowledge_graph, cypher_path)
             logger.info(f"Saved Cypher script to {cypher_path}")
 
-        json_path = context.output_dir / f"{base_name}_graph.json"
+        # Also export JSON
+        json_path = consolidated_dir / "graph.json"
         JSONExporter().export(context.knowledge_graph, json_path)
         logger.info(f"Saved JSON to {json_path}")
 
-        logger.info(f"[{self.name()}] Exported to {context.output_dir}")
+        logger.info(f"[{self.name()}] Exported to {consolidated_dir}")
+        return context
+
+
+class TraceExportStage(PipelineStage):
+    """Export trace data to disk."""
+
+    def name(self) -> str:
+        return "Trace Export"
+
+    def execute(self, context: PipelineContext) -> PipelineContext:
+        """Export all trace data using TraceExporter."""
+        if not context.trace_data or not context.output_manager:
+            logger.info(f"[{self.name()}] Skipped (no trace data or output manager)")
+            return context
+
+        logger.info(f"[{self.name()}] Exporting trace data...")
+
+        from ..core.utils.trace_exporter import TraceExporter
+
+        exporter = TraceExporter(context.output_manager)
+
+        # Queue all trace data
+        for page in context.trace_data.pages:
+            exporter.queue_page_export(page.page_number, page)
+
+        if context.trace_data.chunks:
+            for chunk in context.trace_data.chunks:
+                exporter.queue_chunk_export(chunk.chunk_id, chunk)
+            exporter.queue_chunks_metadata(context.trace_data.chunks)
+
+        for extraction in context.trace_data.extractions:
+            exporter.queue_extraction_export(extraction)
+
+        for graph in context.trace_data.intermediate_graphs:
+            mode = "per_chunk" if graph.source_type == "chunk" else "per_page"
+            exporter.queue_graph_export(graph, mode)
+
+        # Flush all writes
+        exporter.flush()
+
+        logger.info(f"[{self.name()}] Exported {exporter.get_pending_count()} files")
         return context
 
 

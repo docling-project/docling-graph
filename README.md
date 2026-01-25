@@ -146,24 +146,32 @@ print(f"Extracted {len(models)} research papers")
 print(f"Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
-#### Python API - Optional File Export
+#### Python API - Optional Trace Data for Debugging
 
 ```python
 from docling_graph import run_pipeline
 
-# Enable file exports by setting dump_to_disk=True
+# Enable trace data capture for debugging
 config = {
     "source": "https://arxiv.org/pdf/2207.02720",
     "template": Research,
     "backend": "llm",
     "inference": "remote",
-    "dump_to_disk": True,  # Enable file exports
-    "output_dir": "outputs/research",
-    "export_format": "csv"
+    "include_trace": True,  # Capture intermediate data
+    "dump_to_disk": False   # Keep in memory only
 }
 
-# Run pipeline - writes files to disk AND returns data
 context = run_pipeline(config)
+
+# Access trace data for debugging
+if context.trace_data:
+    print(f"Pages processed: {len(context.trace_data.pages)}")
+    print(f"Extractions: {len(context.trace_data.extractions)}")
+    
+    # Check for errors
+    errors = [e for e in context.trace_data.extractions if e.error]
+    if errors:
+        print(f"Found {len(errors)} extraction errors")
 ```
 
 For more examples, see [Examples](docs/usage/examples/index.md).

@@ -79,6 +79,7 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports. `None`=auto-detect (CLI=True, API=False), `True`=always export, `False`=never export |
+| `include_trace` | `bool` or `None` | `None` | Enable trace data capture. `None`=auto-detect (CLI=True, API=False), `True`=always capture, `False`=never capture |
 | `export_format` | `"csv"` or `"cypher"` | `"csv"` | Graph export format |
 | `export_docling` | `bool` | `True` | Export Docling outputs |
 | `export_docling_json` | `bool` | `True` | Export Docling JSON |
@@ -344,11 +345,42 @@ config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate"
     # dump_to_disk defaults to None (auto-detects as False for API)
+    # include_trace defaults to None (auto-detects as False for API)
 )
 
-# Returns data only, no file exports
+# Returns data only, no file exports, no trace data
 context = run_pipeline(config)
 graph = context.knowledge_graph
+```
+
+### Trace Data Capture
+
+```python
+from docling_graph import run_pipeline
+
+# CLI mode: Trace enabled by default
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate"
+    # include_trace=None (auto-detects as True for CLI)
+)
+
+# API mode with trace for debugging
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate",
+    include_trace=True,  # Enable trace data capture
+    dump_to_disk=False   # Keep in memory only
+)
+
+context = run_pipeline(config)
+
+# Access trace data
+if context.trace_data:
+    print(f"Pages: {len(context.trace_data.pages)}")
+    print(f"Chunks: {len(context.trace_data.chunks or [])}")
+    print(f"Extractions: {len(context.trace_data.extractions)}")
+    print(f"Intermediate graphs: {len(context.trace_data.intermediate_graphs)}")
 ```
 
 ### Explicit Control

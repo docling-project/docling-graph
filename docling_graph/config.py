@@ -129,6 +129,17 @@ class PipelineConfig(BaseModel):
         ),
     )
 
+    # Trace data control (with auto-detection)
+    include_trace: bool | None = Field(
+        default=None,
+        description=(
+            "Include trace data (intermediate extractions, per-chunk graphs). "
+            "None (default) = auto-detect: CLI mode includes trace, API mode doesn't. "
+            "When True: Trace data included in return value AND exported to disk (if dump_to_disk=True). "
+            "When False: Only final results, no trace data."
+        ),
+    )
+
     @field_validator("source", "output_dir")
     @classmethod
     def _path_to_str(cls, v: Union[str, Path]) -> str:
@@ -163,6 +174,7 @@ class PipelineConfig(BaseModel):
             "reverse_edges": self.reverse_edges,
             "output_dir": self.output_dir,
             "dump_to_disk": self.dump_to_disk,
+            "include_trace": self.include_trace,
             "models": self.models.model_dump(),
         }
 

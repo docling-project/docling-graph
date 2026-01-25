@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from ..core import PipelineConfig
 from ..core.converters.models import GraphMetadata
 from ..core.extractors.extractor_base import BaseExtractor
+from .trace import TraceData
 
 
 @dataclass
@@ -37,9 +38,11 @@ class PipelineContext:
         graph_metadata: Graph statistics and metadata
         output_dir: Output directory path
         node_registry: Shared node ID registry for deterministic IDs
-        normalized_source: Normalized input ready for extraction (NEW)
-        input_metadata: Processing hints from input normalization (NEW)
-        input_type: Detected input type (NEW)
+        normalized_source: Normalized input ready for extraction
+        input_metadata: Processing hints from input normalization
+        input_type: Detected input type
+        output_manager: Output directory manager for unified structure
+        trace_data: Trace data for debugging (only if include_trace=True)
     """
 
     config: PipelineConfig
@@ -52,10 +55,14 @@ class PipelineContext:
     output_dir: Path | None = None
     node_registry: Any | None = None
 
-    # NEW: Input normalization fields
+    # Input normalization fields
     normalized_source: Union[str, Path, Any] | None = None
     input_metadata: Dict[str, Any] | None = None
     input_type: Any | None = None  # InputType enum, but avoid circular import
+
+    # Output management and trace data (NEW)
+    output_manager: Any | None = None  # OutputDirectoryManager, avoid circular import
+    trace_data: TraceData | None = None
 
     def __post_init__(self) -> None:
         """Initialize node registry if not provided."""

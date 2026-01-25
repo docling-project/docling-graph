@@ -395,68 +395,23 @@ config.run()
 
 ## Backend Selection
 
-### Decision Matrix
+### LLM Backend Criteria
 
-| Document Type | Recommended Backend | Reason |
-|:--------------|:-------------------|:-------|
-| **Standard invoices** | LLM | Fast, accurate for text |
-| **Complex forms** | VLM | Better layout understanding |
-| **Research papers** | LLM | Good for text-heavy docs |
-| **Handwritten forms** | VLM | Handles handwriting better |
-| **Scanned documents** | VLM | Robust to poor quality |
-| **Multi-page contracts** | LLM | Efficient chunking |
-| **Image-heavy docs** | VLM | Visual understanding |
-| **Batch processing** | LLM | Faster throughput |
+- Document is text-heavy  
+- Need fast processing  
+- Want to use remote APIs  
+- Processing many documents  
+- Standard layout  
+- Good OCR quality  
 
----
+### VLM Backend Criteria
 
-### Selection Criteria
-
-#### Choose LLM Backend When:
-
-✅ Document is text-heavy  
-✅ Need fast processing  
-✅ Want to use remote APIs  
-✅ Processing many documents  
-✅ Standard layout  
-✅ Good OCR quality  
-
-#### Choose VLM Backend When:
-
-✅ Complex visual layout  
-✅ Poor OCR quality  
-✅ Handwritten content  
-✅ Image-heavy documents  
-✅ Form-based extraction  
-✅ Have GPU available  
-
----
-
-## Performance Comparison
-
-### Speed Benchmark
-
-| Backend | Document Type | Pages | Time | Throughput |
-|:--------|:-------------|:------|:-----|:-----------|
-| **LLM (Local)** | Invoice | 1 | 2s | 30 docs/min |
-| **LLM (Remote)** | Invoice | 1 | 3s | 20 docs/min |
-| **VLM (Local)** | Invoice | 1 | 8s | 7 docs/min |
-| **LLM (Local)** | Contract | 10 | 15s | 4 docs/min |
-| **VLM (Local)** | Contract | 10 | 60s | 1 doc/min |
-
-**Note:** Times are approximate and vary by hardware.
-
----
-
-### Accuracy Comparison
-
-| Document Type | LLM Accuracy | VLM Accuracy | Winner |
-|:--------------|:-------------|:-------------|:-------|
-| **Standard invoice** | 95% | 93% | LLM |
-| **Complex form** | 85% | 95% | VLM |
-| **Handwritten** | 70% | 90% | VLM |
-| **Research paper** | 92% | 88% | LLM |
-| **Poor scan** | 75% | 88% | VLM |
+- Complex visual layout  
+- Poor OCR quality  
+- Handwritten content  
+- Image-heavy documents  
+- Form-based extraction  
+- Have GPU available  
 
 ---
 

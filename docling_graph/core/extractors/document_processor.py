@@ -161,6 +161,50 @@ class DocumentProcessor:
             )
             return chunks
 
+    def extract_chunks_with_metadata(
+        self, document: DoclingDocument
+    ) -> tuple[List[str], List[dict]]:
+        """
+        Extract chunks with metadata for trace capture.
+
+        Returns:
+            Tuple of (chunks, metadata_list) where metadata_list contains:
+            - chunk_id: int
+            - page_numbers: list[int]
+            - token_count: int
+        """
+        if not self.chunker:
+            raise ValueError(
+                "Chunker not initialized. Pass chunker_config to __init__() to enable chunking."
+            )
+
+        chunks = self.chunker.chunk_document(document)
+
+        # Extract metadata from chunks
+        metadata_list = []
+        for i, chunk_obj in enumerate(self.chunker.chunker.chunk(document)):
+            # Get page numbers from chunk
+            page_numbers = list(
+                {
+                    item.prov[0].page_no
+                    for item in chunk_obj.meta.doc_items  # type: ignore[attr-defined]
+                    if hasattr(item, "prov") and item.prov
+                }
+            )
+
+            metadata_list.append(
+                {
+                    "chunk_id": i,
+                    "page_numbers": sorted(page_numbers),
+                    "token_count": len(self.chunker.tokenizer.encode(chunks[i])),  # type: ignore[union-attr]
+                }
+            )
+
+        rich_print(
+            f"[blue][DocumentProcessor][/blue] Extracted [cyan]{len(chunks)}[/cyan] chunks with metadata"
+        )
+        return chunks, metadata_list
+
     def extract_page_markdowns(self, document: DoclingDocument) -> List[str]:
         """
         Extracts Markdown content for each page.

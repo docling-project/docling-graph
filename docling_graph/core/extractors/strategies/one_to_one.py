@@ -94,14 +94,44 @@ class OneToOneStrategy(BaseExtractor):
         extracted_models: List[BaseModel] = []
         total_pages = len(page_markdowns)
 
+        # Import for trace data capture
+        import time
+
+        from ....pipeline.trace import ExtractionData
+
+        extraction_id = 0
         for page_num, page_md in enumerate(page_markdowns, start=1):
             rich_print(f"[blue][OneToOneStrategy][/blue] Processing page {page_num}/{total_pages}")
-            model = backend.extract_from_markdown(
-                markdown=page_md,
-                template=template,
-                context=f"page {page_num}",
-                is_partial=True,
-            )
+
+            start_time = time.time()
+            error = None
+
+            try:
+                model = backend.extract_from_markdown(
+                    markdown=page_md,
+                    template=template,
+                    context=f"page {page_num}",
+                    is_partial=True,
+                )
+            except Exception as e:
+                error = str(e)
+                model = None
+
+            extraction_time = time.time() - start_time
+
+            # Capture trace data if enabled
+            if hasattr(self, "trace_data") and self.trace_data:
+                extraction_data = ExtractionData(
+                    extraction_id=extraction_id,
+                    source_type="page",
+                    source_id=page_num - 1,  # 0-indexed
+                    parsed_model=model,
+                    extraction_time=extraction_time,
+                    error=error,
+                )
+                self.trace_data.extractions.append(extraction_data)
+                extraction_id += 1
+
             if model:
                 extracted_models.append(model)
             else:

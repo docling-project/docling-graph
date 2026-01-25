@@ -54,6 +54,15 @@ class PipelineOrchestrator:
             # User explicitly set dump_to_disk
             self.dump_to_disk = config.dump_to_disk
 
+        # Auto-detect include_trace based on mode if not explicitly set
+        if config.include_trace is None:
+            # CLI mode: include trace by default
+            # API mode: don't include trace by default (memory-efficient)
+            self.include_trace = mode == "cli"
+        else:
+            # User explicitly set include_trace
+            self.include_trace = config.include_trace
+
         # Core stages (always executed)
         self.stages: list[PipelineStage] = [
             InputNormalizationStage(mode=mode),
@@ -64,6 +73,12 @@ class PipelineOrchestrator:
 
         # Export stages (conditional based on dump_to_disk)
         if self.dump_to_disk:
+            # Add TraceExportStage before other exports if trace is enabled
+            if self.include_trace:
+                from .stages import TraceExportStage
+
+                self.stages.append(TraceExportStage())
+
             self.stages.extend(
                 [
                     DoclingExportStage(),
@@ -85,6 +100,25 @@ class PipelineOrchestrator:
         context = PipelineContext(config=self.config)
         current_stage = None
 
+        # Initialize OutputDirectoryManager if dumping to disk
+        if self.dump_to_disk:
+            from pathlib import Path
+
+            from ..core.utils.output_manager import OutputDirectoryManager
+
+            source_filename = Path(self.config.source).name if self.config.source else "output"
+            context.output_manager = OutputDirectoryManager(
+                base_output_dir=Path(self.config.output_dir), source_filename=source_filename
+            )
+            logger.info(f"Output directory: {context.output_manager.get_document_dir()}")
+
+        # Initialize TraceData if trace is enabled
+        if self.include_trace:
+            from .context import TraceData
+
+            context.trace_data = TraceData()
+            logger.info("Trace data collection enabled")
+
         logger.info("--- Starting Docling-Graph Pipeline ---")
 
         try:
@@ -92,6 +126,16 @@ class PipelineOrchestrator:
                 current_stage = stage
                 logger.info(f">>> Stage: {stage.name()}")
                 context = stage.execute(context)
+
+            # Log trace data summary if enabled
+            if self.include_trace and context.trace_data:
+                logger.info("Trace data collection complete")
+                logger.info(f"  Pages: {len(context.trace_data.pages)}")
+                logger.info(
+                    f"  Chunks: {len(context.trace_data.chunks) if context.trace_data.chunks else 0}"
+                )
+                logger.info(f"  Extractions: {len(context.trace_data.extractions)}")
+                logger.info(f"  Intermediate graphs: {len(context.trace_data.intermediate_graphs)}")
 
             logger.info("--- Pipeline Completed Successfully ---")
             return context

@@ -283,17 +283,45 @@ class ManyToOneStrategy(BaseExtractor):
 
             extracted_models: List[BaseModel] = []
 
+            # Import for trace data capture
+            import time
+
+            from ....pipeline.trace import ExtractionData
+
+            extraction_id = 0
             for batch in batches:
                 batch_label = f"batch {batch.batch_id + 1} ({batch.chunk_count} chunks)"
                 rich_print(f"[blue][ManyToOneStrategy][/blue] Extracting from {batch_label}")
 
-                # Send combined batch to LLM
-                model = backend.extract_from_markdown(
-                    markdown=batch.combined_text,
-                    template=template,
-                    context=batch_label,
-                    is_partial=True,
-                )
+                start_time = time.time()
+                error = None
+
+                try:
+                    # Send combined batch to LLM
+                    model = backend.extract_from_markdown(
+                        markdown=batch.combined_text,
+                        template=template,
+                        context=batch_label,
+                        is_partial=True,
+                    )
+                except Exception as e:
+                    error = str(e)
+                    model = None
+
+                extraction_time = time.time() - start_time
+
+                # Capture trace data if enabled
+                if hasattr(self, "trace_data") and self.trace_data:
+                    extraction_data = ExtractionData(
+                        extraction_id=extraction_id,
+                        source_type="chunk",
+                        source_id=batch.batch_id,
+                        parsed_model=model,
+                        extraction_time=extraction_time,
+                        error=error,
+                    )
+                    self.trace_data.extractions.append(extraction_data)
+                    extraction_id += 1
 
                 if model:
                     extracted_models.append(model)
