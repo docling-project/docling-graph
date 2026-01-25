@@ -239,6 +239,15 @@ class PipelineOrchestrator:
                     f"Saved metadata to {context.output_manager.get_document_dir() / 'metadata.json'}"
                 )
 
+            # Log final output directory after all exports complete
+            if context.output_manager and self.dump_to_disk:
+                from rich import print as rich_print
+
+                output_dir = context.output_manager.get_document_dir()
+                rich_print(
+                    f"[green]→[/green] Saved conversion results to [green]{output_dir}[/green]"
+                )
+
             logger.info(
                 f"--- Pipeline Completed Successfully (took {pipeline_processing_time:.2f}s) ---"
             )

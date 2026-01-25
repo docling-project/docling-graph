@@ -871,26 +871,26 @@ class ExportStage(PipelineStage):
 
         logger.info(f"[{self.name()}] Exporting graph...")
 
-        # Export to consolidated directory
-        consolidated_dir = context.output_manager.get_consolidated_graph_dir()
+        # Export to docling_graph directory
+        graph_dir = context.output_manager.get_docling_graph_dir()
 
         conf = context.config.to_dict()
         export_format = conf.get("export_format", "csv")
 
         if export_format == "csv":
-            CSVExporter().export(context.knowledge_graph, consolidated_dir)
-            logger.info(f"Saved CSV files to {consolidated_dir}")
+            CSVExporter().export(context.knowledge_graph, graph_dir)
+            logger.info(f"Saved CSV files to {graph_dir}")
         elif export_format == "cypher":
-            cypher_path = consolidated_dir / "graph.cypher"
+            cypher_path = graph_dir / "graph.cypher"
             CypherExporter().export(context.knowledge_graph, cypher_path)
             logger.info(f"Saved Cypher script to {cypher_path}")
 
         # Also export JSON
-        json_path = consolidated_dir / "graph.json"
+        json_path = graph_dir / "graph.json"
         JSONExporter().export(context.knowledge_graph, json_path)
         logger.info(f"Saved JSON to {json_path}")
 
-        logger.info(f"[{self.name()}] Exported to {consolidated_dir}")
+        logger.info(f"[{self.name()}] Exported to {graph_dir}")
         return context
 
 
@@ -945,13 +945,10 @@ class VisualizationStage(PipelineStage):
         """Generate visualizations and reports."""
         logger.info(f"[{self.name()}] Generating visualizations...")
 
-        conf = context.config.to_dict()
-        base_name = Path(conf["source"]).stem
-
         # Get output directory from output_manager or fallback to output_dir
         output_dir = None
         if context.output_manager:
-            output_dir = context.output_manager.get_visualizations_dir()
+            output_dir = context.output_manager.get_docling_graph_dir()
         elif context.output_dir:
             output_dir = context.output_dir
 
@@ -965,13 +962,14 @@ class VisualizationStage(PipelineStage):
                 "No extracted models available for visualization", details={"stage": self.name()}
             )
 
-        report_path = output_dir / f"{base_name}_report"
+        # Use generic filenames instead of source-based names
+        report_path = output_dir / "report"
         ReportGenerator().visualize(
             context.knowledge_graph, report_path, source_model_count=len(context.extracted_models)
         )
-        logger.info(f"Generated markdown report at {report_path}")
+        logger.info(f"Generated markdown report at {report_path}.md")
 
-        html_path = output_dir / f"{base_name}_graph.html"
+        html_path = output_dir / "graph.html"
         InteractiveVisualizer().save_cytoscape_graph(context.knowledge_graph, html_path)
         logger.info(f"Generated interactive HTML graph at {html_path}")
 

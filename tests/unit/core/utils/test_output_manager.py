@@ -81,23 +81,23 @@ class TestOutputDirectoryManager:
         assert docling_dir.name == "docling"
         assert docling_dir.parent == manager.get_document_dir()
 
-    def test_get_consolidated_graph_dir(self, tmp_path):
-        """Test get_consolidated_graph_dir method."""
+    def test_get_docling_graph_dir(self, tmp_path):
+        """Test get_docling_graph_dir method."""
         manager = OutputDirectoryManager(tmp_path, "test.pdf")
-        consolidated_dir = manager.get_consolidated_graph_dir()
+        graph_dir = manager.get_docling_graph_dir()
 
-        assert consolidated_dir.exists()
-        assert consolidated_dir.name == "consolidated"
-        assert consolidated_dir.parent == manager.get_graphs_dir()
+        assert graph_dir.exists()
+        assert graph_dir.name == "docling_graph"
+        assert graph_dir.parent == manager.get_document_dir()
 
-    def test_get_trace_dir(self, tmp_path):
-        """Test get_trace_dir method."""
+    def test_get_debug_dir(self, tmp_path):
+        """Test get_debug_dir method."""
         manager = OutputDirectoryManager(tmp_path, "test.pdf")
-        trace_dir = manager.get_trace_dir()
+        debug_dir = manager.get_debug_dir()
 
-        assert trace_dir.exists()
-        assert trace_dir.name == "trace"
-        assert trace_dir.parent == manager.get_document_dir()
+        assert debug_dir.exists()
+        assert debug_dir.name == "debug"
+        assert debug_dir.parent == manager.get_document_dir()
 
     def test_get_per_page_dir(self, tmp_path):
         """Test get_per_page_dir method."""
@@ -106,7 +106,7 @@ class TestOutputDirectoryManager:
 
         assert per_page_dir.exists()
         assert per_page_dir.name == "per_page"
-        assert per_page_dir.parent == manager.get_trace_dir()
+        assert per_page_dir.parent == manager.get_debug_dir()
 
     def test_get_per_chunk_dir(self, tmp_path):
         """Test get_per_chunk_dir method."""
@@ -115,7 +115,7 @@ class TestOutputDirectoryManager:
 
         assert per_chunk_dir.exists()
         assert per_chunk_dir.name == "per_chunk"
-        assert per_chunk_dir.parent == manager.get_trace_dir()
+        assert per_chunk_dir.parent == manager.get_debug_dir()
 
     def test_directory_structure(self, tmp_path):
         """Test complete directory structure."""
@@ -124,25 +124,25 @@ class TestOutputDirectoryManager:
         # Get all directories
         doc_dir = manager.get_document_dir()
         docling_dir = manager.get_docling_dir()
-        consolidated_dir = manager.get_consolidated_graph_dir()
-        trace_dir = manager.get_trace_dir()
+        graph_dir = manager.get_docling_graph_dir()
+        debug_dir = manager.get_debug_dir()
         per_page_dir = manager.get_per_page_dir()
         per_chunk_dir = manager.get_per_chunk_dir()
 
         # Verify structure
         assert doc_dir.exists()
         assert docling_dir.exists()
-        assert consolidated_dir.exists()
-        assert trace_dir.exists()
+        assert graph_dir.exists()
+        assert debug_dir.exists()
         assert per_page_dir.exists()
         assert per_chunk_dir.exists()
 
         # Verify hierarchy
         assert docling_dir.parent == doc_dir
-        assert consolidated_dir.parent == manager.get_graphs_dir()
-        assert trace_dir.parent == doc_dir
-        assert per_page_dir.parent == trace_dir
-        assert per_chunk_dir.parent == trace_dir
+        assert graph_dir.parent == doc_dir
+        assert debug_dir.parent == doc_dir
+        assert per_page_dir.parent == debug_dir
+        assert per_chunk_dir.parent == debug_dir
 
     def test_multiple_managers_same_base(self, tmp_path):
         """Test multiple managers with same base directory."""
@@ -188,7 +188,7 @@ class TestOutputDirectoryManager:
 
         # Verify all parent directories exist
         assert per_page_dir.exists()
-        assert per_page_dir.parent.exists()  # trace
+        assert per_page_dir.parent.exists()  # debug
         assert per_page_dir.parent.parent.exists()  # document_dir
         assert per_page_dir.parent.parent.parent == tmp_path
 
@@ -216,6 +216,3 @@ class TestOutputDirectoryManager:
         doc_dir = manager.get_document_dir()
         assert doc_dir.parent == custom_base
         assert custom_base.exists()
-
-
-# Made with Bob

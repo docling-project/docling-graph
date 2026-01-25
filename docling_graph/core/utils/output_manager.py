@@ -108,68 +108,76 @@ class OutputDirectoryManager:
         doc_dir.mkdir(parents=True, exist_ok=True)
         return doc_dir
 
-    # Trace directories
-    def get_trace_dir(self) -> Path:
-        """Get trace/ directory."""
-        path = self.document_dir / "trace"
+    # Main output directories
+    def get_docling_dir(self) -> Path:
+        """Get docling/ directory for Docling conversion outputs."""
+        path = self.document_dir / "docling"
         path.mkdir(exist_ok=True)
         return path
 
+    def get_docling_graph_dir(self) -> Path:
+        """Get docling_graph/ directory for graph outputs."""
+        path = self.document_dir / "docling_graph"
+        path.mkdir(exist_ok=True)
+        return path
+
+    def get_debug_dir(self) -> Path:
+        """Get debug/ directory for trace data."""
+        path = self.document_dir / "debug"
+        path.mkdir(exist_ok=True)
+        return path
+
+    # Debug/trace subdirectories
     def get_page_dir(self, page_num: int) -> Path:
-        """Get trace/pages/page_NNN/ directory."""
-        path = self.get_trace_dir() / "pages" / f"page_{page_num:03d}"
+        """Get debug/pages/page_NNN/ directory."""
+        path = self.get_debug_dir() / "pages" / f"page_{page_num:03d}"
         path.mkdir(parents=True, exist_ok=True)
         return path
 
     def get_chunks_dir(self) -> Path:
-        """Get trace/chunks/ directory."""
-        path = self.get_trace_dir() / "chunks"
+        """Get debug/chunks/ directory."""
+        path = self.get_debug_dir() / "chunks"
+        path.mkdir(exist_ok=True)
+        return path
+
+    def get_parsed_models_dir(self) -> Path:
+        """Get debug/parsed_models/ directory."""
+        path = self.get_debug_dir() / "parsed_models"
         path.mkdir(exist_ok=True)
         return path
 
     def get_extractions_dir(self) -> Path:
-        """Get trace/extractions/ directory."""
-        path = self.get_trace_dir() / "extractions"
-        path.mkdir(exist_ok=True)
-        return path
-
-    # Graph directories
-    def get_graphs_dir(self) -> Path:
-        """Get graphs/ directory."""
-        path = self.document_dir / "graphs"
-        path.mkdir(exist_ok=True)
-        return path
+        """Deprecated: Use get_parsed_models_dir() instead."""
+        return self.get_parsed_models_dir()
 
     def get_per_chunk_graph_dir(self, chunk_id: int) -> Path:
-        """Get graphs/per_chunk/chunk_NNN/ directory."""
-        path = self.get_graphs_dir() / "per_chunk" / f"chunk_{chunk_id:03d}"
+        """Get debug/intermediate_graphs/chunk_NNN/ directory."""
+        path = self.get_debug_dir() / "intermediate_graphs" / f"chunk_{chunk_id:03d}"
         path.mkdir(parents=True, exist_ok=True)
         return path
 
     def get_per_page_graph_dir(self, page_num: int) -> Path:
-        """Get graphs/per_page/page_NNN/ directory."""
-        path = self.get_graphs_dir() / "per_page" / f"page_{page_num:03d}"
+        """Get debug/intermediate_graphs/page_NNN/ directory."""
+        path = self.get_debug_dir() / "intermediate_graphs" / f"page_{page_num:03d}"
         path.mkdir(parents=True, exist_ok=True)
         return path
+
+    # Deprecated methods (for backward compatibility during transition)
+    def get_trace_dir(self) -> Path:
+        """Deprecated: Use get_debug_dir() instead."""
+        return self.get_debug_dir()
+
+    def get_graphs_dir(self) -> Path:
+        """Deprecated: Use get_docling_graph_dir() instead."""
+        return self.get_docling_graph_dir()
 
     def get_consolidated_graph_dir(self) -> Path:
-        """Get graphs/consolidated/ directory."""
-        path = self.get_graphs_dir() / "consolidated"
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+        """Deprecated: Use get_docling_graph_dir() instead."""
+        return self.get_docling_graph_dir()
 
-    # Other directories
     def get_visualizations_dir(self) -> Path:
-        """Get visualizations/ directory."""
-        path = self.document_dir / "visualizations"
-        path.mkdir(exist_ok=True)
-        return path
-
-    def get_docling_dir(self) -> Path:
-        """Get docling/ directory."""
-        path = self.document_dir / "docling"
-        path.mkdir(exist_ok=True)
-        return path
+        """Deprecated: Use get_docling_graph_dir() instead."""
+        return self.get_docling_graph_dir()
 
     def save_metadata(self, metadata: dict) -> Path:
         """
@@ -193,16 +201,13 @@ class OutputDirectoryManager:
         return self.document_dir
 
     def get_per_page_dir(self) -> Path:
-        """Get trace/per_page/ directory (convenience method for tests)."""
-        path = self.get_trace_dir() / "per_page"
+        """Get debug/per_page/ directory (convenience method for tests)."""
+        path = self.get_debug_dir() / "per_page"
         path.mkdir(exist_ok=True)
         return path
 
     def get_per_chunk_dir(self) -> Path:
-        """Get trace/per_chunk/ directory (convenience method for tests)."""
-        path = self.get_trace_dir() / "per_chunk"
+        """Get debug/per_chunk/ directory (convenience method for tests)."""
+        path = self.get_debug_dir() / "per_chunk"
         path.mkdir(exist_ok=True)
         return path
-
-
-# Made with Bob

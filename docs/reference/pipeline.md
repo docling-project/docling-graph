@@ -398,35 +398,35 @@ outputs/
 └── document_name_timestamp/
     ├── docling/                      # Docling exports
     │   ├── document.json             # Docling JSON (if enabled)
-    │   └── markdown/                 # Markdown exports (if enabled)
-    │       ├── full_document.md
-    │       └── pages/
-    │           ├── page_1.md
-    │           └── page_2.md
+    │   └── document.md               # Markdown export (if enabled)
     │
-    ├── consolidated_graph/           # Final consolidated graph
+    ├── docling_graph/                # Docling-graph outputs
+    │   ├── graph.json                # Graph JSON
     │   ├── nodes.csv                 # Graph nodes (if CSV export)
     │   ├── edges.csv                 # Graph edges (if CSV export)
     │   ├── graph.cypher              # Cypher script (if Cypher export)
-    │   ├── graph.json                # Graph JSON
-    │   ├── graph_visualization.html  # Interactive visualization
-    │   └── extraction_report.md      # Extraction report
+    │   ├── graph.html                # Interactive visualization
+    │   └── report.md                 # Extraction report
     │
-    └── trace/                        # Trace data (if include_trace=True)
+    └── debug/                        # Debug/trace data (if include_trace=True)
         ├── pages/                    # Per-page data
-        │   ├── page_1.json
-        │   ├── page_1.md
-        │   └── page_2.json
+        │   ├── page_001.json
+        │   └── page_002.json
         │
-        ├── per_chunk/                # Per-chunk data (many-to-one mode)
-        │   ├── chunk_0/
-        │   │   ├── extraction.json
-        │   │   ├── chunk.md
-        │   │   ├── nodes.csv
-        │   │   ├── edges.csv
-        │   │   └── graph.json
-        │   └── chunk_1/
-        │       └── ...
+        ├── chunks/                   # Chunk data
+        │   ├── chunk_000.md
+        │   └── metadata.json
+        │
+        ├── parsed_models/            # Extraction results
+        │   ├── extraction_000.json
+        │   └── extraction_001.json
+        │
+        └── intermediate_graphs/      # Per-chunk graphs (many-to-one mode)
+            ├── chunk_000/
+            │   ├── graph.json
+            │   └── model.json
+            └── chunk_001/
+                └── ...
         │
         ├── per_page/                 # Per-page data (one-to-one mode)
         │   ├── page_1/

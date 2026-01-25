@@ -153,6 +153,3 @@ class OptimizedFileWriter:
         if self._pending_writes:
             self.write_batch_sync(self._pending_writes)
             self._pending_writes.clear()
-
-
-# Made with Bob

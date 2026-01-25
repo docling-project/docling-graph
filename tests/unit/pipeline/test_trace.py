@@ -330,6 +330,3 @@ class TestTraceData:
         assert len(trace.chunks) == 1
         assert len(trace.extractions) == 1
         assert len(trace.intermediate_graphs) == 1
-
-
-# Made with Bob
