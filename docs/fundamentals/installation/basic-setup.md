@@ -222,7 +222,7 @@ uv run docling-graph inspect --help
 
 ```bash
 # Run a simple example (requires API key or GPU)
-uv run python docs/examples/scripts/03_llm_remote_api.py
+uv run python docs/examples/scripts/02_quickstart_llm_pdf.py
 ```
 
 ## Directory Structure

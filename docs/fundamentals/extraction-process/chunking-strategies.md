@@ -809,6 +809,7 @@ print(f"Recommended max_tokens: {recommended}")
 | **Real Tokenizer** | 38 | 0 (0%) | 152s | 38 (no retries) |
 
 **Improvements:**
+
 - ✅ 15% fewer chunks (better packing)
 - ✅ Zero context overflows (vs 6.7%)
 - ✅ 15% faster processing (no retries)

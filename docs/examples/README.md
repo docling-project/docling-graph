@@ -4,21 +4,71 @@ Welcome to the `docling-graph` examples. This directory contains all the resourc
 
 ## Project Structure
 
-* `/examples/scripts/`: Python script examples and the CLI recipes.
-* `/examples/data/`: Sample PDF and image files used by the scripts.
-* `/examples/templates/`: The Pydantic schemas (e.g., `invoice.py`) that define what data to extract.
+* `/examples/scripts/`: Python script examples and CLI recipes
+* `/examples/data/`: Sample PDF and image files used by the scripts
+* `/examples/templates/`: Pydantic schemas (e.g., `invoice.py`) that define what data to extract
 
-## 10 Core Recipes
+## 10 High-Quality Example Scripts
 
 All Python scripts are located in the `/examples/scripts/` folder and are designed to be **run from the project's root directory**.
 
-1.  **`01_vlm_from_image.py`**: The "Hello World." Extracts from a **single image** using the **VLM**.
-2.  **`02_vlm_from_pdf_page.py`**: Shows the **VLM** backend on a **single-page PDF**.
-3.  **`03_llm_remote_api.py`**: Standard **LLM** workflow using a **remote API** (Mistral) on a multi-page PDF.
-4.  **`04_llm_local_ollama.py`**: Uses a **local LLM** (Ollama) on the same PDF.
-5.  **`05_llm_with_consolidation.py`**: Advanced merging strategy using an **LLM to consolidate** results.
-6.  **`06_llm_one_to_one.py`**: Processes **each page individually** (`one-to-one`) and combines them into one graph.
-7.  **`07_llm_no_chunking.py`**: Processes a short document in a **single pass** (disables chunking).
-8.  **`08_llm_with_vision_config.py`**: Hybrid mode: uses the `vision` config for **layout-aware chunks** for the LLM.
-9.  **`09_export_to_cypher.py`**: Shows how to change the **output format** to a **Cypher script** for Neo4j.
-10. **`10_cli_recipes.md`**: A markdown file showing the **CLI (command-line) equivalents** for all the examples above.
+### Beginner Level (Getting Started)
+
+1. **`01_quickstart_vlm_image.py`**: Basic VLM extraction from invoice image - The "Hello World" example
+2. **`02_quickstart_llm_pdf.py`**: Basic LLM extraction from multi-page research paper PDF
+3. **`03_url_processing.py`**: Download and process documents directly from URLs (arXiv, etc.)
+
+### Intermediate Level (Core Features)
+
+4. **`04_input_formats.py`**: Process text, Markdown, and DoclingDocument formats
+5. **`05_processing_modes.py`**: Compare one-to-one vs many-to-one processing modes
+6. **`06_export_formats.py`**: Generate CSV, Cypher, and JSON exports for Neo4j
+7. **`07_local_inference.py`**: Privacy-focused offline processing with Ollama
+
+### Advanced Level (Optimization & Configuration)
+
+8. **`08_chunking_consolidation.py`**: Compare programmatic merge vs LLM consolidation
+9. **`09_batch_processing.py`**: Process multiple documents efficiently with error handling
+10. **`10_provider_configs.py`**: Compare OpenAI, Mistral, Gemini, and WatsonX providers
+
+### CLI Reference
+
+11. **`11_cli_recipes.md`**: Complete CLI command reference for all examples above
+
+## Quick Start
+
+```bash
+# Run the simplest example (VLM from image)
+uv run python docs/examples/scripts/01_quickstart_vlm_image.py
+
+# Or use CLI directly
+uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
+    --template "docs.examples.templates.invoice.Invoice" \
+    --backend "vlm"
+```
+
+## Learning Path
+
+1. **Start Here**: Run `01_quickstart_vlm_image.py` to understand the basics
+2. **Text Processing**: Try `02_quickstart_llm_pdf.py` for LLM-based extraction
+3. **Explore Features**: Work through examples 03-07 to learn core capabilities
+4. **Advanced Topics**: Examples 08-10 cover optimization and multi-provider setups
+5. **CLI Reference**: Use `11_cli_recipes.md` for command-line usage
+
+## Features Covered
+
+| Feature | Example Scripts |
+|---------|----------------|
+| VLM Backend | 01, 06 |
+| LLM Backend | 02, 03, 04, 05, 07, 08, 09, 10 |
+| Local Inference | 05, 07 |
+| Remote Inference | 02, 03, 08, 10 |
+| URL Input | 03 |
+| Text/Markdown Input | 04 |
+| One-to-One Mode | 05 |
+| Many-to-One Mode | 02, 03, 05, 08 |
+| Chunking | 02, 08 |
+| Consolidation | 08 |
+| Export Formats | 06 |
+| Batch Processing | 09 |
+| Multi-Provider | 10 |

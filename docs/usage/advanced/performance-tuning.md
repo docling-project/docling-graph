@@ -561,6 +561,7 @@ config = PipelineConfig(
 - **Cost**: 3x API costs
 
 **When to Use:**
+
 - ✅ Critical documents requiring highest accuracy
 - ✅ Complex contracts or legal documents
 - ✅ Documents with many conflicts

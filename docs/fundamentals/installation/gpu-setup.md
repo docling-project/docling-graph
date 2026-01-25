@@ -198,7 +198,7 @@ uv run docling-graph convert document.pdf  # ❌ Wrong
 source .venv/bin/activate
 
 # Run VLM example
-python docs/examples/scripts/01_vlm_from_image.py
+python docs/examples/scripts/01_quickstart_vlm_image.py
 ```
 
 Monitor GPU usage:
