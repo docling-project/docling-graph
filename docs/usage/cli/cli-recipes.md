@@ -9,7 +9,7 @@ This guide provides **ready-to-use CLI commands** for all example scripts. Run t
 | Recipe | Script | Backend | Use Case |
 |--------|--------|---------|----------|
 | [01: VLM from Image](#vlm-from-image) | `01_quickstart_vlm_image.py` | VLM | Forms, invoices, ID cards |
-| [02: LLM from PDF](#llm-from-pdf) | `02_quickstart_llm_pdf.py` | LLM (Remote) | Research papers, reports |
+| [02: LLM from PDF](#llm-from-pdf) | `02_quickstart_llm_pdf.py` | LLM (Remote) | Rheology researchs, reports |
 | [03: URL Processing](#url-processing) | `03_url_processing.py` | LLM (Remote) | Remote documents |
 | [04: Input Formats](#input-formats) | `04_input_formats.py` | LLM | Text, Markdown, JSON |
 | [05: Processing Modes](#processing-modes) | `05_processing_modes.py` | LLM (Local) | Mode comparison |
@@ -30,7 +30,7 @@ This guide provides **ready-to-use CLI commands** for all example scripts. Run t
 **CLI Command:**
 ```bash
 uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
-    --template "docs.examples.templates.invoice.Invoice" \
+    --template "docs.examples.templates.billing_document.BillingDocument" \
     --output-dir "outputs/cli_01" \
     --backend "vlm" \
     --processing-mode "one-to-one" \
@@ -50,7 +50,7 @@ uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
 
 **Python Script:** `02_quickstart_llm_pdf.py`
 
-**Use Case:** Extract from multi-page research papers
+**Use Case:** Extract from multi-page rheology researchs
 
 **Prerequisites:**
 ```bash
@@ -76,7 +76,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 
 - ✅ Multi-page documents
 - ✅ Text-heavy content
-- ✅ Research papers, reports
+- ✅ Rheology researchs, reports
 - ✅ Complex narratives
 
 ---
@@ -207,7 +207,7 @@ uv run docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.p
 **CSV Export (Bulk Import):**
 ```bash
 uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
-    --template "docs.examples.templates.invoice.Invoice" \
+    --template "docs.examples.templates.billing_document.BillingDocument" \
     --output-dir "outputs/cli_06_csv" \
     --backend "vlm" \
     --export-format "csv"
@@ -216,7 +216,7 @@ uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
 **Cypher Export (Script):**
 ```bash
 uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
-    --template "docs.examples.templates.invoice.Invoice" \
+    --template "docs.examples.templates.billing_document.BillingDocument" \
     --output-dir "outputs/cli_06_cypher" \
     --backend "vlm" \
     --export-format "cypher"
@@ -327,7 +327,7 @@ for file in docs/examples/data/invoice/*.jpg; do
     echo "Processing $filename..."
     
     uv run docling-graph convert "$file" \
-        --template "docs.examples.templates.invoice.Invoice" \
+        --template "docs.examples.templates.billing_document.BillingDocument" \
         --output-dir "outputs/cli_09/$filename" \
         --backend "vlm" \
         --processing-mode "one-to-one"

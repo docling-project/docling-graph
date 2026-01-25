@@ -20,7 +20,7 @@ Trace data capture provides visibility into the extraction pipeline's intermedia
 ```bash
 # Trace data automatically captured and exported
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "outputs/invoice"
 
 # Output includes trace/ directory with intermediate artifacts
@@ -34,7 +34,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Default: No trace data (memory efficient)
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 context = run_pipeline(config)
@@ -100,7 +100,7 @@ Profile extraction performance:
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     include_trace=True,
     dump_to_disk=False
 )
@@ -129,7 +129,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     include_trace=True,
     dump_to_disk=False
 )
@@ -269,14 +269,14 @@ if context.trace_data:
 # ✅ Good: Disable trace in production
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     include_trace=False  # Memory efficient
 )
 
 # ✅ Good: Enable trace for debugging with file export
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     include_trace=True,
     dump_to_disk=True  # Export to files
 )
@@ -300,7 +300,7 @@ debug_mode = os.getenv("DEBUG", "false").lower() == "true"
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     include_trace=debug_mode,
     dump_to_disk=debug_mode
 )

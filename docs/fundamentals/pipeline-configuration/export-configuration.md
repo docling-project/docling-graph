@@ -39,7 +39,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv"  # CSV export (default)
 )
 ```
@@ -60,7 +60,7 @@ outputs/
 
 ```csv
 node_id,node_type,properties
-invoice_001,Invoice,"{""invoice_number"": ""INV-001"", ""total"": 1000}"
+invoice_001,Invoice,"{""document_no"": ""INV-001"", ""total"": 1000}"
 org_acme,Organization,"{""name"": ""Acme Corp""}"
 addr_123,Address,"{""street"": ""123 Main St"", ""city"": ""Paris""}"
 ```
@@ -103,7 +103,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher"  # Cypher export
 )
 ```
@@ -121,7 +121,7 @@ outputs/
 
 ```cypher
 // Create nodes
-CREATE (:Invoice {invoice_number: "INV-001", total: 1000, node_id: "invoice_001"})
+CREATE (:BillingDocument {document_no: "INV-001", total: 1000, node_id: "invoice_001"})
 CREATE (:Organization {name: "Acme Corp", node_id: "org_acme"})
 CREATE (:Address {street: "123 Main St", city: "Paris", node_id: "addr_123"})
 
@@ -186,7 +186,7 @@ outputs/
 {
   "models": [
     {
-      "invoice_number": "INV-001",
+      "document_no": "INV-001",
       "total": 1000,
       "issued_by": {
         "name": "Acme Corp",
@@ -207,9 +207,9 @@ outputs/
   "nodes": [
     {
       "id": "invoice_001",
-      "type": "Invoice",
+      "type": "BillingDocument",
       "properties": {
-        "invoice_number": "INV-001",
+        "document_no": "INV-001",
         "total": 1000
       }
     }
@@ -262,7 +262,7 @@ outputs/
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="my_results/invoice_001"  # Custom directory
 )
 ```
@@ -278,7 +278,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="invoice.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # CSV export
     export_format="csv",
@@ -298,7 +298,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # Cypher export for Neo4j
     export_format="cypher",
@@ -323,7 +323,7 @@ for doc_path in Path("documents").glob("*.pdf"):
     
     config = PipelineConfig(
         source=str(doc_path),
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         export_format="csv",
         output_dir=output_dir
     )
@@ -344,7 +344,7 @@ Always generated, contains graph metrics:
   "node_count": 15,
   "edge_count": 18,
   "node_types": {
-    "Invoice": 1,
+    "BillingDocument": 1,
     "Organization": 2,
     "Address": 3,
     "LineItem": 9
@@ -353,7 +353,7 @@ Always generated, contains graph metrics:
     "ISSUED_BY": 1,
     "SENT_TO": 1,
     "LOCATED_AT": 5,
-    "CONTAINS_ITEM": 9,
+    "CONTAINS_LINE": 9,
     "HAS_TOTAL": 2
   },
   "avg_degree": 2.4,
@@ -446,7 +446,7 @@ Create bidirectional relationships:
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher",
     reverse_edges=True  # Create reverse relationships
 )
@@ -472,7 +472,7 @@ CREATE (b)-[:ISSUES]->(a)  # Reverse edge added
 # Export for Excel analysis
 config = PipelineConfig(
     source="invoices.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",
     output_dir="excel_analysis"
 )
@@ -489,7 +489,7 @@ run_pipeline(config)
 # Export for Neo4j
 config = PipelineConfig(
     source="documents.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher",
     output_dir="neo4j_import"
 )
@@ -506,7 +506,7 @@ run_pipeline(config)
 # Export and process in Python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",
     output_dir="python_processing"
 )
@@ -529,7 +529,7 @@ print(f"Total edges: {len(edges)}")
 # Export for API
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",  # Format doesn't matter, JSON always generated
     output_dir="api_data"
 )
@@ -563,7 +563,7 @@ else:
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format=export_format
 )
 ```
@@ -579,7 +579,7 @@ output_dir = f"results/{document_type}/{timestamp}"
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir=output_dir
 )
 ```
@@ -590,7 +590,7 @@ config = PipelineConfig(
 # ✅ Good - Enable what you need
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",
     
     # Enable for debugging
@@ -633,7 +633,7 @@ os.makedirs("results/invoices", exist_ok=True)
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="results/invoices/invoice_001"
 )
 ```

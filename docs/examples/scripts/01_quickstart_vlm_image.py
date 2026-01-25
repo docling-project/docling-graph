@@ -3,17 +3,17 @@ Example 01: Quickstart - VLM Extraction from Image
 
 Description:
     The simplest possible example demonstrating VLM (Vision-Language Model) extraction
-    from a single invoice image. This is the "Hello World" of docling-graph.
+    from a single billing document image. This is the "Hello World" of docling-graph.
 
 Use Cases:
-    - Extracting data from scanned invoices
+    - Extracting data from scanned billing documents
     - Processing ID cards, badges, or forms
     - Single-page structured documents
     - Image files (JPG, PNG)
 
 Prerequisites:
     - Installation: uv sync --extra all
-    - Data: Sample invoice image included in repository
+    - Data: Sample billing document from Wikimedia Commons
     - No API keys required (uses local VLM)
 
 Key Concepts:
@@ -23,7 +23,7 @@ Key Concepts:
     - Local Inference: Runs entirely on your machine
 
 Expected Output:
-    - nodes.csv: Extracted invoice data in tabular format
+    - nodes.csv: Extracted billing document data in tabular format
     - edges.csv: Relationships between entities
     - graph.html: Interactive visualization
     - graph.json: Complete graph structure
@@ -32,7 +32,7 @@ Expected Output:
 Related Examples:
     - Example 02: LLM extraction from PDF
     - Example 04: Multiple input formats
-    - Documentation: https://ibm.github.io/docling-graph/usage/examples/invoice-extraction/
+    - Documentation: https://ibm.github.io/docling-graph/usage/examples/billing-document-extraction/
 """
 
 import sys
@@ -47,7 +47,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.invoice import Invoice
+    from examples.templates.billing_document import BillingDocument
 
     from docling_graph import PipelineConfig
 except ImportError:
@@ -56,19 +56,19 @@ except ImportError:
     sys.exit(1)
 
 # Configuration
-SOURCE_FILE = "docs/examples/data/invoice/sample_invoice.jpg"
-TEMPLATE_CLASS = Invoice
+SOURCE_FILE = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg"
+TEMPLATE_CLASS = BillingDocument
 OUTPUT_DIR = "outputs/01_quickstart_vlm_image"
 
 console = Console()
 
 
 def main() -> None:
-    """Execute VLM extraction from invoice image."""
+    """Execute VLM extraction from billing document image."""
     console.print(
         Panel.fit(
             "[bold blue]Example 01: Quickstart - VLM from Image[/bold blue]\n"
-            "[dim]Extract structured data from an invoice image using Vision-Language Model[/dim]",
+            "[dim]Extract structured data from a billing document image using Vision-Language Model[/dim]",
             border_style="blue",
         )
     )
@@ -119,8 +119,8 @@ def main() -> None:
 
         console.print("\n[bold]💡 What Happened:[/bold]")
         console.print("  • Image was processed by Docling's vision model")
-        console.print("  • Invoice structure extracted using VLM")
-        console.print("  • Data validated against Invoice template")
+        console.print("  • Billing document structure extracted using VLM")
+        console.print("  • Data validated against BillingDocument template")
         console.print("  • Knowledge graph constructed with entities and relationships")
         console.print("  • Multiple export formats generated")
 

@@ -92,7 +92,7 @@ A **graph** is the complete network of nodes and edges representing your extract
 Document_INV001
   ├─ ISSUED_BY → Organization_AcmeCorp
   ├─ SENT_TO → Person_JohnDoe
-  └─ CONTAINS_ITEM → LineItem_001
+  └─ CONTAINS_LINE → LineItem_001
       └─ HAS_PRODUCT → Product_Widget
 ```
 
@@ -179,7 +179,7 @@ class Invoice(BaseModel):
 **What**: Uses language models to extract data from markdown/text representations.
 
 **Best For**:
-- Complex narratives (research papers, reports)
+- Complex narratives (rheology researchs, reports)
 - Large documents (5+ pages)
 - Documents requiring deep understanding
 
@@ -218,7 +218,7 @@ class Invoice(BaseModel):
 
 **Example**:
 ```
-10-page research paper
+10-page rheology research
 → 1 merged ResearchPaper model
 → 1 unified graph
 ```

@@ -22,7 +22,7 @@ This guide provides **complete, real-world configuration examples** for common u
 | [Production API](#example-2-production-api) | LLM | Remote | Many-to-one |
 | [High Accuracy](#example-3-high-accuracy-extraction) | VLM | Local | One-to-one |
 | [Batch Processing](#example-4-batch-processing) | LLM | Remote | Many-to-one |
-| [Research Papers](#example-5-research-papers) | LLM | Remote | Many-to-one |
+| [Rheology Researchs](#example-5-research-papers) | LLM | Remote | Many-to-one |
 | [Invoices](#example-6-invoice-processing) | LLM | Local | Many-to-one |
 | [Forms](#example-7-form-extraction) | VLM | Local | One-to-one |
 | [Multi-language](#example-8-multi-language-documents) | LLM | Remote | Many-to-one |
@@ -42,7 +42,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Source and template
     source="test_document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # Local LLM for fast iteration
     backend="llm",
@@ -114,7 +114,7 @@ import os
 config = PipelineConfig(
     # Source and template
     source="production_document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # Remote API for reliability
     backend="llm",
@@ -202,7 +202,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Source and template
     source="complex_document.pdf",
-    template="my_templates.ResearchPaper",
+    template="templates.ResearchPaper",
     
     # VLM for visual understanding
     backend="vlm",
@@ -255,7 +255,7 @@ high_accuracy_outputs/
 - Complex layouts
 - Visual elements
 - High accuracy needs
-- Research papers
+- Rheology researchs
 
 ---
 
@@ -313,7 +313,7 @@ def process_batch(input_dir: str, template: str):
     return results
 
 # Process batch
-results = process_batch("documents/invoices", "my_templates.Invoice")
+results = process_batch("documents/invoices", "templates.BillingDocument")
 
 # Summary
 success_count = sum(1 for r in results if r["status"] == "success")
@@ -343,7 +343,7 @@ batch_outputs/
 
 ---
 
-## Example 5: Research Papers
+## Example 5: Rheology Researchs
 
 ### Use Case
 Extract structured data from academic papers.
@@ -354,9 +354,9 @@ Extract structured data from academic papers.
 from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
-    # Research paper
+    # Rheology research
     source="research_paper.pdf",
-    template="my_templates.ResearchPaper",
+    template="templates.ResearchPaper",
     
     # Remote LLM for understanding
     backend="llm",
@@ -387,7 +387,7 @@ from pydantic import BaseModel, Field
 from typing import List
 
 class Author(BaseModel):
-    """Research paper author."""
+    """Rheology research author."""
     name: str
     affiliation: str | None = None
     email: str | None = None
@@ -399,7 +399,7 @@ class Citation(BaseModel):
     year: int | None = None
 
 class ResearchPaper(BaseModel):
-    """Research paper extraction template."""
+    """Rheology research extraction template."""
     
     title: str = Field(description="Paper title")
     authors: List[Author] = Field(description="Paper authors")
@@ -422,7 +422,7 @@ class ResearchPaper(BaseModel):
 
 ---
 
-## Example 6: Invoice Processing
+## Example 6: BillingDocument Processing
 
 ### Use Case
 Extract invoice data for accounting systems.
@@ -433,9 +433,9 @@ Extract invoice data for accounting systems.
 from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
-    # Invoice document
+    # BillingDocument document
     source="invoice.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # Local for cost efficiency
     backend="llm",
@@ -484,10 +484,10 @@ class Organization(BaseModel):
     address: Address
     tax_id: str | None = None
 
-class Invoice(BaseModel):
-    """Invoice extraction template."""
+class BillingDocument(BaseModel):
+    """BillingDocument extraction template."""
     
-    invoice_number: str = Field(description="Invoice number")
+    document_no: str = Field(description="Invoice number")
     invoice_date: date = Field(description="Invoice date")
     due_date: date | None = Field(description="Payment due date")
     
@@ -510,7 +510,7 @@ import pandas as pd
 nodes = pd.read_csv("invoices/processed/nodes.csv")
 
 # Filter invoices
-invoices = nodes[nodes['node_type'] == 'Invoice']
+invoices = nodes[nodes['node_type'] == 'BillingDocument']
 
 # Export to accounting system
 invoices.to_csv("accounting_import.csv", index=False)
@@ -539,7 +539,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Form document
     source="application_form.pdf",
-    template="my_templates.ApplicationForm",
+    template="templates.ApplicationForm",
     
     # VLM for form structure
     backend="vlm",
@@ -616,7 +616,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Multi-language document
     source="multilingual_document.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     
     # Remote LLM with multi-language support
     backend="llm",
@@ -710,7 +710,7 @@ def validate_config(config_dict: dict) -> bool:
 # Test configuration
 config_dict = {
     "source": "document.pdf",
-    "template": "my_templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote"
 }
@@ -731,15 +731,15 @@ def get_config_for_document(doc_path: str) -> PipelineConfig:
     
     # Determine document type
     if "invoice" in doc_path.lower():
-        template = "my_templates.Invoice"
+        template = "templates.BillingDocument"
         processing_mode = "many-to-one"
         
     elif "form" in doc_path.lower():
-        template = "my_templates.Form"
+        template = "templates.Form"
         processing_mode = "one-to-one"
         
     else:
-        template = "my_templates.Generic"
+        template = "templates.Generic"
         processing_mode = "many-to-one"
     
     # Choose backend based on environment
@@ -855,7 +855,7 @@ if stats["node_count"] == 0:
 # Use chunking and smaller batch sizes
 config = PipelineConfig(
     source="large_document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=True,  # Enable chunking
     max_batch_size=1,   # Smaller batches
     backend="llm",

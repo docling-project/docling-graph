@@ -22,7 +22,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Configure pipeline
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"
 )
@@ -44,7 +44,7 @@ from docling_graph import run_pipeline
 # Enable file exports
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "my_templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote",
     "dump_to_disk": True,
@@ -81,7 +81,7 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"
 )
@@ -100,7 +100,7 @@ from docling_graph import run_pipeline
 
 run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice"
+    "template": "templates.BillingDocument"
 })
 ```
 
@@ -131,7 +131,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="invoice.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Returns data directly - no file exports
@@ -179,7 +179,7 @@ all_graphs = []
 for doc in documents:
     config = PipelineConfig(
         source=str(doc),
-        template="templates.Invoice"
+        template="templates.BillingDocument"
     )
     
     try:
@@ -213,7 +213,7 @@ from docling_graph.exceptions import (
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 try:
@@ -265,7 +265,7 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote"
 )
 run_pipeline(config)
@@ -282,7 +282,7 @@ project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
 # Now you can import templates
-from templates.invoice import Invoice
+from templates.billing_document import BillingDocument
 from docling_graph import PipelineConfig
 
 config = PipelineConfig(
@@ -308,7 +308,7 @@ from docling_graph import PipelineConfig
 # Run pipeline
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"
 )
 run_pipeline(config)
@@ -345,7 +345,7 @@ app = Flask(__name__)
 def convert_document():
     # Get uploaded file
     file = request.files['document']
-    template = request.form.get('template', 'templates.Invoice')
+    template = request.form.get('template', 'templates.BillingDocument')
     
     # Save temporarily
     temp_id = str(uuid.uuid4())
@@ -434,7 +434,7 @@ with DAG(
         python_callable=process_document,
         params={
             'source': 'documents/daily.pdf',
-            'template': 'templates.Invoice'
+            'template': 'templates.BillingDocument'
         }
     )
 ```
@@ -451,14 +451,14 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm"  # Validated
 )
 
 # ❌ Avoid - Dictionary without validation
 config = {
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "invalid"  # No validation
 }
 ```
@@ -492,14 +492,14 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir=f"outputs/invoices/{timestamp}"
 )
 
 # ❌ Avoid - Overwriting outputs
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"  # Same for all
 )
 ```

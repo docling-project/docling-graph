@@ -305,14 +305,14 @@ class Document(BaseModel):
     """Document with conditional validation."""
     
     document_type: str = Field(...)
-    invoice_number: Optional[str] = Field(None)
+    document_no: Optional[str] = Field(None)
     receipt_number: Optional[str] = Field(None)
     
     @model_validator(mode="after")
     def validate_document_numbers(self) -> Self:
         """Ensure appropriate number field is present."""
-        if self.document_type == "invoice" and not self.invoice_number:
-            raise ValueError("invoice_number required for invoice documents")
+        if self.document_type == "invoice" and not self.document_no:
+            raise ValueError("document_no required for invoice documents")
         if self.document_type == "receipt" and not self.receipt_number:
             raise ValueError("receipt_number required for receipt documents")
         return self
@@ -471,6 +471,8 @@ class DocumentType(str, Enum):
     INVOICE = "Invoice"
     RECEIPT = "Receipt"
     CREDIT_NOTE = "Credit Note"
+    DEBIT_NOTE = "Debit Note"
+    PRO_FORMA = "Pro Forma"
     OTHER = "Other"
 
 class Document(BaseModel):

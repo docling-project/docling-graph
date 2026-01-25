@@ -47,7 +47,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",  # Local inference
     model_override="ibm-granite/granite-4.0-1b",
@@ -64,7 +64,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b",
     provider_override="vllm"
@@ -95,7 +95,7 @@ uv run python -m vllm.entrypoints.openai.api_server \
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     model_override="llama-3.1-8b",
     provider_override="ollama"
@@ -124,7 +124,7 @@ ollama pull llama3.1:8b
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     inference="local",
     model_override="numind/NuExtract-2.0-8B",
@@ -186,7 +186,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote",  # Remote inference
     model_override="gpt-4-turbo",
@@ -203,7 +203,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="gpt-4-turbo",
     provider_override="openai"
@@ -232,7 +232,7 @@ export OPENAI_API_KEY="your-api-key"
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="mistral-small-latest",
     provider_override="mistral"
@@ -262,7 +262,7 @@ export MISTRAL_API_KEY="your-api-key"
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="gemini-2.5-flash",
     provider_override="gemini"
@@ -290,7 +290,7 @@ export GOOGLE_API_KEY="your-api-key"
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="ibm/granite-13b-chat-v2",
     provider_override="watsonx"
@@ -328,7 +328,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Small model - Automatically uses SIMPLE tier
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     provider_override="vllm",
     model_override="ibm-granite/granite-4.0-1b"  # 1B params → SIMPLE
@@ -337,7 +337,7 @@ config = PipelineConfig(
 # Medium model - Automatically uses STANDARD tier
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     provider_override="ollama",
     model_override="llama3.1:8b"  # 8B params → STANDARD
@@ -346,7 +346,7 @@ config = PipelineConfig(
 # Large model - Automatically uses ADVANCED tier
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     provider_override="openai",
     model_override="gpt-4-turbo"  # 175B+ params → ADVANCED
@@ -538,7 +538,7 @@ os.environ["VLLM_BASE_URL"] = "http://localhost:8000/v1"
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     provider_override="vllm"
 )
@@ -553,7 +553,7 @@ os.environ["OLLAMA_BASE_URL"] = "http://localhost:11434"
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     provider_override="ollama"
 )
@@ -634,7 +634,7 @@ Remote (Gemini Flash):    $3-10
 # Solution: Use smaller model
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b",  # Smaller model
     provider_override="vllm"
@@ -671,7 +671,7 @@ export OPENAI_API_KEY="your-key"
 # Solution: Add retry logic or switch provider
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="mistral-small-latest",  # Different provider
     provider_override="mistral"
@@ -688,7 +688,7 @@ config = PipelineConfig(
 # ✅ Good - Quick setup for testing
 config = PipelineConfig(
     source="test.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="gpt-3.5-turbo"
 )
@@ -700,7 +700,7 @@ config = PipelineConfig(
 # ✅ Good - Cost-effective for high volume
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b"
 )
@@ -717,7 +717,7 @@ else:
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override=model
 )
@@ -745,7 +745,7 @@ run_pipeline(config)
 # Use SIMPLE tier for speed and cost efficiency
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b",  # SIMPLE tier
     provider_override="vllm",
@@ -765,7 +765,7 @@ config = PipelineConfig(
 # Use ADVANCED tier for maximum accuracy
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     inference="remote",
     model_override="gpt-4-turbo",  # ADVANCED tier
     provider_override="openai",
@@ -785,7 +785,7 @@ config = PipelineConfig(
 # Use STANDARD tier for general documents
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Report",
+    template="templates.Report",
     inference="local",
     model_override="llama3.1:8b",  # STANDARD tier
     provider_override="ollama",

@@ -33,7 +33,7 @@ def sample_config_yaml():
     backend: llm
     inference: local
     docling_config: ocr
-    template: docling_graph.templates.invoice.Invoice
+    template: docling_graph.templates.billing_document.BillingDocument
     source: sample.pdf
     output_dir: outputs
     export_format: csv

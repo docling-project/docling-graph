@@ -44,7 +44,7 @@ def convert_command(
         typer.Option(
             "--template",
             "-t",
-            help="Dotted path to Pydantic template (e.g., 'templates.invoice.Invoice').",
+            help="Dotted path to Pydantic template (e.g., 'templates.billing_document.BillingDocument').",
         ),
     ],
     processing_mode: Annotated[

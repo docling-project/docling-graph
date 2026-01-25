@@ -91,7 +91,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"  # Default
 )
 ```
@@ -113,7 +113,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one"
 )
 ```
@@ -259,7 +259,7 @@ merged = merge_pydantic_models(models, template)
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=True,      # Enable chunking
     max_batch_size=5        # Process 5 chunks at once
 )
@@ -371,7 +371,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local"
 )
@@ -384,7 +384,7 @@ run_pipeline(config)
 ```python
 config = PipelineConfig(
     source="complex_document.pdf",
-    template="my_templates.ResearchPaper",
+    template="templates.ResearchPaper",
     backend="vlm",              # Vision backend
     processing_mode="one-to-one",
     docling_config="vision"     # Vision pipeline
@@ -398,7 +398,7 @@ run_pipeline(config)
 ```python
 config = PipelineConfig(
     source="large_document.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     backend="llm",
     use_chunking=True,          # Enable chunking
     llm_consolidation=True,     # Extra accuracy
@@ -428,7 +428,7 @@ else:
 # ✅ Good - Use chunking for efficiency
 config = PipelineConfig(
     source="large_doc.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=True  # Recommended
 )
 ```
@@ -439,7 +439,7 @@ config = PipelineConfig(
 # ✅ Good - Extra accuracy for critical data
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     llm_consolidation=True  # Higher accuracy
 )
 ```
@@ -468,7 +468,7 @@ if not markdown.strip():
 # Enable chunking and reduce batch size
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=True,
     max_batch_size=1  # Smaller batches
 )
@@ -481,7 +481,7 @@ config = PipelineConfig(
 # Use local backend or disable consolidation
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",      # Faster
     llm_consolidation=False  # Skip extra pass

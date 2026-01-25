@@ -190,14 +190,14 @@ Person(first_name="John", last_name="Doe", dob="1990-01-01", email="john@work.co
 #### 📍 Document Entity
 
 ```python
-class Invoice(BaseModel):
+class BillingDocument(BaseModel):
     """
-    Invoice document entity.
+    BillingDocument document entity.
     Uniquely identified by invoice number.
     """
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     
-    invoice_number: str = Field(
+    document_no: str = Field(
         ...,
         description="Unique invoice identifier",
         examples=["INV-2024-001", "12345"]
@@ -207,7 +207,7 @@ class Invoice(BaseModel):
     total: Optional[float] = Field(None)
     
     def __str__(self) -> str:
-        return f"Invoice {self.invoice_number}"
+        return f"Invoice {self.document_no}"
 ```
 
 ---
@@ -395,10 +395,10 @@ Use this decision tree to classify your models:
 ### 📍 Invoice Processing
 
 ```python
-# ENTITY: Invoice (unique document)
-class Invoice(BaseModel):
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
-    invoice_number: str = Field(...)
+# ENTITY: BillingDocument (unique document)
+class BillingDocument(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["document_no"])
+    document_no: str = Field(...)
     # Each invoice is unique
 
 # ENTITY: Organization (unique company)
@@ -424,12 +424,12 @@ class MonetaryAmount(BaseModel):
 
 **Graph Structure:**
 ```
-Invoice-001 --ISSUED_BY--> Acme Corp --LOCATED_AT--> Address(123 Main St, Paris)
-Invoice-002 --ISSUED_BY--> Tech Ltd --LOCATED_AT--> Address(123 Main St, Paris)
+BillingDocument-001 --ISSUED_BY--> Acme Corp --LOCATED_AT--> Address(123 Main St, Paris)
+BillingDocument-002 --ISSUED_BY--> Tech Ltd --LOCATED_AT--> Address(123 Main St, Paris)
                                                       ↑ Same address node shared
 ```
 
-### 📍 Research Paper
+### 📍 Rheology Research
 
 ```python
 # ENTITY: Research (unique paper)
@@ -547,9 +547,9 @@ class LineItem(BaseModel):
     quantity: float = Field(...)
     unit_price: float = Field(...)
 
-class Invoice(BaseModel):
+class BillingDocument(BaseModel):
     """Entity - unique invoice."""
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     # ...
     # Use regular Field, not edge() - these are embedded
     items: List[LineItem] = Field(default_factory=list)

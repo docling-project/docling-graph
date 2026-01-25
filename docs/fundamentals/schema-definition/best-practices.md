@@ -243,11 +243,11 @@ def edge(label: str, **kwargs: Any) -> Any:
 
 ```python
 # WRONG
-items: List[Item] = edge(label="CONTAINS_ITEM")
+items: List[Item] = edge(label="CONTAINS_LINE")
 
 # CORRECT
 items: List[Item] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     default_factory=list
 )
 ```
@@ -291,7 +291,7 @@ has_items: List[Item] = edge(label="contains-item")
 # CORRECT - Consistent ALL_CAPS_WITH_UNDERSCORES
 issued_by: Org = edge(label="ISSUED_BY")
 sent_to: Client = edge(label="SENT_TO")
-has_items: List[Item] = edge(label="CONTAINS_ITEM")
+has_items: List[Item] = edge(label="CONTAINS_LINE")
 ```
 
 ### ❌ Wrong Entity/Component Classification
@@ -345,8 +345,8 @@ def validate_currency(cls, v: Any) -> Any:
 
 ```python
 # ✅ Good - Focused template
-class Invoice(BaseModel):
-    """Invoice document."""
+class BillingDocument(BaseModel):
+    """BillingDocument document."""
     # Only invoice-related fields
 
 # ❌ Bad - Kitchen sink template
@@ -394,7 +394,7 @@ Document → Section → Subsection → Paragraph → Sentence → Word
 
 ```python
 """
-Invoice extraction template.
+BillingDocument extraction template.
 
 Version: 2.0.0
 Last Updated: 2024-01-15
@@ -410,7 +410,7 @@ Changes:
 ```python
 """
 BREAKING CHANGES in v2.0.0:
-- Renamed 'bill_no' to 'invoice_number'
+- Renamed 'bill_no' to 'document_no'
 - Changed 'date' from str to date type
 - Removed deprecated 'legacy_field'
 """
@@ -420,14 +420,14 @@ BREAKING CHANGES in v2.0.0:
 
 ```python
 # ✅ Good - Current examples
-invoice_number: str = Field(
+document_no: str = Field(
     ...,
     description="Unique invoice identifier",
     examples=["INV-2024-001", "2024-INV-12345"]  # Current format
 )
 
 # ❌ Bad - Outdated examples
-invoice_number: str = Field(
+document_no: str = Field(
     ...,
     description="Unique invoice identifier",
     examples=["INV-2020-001", "2020-INV-12345"]  # Old format
@@ -441,7 +441,7 @@ invoice_number: str = Field(
 Migration from v1.x to v2.0:
 
 1. Rename fields:
-   - bill_no → invoice_number
+   - bill_no → document_no
    - client → sent_to
 
 2. Update types:
@@ -565,9 +565,9 @@ Congratulations! You've completed the Schema Definition guide. Now:
 - **[API Reference](../../reference/config.md)** - Complete API documentation
 
 ### Example Templates
-- **Invoice Template** - `docs/examples/templates/invoice.py`
+- **Invoice Template** - `docs/examples/templates/billing_document.py`
 - **ID Card Template** - `docs/examples/templates/id_card.py`
-- **Research Paper Template** - `docs/examples/templates/rheology_research.py`
+- **Rheology Research Template** - `docs/examples/templates/rheology_research.py`
 - **Insurance Template** - `docs/examples/templates/insurance.py`
 
 ### Community

@@ -2,11 +2,11 @@
 Example 02: Quickstart - LLM Extraction from PDF
 
 Description:
-    Basic LLM extraction from a multi-page research paper PDF using a remote API.
+    Basic LLM extraction from a multi-page rheology research PDF using a remote API.
     Demonstrates the standard workflow for text-heavy documents with automatic chunking.
 
 Use Cases:
-    - Research papers and academic documents
+    - Rheology researchs and academic documents
     - Technical reports and whitepapers
     - Multi-page business documents
     - Any text-heavy PDF content
@@ -14,7 +14,7 @@ Use Cases:
 Prerequisites:
     - Installation: uv sync --extra remote
     - Environment: export MISTRAL_API_KEY="your-api-key"
-    - Data: Sample research paper included in repository
+    - Data: Sample rheology research included in repository
 
 Key Concepts:
     - LLM Backend: Processes text extracted from PDFs
@@ -66,11 +66,11 @@ console = Console()
 
 
 def main() -> None:
-    """Execute LLM extraction from research paper PDF."""
+    """Execute LLM extraction from rheology research PDF."""
     console.print(
         Panel.fit(
             "[bold blue]Example 02: Quickstart - LLM from PDF[/bold blue]\n"
-            "[dim]Extract structured data from a research paper using Large Language Model[/dim]",
+            "[dim]Extract structured data from a rheology research using Large Language Model[/dim]",
             border_style="blue",
         )
     )

@@ -3,7 +3,7 @@ Example 06: Export Formats - CSV, Cypher, and JSON
 
 Description:
     Demonstrates different export formats for knowledge graphs. Processes the same
-    invoice with three different export formats to show Neo4j integration options
+    billing document with three different export formats to show Neo4j integration options
     and general-purpose data exchange.
 
 Use Cases:
@@ -46,7 +46,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.invoice import Invoice
+    from examples.templates.billing_document import BillingDocument
 
     from docling_graph import PipelineConfig
 except ImportError:
@@ -54,8 +54,8 @@ except ImportError:
     rich_print("Please run this script from the project root directory.")
     sys.exit(1)
 
-SOURCE_FILE = "docs/examples/data/invoice/sample_invoice.jpg"
-TEMPLATE_CLASS = Invoice
+SOURCE_FILE = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg"
+TEMPLATE_CLASS = BillingDocument
 
 console = Console()
 
@@ -113,7 +113,7 @@ def main() -> None:
     )
 
     console.print("\n[yellow]📋 Overview:[/yellow]")
-    console.print("  Process the same invoice with different export formats:")
+    console.print("  Process the same billing document with different export formats:")
     console.print("  1. CSV - Neo4j bulk import")
     console.print("  2. Cypher - Neo4j script execution")
     console.print("  3. JSON - General purpose (always included)")

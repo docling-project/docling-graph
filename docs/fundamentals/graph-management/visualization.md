@@ -34,7 +34,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"
 )
 
@@ -182,7 +182,7 @@ generator.visualize(
   "node_count": 15,
   "edge_count": 18,
   "node_types": {
-    "Invoice": 1,
+    "BillingDocument": 1,
     "Organization": 2,
     "Address": 3,
     "LineItem": 9
@@ -232,7 +232,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Run pipeline (automatic visualization)
 config = PipelineConfig(
     source="invoice.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"
 )
 
@@ -276,7 +276,7 @@ for pdf_file in Path("documents").glob("*.pdf"):
     
     config = PipelineConfig(
         source=str(pdf_file),
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         output_dir=output_dir
     )
     
@@ -428,7 +428,7 @@ def process_and_email(pdf_path, recipient):
     # Process document
     config = PipelineConfig(
         source=pdf_path,
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         output_dir="temp_output"
     )
     run_pipeline(config)
@@ -458,7 +458,7 @@ def process_and_email(pdf_path, recipient):
 # ✅ Good - Keep visualizations enabled
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     # Visualizations generated automatically
 )
 ```
@@ -490,7 +490,7 @@ output_dir = f"visualizations/{timestamp}"
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir=output_dir
 )
 ```

@@ -96,7 +96,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Run complete pipeline
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",
     export_format="csv",  # or "cypher"
@@ -124,9 +124,9 @@ run_pipeline(config)
 # Node structure
 {
     "id": "invoice_001",
-    "label": "Invoice",
+    "label": "BillingDocument",
     "type": "entity",
-    "invoice_number": "INV-001",
+    "document_no": "INV-001",
     "total": 1000
 }
 ```
@@ -234,7 +234,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Extract and export to CSV
 config = PipelineConfig(
     source="invoices.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",
     output_dir="analysis"
 )
@@ -247,7 +247,7 @@ import pandas as pd
 nodes = pd.read_csv("analysis/nodes.csv")
 edges = pd.read_csv("analysis/edges.csv")
 
-print(f"Total invoices: {len(nodes[nodes['label'] == 'Invoice'])}")
+print(f"Total invoices: {len(nodes[nodes['label'] == 'BillingDocument'])}")
 ```
 
 ---
@@ -260,7 +260,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Extract and export to Cypher
 config = PipelineConfig(
     source="contracts.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     export_format="cypher",
     output_dir="neo4j_import"
 )
@@ -282,7 +282,7 @@ import json
 # Extract and access programmatically
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="data"
 )
 
@@ -310,7 +310,7 @@ Every pipeline run generates statistics:
   "node_count": 15,
   "edge_count": 18,
   "node_types": {
-    "Invoice": 1,
+    "BillingDocument": 1,
     "Organization": 2,
     "Address": 3,
     "LineItem": 9
@@ -319,7 +319,7 @@ Every pipeline run generates statistics:
     "ISSUED_BY": 1,
     "SENT_TO": 1,
     "LOCATED_AT": 5,
-    "CONTAINS_ITEM": 9
+    "CONTAINS_LINE": 9
   },
   "avg_degree": 2.4,
   "density": 0.17

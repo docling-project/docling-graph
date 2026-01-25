@@ -452,7 +452,7 @@ The `metadata.json` file contains pipeline configuration, results, and performan
   "timestamp": "2026-01-25T12:30:45.123456",
   "input": {
     "source": "document.pdf",
-    "template": "templates.Invoice"
+    "template": "templates.BillingDocument"
   },
   "config": {
     "pipeline": {

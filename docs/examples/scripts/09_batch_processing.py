@@ -47,7 +47,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.invoice import Invoice
+    from examples.templates.billing_document import BillingDocument
 
     from docling_graph import PipelineConfig
 except ImportError:
@@ -61,9 +61,12 @@ console = Console()
 def get_sample_documents() -> List[Tuple[str, type]]:
     """Get list of sample documents to process."""
     return [
-        ("docs/examples/data/invoice/sample_invoice.jpg", Invoice),
+        (
+            "https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg",
+            BillingDocument,
+        ),
         # Add more documents here as needed
-        # ("docs/examples/data/invoice/another_invoice.pdf", Invoice),
+        # ("https://example.com/another_billing_doc.pdf", BillingDocument),
     ]
 
 

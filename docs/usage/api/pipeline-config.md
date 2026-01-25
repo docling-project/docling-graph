@@ -22,7 +22,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Create configuration
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"
 )
@@ -113,7 +113,7 @@ from docling_graph import run_pipeline
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Returns PipelineContext with results
@@ -136,14 +136,14 @@ Convert configuration to dictionary format.
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 config_dict = config.to_dict()
 print(config_dict)
 # {
 #     "source": "document.pdf",
-#     "template": "templates.Invoice",
+#     "template": "templates.BillingDocument",
 #     "backend": "llm",
 #     ...
 # }
@@ -163,7 +163,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Only required parameters - no file exports by default
 config = PipelineConfig(
     source="invoice.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Returns data in memory
@@ -180,7 +180,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Enable file exports
 config = PipelineConfig(
     source="invoice.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     dump_to_disk=True,
     output_dir="outputs/invoice"
 )
@@ -273,7 +273,7 @@ models = ModelsConfig(
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote",
     models=models
@@ -297,7 +297,7 @@ from docling_graph import run_pipeline, PipelineConfig
 try:
     config = PipelineConfig(
         source="document.pdf",
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         backend="invalid"  # Invalid value
     )
 except ValueError as e:
@@ -315,7 +315,7 @@ from docling_graph import run_pipeline, PipelineConfig
 try:
     config = PipelineConfig(
         source="document.pdf",
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         backend="vlm",
         inference="remote"  # Not allowed for VLM
     )
@@ -334,7 +334,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",  # IDE suggests: "llm" | "vlm"
     inference="remote",  # IDE suggests: "local" | "remote"
     processing_mode="many-to-one"  # IDE suggests valid options
@@ -349,7 +349,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # mypy will catch this error
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking="yes"  # Error: expected bool, got str
 )
 ```
@@ -376,7 +376,7 @@ def create_config(source: str, template: str, use_remote: bool = False):
     )
 
 # Use factory
-config = create_config("document.pdf", "templates.Invoice", use_remote=True)
+config = create_config("document.pdf", "templates.BillingDocument", use_remote=True)
 run_pipeline(config)
 ```
 
@@ -398,7 +398,7 @@ BASE_CONFIG = {
 def process_invoice(source: str):
     config = PipelineConfig(
         source=source,
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         **BASE_CONFIG,
         output_dir=f"outputs/invoices/{Path(source).stem}"
     )
@@ -442,7 +442,7 @@ def smart_config(source: str) -> PipelineConfig:
     
     return PipelineConfig(
         source=source,
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         backend=backend,
         processing_mode=processing,
         use_chunking=use_chunking,
@@ -488,7 +488,7 @@ def get_config(source: str, template: str) -> PipelineConfig:
             llm_consolidation=False
         )
 
-config = get_config("document.pdf", "templates.Invoice")
+config = get_config("document.pdf", "templates.BillingDocument")
 run_pipeline(config)
 ```
 
@@ -531,7 +531,7 @@ class ConfigBuilder:
         return PipelineConfig(**self.config_dict)
 
 # Use builder
-config = (ConfigBuilder("document.pdf", "templates.Invoice")
+config = (ConfigBuilder("document.pdf", "templates.BillingDocument")
     .with_remote_llm("mistral", "mistral-large-latest")
     .with_chunking(True)
     .with_consolidation(True)
@@ -553,14 +553,14 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm"  # Validated at creation
 )
 
 # ❌ Avoid - Dictionary without validation
 config = {
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "invalid"  # No validation
 }
 ```
@@ -571,14 +571,14 @@ config = {
 # ✅ Good - Rely on sensible defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice"
+    template="templates.BillingDocument"
     # Uses default backend, inference, etc.
 )
 
 # ❌ Avoid - Specifying every parameter
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",
     processing_mode="many-to-one",
@@ -596,14 +596,14 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir=f"outputs/invoices/{timestamp}"
 )
 
 # ❌ Avoid - Overwriting outputs
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"  # Same for all
 )
 ```
@@ -626,7 +626,7 @@ backend
 # Use valid values
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm"  # Valid: "llm" or "vlm"
 )
 ```

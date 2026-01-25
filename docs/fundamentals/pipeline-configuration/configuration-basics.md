@@ -24,7 +24,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Required (at runtime)
     source="document.pdf",
-    template="my_templates.MyTemplate",
+    template="templates.MyTemplate",
     
     # Backend settings
     backend="llm",              # "llm" or "vlm"
@@ -62,14 +62,14 @@ config = PipelineConfig(
 # File path (string or Path)
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Also accepts Path objects
 from pathlib import Path
 config = PipelineConfig(
     source=Path("documents/invoice.pdf"),
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 ```
 
@@ -84,11 +84,11 @@ config = PipelineConfig(
 # Dotted path string (recommended)
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Direct class reference (alternative)
-from my_templates import Invoice
+from templates.billing_document import BillingDocument
 config = PipelineConfig(
     source="document.pdf",
     template=Invoice
@@ -111,14 +111,14 @@ config = PipelineConfig(
 # LLM backend (default) - for text extraction
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm"
 )
 
 # VLM backend - for vision-based extraction
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm"
 )
 ```
@@ -131,14 +131,14 @@ config = PipelineConfig(
 # Local inference (default) - uses local GPU/CPU
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local"
 )
 
 # Remote inference - uses API providers
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote"
 )
 ```
@@ -151,7 +151,7 @@ config = PipelineConfig(
 # Override default model
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="gpt-4-turbo",
     provider_override="openai"
@@ -168,14 +168,14 @@ config = PipelineConfig(
 # Many-to-one (default) - whole document as single entity
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"
 )
 
 # One-to-one - process each page separately
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one"
 )
 ```
@@ -188,14 +188,14 @@ config = PipelineConfig(
 # OCR pipeline (default) - traditional OCR
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr"
 )
 
 # Vision pipeline - VLM-based conversion
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="vision"
 )
 ```
@@ -208,14 +208,14 @@ config = PipelineConfig(
 # With chunking (default) - splits large documents
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=True
 )
 
 # Without chunking - processes entire document
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=False
 )
 ```
@@ -226,14 +226,14 @@ config = PipelineConfig(
 # Without consolidation (default)
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     llm_consolidation=False
 )
 
 # With consolidation - merges results using LLM
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     llm_consolidation=True
 )
 ```
@@ -248,14 +248,14 @@ config = PipelineConfig(
 # CSV format (default)
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv"
 )
 
 # Cypher format - for Neo4j import
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher"
 )
 ```
@@ -268,14 +268,14 @@ config = PipelineConfig(
 # Default output directory
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"
 )
 
 # Custom output directory
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="my_results/invoice_001"
 )
 ```
@@ -286,7 +286,7 @@ config = PipelineConfig(
 # Control Docling document exports
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_docling=True,           # Export Docling document
     export_docling_json=True,      # Export as JSON
     export_markdown=True,          # Export as markdown
@@ -305,7 +305,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"
 )
@@ -322,7 +322,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Start with defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Modify as needed
@@ -344,7 +344,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config_dict = {
     "source": "document.pdf",
-    "template": "my_templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote"
 }
@@ -361,7 +361,7 @@ from docling_graph import run_pipeline
 # Pass config dict directly
 run_pipeline({
     "source": "document.pdf",
-    "template": "my_templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote"
 })
@@ -382,7 +382,7 @@ from docling_graph import run_pipeline, PipelineConfig
 try:
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         backend="vlm",
         inference="remote"  # ❌ VLM doesn't support remote
     )
@@ -503,7 +503,7 @@ provider="docling"
 # Minimal config for quick testing
 config = PipelineConfig(
     source="test.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 run_pipeline(config)
 ```
@@ -514,7 +514,7 @@ run_pipeline(config)
 # Production config with remote API
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",
     model_override="gpt-4-turbo",
     provider_override="openai",
@@ -529,7 +529,7 @@ run_pipeline(config)
 # Local GPU extraction
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b",
     provider_override="vllm"
@@ -543,7 +543,7 @@ run_pipeline(config)
 # VLM extraction for complex layouts
 config = PipelineConfig(
     source="complex_layout.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     inference="local",
     docling_config="vision"
@@ -557,7 +557,7 @@ run_pipeline(config)
 # Process each page separately
 config = PipelineConfig(
     source="multi_page.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one",
     export_per_page_markdown=True
 )
@@ -573,7 +573,7 @@ run_pipeline(config)
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote"
 )
 
@@ -589,7 +589,7 @@ print(f"Output dir: {config.output_dir}")
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Get as dictionary
@@ -604,7 +604,7 @@ import json
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # Serialize
@@ -624,7 +624,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # ✅ Good - Type hints help catch errors
 config: PipelineConfig = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 ```
 
@@ -634,7 +634,7 @@ config: PipelineConfig = PipelineConfig(
 # ✅ Good - Create and validate before processing
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     inference="local"
 )
@@ -653,13 +653,13 @@ run_pipeline(config)
 # ✅ Good - Rely on sensible defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # ❌ Bad - Over-specify defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",  # Already default
     inference="local",  # Already default
     processing_mode="many-to-one",  # Already default
@@ -674,7 +674,7 @@ config = PipelineConfig(
 # ✅ Good - Document why you override defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     # Use remote API for better accuracy on complex documents
     inference="remote",
     model_override="gpt-4-turbo",

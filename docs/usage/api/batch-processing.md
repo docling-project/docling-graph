@@ -29,7 +29,7 @@ results = []
 for doc in documents:
     config = PipelineConfig(
         source=str(doc),
-        template="templates.Invoice"
+        template="templates.BillingDocument"
     )
     
     try:
@@ -60,7 +60,7 @@ documents = Path("documents").glob("*.pdf")
 for doc in documents:
     config = PipelineConfig(
         source=str(doc),
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         dump_to_disk=True,  # Enable file exports
         output_dir=f"outputs/{doc.stem}"
     )
@@ -88,7 +88,7 @@ documents = list(Path("documents").glob("*.pdf"))
 for doc in tqdm(documents, desc="Processing"):
     config = PipelineConfig(
         source=str(doc),
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         output_dir=f"outputs/{doc.stem}"
     )
     
@@ -175,7 +175,7 @@ def batch_process(input_dir: str, template: str):
 # Run batch processing
 results = batch_process(
     input_dir="documents/invoices",
-    template="templates.invoice.Invoice"
+    template="templates.billing_document.BillingDocument"
 )
 ```
 
@@ -255,7 +255,7 @@ def parallel_batch_process(
 # Run parallel processing
 results = parallel_batch_process(
     input_dir="documents/invoices",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     max_workers=4
 )
 ```
@@ -328,7 +328,7 @@ def batch_with_stats(input_dir: str, template: str, output_base: str):
 # Run with statistics
 df = batch_with_stats(
     input_dir="documents/invoices",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     output_base="outputs/batch_stats"
 )
 
@@ -354,7 +354,7 @@ def smart_batch_process(input_dir: str, output_base: str):
     for doc in documents:
         # Determine template based on filename
         if "invoice" in doc.name.lower():
-            template = "templates.invoice.Invoice"
+            template = "templates.billing_document.BillingDocument"
             backend = "vlm"
         elif "research" in doc.name.lower():
             template = "templates.research.Research"
@@ -440,7 +440,7 @@ def batch_with_retry(input_dir: str, template: str, output_base: str):
 
 results = batch_with_retry(
     input_dir="documents/invoices",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     output_base="outputs/retry"
 )
 ```
@@ -511,7 +511,7 @@ def batch_with_checkpoint(
 # Run with checkpoint
 checkpoint = batch_with_checkpoint(
     input_dir="documents/invoices",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     output_base="outputs/checkpoint"
 )
 ```
@@ -556,7 +556,7 @@ def batch_with_memory_management(
 
 batch_with_memory_management(
     input_dir="documents/large_batch",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     output_base="outputs/memory_managed",
     cleanup_interval=10
 )
@@ -742,7 +742,7 @@ class BatchProcessor:
 if __name__ == "__main__":
     processor = BatchProcessor(
         input_dir="documents/invoices",
-        template="templates.invoice.Invoice",
+        template="templates.billing_document.BillingDocument",
         output_base="outputs/production_batch",
         max_workers=4,
         max_retries=3

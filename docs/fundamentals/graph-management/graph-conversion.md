@@ -98,10 +98,10 @@ class Address(BaseModel):
 Edges are created automatically from model relationships:
 
 ```python
-class Invoice(BaseModel):
-    invoice_number: str
-    issued_by: Organization  # Creates edge: Invoice -> Organization
-    line_items: List[LineItem]  # Creates edges: Invoice -> LineItem (multiple)
+class BillingDocument(BaseModel):
+    document_no: str
+    issued_by: Organization  # Creates edge: BillingDocument -> Organization
+    line_items: List[LineItem]  # Creates edges: BillingDocument -> LineItem (multiple)
 ```
 
 ### Edge Structure
@@ -121,7 +121,7 @@ class Invoice(BaseModel):
 ```python
 from pydantic import BaseModel, Field
 
-class Invoice(BaseModel):
+class BillingDocument(BaseModel):
     issued_by: Organization = Field(
         json_schema_extra={"edge_label": "ISSUED_BY"}
     )
@@ -244,12 +244,12 @@ print(f"Removed {graph.number_of_nodes() - cleaned_graph.number_of_nodes()} phan
 
 ```python
 from docling_graph.core.converters import GraphConverter
-from my_templates import Invoice, Organization, LineItem
+from my_templates import BillingDocument, Organization, LineItem
 
 # Create sample models
 models = [
-    Invoice(
-        invoice_number="INV-001",
+    BillingDocument(
+        document_no="INV-001",
         issued_by=Organization(name="Acme Corp"),
         line_items=[
             LineItem(description="Product A", total=100),
@@ -277,7 +277,7 @@ from docling_graph.core.converters import GraphConverter
 converter = GraphConverter(add_reverse_edges=True)
 graph, metadata = converter.pydantic_list_to_graph(models)
 
-# Original edge: Invoice -> Organization (ISSUED_BY)
+# Original edge: BillingDocument -> Organization (ISSUED_BY)
 # Reverse edge: Organization -> Invoice (reverse_ISSUED_BY)
 
 print(f"Total edges (with reverse): {metadata.edge_count}")
@@ -442,7 +442,7 @@ for model in models:
 **Solution:**
 ```python
 # Ensure relationships are defined
-class Invoice(BaseModel):
+class BillingDocument(BaseModel):
     issued_by: Organization  # Must be typed as entity
     # Not: issued_by: dict  # Won't create edge
 ```

@@ -96,7 +96,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher",  # Generate Cypher script
     output_dir="neo4j_import"
 )
@@ -170,7 +170,7 @@ import subprocess
 # Extract and export
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher",
     output_dir="neo4j_import"
 )
@@ -231,7 +231,7 @@ ORDER BY count DESC
 
 ```cypher
 // Find invoice by number
-MATCH (i:Invoice {invoice_number: "INV-001"})
+MATCH (i:BillingDocument {document_no: "INV-001"})
 RETURN i
 
 // Find organization by name
@@ -243,7 +243,7 @@ RETURN o
 
 ```cypher
 // Find all invoices
-MATCH (i:Invoice)
+MATCH (i:BillingDocument)
 RETURN i
 LIMIT 10
 
@@ -260,12 +260,12 @@ RETURN o.name, o.address
 
 ```cypher
 // Find who issued an invoice
-MATCH (i:Invoice {invoice_number: "INV-001"})-[:ISSUED_BY]->(o:Organization)
-RETURN i.invoice_number, o.name
+MATCH (i:BillingDocument {document_no: "INV-001"})-[:ISSUED_BY]->(o:Organization)
+RETURN i.document_no, o.name
 
 // Find all line items in an invoice
-MATCH (i:Invoice)-[:CONTAINS_ITEM]->(item:LineItem)
-WHERE i.invoice_number = "INV-001"
+MATCH (i:BillingDocument)-[:CONTAINS_LINE]->(item:LineItem)
+WHERE i.document_no = "INV-001"
 RETURN item.description, item.total
 ```
 
@@ -273,12 +273,12 @@ RETURN item.description, item.total
 
 ```cypher
 // Find invoice -> organization -> address
-MATCH (i:Invoice)-[:ISSUED_BY]->(o:Organization)-[:LOCATED_AT]->(a:Address)
-RETURN i.invoice_number, o.name, a.city
+MATCH (i:BillingDocument)-[:ISSUED_BY]->(o:Organization)-[:LOCATED_AT]->(a:Address)
+RETURN i.document_no, o.name, a.city
 
 // Find all paths between two nodes
-MATCH path = (start:Invoice)-[*..3]-(end:Address)
-WHERE start.invoice_number = "INV-001"
+MATCH path = (start:BillingDocument)-[*..3]-(end:Address)
+WHERE start.document_no = "INV-001"
 RETURN path
 ```
 
@@ -290,15 +290,15 @@ RETURN path
 
 ```cypher
 // Total invoice amount
-MATCH (i:Invoice)
+MATCH (i:BillingDocument)
 RETURN sum(i.total) as total_amount
 
 // Average invoice amount
-MATCH (i:Invoice)
+MATCH (i:BillingDocument)
 RETURN avg(i.total) as average_amount
 
 // Count invoices per organization
-MATCH (o:Organization)<-[:ISSUED_BY]-(i:Invoice)
+MATCH (o:Organization)<-[:ISSUED_BY]-(i:BillingDocument)
 RETURN o.name, count(i) as invoice_count
 ORDER BY invoice_count DESC
 ```
@@ -311,15 +311,15 @@ ORDER BY invoice_count DESC
 
 ```cypher
 // Find invoices with specific pattern
-MATCH (i:Invoice)-[:ISSUED_BY]->(o:Organization),
+MATCH (i:BillingDocument)-[:ISSUED_BY]->(o:Organization),
       (i)-[:SENT_TO]->(c:Organization),
-      (i)-[:CONTAINS_ITEM]->(item:LineItem)
+      (i)-[:CONTAINS_LINE]->(item:LineItem)
 WHERE i.total > 1000
 RETURN i, o, c, collect(item) as items
 
 // Find organizations that both issue and receive invoices
-MATCH (o:Organization)<-[:ISSUED_BY]-(i1:Invoice),
-      (o)<-[:SENT_TO]-(i2:Invoice)
+MATCH (o:Organization)<-[:ISSUED_BY]-(i1:BillingDocument),
+      (o)<-[:SENT_TO]-(i2:BillingDocument)
 RETURN o.name, count(DISTINCT i1) as issued, count(DISTINCT i2) as received
 ```
 
@@ -336,7 +336,7 @@ from neo4j import GraphDatabase
 # 1. Extract and export
 config = PipelineConfig(
     source="invoices.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher",
     output_dir="neo4j_data"
 )
@@ -358,14 +358,14 @@ with driver.session() as session:
 # 3. Query
 with driver.session() as session:
     result = session.run("""
-        MATCH (i:Invoice)
-        RETURN i.invoice_number, i.total
+        MATCH (i:BillingDocument)
+        RETURN i.document_no, i.total
         ORDER BY i.total DESC
         LIMIT 5
     """)
     
     for record in result:
-        print(f"{record['i.invoice_number']}: ${record['i.total']}")
+        print(f"{record['i.document_no']}: ${record['i.total']}")
 
 driver.close()
 ```
@@ -384,7 +384,7 @@ for pdf_file in Path("documents").glob("*.pdf"):
     # Extract
     config = PipelineConfig(
         source=str(pdf_file),
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         export_format="cypher",
         output_dir=f"neo4j_batch/{pdf_file.stem}"
     )
@@ -418,8 +418,8 @@ driver = GraphDatabase.driver(
 # Query
 with driver.session() as session:
     result = session.run("""
-        MATCH (i:Invoice)-[:ISSUED_BY]->(o:Organization)
-        RETURN i.invoice_number as invoice,
+        MATCH (i:BillingDocument)-[:ISSUED_BY]->(o:Organization)
+        RETURN i.document_no as invoice,
                o.name as organization,
                i.total as amount
         ORDER BY i.total DESC
@@ -455,7 +455,7 @@ RETURN count(n)
 
 ```cypher
 // Create index on invoice number
-CREATE INDEX invoice_number_idx FOR (i:Invoice) ON (i.invoice_number)
+CREATE INDEX document_no_idx FOR (i:BillingDocument) ON (i.document_no)
 
 // Create index on organization name
 CREATE INDEX org_name_idx FOR (o:Organization) ON (o.name)
@@ -468,10 +468,10 @@ SHOW INDEXES
 
 ```cypher
 // Unique constraint on invoice number
-CREATE CONSTRAINT invoice_unique FOR (i:Invoice) REQUIRE i.invoice_number IS UNIQUE
+CREATE CONSTRAINT invoice_unique FOR (i:BillingDocument) REQUIRE i.document_no IS UNIQUE
 
 // Existence constraint
-CREATE CONSTRAINT invoice_number_exists FOR (i:Invoice) REQUIRE i.invoice_number IS NOT NULL
+CREATE CONSTRAINT document_no_exists FOR (i:BillingDocument) REQUIRE i.document_no IS NOT NULL
 ```
 
 ### 👍 Batch Imports
@@ -545,13 +545,13 @@ docker logs neo4j
 **Solution:**
 ```cypher
 // Create indexes
-CREATE INDEX FOR (i:Invoice) ON (i.invoice_number)
+CREATE INDEX FOR (i:BillingDocument) ON (i.document_no)
 
 // Use EXPLAIN to analyze
-EXPLAIN MATCH (i:Invoice) WHERE i.total > 1000 RETURN i
+EXPLAIN MATCH (i:BillingDocument) WHERE i.total > 1000 RETURN i
 
 // Use PROFILE for detailed analysis
-PROFILE MATCH (i:Invoice) WHERE i.total > 1000 RETURN i
+PROFILE MATCH (i:BillingDocument) WHERE i.total > 1000 RETURN i
 ```
 
 ---
@@ -563,7 +563,7 @@ PROFILE MATCH (i:Invoice) WHERE i.total > 1000 RETURN i
 ```cypher
 // Find shortest path
 MATCH path = shortestPath(
-    (start:Invoice {invoice_number: "INV-001"})-[*]-(end:Address)
+    (start:BillingDocument {document_no: "INV-001"})-[*]-(end:Address)
 )
 RETURN path
 

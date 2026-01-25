@@ -48,7 +48,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",  # LLM backend
     inference="local"  # or "remote"
 )
@@ -127,7 +127,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",  # VLM backend
     inference="local",  # VLM only supports local
     docling_config="vision"  # Optional: use vision pipeline
@@ -201,7 +201,7 @@ config = PipelineConfig(
 |:--------------|:-------------------|:-------|
 | **Invoices** | LLM | Standard layout, text-heavy |
 | **Contracts** | LLM | Text-heavy, standard format |
-| **Research Papers** | LLM | Text-heavy, standard layout |
+| **Rheology Researchs** | LLM | Text-heavy, standard layout |
 | **Forms** | VLM | Visual structure important |
 | **ID Cards** | VLM | Visual layout critical |
 | **Complex Tables** | VLM | Visual structure needed |
@@ -276,7 +276,7 @@ VLM Remote:    Not available
 # Original LLM config
 config_llm = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"
 )
@@ -284,7 +284,7 @@ config_llm = PipelineConfig(
 # Switch to VLM
 config_vlm = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",  # Change backend
     inference="local",  # Must be local for VLM
     docling_config="vision"  # Optional: use vision pipeline
@@ -297,7 +297,7 @@ config_vlm = PipelineConfig(
 # Original VLM config
 config_vlm = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     inference="local"
 )
@@ -305,7 +305,7 @@ config_vlm = PipelineConfig(
 # Switch to LLM
 config_llm = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",  # Change backend
     inference="remote",  # Can now use remote
     model_override="gpt-4-turbo"  # Specify model
@@ -325,7 +325,7 @@ def get_config(document_path: str, document_type: str):
         # Use LLM for text-heavy documents
         return PipelineConfig(
             source=document_path,
-            template="my_templates.Invoice",
+            template="templates.BillingDocument",
             backend="llm",
             inference="remote"
         )
@@ -333,7 +333,7 @@ def get_config(document_path: str, document_type: str):
         # Use VLM for complex layouts
         return PipelineConfig(
             source=document_path,
-            template="my_templates.Form",
+            template="templates.Form",
             backend="vlm",
             inference="local"
         )
@@ -348,7 +348,7 @@ def extract_with_fallback(document_path: str):
         # Try LLM first (faster)
         config = PipelineConfig(
             source=document_path,
-            template="my_templates.Invoice",
+            template="templates.BillingDocument",
             backend="llm",
             inference="remote"
         )
@@ -357,7 +357,7 @@ def extract_with_fallback(document_path: str):
         # Fallback to VLM for better accuracy
         config = PipelineConfig(
             source=document_path,
-            template="my_templates.Invoice",
+            template="templates.BillingDocument",
             backend="vlm",
             inference="local"
         )
@@ -373,7 +373,7 @@ def extract_with_fallback(document_path: str):
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     
     # LLM-specific
@@ -388,7 +388,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     
     # VLM-specific

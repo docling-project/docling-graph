@@ -32,9 +32,9 @@ chunk_2 = "Line items: Product A ($50), Product B ($100)"
 chunk_3 = "Total: $150, Due date: 2024-01-31"
 
 # Each chunk produces a partial model
-model_1 = Invoice(invoice_number="INV-001", issued_by=Organization(name="Acme Corp"))
-model_2 = Invoice(line_items=[LineItem(...), LineItem(...)])
-model_3 = Invoice(total=150, due_date="2024-01-31")
+model_1 = BillingDocument(document_no="INV-001", issued_by=Organization(name="Acme Corp"))
+model_2 = BillingDocument(line_items=[LineItem(...), LineItem(...)])
+model_3 = BillingDocument(total=150, due_date="2024-01-31")
 
 # Need to merge into one complete model
 final_model = merge(model_1, model_2, model_3)
@@ -77,17 +77,17 @@ from docling_graph.core.utils import merge_pydantic_models
 
 # Multiple partial models
 models = [
-    Invoice(invoice_number="INV-001", issued_by=Organization(name="Acme")),
-    Invoice(line_items=[LineItem(description="Product A", total=50)]),
-    Invoice(total=150, due_date="2024-01-31")
+    BillingDocument(document_no="INV-001", issued_by=Organization(name="Acme")),
+    BillingDocument(line_items=[LineItem(description="Product A", total=50)]),
+    BillingDocument(total=150, due_date="2024-01-31")
 ]
 
 # Merge programmatically
 merged = merge_pydantic_models(models, Invoice)
 
 print(merged)
-# Invoice(
-#     invoice_number="INV-001",
+# BillingDocument(
+#     document_no="INV-001",
 #     issued_by=Organization(name="Acme"),
 #     line_items=[LineItem(description="Product A", total=50)],
 #     total=150,
@@ -105,13 +105,13 @@ print(merged)
 
 ```python
 # Model 1
-Invoice(invoice_number="INV-001", total=None)
+BillingDocument(document_no="INV-001", total=None)
 
 # Model 2
-Invoice(invoice_number=None, total=150)
+BillingDocument(document_no=None, total=150)
 
 # Merged
-Invoice(invoice_number="INV-001", total=150)
+BillingDocument(document_no="INV-001", total=150)
 ```
 
 #### 2. List Concatenation
@@ -120,13 +120,13 @@ Invoice(invoice_number="INV-001", total=150)
 
 ```python
 # Model 1
-Invoice(line_items=[LineItem(description="Product A")])
+BillingDocument(line_items=[LineItem(description="Product A")])
 
 # Model 2
-Invoice(line_items=[LineItem(description="Product B")])
+BillingDocument(line_items=[LineItem(description="Product B")])
 
 # Merged
-Invoice(line_items=[
+BillingDocument(line_items=[
     LineItem(description="Product A"),
     LineItem(description="Product B")
 ])
@@ -138,13 +138,13 @@ Invoice(line_items=[
 
 ```python
 # Model 1
-Invoice(issued_by=Organization(name="Acme"))
+BillingDocument(issued_by=Organization(name="Acme"))
 
 # Model 2
-Invoice(issued_by=Organization(address=Address(city="Paris")))
+BillingDocument(issued_by=Organization(address=Address(city="Paris")))
 
 # Merged
-Invoice(issued_by=Organization(
+BillingDocument(issued_by=Organization(
     name="Acme",
     address=Address(city="Paris")
 ))
@@ -156,13 +156,13 @@ Invoice(issued_by=Organization(
 
 ```python
 # Model 1
-Invoice(line_items=[LineItem(description="Product A", total=50)])
+BillingDocument(line_items=[LineItem(description="Product A", total=50)])
 
 # Model 2 (duplicate)
-Invoice(line_items=[LineItem(description="Product A", total=50)])
+BillingDocument(line_items=[LineItem(description="Product A", total=50)])
 
 # Merged (deduplicated)
-Invoice(line_items=[LineItem(description="Product A", total=50)])
+BillingDocument(line_items=[LineItem(description="Product A", total=50)])
 ```
 
 ---
@@ -217,7 +217,7 @@ Single-turn consolidation for models < 13B parameters:
 # Automatic for SIMPLE/STANDARD tier models
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",
     provider_override="ollama",
@@ -244,7 +244,7 @@ Multi-turn consolidation for models ≥ 13B parameters:
 # Automatic for ADVANCED tier models
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     backend="llm",
     inference="remote",
     provider_override="openai",
@@ -296,7 +296,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote",
     llm_consolidation=True  # Enable LLM consolidation
@@ -426,21 +426,21 @@ The LLM receives:
 
 ```python
 from docling_graph.core.utils import merge_pydantic_models
-from my_templates import Invoice, Organization, LineItem
+from templates.billing_document import BillingDocument, Organization, LineItem
 
 # Partial models from chunks
 models = [
-    Invoice(
-        invoice_number="INV-001",
+    BillingDocument(
+        document_no="INV-001",
         issued_by=Organization(name="Acme Corp")
     ),
-    Invoice(
+    BillingDocument(
         line_items=[
             LineItem(description="Product A", quantity=2, unit_price=50, total=100),
             LineItem(description="Product B", quantity=1, unit_price=150, total=150)
         ]
     ),
-    Invoice(
+    BillingDocument(
         subtotal=250,
         tax=25,
         total=275,
@@ -451,7 +451,7 @@ models = [
 # Merge
 merged = merge_pydantic_models(models, Invoice)
 
-print(f"Invoice: {merged.invoice_number}")
+print(f"Invoice: {merged.document_no}")
 print(f"Issued by: {merged.issued_by.name}")
 print(f"Line items: {len(merged.line_items)}")
 print(f"Total: ${merged.total}")
@@ -464,7 +464,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     
     # Enable LLM consolidation
     backend="llm",
@@ -567,9 +567,9 @@ except Exception:
 ```python
 # Even if consolidation fails, you get partial data
 models = [
-    Invoice(invoice_number="INV-001"),  # From chunk 1
-    Invoice(line_items=[...]),          # From chunk 2
-    Invoice(total=150)                  # From chunk 3
+    BillingDocument(document_no="INV-001"),  # From chunk 1
+    BillingDocument(line_items=[...]),          # From chunk 2
+    BillingDocument(total=150)                  # From chunk 3
 ]
 
 # If merge fails, you still have all 3 partial models
@@ -596,7 +596,7 @@ Zero data loss is automatic - no configuration needed:
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"
     # Zero data loss is always enabled
 )
@@ -609,7 +609,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"
 )
 
@@ -623,7 +623,7 @@ else:
     print(f"⚠ Got {len(results)} partial models")
     # Still useful! Can manually merge or use as-is
     for i, model in enumerate(results, 1):
-        print(f"  Model {i}: {model.invoice_number or 'N/A'}")
+        print(f"  Model {i}: {model.document_no or 'N/A'}")
 ```
 
 ---
@@ -653,16 +653,16 @@ Organization(name="Acme Corp", city="Paris")  # Only one
 
 ```python
 # Chunk 1
-Invoice(total=150)
+BillingDocument(total=150)
 
 # Chunk 2
-Invoice(total=275)
+BillingDocument(total=275)
 
 # Programmatic: Last value wins
-Invoice(total=275)
+BillingDocument(total=275)
 
 # LLM: Intelligent resolution
-Invoice(total=275)  # LLM chooses correct value
+BillingDocument(total=275)  # LLM chooses correct value
 ```
 
 #### 3. Partial Information
@@ -703,7 +703,7 @@ Organization(
 | **Simple invoice** | 95% | 96% | +1% |
 | **Complex contract** | 88% | 94% | +6% |
 | **Multi-page form** | 90% | 95% | +5% |
-| **Research paper** | 85% | 92% | +7% |
+| **Rheology research** | 85% | 92% | +7% |
 
 ---
 
@@ -715,7 +715,7 @@ Organization(
 # ✅ Good - Fast and free
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     llm_consolidation=False  # Default (90% accuracy)
 )
 ```
@@ -726,7 +726,7 @@ config = PipelineConfig(
 # ✅ Good - Better accuracy for important documents
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     backend="llm",
     inference="local",
     model_override="llama3.1:8b",  # STANDARD tier
@@ -740,7 +740,7 @@ config = PipelineConfig(
 # ✅ Good - Highest accuracy for critical data
 config = PipelineConfig(
     source="legal_contract.pdf",
-    template="my_templates.LegalContract",
+    template="templates.LegalContract",
     backend="llm",
     inference="remote",
     model_override="gpt-4-turbo",  # ADVANCED tier
@@ -763,7 +763,7 @@ config = PipelineConfig(
 merged = merge_pydantic_models(models, template)
 
 # Check completeness
-if not merged.invoice_number:
+if not merged.document_no:
     print("Warning: Missing invoice number")
 
 if not merged.line_items:
@@ -807,7 +807,7 @@ class Organization(BaseModel):
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     llm_consolidation=True  # Better preservation
 )
 ```
@@ -834,7 +834,7 @@ except ValidationError as e:
 # Disable LLM consolidation for speed
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     llm_consolidation=False  # Faster
 )
 ```

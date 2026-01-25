@@ -65,7 +65,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 ```python
 """
-Research paper extraction template.
+Rheology research extraction template.
 Extracts scientific experiments, measurements, and materials.
 """
 
@@ -132,7 +132,7 @@ verified_by: Optional[Person] = edge(
 
 # Required list relationship (one-to-many)
 contains_items: List[LineItem] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     default_factory=list,  # REQUIRED for lists
     description="Line items contained in this document"
 )
@@ -442,13 +442,13 @@ def edge(label: str, **kwargs: Any) -> Any:
 ```python
 # WRONG - List edge without default_factory
 items: List[Item] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     description="Items in document"
 )
 
 # CORRECT
 items: List[Item] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     default_factory=list,  # Required!
     description="Items in document"
 )

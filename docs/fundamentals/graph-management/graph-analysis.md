@@ -248,7 +248,7 @@ for pdf_file in Path("documents").glob("*.pdf"):
     
     config = PipelineConfig(
         source=str(pdf_file),
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         output_dir=output_dir
     )
     
@@ -475,7 +475,7 @@ if len(isolated) > metadata.node_count * 0.1:
 # Check if entities are properly connected
 # Ensure relationships are defined in Pydantic models
 
-class Invoice(BaseModel):
+class BillingDocument(BaseModel):
     issued_by: Organization  # Creates edge
     line_items: List[LineItem]  # Creates edges
 ```

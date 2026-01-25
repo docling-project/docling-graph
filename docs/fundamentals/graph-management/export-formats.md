@@ -37,7 +37,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",  # CSV export (default)
     output_dir="outputs"
 )
@@ -176,7 +176,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="cypher",  # Cypher export
     output_dir="outputs"
 )
@@ -440,7 +440,7 @@ import pandas as pd
 # Extract and export to CSV
 config = PipelineConfig(
     source="invoices.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",
     output_dir="analysis"
 )
@@ -470,7 +470,7 @@ import subprocess
 # Extract and export to Cypher
 config = PipelineConfig(
     source="contracts.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     export_format="cypher",
     output_dir="neo4j_import"
 )
@@ -501,7 +501,7 @@ import requests
 # Extract and export
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format="csv",  # JSON always generated
     output_dir="api_data"
 )
@@ -549,7 +549,7 @@ output_dir = f"exports/{export_format}/{timestamp}"
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_format=export_format,
     output_dir=output_dir
 )

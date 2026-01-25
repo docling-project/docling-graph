@@ -6,7 +6,7 @@ Welcome to the `docling-graph` examples. This directory contains all the resourc
 
 * `/examples/scripts/`: Python script examples and CLI recipes
 * `/examples/data/`: Sample PDF and image files used by the scripts
-* `/examples/templates/`: Pydantic schemas (e.g., `invoice.py`) that define what data to extract
+* `/examples/templates/`: Pydantic schemas (e.g., `billing_document.py`) that define what data to extract
 
 ## 10 High-Quality Example Scripts
 
@@ -15,7 +15,7 @@ All Python scripts are located in the `/examples/scripts/` folder and are design
 ### Beginner Level (Getting Started)
 
 1. **`01_quickstart_vlm_image.py`**: Basic VLM extraction from invoice image - The "Hello World" example
-2. **`02_quickstart_llm_pdf.py`**: Basic LLM extraction from multi-page research paper PDF
+2. **`02_quickstart_llm_pdf.py`**: Basic LLM extraction from multi-page rheology research PDF
 3. **`03_url_processing.py`**: Download and process documents directly from URLs (arXiv, etc.)
 
 ### Intermediate Level (Core Features)
@@ -42,8 +42,8 @@ All Python scripts are located in the `/examples/scripts/` folder and are design
 uv run python docs/examples/scripts/01_quickstart_vlm_image.py
 
 # Or use CLI directly
-uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
-    --template "docs.examples.templates.invoice.Invoice" \
+uv run docling-graph convert "https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg" \
+    --template "docs.examples.templates.billing_document.BillingDocument" \
     --backend "vlm"
 ```
 

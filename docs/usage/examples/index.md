@@ -32,10 +32,10 @@ This section provides **complete, end-to-end examples** organized by both **inpu
 
 | Example | Domain | Input |
 |---------|--------|-------|
-| [Invoice Extraction](invoice-extraction.md) | Business | PDF/Image |
+| [Billing Document Extraction](billing-document.md) | Business | PDF/Image |
 | [ID Card](id-card.md) | Identity | Image |
 | [Insurance Policy](insurance-policy.md) | Legal | PDF |
-| [Research Paper](research-paper.md) | Academic | PDF |
+| [Rheology Research](rheology_research.md) | Academic | PDF |
 
 
 | Format | OCR Required | Processing Speed | Backend Support | Best For |
@@ -58,10 +58,10 @@ This section provides **complete, end-to-end examples** organized by both **inpu
 - Reprocessing → [DoclingDocument Input](docling-document-input.md)
 
 **By Domain:**
-- Business → [Invoice Extraction](invoice-extraction.md)
+- Business → [Billing Document Extraction](billing-document.md)
 - Identity → [ID Card](id-card.md)
 - Legal → [Insurance Policy](insurance-policy.md)
-- Academic → [Research Paper](research-paper.md)
+- Academic → [Rheology Research](rheology_research.md)
 
 
 ### Workflow 1: URL → Extract → Visualize
@@ -80,13 +80,13 @@ uv run docling-graph inspect outputs
 
 ```bash
 # Step 1: Initial processing with DoclingDocument export
-uv run docling-graph convert invoice.pdf \
-    --template "templates.invoice.BasicInvoice" \
+uv run docling-graph convert billing_doc.pdf \
+    --template "templates.billing_document.BasicBillingDocument" \
     --export-docling-json
 
 # Step 2: Reprocess with different template (no OCR)
-uv run docling-graph convert outputs/invoice_docling.json \
-    --template "templates.invoice.DetailedInvoice"
+uv run docling-graph convert outputs/billing_doc_docling.json \
+    --template "templates.billing_document.DetailedBillingDocument"
 ```
 
 ### Workflow 3: Batch Markdown Processing

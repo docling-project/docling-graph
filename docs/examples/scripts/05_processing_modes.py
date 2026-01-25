@@ -6,7 +6,7 @@ Description:
     Uses a multi-page PDF with French ID cards to demonstrate when to use each mode.
 
 Use Cases:
-    - Batch documents (invoices, forms): Use one-to-one
+    - Batch documents (billing documents, forms): Use one-to-one
     - Continuous documents (reports, papers): Use many-to-one
     - Understanding mode selection
     - Comparing output structures
@@ -29,7 +29,7 @@ Expected Output:
     - Comparison report
 
 Related Examples:
-    - Example 02: Many-to-one for research papers
+    - Example 02: Many-to-one for rheology researchs
     - Example 06: Export format comparison
     - Documentation: https://ibm.github.io/docling-graph/fundamentals/pipeline-configuration/processing-modes/
 """
@@ -152,13 +152,13 @@ def main() -> None:
         table.add_row("Output", "Multiple models", "Single merged model")
         table.add_row("Chunking", "Not used", "Used for large docs")
         table.add_row("Best For", "Batch documents", "Continuous documents")
-        table.add_row("Examples", "Invoices, forms, ID cards", "Papers, reports, books")
+        table.add_row("Examples", "Billing documents, forms, ID cards", "Papers, reports, books")
 
         console.print(table)
 
         console.print("\n[bold]💡 When to Use Each Mode:[/bold]")
         console.print("\n[cyan]Use One-to-One when:[/cyan]")
-        console.print("  • Each page is independent (batch of invoices)")
+        console.print("  • Each page is independent (batch of billing documents)")
         console.print("  • You need separate outputs per page")
         console.print("  • Pages contain different entities")
         console.print("  • Processing forms or structured documents")
@@ -167,7 +167,7 @@ def main() -> None:
         console.print("  • Document spans multiple pages")
         console.print("  • Information flows across pages")
         console.print("  • You want a unified view")
-        console.print("  • Processing reports or research papers")
+        console.print("  • Processing reports or rheology researchs")
 
         console.print("\n[bold]📊 Output Locations:[/bold]")
         console.print("  • One-to-One: [cyan]outputs/05_processing_modes/one_to_one/[/cyan]")

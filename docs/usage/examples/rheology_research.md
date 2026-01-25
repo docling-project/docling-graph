@@ -1,11 +1,11 @@
-# Research Paper Extraction
+# Rheology Research Extraction
 
 
 ## Overview
 
 Extract complex research data from scientific papers including experiments, measurements, materials, and results.
 
-**Document Type:** Research Paper (PDF)  
+**Document Type:** Rheology Research (PDF)  
 **Time:** 30 minutes  
 **Backend:** LLM with chunking
 
@@ -25,7 +25,7 @@ export MISTRAL_API_KEY="your-key"
 
 ## Template Overview
 
-The research paper template (`rheology_research.py`) includes:
+The rheology research template (`rheology_research.py`) includes:
 
 - **Measurements** - Flexible value/unit pairs
 - **Materials** - Granular material properties
@@ -75,7 +75,7 @@ class Research(BaseModel):
 ### Using CLI
 
 ```bash
-# Process research paper with chunking
+# Process rheology research with chunking
 uv run docling-graph convert research.pdf \
     --template "docs.examples.templates.rheology_research.Research" \
     --backend llm \
@@ -92,7 +92,7 @@ uv run docling-graph convert research.pdf \
 ### Using Python API
 
 ```python
-"""Process research paper."""
+"""Process rheology research."""
 
 import os
 from docling_graph import run_pipeline, PipelineConfig
@@ -113,7 +113,7 @@ config = PipelineConfig(
     output_dir="outputs/research"
 )
 
-print("Processing research paper (may take several minutes)...")
+print("Processing rheology research (may take several minutes)...")
 run_pipeline(config)
 print("✅ Complete!")
 ```
@@ -278,7 +278,7 @@ class Experiment(BaseModel):
     measurements: List[Measurement] = Field(default_factory=list)
 
 class Research(BaseModel):
-    """Simplified research paper."""
+    """Simplified rheology research."""
     title: str
     authors: List[str]
     abstract: str

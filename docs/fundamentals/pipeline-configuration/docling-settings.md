@@ -42,7 +42,7 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr"  # OCR pipeline (default)
 )
 ```
@@ -112,7 +112,7 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="vision"  # Vision pipeline
 )
 ```
@@ -179,7 +179,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # Docling export settings
     export_docling=True,  # Export Docling document (default)
@@ -258,7 +258,7 @@ export_per_page_markdown=False  # Default
 ```python
 config = PipelineConfig(
     source="invoice.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # OCR pipeline
     docling_config="ocr",
@@ -276,7 +276,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="complex_form.pdf",
-    template="my_templates.Form",
+    template="templates.Form",
     
     # Vision pipeline
     docling_config="vision",
@@ -294,7 +294,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="batch_invoices.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # OCR pipeline
     docling_config="ocr",
@@ -316,7 +316,7 @@ config = PipelineConfig(
 |:--------------|:--------------------|:-------|
 | **Invoices** | OCR | Standard layout, text-heavy |
 | **Contracts** | OCR | Text-heavy, standard format |
-| **Research Papers** | OCR | Text-heavy, standard layout |
+| **Rheology Researchs** | OCR | Text-heavy, standard layout |
 | **Forms** | Vision | Visual structure important |
 | **ID Cards** | Vision | Visual layout critical |
 | **Complex Tables** | Vision | Visual structure needed |
@@ -398,7 +398,7 @@ Vision Pipeline:
 # Most common combination
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # OCR for conversion
     docling_config="ocr",
@@ -415,7 +415,7 @@ config = PipelineConfig(
 # Highest accuracy combination
 config = PipelineConfig(
     source="complex_document.pdf",
-    template="my_templates.Form",
+    template="templates.Form",
     
     # Vision for conversion
     docling_config="vision",
@@ -432,7 +432,7 @@ config = PipelineConfig(
 # Mixed approach (less common)
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # OCR for conversion (faster)
     docling_config="ocr",
@@ -456,7 +456,7 @@ config = PipelineConfig(
 # 1. Try vision pipeline
 config = PipelineConfig(
     source="poor_scan.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="vision"  # Better for poor quality
 )
 
@@ -475,7 +475,7 @@ config = PipelineConfig(
 # 1. Use OCR if acceptable
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr"  # Faster
 )
 
@@ -492,7 +492,7 @@ config = PipelineConfig(
 # Use vision pipeline for better table handling
 config = PipelineConfig(
     source="document_with_tables.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="vision"  # Better table extraction
 )
 ```
@@ -507,7 +507,7 @@ config = PipelineConfig(
 # ✅ Good - Start with faster option
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr"  # Try OCR first
 )
 
@@ -525,7 +525,7 @@ else:
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config=docling_config
 )
 ```
@@ -536,7 +536,7 @@ config = PipelineConfig(
 # ✅ Good - Export what you need
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr",
     
     # Enable useful exports
