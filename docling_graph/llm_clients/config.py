@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ModelCapability(Enum):
     """Model capability tiers for adaptive extraction strategies."""
 
-    SIMPLE = "simple"  # 1B-5B models: simplified prompts, no Chain of Density
+    SIMPLE = "simple"  # 1B-7B models: simplified prompts, no Chain of Density
     STANDARD = "standard"  # 7B-13B models: standard prompts, single-pass consolidation
     ADVANCED = "advanced"  # 13B+ models: complex prompts, Chain of Density support
 

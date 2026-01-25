@@ -270,6 +270,12 @@ providers:
         capability: "simple"
         description: "IBM Granite 350M, lightweight"
         notes: "Good balance for local inference"
+      ibm-granite/granite-4.0-micro:
+        context_limit: 128000
+        max_new_tokens: 4096
+        capability: "standard"
+        description: "IBM Granite 4.0 Micro 3B, instruct-tuned"
+        notes: "Long-context model with improved instruction following and tool-calling"
 
   ollama:
     tokenizer: "sentence-transformers/all-MiniLM-L6-v2"
