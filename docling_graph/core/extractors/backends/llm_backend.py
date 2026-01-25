@@ -36,18 +36,43 @@ class LlmBackend:
         model_attr = getattr(llm_client, "model_name", None) or getattr(
             llm_client, "model_id", None
         )
+        
+        # Try to get config from registry (now works with all clients via .provider property)
         if hasattr(llm_client, "provider") and model_attr:
-            self.model_config = get_model_config(llm_client.provider, model_attr)
+            provider = llm_client.provider
+            self.model_config = get_model_config(provider, model_attr)
+            
+            if self.model_config:
+                logger.info(
+                    f"Loaded model config from registry: provider={provider}, "
+                    f"model={model_attr}, capability={self.model_config.capability.value}"
+                )
+            else:
+                logger.warning(
+                    f"Model '{model_attr}' not found in registry for provider '{provider}', "
+                    "using fallback detection"
+                )
 
-        # Fallback: auto-detect from context limit
+        # Fallback: auto-detect from model characteristics
         if not self.model_config:
             context_limit = getattr(llm_client, "context_limit", 8000)
             model_name = getattr(llm_client, "model_name", None) or getattr(
                 llm_client, "model_id", ""
             )
+            # Get max_new_tokens if available (better capability indicator)
+            max_new_tokens = getattr(llm_client, "_max_new_tokens", None)
+            
             # Ensure model_name is a string for detect_model_capability
             model_name_str = str(model_name) if model_name else ""
-            capability = detect_model_capability(context_limit, model_name_str)
+            
+            logger.info(
+                f"Using fallback capability detection: context={context_limit}, "
+                f"model_name={model_name_str}, max_new_tokens={max_new_tokens}"
+            )
+            
+            capability = detect_model_capability(
+                context_limit, model_name_str, max_new_tokens
+            )
 
             # Create minimal config
             self.model_config = ModelConfig(
@@ -59,6 +84,7 @@ class LlmBackend:
         rich_print(
             f"[blue][LlmBackend][/blue] Initialized with:\n"
             f"  • Client: [cyan]{self.client.__class__.__name__}[/cyan]\n"
+            f"  • Model: [cyan]{model_attr or 'unknown'}[/cyan]\n"
             f"  • Model capability: [yellow]{self.model_config.capability.value}[/yellow]\n"
             f"  • Context limit: {self.model_config.context_limit:,} tokens\n"
             f"  • Chain of Density: {'enabled' if self.model_config.supports_chain_of_density else 'disabled'}"

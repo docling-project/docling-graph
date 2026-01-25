@@ -269,6 +269,11 @@ class BaseLlmClient(ABC):
         return value
 
     @property
+    def provider(self) -> str:
+        """Return the provider identifier for this client."""
+        return self._provider_id()
+
+    @property
     def context_limit(self) -> int:
         """Return the context window size in tokens."""
         return self._context_limit

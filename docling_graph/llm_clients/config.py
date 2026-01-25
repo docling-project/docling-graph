@@ -377,29 +377,84 @@ def list_models(provider: str) -> list[str] | None:
     return _get_registry().list_models(provider)
 
 
-def detect_model_capability(context_limit: int, model_name: str = "") -> ModelCapability:
+def detect_model_capability(
+    context_limit: int, model_name: str = "", max_new_tokens: int | None = None
+) -> ModelCapability:
     """
-    Auto-detect model capability from context limit and name.
+    Auto-detect model capability from model characteristics.
 
     Used as fallback when model not in registry.
+
+    Priority:
+    1. Model name (most reliable indicator)
+    2. max_new_tokens (better proxy than context for reasoning capability)
+    3. Context limit (last resort, can be misleading)
 
     Args:
         context_limit: Model's context window size
         model_name: Optional model name for heuristic detection
+        max_new_tokens: Optional max output tokens (better capability indicator)
 
     Returns:
         Detected ModelCapability
     """
-    # Check model name for size hints
     name_lower = model_name.lower()
+
+    # Priority 1: Check model name for explicit size hints (most reliable)
+    # Small models (1B-3B parameters)
     if any(size in name_lower for size in ["1b", "350m", "500m", "2b", "3b"]):
+        logger.info(
+            f"Detected SIMPLE capability from model name: {model_name} "
+            "(small parameter count)"
+        )
         return ModelCapability.SIMPLE
 
-    # Use context limit as proxy for model size
+    # Large models (70B+ parameters)
+    if any(size in name_lower for size in ["70b", "65b", "405b"]):
+        logger.info(
+            f"Detected ADVANCED capability from model name: {model_name} "
+            "(large parameter count)"
+        )
+        return ModelCapability.ADVANCED
+
+    # Priority 2: Use max_new_tokens if available (better proxy than context)
+    # Small models often have limited output capacity regardless of context size
+    if max_new_tokens is not None:
+        if max_new_tokens <= 2048:
+            logger.info(
+                f"Detected SIMPLE capability from max_new_tokens: {max_new_tokens} "
+                "(limited output capacity)"
+            )
+            return ModelCapability.SIMPLE
+        elif max_new_tokens <= 4096:
+            logger.info(
+                f"Detected STANDARD capability from max_new_tokens: {max_new_tokens}"
+            )
+            return ModelCapability.STANDARD
+        else:
+            logger.info(
+                f"Detected ADVANCED capability from max_new_tokens: {max_new_tokens} "
+                "(high output capacity)"
+            )
+            return ModelCapability.ADVANCED
+
+    # Priority 3: Fall back to context limit (least reliable)
+    # Note: Modern small models can have large contexts (e.g., Granite 1B with 128K)
     if context_limit <= 4096:
+        logger.warning(
+            f"Detected SIMPLE capability from context_limit: {context_limit} "
+            "(fallback heuristic, may be inaccurate)"
+        )
         return ModelCapability.SIMPLE
     elif context_limit <= 32768:
+        logger.warning(
+            f"Detected STANDARD capability from context_limit: {context_limit} "
+            "(fallback heuristic, may be inaccurate)"
+        )
         return ModelCapability.STANDARD
     else:
-        # Large context usually means capable model
+        logger.warning(
+            f"Detected ADVANCED capability from context_limit: {context_limit} "
+            "(fallback heuristic, may be inaccurate for small models with large contexts)"
+        )
         return ModelCapability.ADVANCED
