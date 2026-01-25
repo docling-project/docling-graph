@@ -1,6 +1,164 @@
 # CHANGELOG
 
 
+## v1.2.1 (2026-01-25)
+
+### Bug Fixes
+
+- **ci**: Remove invalid dependabot commit-message include property
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **ci**: Apply ruff formatter to codebase
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Documentation
+
+- **examples**: Replace legacy content with updated scripts and CLI references
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **mkdocs**: Streamline structure, align API refs, and convert notes to admonitions
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
+## v1.2.0 (2026-01-25)
+
+### Bug Fixes
+
+- **llm**: Restore accurate model capability detection and provider resolution
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **llm_clients**: Handle Mistral SDK timeout incompatibility and model listing
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Prevent unwanted disk exports in API mode with dump_to_disk flag
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Correct trace data table detection and visualization display
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Resolve trace collection & output dir structure
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Features
+
+- **export**: Add trace data system, unified exports, and optimized i/o
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Refactoring
+
+- **metadata**: Add source for intermediate graphs info to trace_data.json
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **metadata**: Use dynamic version and improve json layout
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Streamline output structure and content
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
+## v1.1.0 (2026-01-24)
+
+### Bug Fixes
+
+- **llm**: Prevent vLLM hanging with max token limits and request timeouts
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **llm**: Handle max_tokens truncation with partial recovery and clear warnings
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Features
+
+- **docs**: Enable dynamic Mermaid flowchart loading with custom styling
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **extraction**: Overhaul extraction layer with adaptive prompting
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Documentation
+
+- **structure**: Reorganize documentation into minimalist layout
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **docs**: Update docs with latest features and changes
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **build**: Stop tracking generated mkdocs dir
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **release**: Require manual git tags for major version bumps
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
+## v1.0.0 (2026-01-23)
+
+### Features
+
+- **input**: Add multi-format input support and normalization layer
+  ([#34](https://github.com/IBM/docling-graph/pull/34))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Documentation
+
+- **docs**: Improve GitHub Pages styling and layout
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **docs**: Update Python badge to remove pre-release notation
+  ([`commit`](https://github.com/IBM/docling-graph/commit/))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v0.4.1 (2026-01-22)
 
 ### Bug Fixes

@@ -242,7 +242,6 @@ minor_tags = ["feat", "refactor"]
 patch_tags = ["fix", "perf"]
 
 [tool.semantic_release.changelog]
-template_dir = "templates"
 exclude_commit_patterns = []
 
 [tool.semantic_release.changelog.default_templates]
