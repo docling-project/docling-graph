@@ -16,7 +16,7 @@ All examples use `uv run python` for execution.
 | [Simple Invoice](#example-1-simple-invoice-extraction) | Basic extraction | LLM (Remote) |
 | [Local Processing](#example-2-local-processing-with-ollama) | Offline processing | LLM (Local) |
 | [VLM Form Extraction](#example-3-vlm-form-extraction) | Image forms | VLM (Local) |
-| [Research Paper](#example-4-research-paper-with-consolidation) | Complex documents | LLM (Remote) |
+| [Rheology Research](#example-4-research-paper-with-consolidation) | Complex documents | LLM (Remote) |
 | [Batch Processing](#example-5-batch-processing) | Multiple documents | Any |
 | [Error Handling](#example-6-robust-error-handling) | Production code | Any |
 | [Flask Integration](#example-7-flask-api-integration) | Web application | Any |
@@ -28,7 +28,7 @@ All examples use `uv run python` for execution.
 
 **Use Case:** Extract structured data from an invoice using remote LLM.
 
-**File:** `examples/simple_invoice.py`
+**File:** `examples/simple_billing_document.py`
 
 ```python
 """
@@ -45,7 +45,7 @@ os.environ["MISTRAL_API_KEY"] = "your-api-key"
 # Configure pipeline
 config = PipelineConfig(
     source="documents/invoice.pdf",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     backend="llm",
     inference="remote",
     provider_override="mistral",
@@ -67,7 +67,7 @@ print(nodes.head())
 
 **Run:**
 ```bash
-uv run python examples/simple_invoice.py
+uv run python examples/simple_billing_document.py
 ```
 
 ---
@@ -165,7 +165,7 @@ uv run python examples/vlm_form.py
 
 ---
 
-## Example 4: Research Paper with Consolidation
+## Example 4: Rheology Research with Consolidation
 
 **Use Case:** High-accuracy extraction from complex documents.
 
@@ -173,7 +173,7 @@ uv run python examples/vlm_form.py
 
 ```python
 """
-Research paper extraction with LLM consolidation.
+Rheology research extraction with LLM consolidation.
 """
 
 import os
@@ -195,7 +195,7 @@ config = PipelineConfig(
     output_dir="outputs/research"
 )
 
-print("Processing research paper (this may take a few minutes)...")
+print("Processing rheology research (this may take a few minutes)...")
 run_pipeline(config)
 print("✅ Complete!")
 
@@ -267,7 +267,7 @@ def process_batch(input_dir: str, template: str, output_base: str):
 if __name__ == "__main__":
     results = process_batch(
         input_dir="documents/invoices",
-        template="templates.invoice.Invoice",
+        template="templates.billing_document.BillingDocument",
         output_base="outputs/batch"
     )
 ```
@@ -377,7 +377,7 @@ if __name__ == "__main__":
     # Process single document
     success = process_document(
         source="documents/invoice.pdf",
-        template="templates.invoice.Invoice"
+        template="templates.billing_document.BillingDocument"
     )
     
     if success:
@@ -439,7 +439,7 @@ def process_document():
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
     
-    template = request.form.get('template', 'templates.invoice.Invoice')
+    template = request.form.get('template', 'templates.billing_document.BillingDocument')
     
     # Save file
     job_id = str(uuid.uuid4())
@@ -512,7 +512,7 @@ uv run python examples/flask_api.py
 # Upload and process document
 curl -X POST http://localhost:5000/process \
     -F "document=@invoice.pdf" \
-    -F "template=templates.invoice.Invoice"
+    -F "template=templates.billing_document.BillingDocument"
 
 # Download results
 curl -O http://localhost:5000/download/{job_id}/nodes.csv
@@ -661,14 +661,14 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir=f"outputs/invoices/{timestamp}"
 )
 
 # ❌ Avoid - Overwriting
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     output_dir="outputs"  # Same for all
 )
 ```

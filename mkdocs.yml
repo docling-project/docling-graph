@@ -151,10 +151,10 @@ nav:
         - Markdown Input: usage/examples/markdown-input.md
         - DoclingDocument Input: usage/examples/docling-document-input.md
       - By Domain:
-        - Invoice Extraction: usage/examples/invoice-extraction.md
+        - Billing Document: usage/examples/billing-document.md
         - ID Card: usage/examples/id-card.md
         - Insurance Policy: usage/examples/insurance-policy.md
-        - Research Paper: usage/examples/research-paper.md
+        - Rheology Research: usage/examples/rheology_research.md
     - Advanced Topics:
       - Overview: usage/advanced/index.md
       - Performance Tuning: usage/advanced/performance-tuning.md

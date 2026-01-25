@@ -28,7 +28,7 @@ The pipeline automatically detects and validates input types, routing them throu
 
 **CLI Example**:
 ```bash
-docling-graph convert document.pdf -t templates.invoice.Invoice
+docling-graph convert document.pdf -t templates.billing_document.BillingDocument
 ```
 
 **Python API Example**:
@@ -37,7 +37,7 @@ from docling_graph import PipelineConfig, run_pipeline
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     backend="llm",
     inference="local",
     processing_mode="many-to-one",
@@ -61,14 +61,14 @@ run_pipeline(config)
 
 **CLI Example**:
 ```bash
-docling-graph convert scanned_invoice.png -t templates.invoice.Invoice
+docling-graph convert scanned_invoice.png -t templates.billing_document.BillingDocument
 ```
 
 **Python API Example**:
 ```python
 config = PipelineConfig(
     source="scanned_invoice.jpg",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     backend="vlm",  # VLM works well with images
     inference="local",
     processing_mode="one-to-one",
@@ -176,7 +176,7 @@ run_pipeline(config)
 **CLI Example**:
 ```bash
 # PDF from URL
-docling-graph convert https://example.com/invoice.pdf -t templates.invoice.Invoice
+docling-graph convert https://example.com/invoice.pdf -t templates.billing_document.BillingDocument
 
 # Image from URL
 docling-graph convert https://example.com/scan.jpg -t templates.form.Form
@@ -189,7 +189,7 @@ docling-graph convert https://example.com/notes.txt -t templates.report.Report -
 ```python
 config = PipelineConfig(
     source="https://example.com/document.pdf",
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     backend="llm",
     inference="remote",
     processing_mode="many-to-one",
@@ -238,7 +238,7 @@ Customer: Acme Corp
 
 config = PipelineConfig(
     source=text_content,  # Pass string directly
-    template="templates.invoice.Invoice",
+    template="templates.billing_document.BillingDocument",
     backend="llm",
     inference="local",
     processing_mode="many-to-one",
@@ -404,13 +404,13 @@ Error: VLM backend does not support text-only inputs. Use LLM backend instead.
 
 ### Invalid URL
 ```bash
-$ docling-graph convert ftp://example.com/file.pdf -t templates.Invoice
+$ docling-graph convert ftp://example.com/file.pdf -t templates.BillingDocument
 Error: URL must use http or https scheme
 ```
 
 ### File Not Found
 ```bash
-$ docling-graph convert missing.pdf -t templates.Invoice
+$ docling-graph convert missing.pdf -t templates.BillingDocument
 Error: File not found: missing.pdf
 ```
 

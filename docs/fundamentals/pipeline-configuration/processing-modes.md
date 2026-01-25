@@ -43,7 +43,7 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one"  # Process each page separately
 )
 ```
@@ -75,12 +75,12 @@ config = PipelineConfig(
 # Multiple invoices in one PDF
 config = PipelineConfig(
     source="invoices_batch.pdf",  # 10 invoices, 1 page each
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one"  # Each page is separate invoice
 )
 ```
 
-**Result:** 10 Invoice models, one per page
+**Result:** 10 BillingDocument models, one per page
 
 #### Use Case 2: Form Collection
 
@@ -88,7 +88,7 @@ config = PipelineConfig(
 # Multiple forms in one PDF
 config = PipelineConfig(
     source="forms_collection.pdf",  # 20 forms
-    template="my_templates.ApplicationForm",
+    template="templates.ApplicationForm",
     processing_mode="one-to-one"  # Each page is separate form
 )
 ```
@@ -101,7 +101,7 @@ config = PipelineConfig(
 # Multiple ID cards scanned together
 config = PipelineConfig(
     source="id_cards_batch.pdf",  # 50 ID cards
-    template="my_templates.IDCard",
+    template="templates.IDCard",
     processing_mode="one-to-one"  # Each page is separate ID
 )
 ```
@@ -152,7 +152,7 @@ from docling_graph import PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"  # Process whole document (default)
 )
 ```
@@ -184,20 +184,20 @@ config = PipelineConfig(
 # Single invoice spanning 3 pages
 config = PipelineConfig(
     source="invoice_multipage.pdf",  # 1 invoice, 3 pages
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"  # Merge all pages
 )
 ```
 
-**Result:** 1 Invoice model with data from all pages
+**Result:** 1 BillingDocument model with data from all pages
 
-#### Use Case 2: Research Paper
+#### Use Case 2: Rheology Research
 
 ```python
-# Research paper with 15 pages
+# Rheology research with 15 pages
 config = PipelineConfig(
     source="research_paper.pdf",  # 1 paper, 15 pages
-    template="my_templates.Research",
+    template="templates.Research",
     processing_mode="many-to-one"  # Single paper entity
 )
 ```
@@ -210,7 +210,7 @@ config = PipelineConfig(
 # Contract with 20 pages
 config = PipelineConfig(
     source="contract.pdf",  # 1 contract, 20 pages
-    template="my_templates.Contract",
+    template="templates.Contract",
     processing_mode="many-to-one"  # Single contract
 )
 ```
@@ -222,12 +222,12 @@ config = PipelineConfig(
 Many-to-one creates **single root node**:
 
 ```
-Invoice-001 (node)
+BillingDocument-001 (node)
   ├─ ISSUED_BY → Organization-A
   ├─ SENT_TO → Client-A
-  ├─ CONTAINS_ITEM → LineItem-1
-  ├─ CONTAINS_ITEM → LineItem-2
-  └─ CONTAINS_ITEM → LineItem-3
+  ├─ CONTAINS_LINE → LineItem-1
+  ├─ CONTAINS_LINE → LineItem-2
+  └─ CONTAINS_LINE → LineItem-3
 ```
 
 ### Performance Characteristics
@@ -321,7 +321,7 @@ Many-to-One:
 |:--------------|:----------------|:-------|
 | **Single Invoice (multi-page)** | Many-to-One | Single entity |
 | **Batch Invoices (1 per page)** | One-to-One | Independent pages |
-| **Research Paper** | Many-to-One | Single document |
+| **Rheology Research** | Many-to-One | Single document |
 | **Form Collection** | One-to-One | Independent forms |
 | **Contract** | Many-to-One | Single contract |
 | **ID Card Batch** | One-to-One | Independent IDs |
@@ -337,7 +337,7 @@ Many-to-One:
 ```python
 config = PipelineConfig(
     source="batch.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one",
     
     # One-to-one specific settings
@@ -351,7 +351,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one",
     
     # Many-to-one specific settings
@@ -371,14 +371,14 @@ config = PipelineConfig(
 # Original: many-to-one
 config_many = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one"
 )
 
 # Switch to one-to-one
 config_one = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one",  # Change mode
     export_per_page_markdown=True  # Add page-specific export
 )
@@ -390,14 +390,14 @@ config_one = PipelineConfig(
 # Original: one-to-one
 config_one = PipelineConfig(
     source="batch.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one"
 )
 
 # Switch to many-to-one
 config_many = PipelineConfig(
     source="batch.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="many-to-one",  # Change mode
     use_chunking=True,  # Enable chunking
     llm_consolidation=True  # Enable consolidation
@@ -414,7 +414,7 @@ config_many = PipelineConfig(
 # Process batch of documents
 config = PipelineConfig(
     source="invoices_batch.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one",
     export_per_page_markdown=True
 )
@@ -428,7 +428,7 @@ config = PipelineConfig(
 # Process single multi-page document
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     processing_mode="many-to-one",
     use_chunking=True,
     llm_consolidation=True
@@ -451,7 +451,7 @@ def get_processing_mode(page_count: int, is_batch: bool):
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode=get_processing_mode(page_count=15, is_batch=False)
 )
 ```
@@ -471,7 +471,7 @@ else:
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode=mode
 )
 ```
@@ -483,14 +483,14 @@ config = PipelineConfig(
 if mode == "one-to-one":
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         processing_mode="one-to-one",
         export_per_page_markdown=True  # Page-specific
     )
 else:
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         processing_mode="many-to-one",
         use_chunking=True,  # Document-wide
         llm_consolidation=True
@@ -507,7 +507,7 @@ if page_count > 50:
 
 config = PipelineConfig(
     source="large_batch.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     processing_mode="one-to-one"
 )
 ```

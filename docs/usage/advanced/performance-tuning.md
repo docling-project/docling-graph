@@ -72,7 +72,7 @@ model_override="ibm-granite/granite-4.0-1b"  # Fast
 # General documents
 model_override="llama-3.1-8b"  # Balanced
 
-# Complex documents (research papers, legal)
+# Complex documents (rheology researchs, legal)
 model_override="mistral-small-latest"  # Accurate (remote)
 ```
 

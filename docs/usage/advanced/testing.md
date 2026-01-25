@@ -333,7 +333,7 @@ def invoice_pdf():
 
 @pytest.fixture
 def research_paper_pdf():
-    """Path to sample research paper."""
+    """Path to sample rheology research."""
     return Path("tests/fixtures/sample_paper.pdf")
 
 def test_invoice_extraction(invoice_pdf, tmp_path):
@@ -343,7 +343,7 @@ def test_invoice_extraction(invoice_pdf, tmp_path):
     
     config = PipelineConfig(
         source=str(invoice_pdf),
-        template="templates.invoice.Invoice",
+        template="templates.billing_document.BillingDocument",
         output_dir=str(tmp_path)
     )
     
@@ -359,7 +359,7 @@ def test_invoice_extraction(invoice_pdf, tmp_path):
     assert "LineItem" in content
 
 def test_research_paper_extraction(research_paper_pdf, tmp_path):
-    """Test research paper extraction."""
+    """Test rheology research extraction."""
     if not research_paper_pdf.exists():
         pytest.skip("Sample paper not available")
     

@@ -3,7 +3,7 @@
 
 ## Overview
 
-Get started with docling-graph in **5 minutes** by extracting structured data from a simple invoice.
+Get started with docling-graph in **5 minutes** by extracting structured data from a simple billing document.
 
 **What You'll Learn:**
 - Basic template creation
@@ -13,7 +13,7 @@ Get started with docling-graph in **5 minutes** by extracting structured data fr
 **Prerequisites:**
 - Python 3.10+
 - `uv` package manager
-- A sample invoice (PDF or image)
+- A sample billing document (PDF or image)
 
 ---
 
@@ -31,23 +31,23 @@ uv run docling-graph --version
 
 ## Step 2: Create a Template
 
-Create a file `simple_invoice.py`:
+Create a file `simple_billing_doc.py`:
 
 ```python
-"""Simple invoice template for quickstart."""
+"""Simple billing document template for quickstart."""
 
 from pydantic import BaseModel, Field
 
-class SimpleInvoice(BaseModel):
-    """A simple invoice model."""
+class SimpleBillingDoc(BaseModel):
+    """A simple billing document model."""
     
-    invoice_number: str = Field(
-        description="The unique invoice identifier",
+    document_no: str = Field(
+        description="The unique document identifier",
         examples=["INV-001", "2024-001"]
     )
     
     date: str = Field(
-        description="Invoice date in any format",
+        description="Document date in any format",
         examples=["2024-01-15", "January 15, 2024"]
     )
     
@@ -69,9 +69,9 @@ class SimpleInvoice(BaseModel):
 ### Option A: Using CLI
 
 ```bash
-# Process invoice
-uv run docling-graph convert invoice.pdf \
-    --template "simple_invoice.SimpleInvoice" \
+# Process billing document
+uv run docling-graph convert billing_doc.pdf \
+    --template "simple_billing_doc.SimpleBillingDoc" \
     --output-dir "quickstart_output"
 ```
 
@@ -86,13 +86,13 @@ from docling_graph import run_pipeline, PipelineConfig
 
 # Configure pipeline
 config = PipelineConfig(
-    source="invoice.pdf",
-    template="simple_invoice.SimpleInvoice",
+    source="billing_doc.pdf",
+    template="simple_billing_doc.SimpleBillingDoc",
     output_dir="quickstart_output"
 )
 
 # Run extraction
-print("Processing invoice...")
+print("Processing billing document...")
 run_pipeline(config)
 print("✅ Complete! Check quickstart_output/")
 ```
@@ -145,13 +145,13 @@ quickstart_output/
 **Template Not Found:**
 ```bash
 # Ensure template is in current directory or use absolute path
-uv run docling-graph convert invoice.pdf --template "$(pwd)/simple_invoice.SimpleInvoice"
+uv run docling-graph convert billing_doc.pdf --template "$(pwd)/simple_billing_doc.SimpleBillingDoc"
 ```
 
 **No Data Extracted:**
 ```bash
 # Use verbose logging to debug
-uv run docling-graph --verbose convert invoice.pdf --template simple_invoice.SimpleInvoice
+uv run docling-graph --verbose convert billing_doc.pdf --template simple_billing_doc.SimpleBillingDoc
 ```
 
 **API Key Error:**
@@ -166,22 +166,22 @@ export MISTRAL_API_KEY='your-key'
 Add more fields:
 
 ```python
-class ImprovedInvoice(BaseModel):
-    """Improved invoice with more fields."""
-    
-    invoice_number: str = Field(description="Invoice number")
-    date: str = Field(description="Invoice date")
+class ImprovedBillingDoc(BaseModel):
+    """Improved billing document with more fields."""
+
+    document_no: str = Field(description="Document number")
+    date: str = Field(description="Document date")
     total: float = Field(description="Total amount")
     currency: str = Field(description="Currency")
     
     # New fields
     issuer_name: str = Field(
-        description="Company that issued the invoice",
+        description="Company that issued the document",
         examples=["Acme Corp", "ABC Company"]
     )
     
     client_name: str = Field(
-        description="Client receiving the invoice",
+        description="Client receiving the document",
         examples=["John Doe", "XYZ Inc"]
     )
     
@@ -217,9 +217,9 @@ def edge(label: str, **kwargs):
     from pydantic import Field
     return Field(..., json_schema_extra={"edge_label": label}, **kwargs)
 
-class Invoice(BaseModel):
-    """Invoice with relationships."""
-    invoice_number: str
+class BillingDoc(BaseModel):
+    """Billing document with relationships."""
+    document_no: str
     total: float
     issued_by: Organization = edge(label="ISSUED_BY")
 ```
@@ -228,13 +228,13 @@ class Invoice(BaseModel):
 
 ```bash
 # VLM for images (faster)
-uv run docling-graph convert invoice.jpg \
-    --template "simple_invoice.SimpleInvoice" \
+uv run docling-graph convert billing_doc.jpg \
+    --template "simple_billing_doc.SimpleBillingDoc" \
     --backend vlm
 
 # LLM for complex documents
-uv run docling-graph convert invoice.pdf \
-    --template "simple_invoice.SimpleInvoice" \
+uv run docling-graph convert billing_doc.pdf \
+    --template "simple_billing_doc.SimpleBillingDoc" \
     --backend llm \
     --inference remote
 ```
@@ -243,6 +243,6 @@ uv run docling-graph convert invoice.pdf \
 
 ## Learn More
 
-- **[Invoice Extraction](../usage/examples/invoice-extraction.md)** - Full invoice with relationships
+- **[Billing Document Extraction](../usage/examples/billing-document.md)** - Full billing document with relationships
 - **[Schema Definition](../fundamentals/schema-definition/index.md)** - Template creation guide
 - **[CLI Reference](../usage/cli/index.md)** - All CLI commands

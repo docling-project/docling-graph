@@ -24,7 +24,7 @@ from docling_graph import run_pipeline
 # Returns data directly - no file exports by default
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "my_templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote"
 })
@@ -43,7 +43,7 @@ from docling_graph import run_pipeline
 # Enable file exports with dump_to_disk
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "my_templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote",
     "dump_to_disk": True,
@@ -62,7 +62,7 @@ from docling_graph import PipelineConfig, run_pipeline
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"
 )
@@ -163,7 +163,7 @@ from docling_graph.exceptions import ConfigurationError
 try:
     run_pipeline({
         "source": "document.pdf",
-        "template": "templates.Invoice",
+        "template": "templates.BillingDocument",
         "backend": "invalid"  # Invalid backend
     })
 except ConfigurationError as e:
@@ -197,7 +197,7 @@ from docling_graph.exceptions import PipelineError
 try:
     run_pipeline({
         "source": "document.pdf",
-        "template": "templates.Invoice"
+        "template": "templates.BillingDocument"
     })
 except PipelineError as e:
     print(f"Pipeline error: {e.message}")
@@ -215,7 +215,7 @@ from docling_graph import run_pipeline
 # Minimal required configuration - returns data, no file exports
 context = run_pipeline({
     "source": "invoice.pdf",
-    "template": "templates.Invoice"
+    "template": "templates.BillingDocument"
 })
 
 # Access results in memory
@@ -232,7 +232,7 @@ from docling_graph import run_pipeline
 # Enable file exports
 context = run_pipeline({
     "source": "invoice.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "dump_to_disk": True,
     "output_dir": "outputs/invoice"
 })
@@ -266,7 +266,7 @@ context = run_pipeline({
 
 # Access the knowledge graph
 graph = context.knowledge_graph
-print(f"Research paper: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
+print(f"Rheology research: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
 ### 📍 Local VLM
@@ -336,7 +336,7 @@ def process_document(source: str, template: str) -> PipelineContext | None:
         return None
 
 # Use the function
-context = process_document("invoice.pdf", "templates.Invoice")
+context = process_document("invoice.pdf", "templates.BillingDocument")
 if context:
     print(f"Graph has {context.knowledge_graph.number_of_nodes()} nodes")
 ```
@@ -380,7 +380,7 @@ def batch_process(input_dir: str, template: str):
     return results, all_graphs
 
 # Run batch processing
-results, graphs = batch_process("documents/", "templates.Invoice")
+results, graphs = batch_process("documents/", "templates.BillingDocument")
 
 # Optionally export combined results
 if graphs:
@@ -401,14 +401,14 @@ from docling_graph import run_pipeline
 # Default: No file exports (API mode)
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice"
+    "template": "templates.BillingDocument"
 })
 # Returns data in memory only
 
 # Explicit: Enable file exports
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "dump_to_disk": True,
     "output_dir": "outputs"
 })
@@ -417,7 +417,7 @@ context = run_pipeline({
 # Explicit: Disable file exports
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "dump_to_disk": False
 })
 # Returns data only, even if output_dir is set
@@ -433,7 +433,7 @@ from docling_graph import run_pipeline
 # Override models from config
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "llm",
     "inference": "remote",
     "models": {
@@ -458,7 +458,7 @@ from docling_graph import run_pipeline
 # Export as Cypher for Neo4j
 context = run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "dump_to_disk": True,
     "export_format": "cypher",
     "output_dir": "outputs/neo4j"
@@ -487,7 +487,7 @@ def smart_process(source: str):
     
     # Determine template and config
     if "invoice" in path.name.lower():
-        template = "templates.Invoice"
+        template = "templates.BillingDocument"
         backend = "vlm"
         processing = "one-to-one"
     elif "research" in path.name.lower():
@@ -533,7 +533,7 @@ app = Flask(__name__)
 def process_endpoint():
     """API endpoint for document processing - returns data without disk writes."""
     file = request.files.get('document')
-    template = request.form.get('template', 'templates.Invoice')
+    template = request.form.get('template', 'templates.BillingDocument')
     
     if not file:
         return jsonify({"error": "No file provided"}), 400
@@ -608,7 +608,7 @@ def process_document_task(source: str, template: str):
 # Usage
 result = process_document_task.delay(
     "document.pdf",
-    "templates.Invoice"
+    "templates.BillingDocument"
 )
 # Get result
 data = result.get(timeout=300)
@@ -649,7 +649,7 @@ process_task = PythonOperator(
     python_callable=process_document,
     params={
         'source': 'documents/daily.pdf',
-        'template': 'templates.Invoice'
+        'template': 'templates.BillingDocument'
     }
 )
 ```
@@ -666,7 +666,7 @@ from docling_graph import PipelineConfig, run_pipeline
 
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm"  # Validated at creation
 )
 run_pipeline(config)
@@ -674,7 +674,7 @@ run_pipeline(config)
 # ❌ Avoid - No validation until runtime
 run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "backend": "invalid"  # Error at runtime
 })
 ```
@@ -707,14 +707,14 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "output_dir": f"outputs/{timestamp}"
 })
 
 # ❌ Avoid - Overwriting outputs
 run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "output_dir": "outputs"  # Same for all
 })
 ```
@@ -743,7 +743,7 @@ from docling_graph import run_pipeline
 
 run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice"
+    "template": "templates.BillingDocument"
 })
 ```
 
@@ -765,7 +765,7 @@ from docling_graph import run_pipeline
 
 run_pipeline({
     "source": "document.pdf",
-    "template": "templates.Invoice",
+    "template": "templates.BillingDocument",
     "inference": "remote"
 })
 ```

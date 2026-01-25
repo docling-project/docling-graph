@@ -144,7 +144,7 @@ graph = context.knowledge_graph
 models = context.extracted_models
 metadata = context.graph_metadata
 
-print(f"Extracted {len(models)} research papers")
+print(f"Extracted {len(models)} rheology researchs")
 print(f"Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 

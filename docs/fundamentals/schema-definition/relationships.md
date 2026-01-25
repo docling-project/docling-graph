@@ -1,6 +1,11 @@
 # Relationships: Edge Definitions
 
 
+> **Note**: The examples in this document use simplified field names and structures for teaching purposes. 
+> The actual `BillingDocument` schema at `docs/examples/templates/billing_document.py` is more comprehensive 
+> with 30+ classes, EN 16931/Peppol BIS compliance, and uses `CONTAINS_LINE` for line items.
+
+
 ## Overview
 
 Relationships (edges) connect nodes in your knowledge graph. The `edge()` helper function marks fields as graph relationships and defines their labels. Well-designed edges create meaningful, queryable graph structures.
@@ -43,7 +48,7 @@ verified_by: Optional[Person] = edge(
 
 # Required list relationship (one-to-many)
 contains_items: List[LineItem] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     default_factory=list,  # REQUIRED for lists
     description="Line items contained in this document"
 )
@@ -81,7 +86,7 @@ addresses: List[Address] = edge(
 # ✅ Good - Clear, descriptive, consistent
 issued_by: Organization = edge(label="ISSUED_BY")
 sent_to: Client = edge(label="SENT_TO")
-contains_items: List[Item] = edge(label="CONTAINS_ITEM")
+contains_items: List[Item] = edge(label="CONTAINS_LINE")
 located_at: Address = edge(label="LOCATED_AT")
 
 # ❌ Bad - Inconsistent, vague
@@ -143,7 +148,7 @@ ships_to: Country = edge(label="SHIPS_TO")
 
 ```python
 # Document structure
-contains_item: List[LineItem] = edge(label="CONTAINS_ITEM")
+contains_item: List[LineItem] = edge(label="CONTAINS_LINE")
 has_component: List[Component] = edge(label="HAS_COMPONENT")
 includes_part: List[Part] = edge(label="INCLUDES_PART")
 composed_of: List[Material] = edge(label="COMPOSED_OF")
@@ -204,11 +209,11 @@ has_evaluation: Evaluation = edge(label="HAS_EVALUATION")
 Use when an entity has **exactly one** or **at most one** related entity:
 
 ```python
-class Invoice(BaseModel):
-    """Invoice document."""
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+class BillingDocument(BaseModel):
+    """BillingDocument document."""
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     
-    invoice_number: str = Field(...)
+    document_no: str = Field(...)
     
     # One invoice is issued by one organization
     issued_by: Organization = edge(
@@ -225,8 +230,8 @@ class Invoice(BaseModel):
 
 **Graph Structure:**
 ```
-Invoice-001 --ISSUED_BY--> Acme Corp
-Invoice-001 --SENT_TO--> Client A
+BillingDocument-001 --ISSUED_BY--> Acme Corp
+BillingDocument-001 --SENT_TO--> Client A
 ```
 
 ### List Relationships (One-to-Many)
@@ -234,15 +239,15 @@ Invoice-001 --SENT_TO--> Client A
 Use when an entity can have **multiple** related entities:
 
 ```python
-class Invoice(BaseModel):
-    """Invoice document."""
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+class BillingDocument(BaseModel):
+    """BillingDocument document."""
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     
-    invoice_number: str = Field(...)
+    document_no: str = Field(...)
     
     # One invoice contains many line items
     contains_items: List[LineItem] = edge(
-        label="CONTAINS_ITEM",
+        label="CONTAINS_LINE",
         default_factory=list,  # Required!
         description="Line items in this invoice"
     )
@@ -250,9 +255,9 @@ class Invoice(BaseModel):
 
 **Graph Structure:**
 ```
-Invoice-001 --CONTAINS_ITEM--> LineItem-1
-Invoice-001 --CONTAINS_ITEM--> LineItem-2
-Invoice-001 --CONTAINS_ITEM--> LineItem-3
+BillingDocument-001 --CONTAINS_LINE--> LineItem-1
+BillingDocument-001 --CONTAINS_LINE--> LineItem-2
+BillingDocument-001 --CONTAINS_LINE--> LineItem-3
 ```
 
 ### Optional Single Relationships
@@ -443,12 +448,12 @@ Document --APPROVED_BY--> Person-C
 
 ---
 
-## Complete Example: Invoice Template
+## Complete Example: BillingDocument Template
 
 Here's a complete example showing various edge patterns:
 
 ```python
-"""Invoice extraction template with comprehensive edge definitions."""
+"""BillingDocument extraction template with comprehensive edge definitions."""
 
 from typing import Any, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -519,11 +524,11 @@ class LineItem(BaseModel):
 
 # --- Root Document ---
 
-class Invoice(BaseModel):
-    """Invoice document (root)."""
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+class BillingDocument(BaseModel):
+    """BillingDocument document (root)."""
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     
-    invoice_number: str = Field(...)
+    document_no: str = Field(...)
     date: str = Field(...)
     
     # Single edges to entities
@@ -539,7 +544,7 @@ class Invoice(BaseModel):
     
     # List edge to entities
     contains_items: List[LineItem] = edge(
-        label="CONTAINS_ITEM",
+        label="CONTAINS_LINE",
         default_factory=list,
         description="Line items in this invoice"
     )
@@ -553,14 +558,14 @@ class Invoice(BaseModel):
 
 **Resulting Graph:**
 ```
-Invoice-001
+BillingDocument-001
   ├─ ISSUED_BY → Organization(Acme Corp)
   │               └─ LOCATED_AT → Address(123 Main St, Paris)
   ├─ SENT_TO → Client(John Doe)
   │             └─ LIVES_AT → Address(456 Oak Ave, London)
-  ├─ CONTAINS_ITEM → LineItem-1
+  ├─ CONTAINS_LINE → LineItem-1
   │                   └─ HAS_TOTAL → MonetaryAmount(100, EUR)
-  ├─ CONTAINS_ITEM → LineItem-2
+  ├─ CONTAINS_LINE → LineItem-2
   │                   └─ HAS_TOTAL → MonetaryAmount(200, EUR)
   └─ HAS_TOTAL → MonetaryAmount(300, EUR)
 ```
@@ -574,7 +579,7 @@ Invoice-001
 ```python
 # ✅ Good - Clear and specific
 issued_by: Organization = edge(label="ISSUED_BY")
-contains_items: List[Item] = edge(label="CONTAINS_ITEM")
+contains_items: List[Item] = edge(label="CONTAINS_LINE")
 
 # ❌ Bad - Vague
 issued_by: Organization = edge(label="HAS")
@@ -600,12 +605,12 @@ located_at: Address = edge(label="HAS_LOCATION")
 ```python
 # ✅ Good
 items: List[Item] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     default_factory=list
 )
 
 # ❌ Bad - Missing default_factory
-items: List[Item] = edge(label="CONTAINS_ITEM")
+items: List[Item] = edge(label="CONTAINS_LINE")
 ```
 
 ### 👍 Provide Clear Descriptions
@@ -629,11 +634,11 @@ issued_by: Organization = edge(label="ISSUED_BY")
 
 ```python
 # Wrong
-items: List[Item] = edge(label="CONTAINS_ITEM")
+items: List[Item] = edge(label="CONTAINS_LINE")
 
 # Correct
 items: List[Item] = edge(
-    label="CONTAINS_ITEM",
+    label="CONTAINS_LINE",
     default_factory=list
 )
 ```
@@ -649,7 +654,7 @@ has_items: List[Item] = edge(label="contains-item")
 # Correct - Consistent ALL_CAPS_WITH_UNDERSCORES
 issued_by: Org = edge(label="ISSUED_BY")
 sent_to: Client = edge(label="SENT_TO")
-has_items: List[Item] = edge(label="CONTAINS_ITEM")
+has_items: List[Item] = edge(label="CONTAINS_LINE")
 ```
 
 ### ❌ Vague Labels
@@ -661,7 +666,7 @@ items: List[Item] = edge(label="RELATED")
 
 # Correct - Descriptive
 org: Organization = edge(label="ISSUED_BY")
-items: List[Item] = edge(label="CONTAINS_ITEM")
+items: List[Item] = edge(label="CONTAINS_LINE")
 ```
 
 ---

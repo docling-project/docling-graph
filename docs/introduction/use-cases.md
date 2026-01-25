@@ -14,7 +14,7 @@ Traditional text embeddings lose these precise relationships. Knowledge graphs p
 
 ## Chemistry & Materials Science
 
-Extract materials, measurements, and experimental relationships from research papers.
+Extract materials, measurements, and experimental relationships from rheology researchs.
 
 **Key Entities:** Material, Measurement, Experiment
 **Relationships:** USES_MATERIAL, HAS_MEASUREMENT
@@ -65,7 +65,7 @@ Document
       └─ HAS_PROPERTY → Property3
 ```
 
-**Used in**: Research papers, technical reports, specifications
+**Used in**: Rheology researchs, technical reports, specifications
 
 ### 📍 Party → Relationship → Party
 

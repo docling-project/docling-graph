@@ -371,7 +371,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Batching happens automatically
 config = PipelineConfig(
     source="large_document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote",
     use_chunking=True  # Enables automatic batching

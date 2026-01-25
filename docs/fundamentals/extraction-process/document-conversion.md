@@ -38,7 +38,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr"  # Default
 )
 ```
@@ -81,7 +81,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="vision"  # Vision pipeline
 )
 ```
@@ -386,7 +386,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     docling_config="ocr"  # Conversion happens automatically
 )
 
@@ -420,7 +420,7 @@ processor.cleanup()
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_docling_json=True  # Export DoclingDocument as JSON
 )
 ```
@@ -432,7 +432,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_markdown=True  # Export as markdown
 )
 ```
@@ -444,7 +444,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_per_page_markdown=True  # Export each page
 )
 ```
@@ -580,7 +580,7 @@ processor.cleanup()
 # ✅ Good - Export markdown for inspection
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     export_markdown=True,  # Check conversion quality
     export_per_page_markdown=True  # Debug per page
 )

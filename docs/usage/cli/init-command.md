@@ -237,7 +237,7 @@ Next steps:
 
 3. Run your first conversion:
    uv run docling-graph convert document.pdf \
-       --template "my_templates.Invoice"
+       --template "templates.BillingDocument"
 ```
 
 ### Local Provider Setup
@@ -255,7 +255,7 @@ Next steps:
 
 4. Run your first conversion:
    uv run docling-graph convert document.pdf \
-       --template "my_templates.Invoice"
+       --template "templates.BillingDocument"
 ```
 
 ---
@@ -316,7 +316,7 @@ export MISTRAL_API_KEY="your-key"
 
 # Test conversion
 uv run docling-graph convert test.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ### 📍 Local Development Setup
@@ -344,7 +344,7 @@ ollama pull llama3:8b
 
 # Test conversion
 uv run docling-graph convert test.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ### 📍 VLM Setup
@@ -498,7 +498,7 @@ cp config.yaml config.prod.yaml
 
 # Use specific config
 cp config.prod.yaml config.yaml
-uv run docling-graph convert document.pdf -t "templates.Invoice"
+uv run docling-graph convert document.pdf -t "templates.BillingDocument"
 ```
 
 ---

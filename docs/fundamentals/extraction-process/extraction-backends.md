@@ -51,7 +51,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",           # LLM backend
     inference="local",       # or "remote"
     provider_override="ollama",
@@ -227,7 +227,7 @@ backend = LlmBackend(llm_client=client)
 
 # Extract from markdown
 model = backend.extract_from_markdown(
-    markdown="# Invoice\n\nInvoice Number: INV-001\nTotal: $1000",
+    markdown="# BillingDocument\n\nInvoice Number: INV-001\nTotal: $1000",
     template=InvoiceTemplate,
     context="full document",
     is_partial=False
@@ -291,7 +291,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",                      # VLM backend
     inference="local",                  # Only local supported
     model_override="numind/NuExtract-2.0-8B"
@@ -382,7 +382,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="complex_form.pdf",
-    template="my_templates.ApplicationForm",
+    template="templates.ApplicationForm",
     backend="vlm",
     inference="local",
     processing_mode="one-to-one"  # One model per page
@@ -424,7 +424,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="invoice.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     
     # LLM backend with Ollama
     backend="llm",
@@ -453,7 +453,7 @@ os.environ["MISTRAL_API_KEY"] = "your_api_key"
 
 config = PipelineConfig(
     source="contract.pdf",
-    template="my_templates.Contract",
+    template="templates.Contract",
     
     # LLM backend with Mistral API
     backend="llm",
@@ -479,7 +479,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="complex_form.pdf",
-    template="my_templates.ApplicationForm",
+    template="templates.ApplicationForm",
     
     # VLM backend
     backend="vlm",
@@ -518,7 +518,7 @@ def process_document(doc_path: str, doc_type: str):
     
     config = PipelineConfig(
         source=doc_path,
-        template=f"my_templates.{doc_type.capitalize()}",
+        template=f"templates.{doc_type.capitalize()}",
         backend=backend,
         inference=inference,
         processing_mode=processing_mode
@@ -543,7 +543,7 @@ from docling_graph.exceptions import ExtractionError
 try:
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         backend="llm",
         inference="remote"
     )
@@ -556,7 +556,7 @@ except ExtractionError as e:
     # Fallback to local
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         backend="llm",
         inference="local"
     )
@@ -571,7 +571,7 @@ from docling_graph.exceptions import ExtractionError
 try:
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         backend="vlm"
     )
     run_pipeline(config)
@@ -582,7 +582,7 @@ except ExtractionError as e:
     # Fallback to LLM
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         backend="llm",
         inference="local"
     )
@@ -609,7 +609,7 @@ elif document_is_standard:
 # ✅ Good - Fast iteration
 config = PipelineConfig(
     source="test.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local"  # Fast for testing
 )
@@ -621,7 +621,7 @@ config = PipelineConfig(
 # ✅ Good - Reliable and scalable
 config = PipelineConfig(
     source="production.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote"  # Reliable
 )
@@ -696,7 +696,7 @@ if not markdown.strip():
 # Use smaller model
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     model_override="numind/NuExtract-2.0-2B"  # Smaller model
 )
@@ -709,7 +709,7 @@ config = PipelineConfig(
 # Switch to LLM for speed
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",  # Faster
     inference="local"
 )

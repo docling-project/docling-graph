@@ -144,7 +144,7 @@ uv run docling-graph inspect outputs/ \
 ```bash
 # Convert document
 uv run docling-graph convert invoice.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "outputs/invoice"
 
 # Visualize immediately
@@ -319,7 +319,7 @@ ls outputs/
 
 # Ensure convert completed successfully
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "outputs"
 
 # Then inspect
@@ -361,7 +361,7 @@ Visualization is slow with large graphs
 
 # Or use Neo4j for large graphs
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --export-format cypher
 
 # Import to Neo4j and use Neo4j Browser
@@ -376,18 +376,18 @@ uv run docling-graph convert document.pdf \
 ```bash
 # 1. Convert document
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "test_output"
 
 # 2. Inspect results
 uv run docling-graph inspect test_output/
 
 # 3. Iterate on template
-# Edit templates/invoice.py
+# Edit templates/billing_document.py
 
 # 4. Re-convert and inspect
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "test_output"
 
 uv run docling-graph inspect test_output/
@@ -415,7 +415,7 @@ for pdf in "$INPUT_DIR"/*.pdf; do
     
     # Convert
     uv run docling-graph convert "$pdf" \
-        --template "templates.Invoice" \
+        --template "templates.BillingDocument" \
         --output-dir "$output_dir"
     
     # Visualize
@@ -436,7 +436,7 @@ echo "All visualizations saved to $VIZ_DIR/"
 ```bash
 # Convert with verbose logging
 uv run docling-graph --verbose convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "qa_output"
 
 # Inspect graph structure
@@ -512,7 +512,7 @@ uv run docling-graph inspect outputs/ \
 
 ```bash
 # ✅ Good - Quick feedback loop
-uv run docling-graph convert test.pdf -t "templates.Invoice" -o "test"
+uv run docling-graph convert test.pdf -t "templates.BillingDocument" -o "test"
 uv run docling-graph inspect test/
 
 # ✅ Good - Iterate quickly

@@ -32,20 +32,20 @@ uv run docling-graph convert SOURCE --template TEMPLATE [OPTIONS]
 ```bash
 # PDF document
 uv run docling-graph convert invoice.pdf \
-    --template "my_templates.Invoice"
+    --template "templates.BillingDocument"
 
 # Text file
 uv run docling-graph convert notes.txt \
-    --template "my_templates.Report" \
+    --template "templates.Report" \
     --backend llm
 
 # URL
 uv run docling-graph convert https://example.com/doc.pdf \
-    --template "my_templates.Invoice"
+    --template "templates.BillingDocument"
 
 # Markdown file
 uv run docling-graph convert README.md \
-    --template "my_templates.Documentation" \
+    --template "templates.Documentation" \
     --backend llm
 ```
 
@@ -73,7 +73,7 @@ uv run docling-graph convert README.md \
 ```bash
 # Use LLM backend
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm
 
 # Use VLM backend
@@ -104,12 +104,12 @@ uv run docling-graph convert form.jpg \
 ```bash
 # Local inference
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --inference local
 
 # Remote inference
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --inference remote
 ```
 
@@ -135,12 +135,12 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Merge all pages
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --processing-mode many-to-one
 
 # Process pages separately
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --processing-mode one-to-one
 ```
 
@@ -168,7 +168,7 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Use specific model
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --provider mistral \
     --model mistral-large-latest
 ```
@@ -202,7 +202,7 @@ uv run docling-graph convert large_doc.pdf \
 
 # Disable chunking
 uv run docling-graph convert small_doc.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --no-use-chunking
 ```
 
@@ -233,7 +233,7 @@ uv run docling-graph convert document.pdf \
 
 # Disable (use programmatic merge)
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --no-llm-consolidation
 ```
 
@@ -261,7 +261,7 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Use OCR pipeline (default)
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --docling-pipeline ocr
 
 # Use vision pipeline
@@ -294,12 +294,12 @@ uv run docling-graph convert complex_doc.pdf \
 ```bash
 # Export as CSV
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --export-format csv
 
 # Export as Cypher
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --export-format cypher
 ```
 
@@ -317,14 +317,14 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Export all Docling outputs
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --export-docling-json \
     --export-markdown \
     --export-per-page
 
 # Minimal exports
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --no-docling-json \
     --no-markdown \
     --no-per-page
@@ -345,7 +345,7 @@ Creates bidirectional relationships in the graph.
 **Example:**
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --reverse-edges
 ```
 
@@ -365,12 +365,12 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Custom output directory
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "results/invoice_001"
 
 # Organize by date
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "outputs/$(date +%Y-%m-%d)"
 ```
 
@@ -382,13 +382,13 @@ uv run docling-graph convert document.pdf \
 
 ```bash
 uv run docling-graph convert invoice.jpg \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend vlm \
     --processing-mode one-to-one \
     --output-dir "outputs/invoice"
 ```
 
-### 📍 Research Paper (Remote LLM)
+### 📍 Rheology Research (Remote LLM)
 
 ```bash
 export MISTRAL_API_KEY="your-key"
@@ -412,7 +412,7 @@ uv run docling-graph convert research.pdf \
 ollama serve
 
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference local \
     --provider ollama \
@@ -426,7 +426,7 @@ uv run docling-graph convert document.pdf \
 
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --export-format cypher \
@@ -440,7 +440,7 @@ cat outputs/neo4j/graph.cypher | cypher-shell
 
 ```bash
 uv run docling-graph convert small_doc.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference local \
     --no-use-chunking \
@@ -460,7 +460,7 @@ uv run docling-graph convert small_doc.pdf \
 # Bash loop
 for pdf in documents/*.pdf; do
     uv run docling-graph convert "$pdf" \
-        --template "templates.Invoice" \
+        --template "templates.BillingDocument" \
         --output-dir "outputs/$(basename $pdf .pdf)"
 done
 ```
@@ -471,7 +471,7 @@ done
 # Using GNU parallel
 ls documents/*.pdf | parallel -j 4 \
     uv run docling-graph convert {} \
-        --template "templates.Invoice" \
+        --template "templates.BillingDocument" \
         --output-dir "outputs/{/.}"
 ```
 
@@ -481,7 +481,7 @@ ls documents/*.pdf | parallel -j 4 \
 #!/bin/bash
 # batch_convert.sh
 
-TEMPLATE="templates.Invoice"
+TEMPLATE="templates.BillingDocument"
 INPUT_DIR="documents"
 OUTPUT_BASE="outputs"
 
@@ -522,7 +522,7 @@ defaults:
 ```bash
 # This uses remote inference (CLI overrides config)
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --inference remote
 ```
 
@@ -594,7 +594,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Or use absolute path
 uv run docling-graph convert document.pdf \
-    --template "my_project.templates.Invoice"
+    --template "my_project.templates.BillingDocument"
 ```
 
 ### 🐛 Out of Memory
@@ -608,12 +608,12 @@ CUDA out of memory
 ```bash
 # Enable chunking
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --use-chunking
 
 # Or use smaller model
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --model "ibm-granite/granite-4.0-1b"
 ```
 
@@ -623,12 +623,12 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Disable LLM consolidation
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --no-llm-consolidation
 
 # Or disable chunking for small docs
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --no-use-chunking
 ```
 
@@ -641,11 +641,11 @@ uv run docling-graph convert document.pdf \
 ```bash
 # ✅ Good - Reusable configuration
 uv run docling-graph init
-uv run docling-graph convert document.pdf -t "templates.Invoice"
+uv run docling-graph convert document.pdf -t "templates.BillingDocument"
 
 # ❌ Avoid - Repeating options
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm --inference remote --provider mistral
 ```
 
@@ -654,12 +654,12 @@ uv run docling-graph convert document.pdf \
 ```bash
 # ✅ Good - Organized by document
 uv run docling-graph convert invoice_001.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "outputs/invoice_001"
 
 # ❌ Avoid - Overwriting outputs
 uv run docling-graph convert invoice_001.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ### 👍 Use Appropriate Backend

@@ -25,7 +25,7 @@ Converts documents to structured format using Docling with OCR or Vision pipelin
 ### Processing Strategies
 
 **One-to-One:** Each page produces a separate model (invoice batches, ID cards)
-**Many-to-One:** Multiple pages merged into single model (research papers, reports)
+**Many-to-One:** Multiple pages merged into single model (rheology researchs, reports)
 
 **Location:** `docling_graph/core/extractors/strategies/`
 

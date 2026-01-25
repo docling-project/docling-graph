@@ -1,6 +1,11 @@
 # Schema Definition: Pydantic Templates
 
 
+> **Note**: The examples in this document use simplified field names and structures for teaching purposes. 
+> The actual `BillingDocument` schema at `docs/examples/templates/billing_document.py` is more comprehensive 
+> with 30+ classes, EN 16931/Peppol BIS compliance, and uses `CONTAINS_LINE` for line items.
+
+
 ## Overview
 
 Pydantic templates are the **foundation** of knowledge graph extraction in Docling Graph. They serve three critical purposes:
@@ -18,7 +23,7 @@ This section provides a complete guide to creating Pydantic templates optimized 
 Here's a minimal template showing the key concepts:
 
 ```python
-"""Invoice extraction template."""
+"""BillingDocument extraction template."""
 
 from typing import Any, List
 from pydantic import BaseModel, ConfigDict, Field
@@ -59,11 +64,11 @@ class Organization(BaseModel):
     )
 
 # Root document
-class Invoice(BaseModel):
-    """Invoice document."""
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+class BillingDocument(BaseModel):
+    """BillingDocument document."""
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     
-    invoice_number: str = Field(
+    document_no: str = Field(
         description="Unique invoice identifier",
         examples=["INV-2024-001", "12345"]
     )
@@ -123,7 +128,7 @@ date_of_birth: date = Field(
 The pipeline automatically converts Pydantic models to knowledge graphs:
 
 ```
-Invoice (node)
+BillingDocument (node)
   ├─ ISSUED_BY → Organization (node)
   │               └─ LOCATED_AT → Address (node)
   └─ SENT_TO → Client (node)
@@ -139,7 +144,7 @@ Invoice (node)
 | **Entity** | Unique, identifiable object tracked individually | Person, Organization, Document |
 | **Component** | Value object deduplicated by content | Address, MonetaryAmount, Measurement |
 | **Node** | Any Pydantic model that becomes a graph node | All BaseModel subclasses |
-| **Edge** | Relationship between nodes | `ISSUED_BY`, `LOCATED_AT`, `CONTAINS_ITEM` |
+| **Edge** | Relationship between nodes | `ISSUED_BY`, `LOCATED_AT`, `CONTAINS_LINE` |
 | **graph_id_fields** | Fields used to create stable, unique node IDs | `["name"]`, `["first_name", "last_name"]` |
 
 ---
@@ -158,7 +163,7 @@ Docling Graph includes production-ready templates for various domains:
 - **Components:** Address
 - **Use Case:** Identity document extraction
 
-### 🔬 Research Paper Template
+### 🔬 Rheology Research Template
 - **Entities:** Research, Experiment, Material
 - **Components:** Measurement, VibrationParameter
 - **Use Case:** Scientific literature mining

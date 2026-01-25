@@ -21,7 +21,7 @@ Docling-Graph automatically classifies models into **three capability tiers** to
 |------|-----------|-----------------|-----------|
 | **SIMPLE** | 1B-7B params | Fast, basic understanding | Simple forms, invoices, quick extraction |
 | **STANDARD** | 7B-13B params | Balanced speed/accuracy | General documents, contracts |
-| **ADVANCED** | 13B+ params | High accuracy, complex reasoning | Research papers, legal documents, complex analysis |
+| **ADVANCED** | 13B+ params | High accuracy, complex reasoning | Rheology researchs, legal documents, complex analysis |
 
 ---
 
@@ -101,7 +101,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="invoice.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b"  # SIMPLE tier
@@ -154,7 +154,7 @@ run_pipeline(config)
 - ✅ **Complex Reasoning**: Handles nuanced content
 
 **Best For:**
-- Research papers
+- Rheology researchs
 - Legal documents
 - Complex technical content
 - High-accuracy requirements
@@ -295,7 +295,7 @@ See the full list of classified models in [`models.yaml`](https://github.com/IBM
 # ✅ Good - Simple task, simple model
 config = PipelineConfig(
     source="invoice.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     model_override="granite-4.0-1b"  # SIMPLE tier
 )
 
@@ -351,7 +351,7 @@ config = PipelineConfig(
 # ❌ Avoid - Chain of Density with SIMPLE model
 config = PipelineConfig(
     source="invoice.pdf",
-    template="templates.Invoice",
+    template="templates.BillingDocument",
     model_override="granite-4.0-1b",  # SIMPLE
     llm_consolidation=True  # Won't use Chain of Density
 )

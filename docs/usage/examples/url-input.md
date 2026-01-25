@@ -9,7 +9,7 @@ This example demonstrates how to process documents directly from URLs, showcasin
 
 ---
 
-## Use Case: Research Paper Analysis
+## Use Case: Rheology Research Analysis
 
 Extract structured information from a scientific paper hosted on arXiv, including authors, abstract, methodology, and key findings.
 
@@ -17,7 +17,7 @@ Extract structured information from a scientific paper hosted on arXiv, includin
 
 **URL:** `https://arxiv.org/pdf/2207.02720`
 
-**Type:** PDF (Research Paper on Rheology)
+**Type:** PDF (Rheology Research on Rheology)
 
 **Content:** Scientific paper with complex structure including authors, abstract, methodology, results, and references.
 
@@ -25,7 +25,7 @@ Extract structured information from a scientific paper hosted on arXiv, includin
 
 ## Template Definition
 
-We'll use a research paper template that captures the essential structure of scientific documents.
+We'll use a rheology research template that captures the essential structure of scientific documents.
 
 ```python
 from pydantic import BaseModel, Field
@@ -63,7 +63,7 @@ class Finding(BaseModel):
     significance: str = Field(description="Significance or implication")
 
 class Research(BaseModel):
-    """Complete research paper structure."""
+    """Complete rheology research structure."""
     model_config = {'is_entity': True}
     
     title: str = Field(description="Paper title")
@@ -89,7 +89,7 @@ class Research(BaseModel):
 ### Basic URL Processing
 
 ```bash
-# Process research paper from URL
+# Process rheology research from URL
 uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
     --template "templates.research.Research" \
     --processing-mode "many-to-one" \

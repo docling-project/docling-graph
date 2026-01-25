@@ -9,7 +9,7 @@ This example demonstrates how to process pre-converted DoclingDocument JSON file
 
 ---
 
-## Use Case: Invoice Reprocessing
+## Use Case: BillingDocument Reprocessing
 
 Reprocess a previously converted invoice document with a different template or extraction strategy, without re-running expensive OCR operations.
 
@@ -30,7 +30,7 @@ Reprocess a previously converted invoice document with a different template or e
 ```bash
 # First run: Convert PDF and export DoclingDocument
 uv run docling-graph convert invoice.pdf \
-    --template "templates.invoice.Invoice" \
+    --template "templates.billing_document.BillingDocument" \
     --export-docling-json
 
 # This creates: outputs/invoice_docling.json
@@ -108,11 +108,11 @@ class LineItem(BaseModel):
     unit_price: float = Field(description="Unit price")
     total: float = Field(description="Line total")
 
-class Invoice(BaseModel):
+class BillingDocument(BaseModel):
     """Complete invoice structure."""
     model_config = {'is_entity': True}
     
-    invoice_number: str = Field(description="Invoice number")
+    document_no: str = Field(description="Invoice number")
     date: str = Field(description="Invoice date")
     issuer: Company = edge("ISSUED_BY", description="Issuing company")
     client: Company = edge("BILLED_TO", description="Client company")
@@ -122,7 +122,7 @@ class Invoice(BaseModel):
     total: float = Field(description="Total amount")
 ```
 
-**Save as:** `templates/invoice.py`
+**Save as:** `templates/billing_document.py`
 
 ---
 
@@ -133,7 +133,7 @@ class Invoice(BaseModel):
 ```bash
 # Process DoclingDocument JSON
 uv run docling-graph convert invoice_docling.json \
-    --template "templates.invoice.Invoice" \
+    --template "templates.billing_document.BillingDocument" \
     --backend llm \
     --inference remote
 ```
@@ -143,12 +143,12 @@ uv run docling-graph convert invoice_docling.json \
 ```bash
 # First extraction
 uv run docling-graph convert invoice.pdf \
-    --template "templates.invoice.BasicInvoice" \
+    --template "templates.billing_document.BasicInvoice" \
     --export-docling-json
 
 # Reprocess with detailed template (no OCR needed)
 uv run docling-graph convert outputs/invoice_docling.json \
-    --template "templates.invoice.DetailedInvoice" \
+    --template "templates.billing_document.DetailedInvoice" \
     --output-dir "outputs/detailed"
 ```
 
@@ -158,7 +158,7 @@ uv run docling-graph convert outputs/invoice_docling.json \
 # Reprocess multiple DoclingDocument files
 for file in outputs/*_docling.json; do
     uv run docling-graph convert "$file" \
-        --template "templates.invoice.Invoice" \
+        --template "templates.billing_document.BillingDocument" \
         --output-dir "outputs/reprocessed"
 done
 ```
@@ -171,7 +171,7 @@ done
 
 ```python
 from docling_graph import run_pipeline, PipelineConfig
-from templates.invoice import Invoice
+from templates.billing_document import BillingDocument
 
 # Configure pipeline for DoclingDocument input
 config = PipelineConfig(
@@ -191,7 +191,7 @@ run_pipeline(config)
 
 ```python
 from docling_graph import run_pipeline, PipelineConfig
-from templates.invoice import BasicInvoice, DetailedInvoice
+from templates.billing_document import BasicInvoice, DetailedInvoice
 
 # Stage 1: Initial extraction with basic template
 stage1_config = PipelineConfig(
@@ -220,7 +220,7 @@ stage2_config.run()
 ```python
 from pathlib import Path
 from docling_graph import run_pipeline, PipelineConfig
-from templates.invoice import Invoice
+from templates.billing_document import BillingDocument
 
 # Find all DoclingDocument files
 docling_files = Path("outputs").glob("*_docling.json")
@@ -541,9 +541,9 @@ Test different templates without re-running OCR:
 
 ```python
 templates = [
-    "templates.invoice.BasicInvoice",
-    "templates.invoice.DetailedInvoice",
-    "templates.invoice.MinimalInvoice"
+    "templates.billing_document.BasicInvoice",
+    "templates.billing_document.DetailedInvoice",
+    "templates.billing_document.MinimalInvoice"
 ]
 
 for template in templates:

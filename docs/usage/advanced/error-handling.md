@@ -584,7 +584,7 @@ def process_with_zero_data_loss(source: str):
     
     config = PipelineConfig(
         source=source,
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         processing_mode="many-to-one",
         output_dir="outputs"
     )
@@ -628,13 +628,13 @@ result = process_with_zero_data_loss("invoice.pdf")
 if result["status"] == "complete":
     # Use merged model
     model = result["models"][0]
-    print(f"Invoice: {model.get('invoice_number')}")
+    print(f"Invoice: {model.get('document_no')}")
     
 elif result["status"] == "partial":
     # Use partial models
     print("Working with partial models:")
     for i, model in enumerate(result["models"], 1):
-        print(f"  Model {i}: {model.get('invoice_number', 'N/A')}")
+        print(f"  Model {i}: {model.get('document_no', 'N/A')}")
     
 elif result["status"] == "recovered":
     # Recovered from files
@@ -657,7 +657,7 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
     
     config = PipelineConfig(
         source=source,
-        template="templates.Invoice",
+        template="templates.BillingDocument",
         processing_mode="many-to-one",
         llm_consolidation=True  # Try LLM consolidation
     )
@@ -668,7 +668,7 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
         # Success: single merged model
         return {
             "status": "merged",
-            "invoice_number": results[0].invoice_number,
+            "document_no": results[0].document_no,
             "total": results[0].total,
             "line_items": len(results[0].line_items or []),
             "completeness": 100
@@ -680,7 +680,7 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
         # Combine data from partial models
         combined = {
             "status": "partial",
-            "invoice_number": None,
+            "document_no": None,
             "total": None,
             "line_items": 0,
             "completeness": 0
@@ -688,8 +688,8 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
         
         # Extract what we can
         for model in results:
-            if model.invoice_number and not combined["invoice_number"]:
-                combined["invoice_number"] = model.invoice_number
+            if model.document_no and not combined["document_no"]:
+                combined["document_no"] = model.document_no
             if model.total and not combined["total"]:
                 combined["total"] = model.total
             if model.line_items:
@@ -697,7 +697,7 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
         
         # Calculate completeness
         fields_found = sum([
-            bool(combined["invoice_number"]),
+            bool(combined["document_no"]),
             bool(combined["total"]),
             bool(combined["line_items"] > 0)
         ])
@@ -709,7 +709,7 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
 result = extract_with_partial_handling("invoice.pdf")
 
 print(f"Status: {result['status']}")
-print(f"Invoice: {result['invoice_number'] or 'N/A'}")
+print(f"Invoice: {result['document_no'] or 'N/A'}")
 print(f"Total: ${result['total'] or 0}")
 print(f"Line items: {result['line_items']}")
 print(f"Completeness: {result['completeness']}%")
@@ -1005,11 +1005,11 @@ else:
 
 ```python
 # ✅ Good - Extract what you can from partial models
-def get_invoice_number(models: List) -> str:
+def get_document_no(models: List) -> str:
     """Get invoice number from any model that has it."""
     for model in models:
-        if model.invoice_number:
-            return model.invoice_number
+        if model.document_no:
+            return model.document_no
     return "N/A"
 ```
 

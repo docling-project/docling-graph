@@ -32,7 +32,7 @@ uv run docling-graph init
 
 # 2. Convert a document
 uv run docling-graph convert document.pdf \
-    --template "my_templates.Invoice"
+    --template "templates.BillingDocument"
 
 # 3. Visualize the graph
 uv run docling-graph inspect outputs/
@@ -57,7 +57,7 @@ Available with all commands:
 uv run docling-graph --version
 
 # Enable verbose logging
-uv run docling-graph --verbose convert document.pdf -t "templates.Invoice"
+uv run docling-graph --verbose convert document.pdf -t "templates.BillingDocument"
 
 # Show help
 uv run docling-graph --help
@@ -138,7 +138,7 @@ export MISTRAL_API_KEY="your-key"
 
 # 4. Convert first document
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ### Workflow 2: Batch Processing
@@ -147,7 +147,7 @@ uv run docling-graph convert document.pdf \
 # Process multiple documents
 for pdf in documents/*.pdf; do
     uv run docling-graph convert "$pdf" \
-        --template "templates.Invoice" \
+        --template "templates.BillingDocument" \
         --output-dir "outputs/$(basename $pdf .pdf)"
 done
 
@@ -164,18 +164,18 @@ done
 ```bash
 # 1. Convert with verbose logging
 uv run docling-graph --verbose convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "test_output"
 
 # 2. Inspect results
 uv run docling-graph inspect test_output/
 
 # 3. Iterate on template
-# Edit templates/invoice.py
+# Edit templates/billing_document.py
 
 # 4. Re-run conversion
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "test_output"
 ```
 
@@ -201,7 +201,7 @@ defaults:
 ```bash
 # This uses remote inference (CLI overrides config)
 uv run docling-graph convert doc.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --inference remote
 ```
 
@@ -279,7 +279,7 @@ Enable verbose logging for debugging:
 
 ```bash
 uv run docling-graph --verbose convert document.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ---
@@ -291,11 +291,11 @@ uv run docling-graph --verbose convert document.pdf \
 ```bash
 # ✅ Good - Reusable configuration
 uv run docling-graph init
-uv run docling-graph convert document.pdf -t "templates.Invoice"
+uv run docling-graph convert document.pdf -t "templates.BillingDocument"
 
 # ❌ Avoid - Repeating options
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --provider mistral \
@@ -307,12 +307,12 @@ uv run docling-graph convert document.pdf \
 ```bash
 # ✅ Good - Organized by document
 uv run docling-graph convert invoice_001.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --output-dir "outputs/invoice_001"
 
 # ❌ Avoid - Overwriting outputs
 uv run docling-graph convert invoice_001.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ### 👍 Use Verbose for Development
@@ -320,11 +320,11 @@ uv run docling-graph convert invoice_001.pdf \
 ```bash
 # ✅ Good - Debug during development
 uv run docling-graph --verbose convert document.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 
 # ✅ Good - Silent in production
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice"
+    --template "templates.BillingDocument"
 ```
 
 ---

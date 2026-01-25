@@ -2,7 +2,7 @@
 Example 03: URL Processing - Extract from Remote Documents
 
 Description:
-    Download and process a research paper directly from a URL (arXiv).
+    Download and process a rheology research directly from a URL (arXiv).
     Demonstrates how docling-graph can fetch and process remote documents
     in a single pipeline execution.
 
@@ -72,7 +72,7 @@ def main() -> None:
     console.print(
         Panel.fit(
             "[bold blue]Example 03: URL Processing[/bold blue]\n"
-            "[dim]Download and extract structured data from a remote research paper[/dim]",
+            "[dim]Download and extract structured data from a remote rheology research[/dim]",
             border_style="blue",
         )
     )

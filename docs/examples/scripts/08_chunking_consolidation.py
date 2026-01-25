@@ -14,7 +14,7 @@ Use Cases:
 Prerequisites:
     - Installation: uv sync --extra remote
     - Environment: export MISTRAL_API_KEY="your-api-key"
-    - Data: Multi-page research paper
+    - Data: Multi-page rheology research
 
 Key Concepts:
     - Chunking: Splitting documents for LLM context

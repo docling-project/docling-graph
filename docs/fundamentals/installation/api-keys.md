@@ -117,7 +117,7 @@ uv run python -c "import os; print('OpenAI key set:', bool(os.getenv('OPENAI_API
 
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --provider openai \
@@ -158,7 +158,7 @@ uv run python -c "import os; print('Mistral key set:', bool(os.getenv('MISTRAL_A
 
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --provider mistral \
@@ -198,7 +198,7 @@ uv run python -c "import os; print('Gemini key set:', bool(os.getenv('GEMINI_API
 
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --provider gemini \
@@ -240,7 +240,7 @@ uv run python -c "import os; print('WatsonX key set:', bool(os.getenv('WATSONX_A
 
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --provider watsonx \
@@ -295,7 +295,7 @@ WatsonX Project      ✅ Set
 ```bash
 # Test with a simple extraction
 uv run docling-graph convert docs/examples/data/sample.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --provider openai \

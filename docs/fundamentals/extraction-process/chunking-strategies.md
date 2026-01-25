@@ -203,7 +203,7 @@ Product A costs $50.
 
 **Contextualized chunk:**
 ```
-# Invoice INV-001
+# BillingDocument INV-001
 ## Line Items
 ### Product Details
 
@@ -450,7 +450,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=True  # Automatic chunking (default)
 )
 
@@ -462,7 +462,7 @@ run_pipeline(config)
 ```python
 config = PipelineConfig(
     source="small_document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     use_chunking=False  # Process full document
 )
 ```

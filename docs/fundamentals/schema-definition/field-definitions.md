@@ -1,6 +1,11 @@
 # Field Definitions
 
 
+> **Note**: The examples in this document use simplified field names and structures for teaching purposes. 
+> The actual `BillingDocument` schema at `docs/examples/templates/billing_document.py` is more comprehensive 
+> with 30+ classes, EN 16931/Peppol BIS compliance, and uses `CONTAINS_LINE` for line items.
+
+
 ## Overview
 
 Field definitions are where you **guide the LLM** to extract accurate data. Well-written field descriptions and examples are crucial for extraction quality. This guide covers best practices for defining fields that maximize LLM accuracy.
@@ -467,12 +472,12 @@ class Person(BaseModel):
 4. **Edges at the end**
 
 ```python
-class Invoice(BaseModel):
-    """Invoice document."""
-    model_config = ConfigDict(graph_id_fields=["invoice_number"])
+class BillingDocument(BaseModel):
+    """BillingDocument document."""
+    model_config = ConfigDict(graph_id_fields=["document_no"])
     
     # 1. Required ID field
-    invoice_number: str = Field(...)
+    document_no: str = Field(...)
     
     # 2. Required core fields
     date: str = Field(...)
@@ -486,7 +491,7 @@ class Invoice(BaseModel):
     issued_by: Organization = edge(label="ISSUED_BY")
     sent_to: Client = edge(label="SENT_TO")
     contains_items: List[LineItem] = edge(
-        label="CONTAINS_ITEM",
+        label="CONTAINS_LINE",
         default_factory=list
     )
 ```
@@ -530,7 +535,7 @@ Document when fields are relevant:
 ```python
 document_type: str = Field(
     description="Type of document",
-    examples=["Invoice", "Receipt", "Credit Note"]
+    examples=["BillingDocument", "Receipt", "Credit Note"]
 )
 
 # Field only relevant for invoices

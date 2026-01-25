@@ -35,7 +35,7 @@ from docling_graph import run_pipeline, PipelineConfig
 
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote",
     output_dir="outputs"
@@ -48,7 +48,7 @@ run_pipeline(config)
 
 ```bash
 uv run docling-graph convert document.pdf \
-    --template "my_templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
     --output-dir outputs
@@ -84,7 +84,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # Minimal config - uses all defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.MyTemplate"
+    template="templates.MyTemplate"
 )
 
 run_pipeline(config)
@@ -104,7 +104,7 @@ run_pipeline(config)
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="remote",
     model_override="gpt-4-turbo",
@@ -117,7 +117,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",
     model_override="ibm-granite/granite-4.0-1b",
@@ -130,7 +130,7 @@ config = PipelineConfig(
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     inference="local",  # VLM only supports local
     docling_config="vision"
@@ -238,7 +238,7 @@ from docling_graph import run_pipeline, PipelineConfig
 try:
     config = PipelineConfig(
         source="document.pdf",
-        template="my_templates.Invoice",
+        template="templates.BillingDocument",
         backend="vlm",
         inference="remote"  # ❌ VLM doesn't support remote
     )
@@ -317,13 +317,13 @@ export OLLAMA_BASE_URL="http://localhost:11434"
 # ✅ Good - Start with defaults
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 
 # ❌ Bad - Over-configure initially
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="llm",
     inference="local",
     processing_mode="many-to-one",
@@ -339,7 +339,7 @@ config = PipelineConfig(
 # ✅ Good - Override specific settings
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     inference="remote",  # Only change this
     model_override="gpt-4-turbo"  # And this
 )
@@ -353,7 +353,7 @@ from docling_graph import run_pipeline, PipelineConfig
 # ✅ Good - Type hints help catch errors
 config: PipelineConfig = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice"
+    template="templates.BillingDocument"
 )
 ```
 
@@ -363,7 +363,7 @@ config: PipelineConfig = PipelineConfig(
 # ✅ Good - Validate config before running
 config = PipelineConfig(
     source="document.pdf",
-    template="my_templates.Invoice",
+    template="templates.BillingDocument",
     backend="vlm",
     inference="local"
 )

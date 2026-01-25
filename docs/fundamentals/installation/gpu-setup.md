@@ -178,7 +178,7 @@ source .venv/bin/activate  # Linux/macOS
 # Then use direct commands
 docling-graph --version
 docling-graph init
-docling-graph convert document.pdf --template "templates.Invoice"
+docling-graph convert document.pdf --template "templates.BillingDocument"
 docling-graph inspect outputs
 ```
 
@@ -220,7 +220,7 @@ python -m vllm.entrypoints.openai.api_server \
 
 # In another terminal, run extraction
 docling-graph convert document.pdf \
-    --template "templates.Invoice" \
+    --template "templates.BillingDocument" \
     --backend llm \
     --inference local \
     --provider vllm
@@ -291,7 +291,7 @@ RuntimeError: CUDA out of memory
 2. **Enable chunking**:
    ```bash
    docling-graph convert document.pdf \
-       --template "templates.Invoice" \
+       --template "templates.BillingDocument" \
        --use-chunking
    ```
 
