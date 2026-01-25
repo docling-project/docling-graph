@@ -77,11 +77,13 @@ class OutputDirectoryManager:
         """
         self.base_output_dir = Path(base_output_dir)
         self.source_filename = source_filename
+        # Generate timestamp once at initialization to ensure consistency
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.document_dir = self._create_document_directory(source_filename)
 
     def _create_document_directory(self, source_filename: str) -> Path:
         """
-        Create sanitized document directory.
+        Create sanitized document directory using stored timestamp.
 
         Args:
             source_filename: Source document filename
@@ -89,7 +91,19 @@ class OutputDirectoryManager:
         Returns:
             Path to created document directory
         """
-        sanitized_name = sanitize_filename(source_filename)
+        # Sanitize filename without timestamp
+        safe = source_filename.replace(".", "_")
+        safe = re.sub(r'[/\\:*?"<>|\[\](){}]', "_", safe)
+        safe = safe.replace(" ", "_")
+        safe = safe.strip("_")
+        
+        # Truncate if needed (reserve 17 chars for timestamp)
+        max_base = MAX_FILENAME_LENGTH - 17
+        if len(safe) > max_base:
+            safe = safe[:max_base]
+        
+        # Use stored timestamp for consistency
+        sanitized_name = f"{safe}_{self.timestamp}"
         doc_dir = self.base_output_dir / sanitized_name
         doc_dir.mkdir(parents=True, exist_ok=True)
         return doc_dir
@@ -139,9 +153,9 @@ class OutputDirectoryManager:
         return path
 
     def get_consolidated_graph_dir(self) -> Path:
-        """Get consolidated_graph/ directory (directly under document dir)."""
-        path = self.document_dir / "consolidated_graph"
-        path.mkdir(exist_ok=True)
+        """Get graphs/consolidated/ directory."""
+        path = self.get_graphs_dir() / "consolidated"
+        path.mkdir(parents=True, exist_ok=True)
         return path
 
     # Other directories

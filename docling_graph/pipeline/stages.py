@@ -404,6 +404,10 @@ class ExtractionStage(PipelineStage):
         # Default path: PDF/Image processing (existing behavior)
         logger.info(f"[{self.name()}] Creating extractor...")
         context.extractor = self._create_extractor(context)
+        
+        # Pass trace_data to extractor if available
+        if context.trace_data:
+            context.extractor.trace_data = context.trace_data
 
         logger.info(f"[{self.name()}] Extracting from: {context.config.source}")
         context.extracted_models, context.docling_document = context.extractor.extract(

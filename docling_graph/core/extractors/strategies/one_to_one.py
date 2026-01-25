@@ -34,6 +34,7 @@ class OneToOneStrategy(BaseExtractor):
                 ExtractionBackendProtocol or TextExtractionBackendProtocol.
             docling_config: Docling pipeline configuration ('ocr' or 'vision').
         """
+        super().__init__()  # Initialize base extractor with trace_data attribute
         self.backend = backend
         self.doc_processor = DocumentProcessor(docling_config=docling_config)
 
