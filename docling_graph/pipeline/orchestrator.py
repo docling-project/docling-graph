@@ -137,6 +137,39 @@ class PipelineOrchestrator:
                 logger.info(f"  Extractions: {len(context.trace_data.extractions)}")
                 logger.info(f"  Intermediate graphs: {len(context.trace_data.intermediate_graphs)}")
 
+            # Save metadata.json if output_manager is available
+            if context.output_manager and self.dump_to_disk:
+                from datetime import datetime
+                
+                metadata = {
+                    "pipeline_version": "1.0.0",
+                    "timestamp": datetime.now().isoformat(),
+                    "source": str(self.config.source),
+                    "template": str(self.config.template),
+                    "processing_mode": self.config.processing_mode,
+                    "backend": self.config.backend,
+                    "docling_config": self.config.docling_config,
+                    "use_chunking": self.config.use_chunking,
+                    "llm_consolidation": self.config.llm_consolidation,
+                    "include_trace": self.include_trace,
+                    "results": {
+                        "nodes": context.graph_metadata.node_count if context.graph_metadata else 0,
+                        "edges": context.graph_metadata.edge_count if context.graph_metadata else 0,
+                        "extracted_models": len(context.extracted_models) if context.extracted_models else 0,
+                    }
+                }
+                
+                if self.include_trace and context.trace_data:
+                    metadata["trace_summary"] = {
+                        "pages": len(context.trace_data.pages),
+                        "chunks": len(context.trace_data.chunks) if context.trace_data.chunks else 0,
+                        "extractions": len(context.trace_data.extractions),
+                        "intermediate_graphs": len(context.trace_data.intermediate_graphs),
+                    }
+                
+                context.output_manager.save_metadata(metadata)
+                logger.info(f"Saved metadata to {context.output_manager.get_document_dir() / 'metadata.json'}")
+
             logger.info("--- Pipeline Completed Successfully ---")
             return context
 

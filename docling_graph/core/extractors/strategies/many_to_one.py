@@ -54,6 +54,7 @@ class ManyToOneStrategy(BaseExtractor):
                 }
                 If None and use_chunking=True, uses default tokenizer with backend's context limit.
         """
+        super().__init__()  # Initialize base extractor with trace_data attribute
         self.backend = backend
         self.llm_consolidation = llm_consolidation
         self.use_chunking = use_chunking

@@ -3,7 +3,7 @@ Base extractor interface for all extraction strategies.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Type
+from typing import Any, List, Tuple, Type
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
@@ -11,6 +11,10 @@ from pydantic import BaseModel
 
 class BaseExtractor(ABC):
     """Abstract base class for all extraction strategies."""
+    
+    def __init__(self) -> None:
+        """Initialize base extractor with optional trace data."""
+        self.trace_data: Any = None  # Will be set by pipeline if trace is enabled
 
     @abstractmethod
     def extract(
