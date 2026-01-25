@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#model-capabilities" class="md-skip">
+        <a href="#overview" class="md-skip">
           Skip to content
         </a>
       
@@ -509,14 +509,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../introduction/architecture/" class="md-nav__link">
+      <a href="../../../introduction/key-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Architecture
+    Key Concepts
   
 
     
@@ -537,14 +537,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../introduction/key-concepts/" class="md-nav__link">
+      <a href="../../../introduction/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Key Concepts
+    Architecture
   
 
     
@@ -1699,8 +1699,6 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
-        
-      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -1742,8 +1740,6 @@
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
-  
-    
   
   
     <label class="md-nav__title" for="__toc">
@@ -1928,45 +1924,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Complete Model List">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#simple-tier-1b-7b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SIMPLE Tier (1B-7B)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#standard-tier-7b-13b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        STANDARD Tier (7B-13B)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#advanced-tier-13b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ADVANCED Tier (13B+)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -3337,6 +3294,96 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_4" id="__nav_4_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging & Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Debugging & Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage/advanced/trace-data-debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trace Data Debugging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4085,8 +4132,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -4270,45 +4315,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Complete Model List">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#simple-tier-1b-7b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SIMPLE Tier (1B-7B)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#standard-tier-7b-13b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        STANDARD Tier (7B-13B)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#advanced-tier-13b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ADVANCED Tier (13B+)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -4556,12 +4562,23 @@
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">capability</span><span class="p">)</span>  <span class="c1"># ModelCapability.SIMPLE</span>
 </code></pre></div>
 <h3 id="detection-logic">Detection Logic<a class="headerlink" href="#detection-logic" title="Permanent link">&para;</a></h3>
-<p>The system uses pattern matching on model names:</p>
-<ol>
-<li><strong>Size-based detection</strong>: Extracts parameter count from model name (e.g., "8b", "13b")</li>
-<li><strong>Known model mapping</strong>: Uses pre-classified list of 40+ popular models</li>
-<li><strong>Fallback heuristics</strong>: Conservative defaults for unknown models</li>
-</ol>
+<p>The system uses a <strong>3-tier priority system</strong> for accurate capability detection:</p>
+<p><strong>Priority 1: Model Name Pattern Matching</strong> (Most Reliable)
+- Detects parameter count from model name (e.g., "1b", "8b", "70b")
+- Small models (1B-3B) → SIMPLE
+- Large models (70B+) → ADVANCED</p>
+<p><strong>Priority 2: Max Output Tokens</strong> (Better Proxy)
+- Uses <code>max_new_tokens</code> as capability indicator
+- ≤2048 tokens → SIMPLE (limited output capacity)
+- ≤4096 tokens → STANDARD
+- &gt;4096 tokens → ADVANCED</p>
+<p><strong>Priority 3: Context Window</strong> (Fallback)
+- Uses context limit only when other signals unavailable
+- ⚠️ <strong>Note</strong>: Modern small models can have large contexts (e.g., Granite 1B with 128K)
+- Includes warnings when using this heuristic</p>
+<p><strong>Registry Lookup:</strong>
+- For known models in <code>models.yaml</code>, explicit capability is always used
+- Fallback detection only applies to unregistered models</p>
 <hr />
 <h2 id="adaptive-behavior">Adaptive Behavior<a class="headerlink" href="#adaptive-behavior" title="Permanent link">&para;</a></h2>
 <p>The extraction system automatically adapts based on model capability:</p>

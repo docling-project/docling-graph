@@ -498,14 +498,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../introduction/architecture/" class="md-nav__link">
+      <a href="../../../introduction/key-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Architecture
+    Key Concepts
   
 
     
@@ -526,14 +526,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../introduction/key-concepts/" class="md-nav__link">
+      <a href="../../../introduction/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Key Concepts
+    Architecture
   
 
     
@@ -2877,6 +2877,96 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_4" id="__nav_4_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging & Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Debugging & Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage/advanced/trace-data-debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trace Data Debugging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3663,30 +3753,36 @@ flowchart TB
 
     A2{"Input Type"}
 
-    B@{ shape: procs, label: "2. Docling Conversion&lt;br/&gt;OCR or Vision" }
+    %% Ingestion Paths
+    B@{ shape: procs, label: "2a. Docling Conversion&lt;br/&gt;Generates Images &amp; Markdown" }
     B2@{ shape: lin-proc, label: "2b. Text Processing&lt;br/&gt;Direct to Markdown" }
-    B3@{ shape: lin-proc, label: "2c. Load DoclingDocument&lt;br/&gt;Skip Conversion" }
+    B3@{ shape: lin-proc, label: "2c. Load DoclingDocument&lt;br/&gt;Pre-parsed Content" }
 
+    %% Strategy Decision
     C{"3. Backend"}
 
-    D@{ shape: lin-proc, label: "4a. VLM Extraction&lt;br/&gt;Direct from Document" }
-    E@{ shape: lin-proc, label: "4b. Markdown Extraction" }
+    %% Extraction Paths
+    D@{ shape: lin-proc, label: "4a. VLM Extraction&lt;br/&gt;Page-by-Page (Images)" }
+    E@{ shape: lin-proc, label: "4b. Markdown Prep&lt;br/&gt;Merge Text Content" }
 
+    %% Chunking Logic (LLM Path)
     F{"5. Chunking"}
-
     G@{ shape: tag-proc, label: "6a. Hybrid Chunking&lt;br/&gt;Semantic + Token-Aware" }
-    H@{ shape: tag-proc, label: "6b. Full Document" }
+    H@{ shape: tag-proc, label: "6b. Full Document&lt;br/&gt;Context Window Permitting" }
 
-    I@{ shape: procs, label: "7. Batch Extraction&lt;br/&gt;Process Each Chunk" }
-    J@{ shape: tag-proc, label: "8. Pydantic Validation&lt;br/&gt;Type Checking" }
+    I@{ shape: procs, label: "7. Batch Extraction&lt;br/&gt;LLM Inference" }
+
+    %% Convergence &amp; Validation
+    J@{ shape: tag-proc, label: "8. Pydantic Validation&lt;br/&gt;Per-Chunk/Page Check" }
 
     K{"9. Consolidation"}
 
-    L@{ shape: lin-proc, label: "10a. Smart Merge&lt;br/&gt;Rule-Based" }
-    M@{ shape: lin-proc, label: "10b. LLM Consolidation&lt;br/&gt;Intelligent" }
+    L@{ shape: lin-proc, label: "10a. Smart Merge&lt;br/&gt;Programmatic/Reduce" }
+    M@{ shape: lin-proc, label: "10b. LLM Consolidation&lt;br/&gt;Refinement Loop" }
 
+    %% Graph &amp; Export
     N@{ shape: procs, label: "11. Graph Conversion&lt;br/&gt;Pydantic → NetworkX" }
-    O@{ shape: tag-proc, label: "12. Node ID Generation&lt;br/&gt;Stable Identifiers" }
+    O@{ shape: tag-proc, label: "12. Node ID Generation&lt;br/&gt;Stable Hashing" }
 
     P@{ shape: tag-proc, label: "13. Export&lt;br/&gt;CSV/Cypher/JSON" }
     Q@{ shape: tag-proc, label: "14. Visualization&lt;br/&gt;HTML + Reports" }
@@ -3695,18 +3791,20 @@ flowchart TB
     A --&gt; A1
     A1 --&gt; A2
 
+    %% Routing Inputs
     A2 -- "PDF/Image" --&gt; B
-    A2 -- "Text/Markdown" --&gt; B2
-    A2 -- "DoclingDocument" --&gt; B3
+    A2 -- "Text/MD" --&gt; B2
+    A2 -- "DoclingDoc" --&gt; B3
 
+    %% Routing to Backend Strategy
     B --&gt; C
-    B2 --&gt; C
+    B2 &amp; B3 --&gt; E
 
-    B3 --&gt; E
-
+    %% Backend Decisions
     C -- VLM --&gt; D
     C -- LLM --&gt; E
 
+    %% LLM Path: Markdown -&gt; Chunking -&gt; Extraction
     E --&gt; F
     F -- Yes --&gt; G
     F -- No --&gt; H
@@ -3714,13 +3812,18 @@ flowchart TB
     G --&gt; I
     H --&gt; I
 
+    %% VLM Path: Direct to Validation (Skips Chunking)
     D --&gt; J
+
+    %% LLM Path: Join Validation
     I --&gt; J
+
+    %% Consolidation
     J --&gt; K
+    K -- "Rule-Based" --&gt; L
+    K -- "AI-Based" --&gt; M
 
-    K -- Programmatic --&gt; L
-    K -- LLM --&gt; M
-
+    %% Final Stages
     L --&gt; N
     M --&gt; N
 
