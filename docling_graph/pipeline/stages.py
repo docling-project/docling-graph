@@ -423,15 +423,22 @@ class ExtractionStage(PipelineStage):
 
             for page_no in sorted(context.docling_document.pages.keys()):
                 page_md = context.docling_document.export_to_markdown(page_no=page_no)
+                
+                # Check if page has tables by examining document-level tables array
+                # Tables are stored at document level with prov array indicating page numbers
+                has_tables = False
+                if hasattr(context.docling_document, 'tables') and context.docling_document.tables:
+                    has_tables = any(
+                        any(prov.page_no == page_no for prov in table.prov)
+                        for table in context.docling_document.tables
+                    )
+                
                 page_data = PageData(
                     page_number=page_no,
                     text_content=page_md,
                     metadata={
                         "page_size": len(page_md),
-                        "has_tables": any(
-                            item.label == "table"
-                            for item in context.docling_document.pages[page_no].items  # type: ignore[union-attr]
-                        ),
+                        "has_tables": has_tables,
                     },
                 )
                 context.trace_data.pages.append(page_data)
@@ -937,8 +944,15 @@ class VisualizationStage(PipelineStage):
         conf = context.config.to_dict()
         base_name = Path(conf["source"]).stem
 
+        # Get output directory from output_manager or fallback to output_dir
+        output_dir = None
+        if context.output_manager:
+            output_dir = context.output_manager.get_visualizations_dir()
+        elif context.output_dir:
+            output_dir = context.output_dir
+        
         # Ensure output_dir and extracted_models are not None
-        if context.output_dir is None:
+        if output_dir is None:
             raise PipelineError(
                 "Output directory is required for visualization", details={"stage": self.name()}
             )
@@ -947,13 +961,13 @@ class VisualizationStage(PipelineStage):
                 "No extracted models available for visualization", details={"stage": self.name()}
             )
 
-        report_path = context.output_dir / f"{base_name}_report"
+        report_path = output_dir / f"{base_name}_report"
         ReportGenerator().visualize(
             context.knowledge_graph, report_path, source_model_count=len(context.extracted_models)
         )
         logger.info(f"Generated markdown report at {report_path}")
 
-        html_path = context.output_dir / f"{base_name}_graph.html"
+        html_path = output_dir / f"{base_name}_graph.html"
         InteractiveVisualizer().save_cytoscape_graph(context.knowledge_graph, html_path)
         logger.info(f"Generated interactive HTML graph at {html_path}")
 
