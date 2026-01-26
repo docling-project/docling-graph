@@ -202,7 +202,7 @@ os.environ["MISTRAL_API_KEY"] = "your-key"
 # Configure for remote inference
 config = PipelineConfig(
     source="research.pdf",
-    template="templates.RheologyResearch",
+    template="templates.ScholarlyRheologyPaper",
     backend="llm",
     inference="remote",
     provider_override="mistral",
@@ -408,7 +408,7 @@ def process_invoice(source: str):
 def process_research(source: str):
     config = PipelineConfig(
         source=source,
-        template="templates.RheologyResearch",
+        template="templates.ScholarlyRheologyPaper",
         **BASE_CONFIG,
         llm_consolidation=True,  # Override for research
         output_dir=f"outputs/research/{Path(source).stem}"

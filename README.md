@@ -111,7 +111,7 @@ uv run docling-graph init
 
 # Convert document from URL
 uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
-    --template "docs.examples.templates.rheology_research.Research" \
+    --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --processing-mode "many-to-one"
 
 # Visualize results
@@ -122,7 +122,7 @@ uv run docling-graph inspect outputs
 
 ```python
 from docling_graph import run_pipeline, PipelineContext
-from docs.examples.templates.rheology_research import RheologyResearch
+from docs.examples.templates.rheology_research import ScholarlyRheologyPaper
 
 # Create configuration
 config = {

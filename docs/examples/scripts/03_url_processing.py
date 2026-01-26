@@ -51,7 +51,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.rheology_research import RheologyResearch
+    from examples.templates.rheology_research import ScholarlyRheologyPaper
 
     from docling_graph import PipelineConfig
 except ImportError:
@@ -61,7 +61,7 @@ except ImportError:
 
 # Configuration
 SOURCE_URL = "https://arxiv.org/pdf/2207.02720"  # Example arXiv paper
-TEMPLATE_CLASS = RheologyResearch
+TEMPLATE_CLASS = ScholarlyRheologyPaper
 OUTPUT_DIR = "outputs/03_url_processing"
 
 console = Console()

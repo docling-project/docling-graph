@@ -197,7 +197,7 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Enable chunking (default)
 uv run docling-graph convert large_doc.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --use-chunking
 
 # Disable chunking
@@ -228,7 +228,7 @@ uv run docling-graph convert small_doc.pdf \
 ```bash
 # Enable LLM consolidation
 uv run docling-graph convert document.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --llm-consolidation
 
 # Disable (use programmatic merge)
@@ -266,7 +266,7 @@ uv run docling-graph convert document.pdf \
 
 # Use vision pipeline
 uv run docling-graph convert complex_doc.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --docling-pipeline vision
 ```
 
@@ -394,7 +394,7 @@ uv run docling-graph convert invoice.jpg \
 export MISTRAL_API_KEY="your-key"
 
 uv run docling-graph convert research.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --backend llm \
     --inference remote \
     --provider mistral \
@@ -672,7 +672,7 @@ uv run docling-graph convert id_card.jpg \
 
 # ✅ Good - LLM for documents
 uv run docling-graph convert research.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --backend llm
 ```
 

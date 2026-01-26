@@ -47,7 +47,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.rheology_research import RheologyResearch
+    from examples.templates.rheology_research import ScholarlyRheologyPaper
 
     from docling_graph import PipelineConfig
 except ImportError:
@@ -56,7 +56,7 @@ except ImportError:
     sys.exit(1)
 
 SOURCE_FILE = "docs/examples/data/research_paper/rheology.pdf"
-TEMPLATE_CLASS = RheologyResearch
+TEMPLATE_CLASS = ScholarlyRheologyPaper
 
 console = Console()
 

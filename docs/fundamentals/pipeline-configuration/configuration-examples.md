@@ -202,7 +202,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Source and template
     source="complex_document.pdf",
-    template="templates.RheologyResearch",
+    template="templates.ScholarlyRheologyPaper",
     
     # VLM for visual understanding
     backend="vlm",
@@ -356,7 +356,7 @@ from docling_graph import run_pipeline, PipelineConfig
 config = PipelineConfig(
     # Rheology research
     source="research_paper.pdf",
-    template="templates.RheologyResearch",
+    template="templates.ScholarlyRheologyPaper",
     
     # Remote LLM for understanding
     backend="llm",

@@ -384,7 +384,7 @@ run_pipeline(config)
 ```python
 config = PipelineConfig(
     source="complex_document.pdf",
-    template="templates.RheologyResearch",
+    template="templates.ScholarlyRheologyPaper",
     backend="vlm",              # Vision backend
     processing_mode="one-to-one",
     docling_config="vision"     # Vision pipeline

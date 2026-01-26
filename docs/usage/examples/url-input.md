@@ -102,7 +102,7 @@ uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
 ```bash
 # Process with custom output directory
 uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
-    --template "templates.rheology_research.Research" \
+    --template "templates.rheology_research.ScholarlyRheologyPaper" \
     --processing-mode "many-to-one" \
     --output-dir "outputs/research_paper" \
     --export-format json
@@ -113,7 +113,7 @@ uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
 ```bash
 # Use specific LLM model
 uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
-    --template "templates.rheology_research.Research" \
+    --template "templates.rheology_research.ScholarlyRheologyPaper" \
     --processing-mode "many-to-one" \
     --backend llm \
     --inference remote \
@@ -129,7 +129,7 @@ uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
 
 ```python
 from docling_graph import run_pipeline, PipelineConfig
-from templates.rheology_research import RheologyResearch
+from templates.rheology_research import ScholarlyRheologyPaper
 
 # Configure pipeline for URL input
 config = PipelineConfig(
@@ -149,7 +149,7 @@ run_pipeline(config)
 
 ```python
 from docling_graph import run_pipeline, PipelineConfig
-from templates.rheology_research import RheologyResearch
+from templates.rheology_research import ScholarlyRheologyPaper
 
 # Advanced configuration
 config = PipelineConfig(
@@ -175,7 +175,7 @@ run_pipeline(config)
 ```python
 from docling_graph import run_pipeline, PipelineConfig
 from docling_graph.exceptions import ValidationError, ExtractionError
-from templates.rheology_research import RheologyResearch
+from templates.rheology_research import ScholarlyRheologyPaper
 
 try:
     config = PipelineConfig(

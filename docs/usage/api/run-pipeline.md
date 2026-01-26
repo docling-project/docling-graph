@@ -254,7 +254,7 @@ os.environ["MISTRAL_API_KEY"] = "your-key"
 # Configure for remote inference
 context = run_pipeline({
     "source": "research.pdf",
-    "template": "templates.RheologyResearch",
+    "template": "templates.ScholarlyRheologyPaper",
     "backend": "llm",
     "inference": "remote",
     "provider_override": "mistral",
@@ -492,7 +492,7 @@ def smart_process(source: str):
         backend = "vlm"
         processing = "one-to-one"
     elif "research" in path.name.lower():
-        template = "templates.RheologyResearch"
+        template = "templates.ScholarlyRheologyPaper"
         backend = "llm"
         processing = "many-to-one"
     else:

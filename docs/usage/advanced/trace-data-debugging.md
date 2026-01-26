@@ -78,7 +78,7 @@ Access raw page content for analysis:
 ```python
 config = PipelineConfig(
     source="document.pdf",
-    template="templates.RheologyResearch",
+    template="templates.ScholarlyRheologyPaper",
     include_trace=True,
     dump_to_disk=False  # Keep in memory only
 )

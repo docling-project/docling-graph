@@ -223,7 +223,7 @@ class Experiment(BaseModel):
 ```bash
 # Enable chunking and consolidation
 uv run docling-graph convert research.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --use-chunking \
     --llm-consolidation \
     --processing-mode many-to-one
@@ -234,7 +234,7 @@ uv run docling-graph convert research.pdf \
 ```bash
 # Use vision pipeline for better table/figure handling
 uv run docling-graph convert research.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --docling-pipeline vision
 ```
 
@@ -243,7 +243,7 @@ uv run docling-graph convert research.pdf \
 ```bash
 # Use smaller model without consolidation
 uv run docling-graph convert research.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --model mistral-small-latest \
     --no-llm-consolidation
 ```
@@ -306,7 +306,7 @@ class Research(BaseModel):
 ```bash
 # Disable consolidation for faster processing
 uv run docling-graph convert research.pdf \
-    --template "templates.RheologyResearch" \
+    --template "templates.ScholarlyRheologyPaper" \
     --no-llm-consolidation
 
 # Or use smaller model
@@ -366,7 +366,7 @@ class Research(BaseModel):
 # For papers > 10 pages
 config = PipelineConfig(
     source="long_paper.pdf",
-    template="templates.RheologyResearch",
+    template="templates.ScholarlyRheologyPaper",
     use_chunking=True,  # Essential
     llm_consolidation=True  # Better accuracy
 )

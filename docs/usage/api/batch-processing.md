@@ -357,7 +357,7 @@ def smart_batch_process(input_dir: str, output_base: str):
             template = "templates.billing_document.BillingDocument"
             backend = "vlm"
         elif "research" in doc.name.lower():
-            template = "templates.rheology_research.Research"
+            template = "templates.rheology_research.ScholarlyRheologyPaper"
             backend = "llm"
         else:
             print(f"⊘ Skipped (unknown type): {doc.name}")
