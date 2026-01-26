@@ -1,6 +1,5 @@
 # Billing Document Extraction
 
-
 ## Overview
 
 Extract complete structured data from billing documents (invoices, credit notes, receipts, etc.) including parties, line items, taxes, and payment information.
@@ -25,41 +24,94 @@ uv run docling-graph --version
 
 ## Template Reference
 
-The `BillingDocument` template is a comprehensive schema located at:
+The `BillingDocument` template is a streamlined schema located at:
 **`docs/examples/templates/billing_document.py`**
 
 ### Key Features
 
-- **Multiple Document Types**: Invoice, Credit Note, Debit Note, Pro Forma, Receipt
-- **Comprehensive Party Support**: Issuer, buyer, payee, tax representative
-- **Multi-level Charges**: Document, line, and price level allowances/charges
-- **Tax Handling**: VAT categories, rates, exemptions
-- **Payment Methods**: Bank transfer, card, direct debit, QR codes
-- **Standards Compliant**: EN 16931, Peppol BIS, UBL
+- **Multiple Document Types**: Invoice, Credit Note, Debit Note, Receipt
+- **Simplified Structure**: 10 core classes (reduced from 40+)
+- **Embedded Fields**: Contact info and totals directly in parent classes
+- **Clear Extraction Prompts**: Each field has "LOOK FOR", "EXTRACT", and "EXAMPLES" sections
+- **Essential Tax Handling**: VAT, GST, Sales Tax support
+- **Payment Methods**: Bank transfer, card, cash, direct debit
 
 ### Root Model
 
 ```python
 from examples.templates.billing_document import BillingDocument
 
-# The root entity with document_no as unique identifier
+# The root entity with document_number as unique identifier
 class BillingDocument(BaseModel):
     """Root billing document entity."""
-    model_config = ConfigDict(graph_id_fields=["document_no"])
+    model_config = ConfigDict(graph_id_fields=["document_number"])
     
-    document_no: str  # Primary identifier (e.g., "INV-2024-001")
-    document_type: DocumentType  # INVOICE, CREDIT_NOTE, etc.
+    # Core fields
+    document_number: str  # Primary identifier (e.g., "INV-2024-001")
+    document_type: DocumentType  # INVOICE, CREDIT_NOTE, RECEIPT, etc.
     issue_date: date | None
     due_date: date | None
-    currency: str | None  # ISO 4217 code
+    currency: str | None  # ISO 4217 code (EUR, USD, GBP)
+    
+    # Financial totals (embedded)
+    subtotal: float | None
+    discount_total: float | None
+    tax_total: float | None
+    total_amount: float | None
+    balance_due: float | None
     
     # Relationships (edges)
-    issuer: Party  # Who issued the document
+    seller: Party  # Who issued the document
     buyer: Party | None  # Who receives it
-    lines: List[DocumentLine]  # Line items
-    totals: DocumentTotals  # Financial totals
-    payment: Settlement | None  # Payment info
-    # ... and more
+    line_items: List[LineItem]  # Line items
+    taxes: List[Tax]  # Tax breakdown
+    payment: Payment | None  # Payment info
+    delivery: Delivery | None  # Delivery info
+    references: List[DocumentReference]  # Related documents
+```
+
+### Simplified Party Model
+
+```python
+class Party(BaseModel):
+    """Party with embedded contact and address information."""
+    model_config = ConfigDict(graph_id_fields=["name", "tax_id"])
+    
+    name: str  # Company/person name
+    tax_id: str | None  # VAT/Tax ID
+    
+    # Contact info (embedded)
+    email: str | None
+    phone: str | None
+    website: str | None
+    
+    # Address (embedded)
+    street: str | None
+    city: str | None
+    postal_code: str | None
+    country: str | None
+```
+
+### Simplified LineItem Model
+
+```python
+class LineItem(BaseModel):
+    """Line item with embedded price and quantity."""
+    model_config = ConfigDict(graph_id_fields=["line_number", "item_code"])
+    
+    line_number: str  # Line position
+    description: str | None
+    
+    # Quantity and price (embedded)
+    quantity: float | None
+    unit: str | None  # EA, KG, HUR, etc.
+    unit_price: float | None
+    discount_percent: float | None
+    line_total: float | None
+    
+    # Relationships
+    item: Item | None  # Product/service reference
+    tax: Tax | None  # Tax for this line
 ```
 
 ---
@@ -95,7 +147,7 @@ uv run docling-graph convert billing_document.pdf \
 ```python
 """Process billing document using Python API."""
 
-from docling_graph import PipelineConfig
+from docling_graph import PipelineConfig, run_pipeline
 
 config = PipelineConfig(
     source="https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg",
@@ -103,13 +155,12 @@ config = PipelineConfig(
     backend="vlm",
     inference="local",
     processing_mode="one-to-one",
-    model_override="mistral-small-latest",
     output_dir="outputs/billing_doc"
 )
 
 # Run extraction
 print("Processing billing document...")
-config.run()
+run_pipeline(config)
 print("✅ Complete! Check outputs/billing_doc/")
 ```
 
@@ -127,18 +178,24 @@ uv run python process_billing_doc.py
 ```
 BillingDocument (root)
   ├─ ISSUED_BY → Party (Seller/Supplier)
-  │   └─ LOCATED_AT → PostalAddress
-  ├─ SENT_TO → Party (Buyer/Customer)
-  │   └─ LOCATED_AT → PostalAddress
-  ├─ CONTAINS_LINE → DocumentLine (multiple)
-  │   ├─ HAS_ITEM → Item
-  │   ├─ HAS_PRICE → Price
-  │   └─ HAS_TAX → TaxDetail
-  ├─ HAS_TOTALS → DocumentTotals
-  ├─ HAS_TAX_SUMMARY → TaxSummary
-  └─ HAS_SETTLEMENT → Settlement
-      └─ HAS_PAYMENT_INSTRUCTION → PaymentInstruction
-          └─ HAS_BANK_ACCOUNT → BankAccount
+  │   ├─ name: "Acme Corp"
+  │   ├─ email: "contact@acme.com"
+  │   ├─ street: "123 Main St"
+  │   └─ city: "Paris"
+  ├─ BILLED_TO → Party (Buyer/Customer)
+  │   ├─ name: "Client Inc"
+  │   └─ email: "billing@client.com"
+  ├─ CONTAINS_LINE → LineItem (multiple)
+  │   ├─ line_number: "1"
+  │   ├─ quantity: 10.0
+  │   ├─ unit_price: 50.00
+  │   ├─ REFERENCES_ITEM → Item
+  │   └─ HAS_TAX → Tax
+  ├─ HAS_TAX → Tax (document-level)
+  └─ HAS_PAYMENT_INFO → Payment
+      ├─ method: "Bank Transfer"
+      ├─ iban: "FR76..."
+      └─ due_date: "2024-02-15"
 ```
 
 ### Files Generated
@@ -154,21 +211,24 @@ BillingDocument (root)
 ### Sample nodes.csv
 
 ```csv
-id,label,type,document_no,document_type,issue_date,total
-doc_1,BillingDocument,entity,INV-2024-001,Invoice,2024-01-15,1075.00
-party_1,Party,entity,,,Acme Corp,
-party_2,Party,entity,,,Client Inc,
-line_1,DocumentLine,component,,,,50.00
+id,label,type,document_number,document_type,issue_date,total_amount,name,email,city
+doc_1,BillingDocument,entity,INV-2024-001,Invoice,2024-01-15,1075.00,,,
+party_1,Party,entity,,,,,Acme Corp,contact@acme.com,Paris
+party_2,Party,entity,,,,,Client Inc,billing@client.com,London
+line_1,LineItem,entity,1,,,50.00,,,
+item_1,Item,entity,,,,,Widget Pro,,
 ```
 
 ### Sample edges.csv
 
 ```csv
-source,target,type
+source,target,label
 doc_1,party_1,ISSUED_BY
-doc_1,party_2,SENT_TO
+doc_1,party_2,BILLED_TO
 doc_1,line_1,CONTAINS_LINE
-doc_1,totals_1,HAS_TOTALS
+line_1,item_1,REFERENCES_ITEM
+line_1,tax_1,HAS_TAX
+doc_1,payment_1,HAS_PAYMENT_INFO
 ```
 
 ---
@@ -209,7 +269,7 @@ cat outputs/neo4j/docling_graph/graph.cypher | cypher-shell -u neo4j -p password
 """Process multiple billing documents."""
 
 from pathlib import Path
-from docling_graph import PipelineConfig
+from docling_graph import PipelineConfig, run_pipeline
 
 documents = [
     "https://example.com/invoice1.pdf",
@@ -227,7 +287,7 @@ for doc in documents:
     )
     
     try:
-        config.run()
+        run_pipeline(config)
         print(f"✅ {doc_name}")
     except Exception as e:
         print(f"❌ {doc_name}: {e}")
@@ -244,8 +304,8 @@ The `BillingDocument` template supports multiple document types:
 | **INVOICE** | Standard invoice | Sales, services |
 | **CREDIT_NOTE** | Credit memo | Returns, corrections |
 | **DEBIT_NOTE** | Debit memo | Additional charges |
-| **PRO_FORMA** | Pro forma invoice | Customs, quotes |
 | **RECEIPT** | Payment receipt | Proof of payment |
+| **OTHER** | Other billing docs | Custom types |
 
 The `document_type` field automatically normalizes various input formats.
 
@@ -256,69 +316,142 @@ The `document_type` field automatically normalizes various input formats.
 ### Core Document Fields
 
 ```python
-document_no: str          # "INV-2024-001" (required, unique ID)
-document_type: DocumentType  # INVOICE, CREDIT_NOTE, etc.
-issue_date: date | None   # Document issue date
-due_date: date | None     # Payment due date
-currency: str | None      # "EUR", "USD", "GBP" (ISO 4217)
+document_number: str          # "INV-2024-001" (required, unique ID)
+document_type: DocumentType   # INVOICE, CREDIT_NOTE, RECEIPT, etc.
+issue_date: date | None       # Document issue date
+due_date: date | None         # Payment due date
+currency: str | None          # "EUR", "USD", "GBP" (ISO 4217)
+notes: str | None             # General notes or remarks
+```
+
+### Financial Totals (Embedded)
+
+```python
+subtotal: float | None        # Subtotal before tax and discounts
+discount_total: float | None  # Total discount amount
+tax_total: float | None       # Total tax amount
+total_amount: float | None    # Final total (including tax)
+amount_paid: float | None     # Amount already paid
+balance_due: float | None     # Remaining balance
 ```
 
 ### Party Information
 
 ```python
-issuer: Party             # Seller/supplier (required)
-buyer: Party | None       # Customer/buyer
-payee: Party | None       # Payment recipient (if different)
-tax_representative: Party | None  # Tax representative
+seller: Party                 # Seller/supplier (required)
+buyer: Party | None           # Customer/buyer
 ```
 
-### Financial Information
+**Party fields:**
+```python
+name: str                     # Company/person name
+tax_id: str | None            # VAT/Tax ID
+email: str | None             # Email address
+phone: str | None             # Phone number
+website: str | None           # Website URL
+street: str | None            # Street address
+city: str | None              # City
+postal_code: str | None       # Postal/ZIP code
+country: str | None           # Country name or code
+```
+
+### Line Items
 
 ```python
-lines: List[DocumentLine]  # Line items with products/services
-totals: DocumentTotals     # Net, tax, gross amounts
-tax_summary: TaxSummary | None  # Tax breakdown by category
-payment: Settlement | None  # Payment terms and instructions
+line_items: List[LineItem]    # Line items with products/services
+```
+
+**LineItem fields:**
+```python
+line_number: str              # Line position (required)
+description: str | None       # Item description
+quantity: float | None        # Quantity
+unit: str | None              # Unit of measure (EA, KG, etc.)
+unit_price: float | None      # Price per unit
+discount_percent: float | None # Discount percentage
+line_total: float | None      # Total for this line
+item: Item | None             # Product/service reference
+tax: Tax | None               # Tax for this line
+```
+
+### Tax Information
+
+```python
+taxes: List[Tax]              # Tax breakdown
+```
+
+**Tax fields:**
+```python
+tax_type: TaxType             # VAT, GST, SALES_TAX, OTHER
+rate_percent: float | None    # Tax rate (e.g., 20.0)
+taxable_amount: float | None  # Amount on which tax is calculated
+tax_amount: float | None      # Calculated tax amount
+exemption_reason: str | None  # Exemption reason if applicable
+```
+
+### Payment Information
+
+```python
+payment: Payment | None       # Payment details
+```
+
+**Payment fields:**
+```python
+method: PaymentMethod         # BANK_TRANSFER, CARD, CASH, etc.
+due_date: date | None         # Payment due date
+terms: str | None             # Payment terms (e.g., "Net 30")
+bank_name: str | None         # Bank name
+iban: str | None              # IBAN
+bic: str | None               # BIC/SWIFT code
+reference: str | None         # Payment reference
 ```
 
 ---
 
 ## Best Practices
 
-### Field Descriptions
+### Field Descriptions with Extraction Hints
+
+The simplified template includes enhanced extraction prompts:
 
 ```python
-# ✅ Good - Specific and clear
-document_no: str = Field(
-    description="Human-readable document number. Look for 'Invoice No', 'Document Number', etc.",
-    examples=["INV-2024-001", "2024-INV-12345", "REC-001"]
+# ✅ Good - Specific with visual cues
+document_number: str = Field(
+    ...,
+    description=(
+        "Invoice/document number (primary identifier). "
+        "LOOK FOR: Large, bold text in header, 'Invoice No', 'Invoice Number', "
+        "'Receipt No', 'Facture No' labels (usually top right). "
+        "EXTRACT: Complete number including prefixes/suffixes. "
+        "EXAMPLES: 'INV-2024-001', '2024-INV-12345', 'REC-001'"
+    ),
+    examples=["INV-2024-001", "2024-INV-12345", "REC-001"],
 )
 
 # ❌ Avoid - Vague
-document_no: str = Field(description="Document number")
+document_number: str = Field(description="Document number")
 ```
 
 ### Required vs Optional
 
 ```python
 # Required fields
-document_no: str  # Always needed for identification
-issuer: Party     # Always present
-totals: DocumentTotals  # Always present
+document_number: str          # Always needed for identification
+seller: Party                 # Always present
 
 # Optional fields
-buyer: Party | None = None  # May not be present
+buyer: Party | None = None    # May not be present
 due_date: date | None = None  # Not all documents have due dates
+payment: Payment | None = None # Not all documents have payment info
 ```
 
 ### Validation
 
-The template includes built-in validators:
+The template includes essential validators:
 
 - Currency format validation (ISO 4217)
-- Date order validation (issue_date < due_date)
 - Enum normalization (handles various input formats)
-- Positive amount validation
+- Automatic currency symbol conversion (€ → EUR, $ → USD, £ → GBP)
 
 ---
 
@@ -326,21 +459,36 @@ The template includes built-in validators:
 
 ### Common Issues
 
-**"Field document_no is required"**
+**"Field document_number is required"**
 → Ensure the document has a visible document number
 
 **"Currency must be 3 uppercase letters"**
-→ Use ISO 4217 codes: EUR, USD, GBP (not €, $, £)
+→ Use ISO 4217 codes: EUR, USD, GBP (symbols are auto-converted)
 
 **"Cannot normalize enum value"**
-→ Check DocumentType values match: INVOICE, CREDIT_NOTE, etc.
+→ Check DocumentType values match: INVOICE, CREDIT_NOTE, RECEIPT, OTHER
 
 ### Improving Extraction Quality
 
 1. **Use VLM for images** - Better layout understanding
-2. **Provide clear examples** - Add diverse examples to field descriptions
+2. **Provide clear examples** - Template includes diverse examples
 3. **Use vision pipeline** - For complex layouts: `--docling-config vision`
 4. **Enable chunking** - For large documents: `--use-chunking`
+
+---
+
+## Template Simplification (v2.0.0)
+
+The template has been significantly simplified:
+
+- **Reduced from 2230 lines to 717 lines** (68% reduction)
+- **Reduced from 40+ classes to 10 core classes**
+- **Embedded contact info** - Email, phone, address directly in Party
+- **Embedded totals** - Financial totals directly in BillingDocument
+- **Simplified line items** - Direct fields instead of nested objects
+- **Better extraction prompts** - Clear "LOOK FOR", "EXTRACT", "EXAMPLES" sections
+
+See `BILLING_DOCUMENT_CHANGELOG.md` for detailed migration guide.
 
 ---
 
@@ -363,8 +511,9 @@ The template includes built-in validators:
 ### Template Source
 
 - **Full Template**: `docs/examples/templates/billing_document.py`
-- **1998 lines** with comprehensive field definitions
-- **EN 16931, Peppol BIS, UBL compliant**
+- **717 lines** (simplified from 2230)
+- **10 core classes** with clear extraction prompts
+- **Changelog**: `docs/examples/templates/BILLING_DOCUMENT_CHANGELOG.md`
 
 ---
 

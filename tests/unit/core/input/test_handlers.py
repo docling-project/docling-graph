@@ -403,7 +403,7 @@ class TestURLInputHandler:
         assert hasattr(handler, "headers")
         assert "User-Agent" in handler.headers
         user_agent = handler.headers["User-Agent"]
-        
+
         # Verify format: docling-graph/{version} (https://github.com/...)
         assert "docling-graph/" in user_agent
         assert "github.com" in user_agent
@@ -414,10 +414,10 @@ class TestURLInputHandler:
     def test_user_agent_sent_even_when_head_fails(self, mock_get, mock_head, handler):
         """Test that User-Agent is sent in GET request even when HEAD fails."""
         import requests
-        
+
         # Make HEAD fail with RequestException (which is caught)
         mock_head.side_effect = requests.RequestException("HEAD failed")
-        
+
         # Setup GET mock to succeed
         mock_response = Mock()
         mock_response.status_code = 200
@@ -434,7 +434,6 @@ class TestURLInputHandler:
         assert "headers" in get_call_kwargs
         assert "User-Agent" in get_call_kwargs["headers"]
         assert result.exists()
-
 
 
 class TestDoclingDocumentHandler:
