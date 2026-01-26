@@ -22,8 +22,8 @@ This guide provides **complete, real-world configuration examples** for common u
 | [Production API](#example-2-production-api) | LLM | Remote | Many-to-one |
 | [High Accuracy](#example-3-high-accuracy-extraction) | VLM | Local | One-to-one |
 | [Batch Processing](#example-4-batch-processing) | LLM | Remote | Many-to-one |
-| [Rheology Researchs](#example-5-research-papers) | LLM | Remote | Many-to-one |
-| [Invoices](#example-6-invoice-processing) | LLM | Local | Many-to-one |
+| [Rheology Researchs](#example-5-rheology-researchs) | LLM | Remote | Many-to-one |
+| [Invoices](#example-6-billing-document-processing) | LLM | Local | Many-to-one |
 | [Forms](#example-7-form-extraction) | VLM | Local | One-to-one |
 | [Multi-language](#example-8-multi-language-documents) | LLM | Remote | Many-to-one |
 
@@ -422,7 +422,7 @@ class ResearchPaper(BaseModel):
 
 ---
 
-## Example 6: BillingDocument Processing
+## Example 6: Billing Document Processing
 
 ### Use Case
 Extract invoice data for accounting systems.

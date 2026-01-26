@@ -951,7 +951,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "1.2.0"
+version = "1.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -1056,7 +1056,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiofiles", specifier = ">=24.0.0,<25.0.0" },
+    { name = "aiofiles", specifier = ">=24.0.0,<26.0.0" },
     { name = "docling", extras = ["vlm"], specifier = ">=2.70.0,<3.0.0" },
     { name = "docling-core", extras = ["chunking", "chunking-openai"], specifier = ">=2.50.0,<3.0.0" },
     { name = "docling-graph", extras = ["gemini"], marker = "extra == 'remote'" },

@@ -7,9 +7,29 @@ even when extracted in different batches.
 
 import hashlib
 import json
-from typing import Dict, List, Optional, Set, cast
+from typing import Any, Dict, List, Optional, Set, cast
 
 from pydantic import BaseModel
+
+
+def get_model_config_value(model: BaseModel, key: str, default: Any) -> Any:
+    """
+    Safely get configuration value from Pydantic model's model_config.
+
+    Handles both dict-like and object-like ConfigDict access patterns.
+
+    Args:
+        model: Pydantic model instance
+        key: Configuration key to retrieve
+        default: Default value if key not found
+
+    Returns:
+        Configuration value or default
+    """
+    config = model.model_config
+    if hasattr(config, "get"):
+        return config.get(key, default)
+    return getattr(config, key, default)
 
 
 class NodeIDRegistry:
@@ -39,29 +59,27 @@ class NodeIDRegistry:
 
         This identifies WHAT the entity is (independent of when it was created).
 
-        For materials: hash of (name, category, chemical_formula)
-        For measurements: hash of (name, numeric_value, unit)
-        For processes: hash of (step_type, name, sequence_order)
-        """
-        # Extract identity fields that uniquely identify this entity
-        model_config = model_instance.model_config
+        For entities: Uses graph_id_fields to create stable fingerprint
+        For components: Uses all field values (content-based deduplication)
 
-        # Get graph_id_fields from config
-        id_fields: List[str] = []
-        if hasattr(model_config, "get"):
-            id_fields = cast(List[str], model_config.get("graph_id_fields", []))
-        else:
-            id_fields = cast(List[str], getattr(model_config, "graph_id_fields", []))
+        Examples:
+            - Material entity: hash of (name, category, chemical_formula)
+            - Measurement component: hash of (name, numeric_value, unit)
+            - Process entity: hash of (step_type, name, sequence_order)
+        """
+        # Get graph_id_fields from config using helper function
+        id_fields = cast(List[str], get_model_config_value(model_instance, "graph_id_fields", []))
 
         # Build fingerprint from identity fields
         fingerprint_data = {}
 
         if id_fields:
+            # Entity: Use specified ID fields
             for field in id_fields:
                 if hasattr(model_instance, field):
                     value = getattr(model_instance, field)
 
-                    # Normalize lists to sorted tuples
+                    # Normalize lists to sorted tuples for consistent hashing
                     if isinstance(value, list):
                         try:
                             value = tuple(sorted(set(value)))
@@ -70,7 +88,8 @@ class NodeIDRegistry:
 
                     fingerprint_data[field] = value
         else:
-            # No identity fields specified; use all non-empty fields
+            # Component (is_entity=False): Use all non-empty fields
+            # This enables content-based deduplication
             for field_name, field_value in model_instance:
                 if field_value and not isinstance(field_value, list | dict | BaseModel):
                     fingerprint_data[field_name] = field_value
@@ -104,11 +123,13 @@ class NodeIDRegistry:
         # Check if we've seen this entity before
         if fingerprint in self.fingerprint_to_id:
             existing_id = self.fingerprint_to_id[fingerprint]
-            # Verify class name matches (detect collisions)
-            if not existing_id.startswith(class_name):
+            # Verify class name matches exactly (detect collisions)
+            # Extract class name from existing ID (format: ClassName_fingerprint)
+            existing_class = existing_id.split("_")[0] if "_" in existing_id else existing_id
+            if existing_class != class_name:
                 raise ValueError(
                     f"Node ID collision: fingerprint {fingerprint} maps to both "
-                    f"{existing_id} (old) and {class_name} (new)"
+                    f"{existing_id} (class: {existing_class}) and {class_name}_... (new class)"
                 )
             return existing_id
 

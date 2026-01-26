@@ -8,10 +8,58 @@ Fixes common issues from batch-based extraction:
 - Inconsistent edges
 """
 
-from typing import Dict, List, Set, Tuple
+import logging
+from typing import Any, Dict, List, Set, Tuple
 
 import networkx as nx
 from rich import print as rich_print
+
+# Initialize logger for error reporting
+logger = logging.getLogger(__name__)
+
+
+def is_meaningful_value(value: Any) -> bool:
+    """
+    Check if a value is meaningful (not empty/null/default).
+
+    Used to detect phantom nodes and empty fields.
+
+    Args:
+        value: Value to check
+
+    Returns:
+        True if value is meaningful, False otherwise
+
+    Examples:
+        >>> is_meaningful_value(None)
+        False
+        >>> is_meaningful_value("")
+        False
+        >>> is_meaningful_value([])
+        False
+        >>> is_meaningful_value({})
+        False
+        >>> is_meaningful_value("Hello")
+        True
+        >>> is_meaningful_value(0)
+        True
+        >>> is_meaningful_value(False)
+        True
+    """
+    # None is not meaningful
+    if value is None:
+        return False
+
+    # Empty strings are not meaningful
+    if isinstance(value, str) and not value.strip():
+        return False
+
+    # Empty collections are not meaningful
+    if isinstance(value, list | dict | set | tuple) and len(value) == 0:
+        return False
+
+    # All other values are meaningful (including 0, False, etc.)
+    return True
 
 
 class GraphCleaner:
@@ -82,19 +130,31 @@ class GraphCleaner:
         """
         Remove nodes that have no meaningful data (only 'id' field).
 
-        These are typically created by merge conflicts or incomplete extraction.
+        These are typically created by:
+        - Merge conflicts during batch processing
+        - Incomplete LLM extraction
+        - Component data being incorrectly set to None (the bug we're fixing)
+
+        A node is considered a phantom if it only has metadata fields
+        (id, label, type) and no actual data fields with meaningful values.
         """
         phantom_nodes = []
 
         for node_id, node_data in graph.nodes(data=True):
-            # Check if node only has 'id' (or id + generated metadata)
-            meaningful_fields = {
-                k: v
-                for k, v in node_data.items()
-                if k not in {"id", "label", "type"} and v is not None
-            }
+            # Check if node has any meaningful data beyond metadata
+            has_meaningful_data = False
 
-            if not meaningful_fields:
+            for key, value in node_data.items():
+                # Skip metadata fields
+                if key in {"id", "label", "type"}:
+                    continue
+
+                # Check if this field has meaningful value
+                if is_meaningful_value(value):
+                    has_meaningful_data = True
+                    break
+
+            if not has_meaningful_data:
                 phantom_nodes.append(node_id)
 
         # Remove phantoms and redirect edges
@@ -167,8 +227,12 @@ class GraphCleaner:
         for source, target in orphaned_edges:
             try:
                 graph.remove_edge(source, target)
-            except Exception:
-                pass
+            except nx.NetworkXError as e:
+                # Log specific NetworkX errors (e.g., edge doesn't exist)
+                logger.warning(f"Could not remove orphaned edge {source} -> {target}: {e}")
+            except Exception as e:
+                # Log unexpected errors for debugging
+                logger.error(f"Unexpected error removing edge {source} -> {target}: {e}")
 
         return len(orphaned_edges)
 
@@ -268,10 +332,10 @@ def validate_graph_structure(graph: nx.DiGraph, raise_on_error: bool = True) -> 
 
     # Check 2: No empty nodes
     for node_id, node_data in graph.nodes(data=True):
-        meaningful_fields = {
-            k: v for k, v in node_data.items() if k not in {"id", "label", "type"} and v is not None
-        }
-        if not meaningful_fields:
+        has_meaningful_data = any(
+            is_meaningful_value(v) for k, v in node_data.items() if k not in {"id", "label", "type"}
+        )
+        if not has_meaningful_data:
             issues.append(f"Empty node: {node_id}")
 
     # Check 3: Count nodes/edges
