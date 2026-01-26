@@ -15,6 +15,10 @@ class TestMaxTokensConfiguration:
     def test_provider_has_default_max_tokens(self):
         """Verify all providers have default_max_tokens configured."""
         providers = ["mistral", "openai", "google", "anthropic", "watsonx", "vllm", "ollama"]
+        # vllm has higher default (16384) for large schemas like rheology research
+        expected_defaults = {
+            "vllm": 16384,
+        }
 
         for provider_id in providers:
             provider = get_provider_config(provider_id)
@@ -22,8 +26,10 @@ class TestMaxTokensConfiguration:
             assert hasattr(provider, "default_max_tokens"), (
                 f"Provider {provider_id} missing default_max_tokens"
             )
-            assert provider.default_max_tokens == 8192, (
-                f"Provider {provider_id} has wrong default_max_tokens"
+            expected = expected_defaults.get(provider_id, 8192)
+            assert provider.default_max_tokens == expected, (
+                f"Provider {provider_id} has wrong default_max_tokens: "
+                f"expected {expected}, got {provider.default_max_tokens}"
             )
 
     def test_provider_has_timeout_seconds(self):
@@ -60,9 +66,9 @@ class TestMaxTokensConfiguration:
         provider = get_provider_config("vllm")
         assert provider is not None
 
-        # Model without max_tokens override should return provider default
+        # Model without max_tokens override should return provider default (16384 for vllm)
         max_tokens = provider.get_max_tokens("meta-llama/Llama-3.1-8B")
-        assert max_tokens == 8192
+        assert max_tokens == 16384
 
     def test_provider_get_timeout_returns_default(self):
         """Test ProviderConfig.get_timeout() returns default when model has no override."""

@@ -122,7 +122,7 @@ uv run docling-graph inspect outputs
 
 ```python
 from docling_graph import run_pipeline, PipelineContext
-from docs.examples.templates.rheology_research import Research
+from docs.examples.templates.rheology_research import RheologyResearch
 
 # Create configuration
 config = {

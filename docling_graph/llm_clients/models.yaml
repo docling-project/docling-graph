@@ -14,7 +14,7 @@ providers:
     models:
       mistral-large-latest:
         context_limit: 128000
-        max_new_tokens: 8192
+        max_new_tokens: 16384
         capability: "advanced"
         description: "Mistral's largest model, optimized for complex reasoning"
         notes: "Recommended for comprehensive document extraction"
@@ -191,7 +191,7 @@ providers:
 
   meta:
     tokenizer: "meta-llama/Llama-2-7b-hf"
-    content_ratio: 0.75
+    content_ratio: 0.8
     # Batching configuration
     merge_threshold: 0.75
     rate_limit_rpm: null
@@ -237,7 +237,7 @@ providers:
     merge_threshold: 0.75
     rate_limit_rpm: null  # Depends on deployment
     supports_batching: true
-    default_max_tokens: 8192
+    default_max_tokens: 16384  # Increased for large schemas like rheology research
     timeout_seconds: 600
     models:
       meta-llama/Llama-3.1-8B:
@@ -260,7 +260,7 @@ providers:
         notes: "Good alternative to Llama"
       ibm-granite/granite-4.0-1b:
         context_limit: 128000
-        max_new_tokens: 2048
+        max_new_tokens: 4096
         capability: "simple"
         description: "IBM Granite 1B for edge devices"
         notes: "Tiny model for resource constraints"
@@ -311,4 +311,4 @@ providers:
         capability: "advanced"
         description: "Mixtral 8x7B via Ollama"
         notes: "MoE, powerful local inference"
-
+        
