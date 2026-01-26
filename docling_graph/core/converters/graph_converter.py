@@ -4,6 +4,10 @@ Handles conversion of Pydantic models to NetworkX graph structure.
 This module provides the GraphConverter class for converting Pydantic models
 into directed graphs with nodes and edges, including features like stable node
 IDs, edge metadata, bidirectional edges, and automatic cleanup.
+
+Key Concepts:
+- Entities (is_entity=True or default): Become separate nodes with edges
+- Components (is_entity=False): Embedded as dictionaries in parent nodes
 """
 
 from typing import Any, List, Mapping, Optional, Set
@@ -17,6 +21,30 @@ from ..utils.stats_calculator import calculate_graph_stats
 from .config import GraphConfig
 from .models import Edge, GraphMetadata
 from .node_id_registry import NodeIDRegistry
+
+
+def get_model_config_value(model: BaseModel, key: str, default: Any) -> Any:
+    """
+    Safely get configuration value from Pydantic model's model_config.
+
+    Handles both dict-like and object-like config access patterns.
+
+    Args:
+        model: Pydantic model instance
+        key: Configuration key to retrieve
+        default: Default value if key not found
+
+    Returns:
+        Configuration value or default
+
+    Examples:
+        >>> is_entity = get_model_config_value(model, "is_entity", True)
+        >>> id_fields = get_model_config_value(model, "graph_id_fields", [])
+    """
+    config = model.model_config
+    if hasattr(config, "get"):
+        return config.get(key, default)
+    return getattr(config, key, default)
 
 
 class GraphConverter:
@@ -55,8 +83,9 @@ class GraphConverter:
                 removing phantom nodes, duplicates, orphaned edges (default: True)
         """
         self.config = config or GraphConfig()
-        self.add_reverse_edges = add_reverse_edges or self.config.add_reverse_edges
-        self.validate_graph = validate_graph or self.config.validate_graph
+        # Use parameter value directly (don't use 'or' which would make False use config default)
+        self.add_reverse_edges = add_reverse_edges
+        self.validate_graph = validate_graph
 
         # Initialize registry (use provided or create new)
         self.registry = registry or NodeIDRegistry()
@@ -158,17 +187,17 @@ class GraphConverter:
         graph: nx.DiGraph,
         visited_ids: Set[str],
     ) -> None:
-        """Recursively create nodes from model and nested entities."""
+        """
+        Recursively create nodes from model and nested entities.
+
+        Entities (is_entity=True): Create separate nodes with edges
+        Components (is_entity=False): Embed as dictionaries in parent nodes
+        """
         # Check if this model should be an entity (respect is_entity=False)
-        model_config = model.model_config
-        is_entity = (
-            model_config.get("is_entity", True)
-            if hasattr(model_config, "get")
-            else getattr(model_config, "is_entity", True)
-        )
+        is_entity = get_model_config_value(model, "is_entity", True)
 
         if not is_entity:
-            # Skip node creation for non-entities (they will be embedded in parent nodes)
+            # Skip node creation for components (they will be embedded in parent nodes)
             return
 
         # Get node ID from registry
@@ -190,16 +219,34 @@ class GraphConverter:
         # Add all fields from model
         for field_name, field_value in model:
             if isinstance(field_value, BaseModel):
-                node_attrs[field_name] = None  # Reference, not value
-                self._create_nodes_pass(field_value, graph, visited_ids)
-            elif isinstance(field_value, list) and field_value:
-                if isinstance(field_value[0], BaseModel):
-                    # List of nested entities
+                # Check if nested model is an entity or component
+                is_nested_entity = get_model_config_value(field_value, "is_entity", True)
+
+                if is_nested_entity:
+                    # Entity: set to None (will be linked via edge)
                     node_attrs[field_name] = None
-                    for item in field_value:
-                        self._create_nodes_pass(item, graph, visited_ids)
+                    self._create_nodes_pass(field_value, graph, visited_ids)
                 else:
-                    # List of primitives
+                    # Component: embed as dictionary to preserve data
+                    node_attrs[field_name] = field_value.model_dump()
+
+            elif isinstance(field_value, list):
+                # Handle empty lists and lists with content
+                if field_value and isinstance(field_value[0], BaseModel):
+                    # Non-empty list of BaseModel instances
+                    # Check if list contains entities or components
+                    is_list_entity = get_model_config_value(field_value[0], "is_entity", True)
+
+                    if is_list_entity:
+                        # List of entities: set to None (will be linked via edges)
+                        node_attrs[field_name] = None
+                        for item in field_value:
+                            self._create_nodes_pass(item, graph, visited_ids)
+                    else:
+                        # List of components: embed as list of dictionaries
+                        node_attrs[field_name] = [item.model_dump() for item in field_value]
+                else:
+                    # Empty list or list of primitives - preserve as-is
                     node_attrs[field_name] = field_value
             else:
                 node_attrs[field_name] = field_value
@@ -211,8 +258,20 @@ class GraphConverter:
         model: BaseModel,
         visited_ids: Set[str],
     ) -> List[Edge]:
-        """Recursively create edges from model relationships."""
+        """
+        Recursively create edges from model relationships.
+
+        Only creates edges for entities (is_entity=True).
+        Components (is_entity=False) are embedded and don't get edges.
+        """
         edges: List[Edge] = []
+
+        # Check if this model is an entity (components don't have node IDs)
+        is_entity = get_model_config_value(model, "is_entity", True)
+        if not is_entity:
+            # Components don't participate in edge creation
+            return edges
+
         source_id = self._get_node_id(model)
 
         # Process all fields
@@ -221,34 +280,42 @@ class GraphConverter:
             edge_label = self._get_edge_label(model, field_name)
 
             if isinstance(field_value, BaseModel):
-                target_id = self._get_node_id(field_value)
-                edges.append(
-                    Edge(
-                        source=source_id,
-                        target=target_id,
-                        label=edge_label or field_name,
-                        properties={},
-                    )
-                )
+                # Only create edges for entities, not components
+                is_nested_entity = get_model_config_value(field_value, "is_entity", True)
 
-                # Recursively process nested model
-                edges.extend(self._create_edges_pass(field_value, visited_ids))
+                if is_nested_entity:
+                    target_id = self._get_node_id(field_value)
+                    edges.append(
+                        Edge(
+                            source=source_id,
+                            target=target_id,
+                            label=edge_label or field_name,
+                            properties={},
+                        )
+                    )
+                    # Recursively process nested entity
+                    edges.extend(self._create_edges_pass(field_value, visited_ids))
+                # Components are embedded, no edge needed
 
             elif isinstance(field_value, list) and field_value:
                 if isinstance(field_value[0], BaseModel):
-                    for item in field_value:
-                        target_id = self._get_node_id(item)
-                        edges.append(
-                            Edge(
-                                source=source_id,
-                                target=target_id,
-                                label=edge_label or field_name,
-                                properties={},
-                            )
-                        )
+                    # Only create edges for lists of entities
+                    is_list_entity = get_model_config_value(field_value[0], "is_entity", True)
 
-                        # Recursively process nested model
-                        edges.extend(self._create_edges_pass(item, visited_ids))
+                    if is_list_entity:
+                        for item in field_value:
+                            target_id = self._get_node_id(item)
+                            edges.append(
+                                Edge(
+                                    source=source_id,
+                                    target=target_id,
+                                    label=edge_label or field_name,
+                                    properties={},
+                                )
+                            )
+                            # Recursively process nested entity
+                            edges.extend(self._create_edges_pass(item, visited_ids))
+                    # Lists of components are embedded, no edges needed
 
         return edges
 

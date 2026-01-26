@@ -16,7 +16,7 @@ All examples use `uv run python` for execution.
 | [Simple Invoice](#example-1-simple-invoice-extraction) | Basic extraction | LLM (Remote) |
 | [Local Processing](#example-2-local-processing-with-ollama) | Offline processing | LLM (Local) |
 | [VLM Form Extraction](#example-3-vlm-form-extraction) | Image forms | VLM (Local) |
-| [Rheology Research](#example-4-research-paper-with-consolidation) | Complex documents | LLM (Remote) |
+| [Rheology Research](#example-4-rheology-research-with-consolidation) | Complex documents | LLM (Remote) |
 | [Batch Processing](#example-5-batch-processing) | Multiple documents | Any |
 | [Error Handling](#example-6-robust-error-handling) | Production code | Any |
 | [Flask Integration](#example-7-flask-api-integration) | Web application | Any |
