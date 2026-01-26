@@ -545,9 +545,21 @@
             let html = '<div style="margin-bottom: 8px; font-weight: 600; color: #e2e8f0;">📍 Node Details</div>';
             for (const [key, value] of Object.entries(data)) {
                 if (value != null && value !== '') {
-                    const displayValue = String(value).length > 100 
-                        ? String(value).substring(0, 100) + '...' 
-                        : value;
+                    // Properly serialize objects and arrays
+                    let displayValue;
+                    if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value, null, 2);
+                        // Truncate if too long
+                        if (displayValue.length > 200) {
+                            displayValue = displayValue.substring(0, 200) + '...';
+                        }
+                        // Wrap in <pre> for formatting
+                        displayValue = `<pre style="margin: 4px 0; padding: 8px; background: #1e2428; border-radius: 4px; font-size: 11px; overflow-x: auto; max-width: 100%;">${displayValue}</pre>`;
+                    } else {
+                        displayValue = String(value).length > 100
+                            ? String(value).substring(0, 100) + '...'
+                            : value;
+                    }
                     html += `<div class="info-item"><span class="info-label">${key}:</span> ${displayValue}</div>`;
                 }
             }
@@ -578,9 +590,21 @@
 
             for (const [key, value] of Object.entries(data)) {
                 if (value != null && value !== '' && key !== 'source' && key !== 'target' && key !== 'id') {
-                    const displayValue = String(value).length > 100 
-                        ? String(value).substring(0, 100) + '...' 
-                        : value;
+                    // Properly serialize objects and arrays
+                    let displayValue;
+                    if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value, null, 2);
+                        // Truncate if too long
+                        if (displayValue.length > 200) {
+                            displayValue = displayValue.substring(0, 200) + '...';
+                        }
+                        // Wrap in <pre> for formatting
+                        displayValue = `<pre style="margin: 4px 0; padding: 8px; background: #1e2428; border-radius: 4px; font-size: 11px; overflow-x: auto; max-width: 100%;">${displayValue}</pre>`;
+                    } else {
+                        displayValue = String(value).length > 100
+                            ? String(value).substring(0, 100) + '...'
+                            : value;
+                    }
                     html += `<div class="info-item"><span class="info-label">${key}:</span> ${displayValue}</div>`;
                 }
             }

@@ -191,10 +191,17 @@ class PostalAddress(BaseModel):
         default_factory=list,
         description=(
             "Street address lines including street name, number, building, floor, etc. "
+            "CRITICAL: Preserve ALL spaces between words and numbers exactly as shown in the document. "
+            "Extract 'Rue du Lac 1268' NOT 'RueduLac1268'. "
+            "Extract 'Marktgasse 28' NOT 'Marktgasse28'. "
+            "Extract '123 Main Street' NOT '123MainStreet'. "
+            "Maintain proper spacing between street name and house number. "
             "Look for address fields, street names, building numbers. "
             "Extract each line separately. Common labels: 'Address', 'Street', 'Adresse', 'Rue'."
         ),
         examples=[
+            ["Rue du Lac 1268"],
+            ["Marktgasse 28"],
             ["123 Main Street", "Building A, Floor 3"],
             ["45 Avenue des Champs-Élysées"],
             ["Calle Mayor 10", "Edificio Central"],

@@ -40,7 +40,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 - **📦 Export**: Save graphs in multiple Neo4j-compatible formats [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), and [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export) for bulk import.
 
-- **📊 Visualization**: Explore graphs with [interactive HTML](docs/fundamentals/graph-management/visualization.md) visualizations, and detailed [Markdown reports](docs/fundamentals/graph-management/visualization.md#markdown-reports).
+- **📊 Visualization**: Explore graphs with [interactive HTML](docs/fundamentals/graph-management/visualization.md) pages, and detailed [Markdown reports](docs/fundamentals/graph-management/visualization.md#markdown-reports).
 
 ### Latest Changes
 
