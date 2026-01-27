@@ -179,17 +179,17 @@ config = PipelineConfig(
     template=Invoice,
     backend="llm",
     inference="remote",
-    processing_mode="many-to-one",
-    output_dir="outputs/invoice"
+    processing_mode="many-to-one"
 )
 
 # Run pipeline (skips document conversion)
-run_pipeline(config)
+context = run_pipeline(config)
 ```
 
 ### Two-Stage Processing
 
 ```python
+import json
 from docling_graph import run_pipeline, PipelineConfig
 from templates.billing_document import BasicInvoice, DetailedInvoice
 
@@ -199,48 +199,49 @@ stage1_config = PipelineConfig(
     template=BasicInvoice,
     backend="llm",
     inference="remote",
-    export_docling_json=True,
-    output_dir="outputs/stage1"
+    export_docling_json=True
 )
-stage1_config.run()
+stage1_context = run_pipeline(stage1_config)
 
 # Stage 2: Detailed extraction from DoclingDocument
+docling_json = json.dumps(stage1_context.docling_document.export_to_dict())
 stage2_config = PipelineConfig(
-    source="outputs/stage1/invoice_docling.json",
+    source=docling_json,
     template=DetailedInvoice,
     backend="llm",
-    inference="remote",
-    output_dir="outputs/stage2"
+    inference="remote"
 )
-stage2_config.run()
+run_pipeline(stage2_config)
 ```
 
 ### Batch Reprocessing
 
 ```python
-from pathlib import Path
+import json
 from docling_graph import run_pipeline, PipelineConfig
 from templates.billing_document import BillingDocument
 
-# Find all DoclingDocument files
-docling_files = Path("outputs").glob("*_docling.json")
+# Example: DoclingDocument JSON strings from a datastore
+docling_documents = [
+    "...docling_json_1...",
+    "...docling_json_2...",
+]
 
-for doc_file in docling_files:
-    print(f"Reprocessing: {doc_file}")
+for doc_json in docling_documents:
+    print("Reprocessing DoclingDocument...")
     
     config = PipelineConfig(
-        source=str(doc_file),
+        source=doc_json,
         template=Invoice,
         backend="llm",
-        inference="remote",
-        output_dir=f"outputs/reprocessed/{doc_file.stem}"
+        inference="remote"
     )
     
     try:
         run_pipeline(config)
-        print(f"✅ Completed: {doc_file}")
+        print("✅ Completed")
     except Exception as e:
-        print(f"❌ Failed: {doc_file} - {e}")
+        print(f"❌ Failed: {e}")
 ```
 
 ---
@@ -549,8 +550,7 @@ templates = [
 for template in templates:
     config = PipelineConfig(
         source="invoice_docling.json",
-        template=template,
-        output_dir=f"outputs/{template.split('.')[-1]}"
+        template=template
     )
     run_pipeline(config)
 ```
@@ -563,8 +563,7 @@ for backend in ["llm", "vlm"]:
     config = PipelineConfig(
         source="invoice_docling.json",
         template=Invoice,
-        backend=backend,
-        output_dir=f"outputs/{backend}"
+        backend=backend
     )
     run_pipeline(config)
 ```
@@ -583,8 +582,7 @@ source = "invoice_docling.json"
 for stage_name, template in stages:
     config = PipelineConfig(
         source=source,
-        template=template,
-        output_dir=f"outputs/{stage_name}"
+        template=template
     )
     run_pipeline(config)
 ```

@@ -202,8 +202,8 @@ Split documents intelligently:
 from docling_graph.core.extractors import DocumentChunker
 
 chunker = DocumentChunker(
-    provider="mistral",
-    max_tokens=4096
+    tokenizer_name="sentence-transformers/all-MiniLM-L6-v2",
+    chunk_max_tokens=512
 )
 chunks = chunker.chunk_document(document)
 ```
@@ -401,7 +401,6 @@ config = PipelineConfig(
     template="templates.Contract",
     backend="llm",
     use_chunking=True,          # Enable chunking
-    llm_consolidation=True,     # Extra accuracy
     max_batch_size=3            # Smaller batches
 )
 
@@ -430,17 +429,6 @@ config = PipelineConfig(
     source="large_doc.pdf",
     template="templates.BillingDocument",
     use_chunking=True  # Recommended
-)
-```
-
-### 👍 Use LLM Consolidation for Accuracy
-
-```python
-# ✅ Good - Extra accuracy for critical data
-config = PipelineConfig(
-    source="contract.pdf",
-    template="templates.Contract",
-    llm_consolidation=True  # Higher accuracy
 )
 ```
 
@@ -478,13 +466,12 @@ config = PipelineConfig(
 
 **Solution:**
 ```python
-# Use local backend or disable consolidation
+# Use local backend for faster inference
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
     backend="llm",
-    inference="local",      # Faster
-    llm_consolidation=False  # Skip extra pass
+    inference="local"
 )
 ```
 

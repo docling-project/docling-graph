@@ -1,4 +1,12 @@
-"""Unit tests for trace data classes."""
+"""
+Unit tests for legacy trace data classes.
+
+NOTE: These classes (TraceData, PageData, ChunkData, etc.) are part of the old trace system
+and are no longer actively used in the pipeline. They remain in the codebase for backward
+compatibility but may be removed in a future version.
+
+The new debug system uses OutputDirectoryManager instead.
+"""
 
 import networkx as nx
 import pytest
@@ -109,6 +117,7 @@ class TestExtractionData:
         assert extraction.parsed_model == model
         assert extraction.extraction_time == 1.5
         assert extraction.error is None
+        assert extraction.metadata == {}
 
     def test_extraction_data_with_error(self):
         """Test ExtractionData with error."""

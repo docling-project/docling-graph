@@ -178,7 +178,7 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
       
       - name: Install dependencies
-        run: uv sync --extra all --extra dev
+        run: uv sync --extra dev
       
       - name: Run tests
         run: uv run pytest --cov --cov-report=xml

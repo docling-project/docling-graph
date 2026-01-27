@@ -67,7 +67,7 @@ defaults:
 models:
   llm:
     remote:
-      default_model: "mistral-small-latest"
+      model: "mistral-small-latest"
       provider: "mistral"
 ```
 

@@ -6,7 +6,7 @@ for backends, extractors, and clients. Using Protocols instead of abstract
 base classes provides better type checking and duck typing support.
 """
 
-from typing import Any, Dict, List, Mapping, Optional, Protocol, Type, TypeGuard, runtime_checkable
+from typing import Any, Dict, List, Mapping, Protocol, Type, TypeGuard, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -45,7 +45,8 @@ class TextExtractionBackendProtocol(Protocol):
     """Protocol for extraction backends that process markdown/text.
 
     This protocol is implemented by LLM backends that require
-    pre-processed text input.
+    pre-processed text input. Extraction is done via extract_from_markdown()
+    for full-document extraction in a single call.
     """
 
     client: Any  # LLM client instance
@@ -63,19 +64,11 @@ class TextExtractionBackendProtocol(Protocol):
             markdown: Markdown content to extract from.
             template: Pydantic model template.
             context: Context description (e.g., "page 1", "full document").
+            is_partial: If True, use partial/chunk-based prompt.
 
         Returns:
             Extracted and validated model instance, or None if extraction failed.
         """
-        ...
-
-    def consolidate_from_pydantic_models(
-        self,
-        raw_models: List[BaseModel],
-        programmatic_model: BaseModel,
-        template: Type[BaseModel],
-    ) -> BaseModel | None:
-        """Consolidate multiple models using the LLM."""
         ...
 
     def cleanup(self) -> None:
@@ -90,26 +83,19 @@ class TextExtractionBackendProtocol(Protocol):
 
 @runtime_checkable
 class LLMClientProtocol(Protocol):
-    """Protocol for LLM clients (Ollama, Mistral, OpenAI, etc.).
-
-    All LLM client implementations must provide these methods.
     """
+    Protocol for LLM clients (Ollama, Mistral, OpenAI, etc.).
 
-    @property
-    def context_limit(self) -> int:
-        """Return the effective context limit in tokens.
-
-        This should be a conservative number, leaving room for prompts.
-        """
-        ...
+    Minimal interface for JSON-based extraction.
+    """
 
     def get_json_response(
         self, prompt: str | Mapping[str, str], schema_json: str
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any] | List[Any]:
         """Execute LLM call and return parsed JSON.
 
         Args:
-            prompt: The full prompt to send to the model (legacy string or structured dict with 'system' and 'user').
+            prompt: The full prompt to send to the model (string or dict with 'system'/'user' keys).
             schema_json: The Pydantic schema in JSON format.
 
         Returns:

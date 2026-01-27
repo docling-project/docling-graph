@@ -18,7 +18,7 @@ The **docling-graph CLI** provides command-line tools for document-to-graph conv
 
 ```bash
 # Install with all features
-uv sync --extra all
+uv sync
 
 # Verify installation
 uv run docling-graph --version
@@ -79,7 +79,7 @@ uv run docling-graph init
 **Features:**
 - Interactive configuration builder
 - Dependency validation
-- Provider-specific setup
+- Provider/model identifiers use LiteLLM routing
 - API key guidance
 
 **Learn more:** [init Command →](init-command.md)
@@ -131,7 +131,7 @@ uv run docling-graph inspect PATH [OPTIONS]
 uv run docling-graph init
 
 # 2. Install dependencies (if prompted)
-uv sync --extra remote
+uv sync
 
 # 3. Set API key (if using remote)
 export MISTRAL_API_KEY="your-key"

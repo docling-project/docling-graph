@@ -69,7 +69,7 @@ batcher = ChunkBatcher(
     context_limit=8000,          # Total context window
     system_prompt_tokens=500,    # System prompt overhead
     response_buffer_tokens=500,  # Response space
-    merge_threshold=0.85         # Merge if <85% utilized
+    merge_threshold=0.95         # Merge if <95% utilized (default)
 )
 
 # Available for content: 8000 - 500 - 500 = 7000 tokens
@@ -125,7 +125,7 @@ for chunk in chunks:
 **Strategy:** Combine small batches to improve utilization
 
 ```python
-threshold = available_tokens * merge_threshold  # e.g., 85%
+threshold = available_tokens * merge_threshold  # e.g., 95% (default)
 
 for batch in batches:
     if batch.total_tokens < threshold:
@@ -267,18 +267,20 @@ batcher = ChunkBatcher(
 
 ### Merge Threshold
 
-**Definition:** Minimum utilization before merging
+**Definition:** Minimum utilization before merging (default: **95%**)
 
 ```python
 batcher = ChunkBatcher(
     context_limit=8000,
-    merge_threshold=0.85  # Merge if <85% utilized
+    merge_threshold=0.95  # Merge if <95% utilized (default)
 )
 ```
 
 **Effects:**
-- **Higher (0.9):** More batches, better fit
-- **Lower (0.7):** Fewer batches, more merging
+- **Higher (0.95-0.98):** More batches, better fit, less merging
+- **Lower (0.80-0.90):** Fewer batches, more aggressive merging
+
+**Default:** 95% for all providers. This ensures efficient batching while maintaining good chunk boundaries.
 
 ---
 
@@ -303,7 +305,7 @@ batcher = ChunkBatcher(
     context_limit=32000,  # Mistral Large
     system_prompt_tokens=500,
     response_buffer_tokens=500,
-    merge_threshold=0.85
+    merge_threshold=0.95  # Default: 95%
 )
 
 batches = batcher.batch_chunks(chunks)
@@ -335,10 +337,12 @@ print(f"Accurate batching: {len(batches)} batches")
 
 ```python
 from docling_graph.core.extractors.backends import LlmBackend
-from docling_graph.llm_clients import MistralClient
+from docling_graph.llm_clients import get_client
+from docling_graph.llm_clients.config import resolve_effective_model_config
 
 # Initialize backend
-client = MistralClient(model="mistral-large-latest")
+effective = resolve_effective_model_config("mistral", "mistral-large-latest")
+client = get_client("mistral")(model_config=effective)
 backend = LlmBackend(llm_client=client)
 
 # Batch chunks
@@ -431,10 +435,10 @@ print(f"Average utilization: {avg_util:.1f}%")
 ### Optimization Tips
 
 ```python
-# ✅ Good - High utilization (85-95%)
+# ✅ Good - High utilization (90-95%)
 batcher = ChunkBatcher(
     context_limit=8000,
-    merge_threshold=0.85  # Merge undersized batches
+    merge_threshold=0.95  # Default: merge if <95% utilized
 )
 
 # ❌ Bad - Low utilization (<70%)
@@ -483,19 +487,19 @@ batcher = ChunkBatcher(
 ### 👍 Use Merge Threshold Wisely
 
 ```python
-# ✅ Good - Balance efficiency and fit
+# ✅ Good - Default balance (recommended)
 batcher = ChunkBatcher(
-    merge_threshold=0.85  # 85% - good balance
+    merge_threshold=0.95  # Default: 95% - good balance
 )
 
-# For many small chunks
+# For many small chunks (more aggressive merging)
 batcher = ChunkBatcher(
-    merge_threshold=0.80  # More aggressive merging
+    merge_threshold=0.85  # More aggressive merging
 )
 
-# For few large chunks
+# For few large chunks (less merging)
 batcher = ChunkBatcher(
-    merge_threshold=0.90  # Less merging
+    merge_threshold=0.98  # Minimal merging, better fit
 )
 ```
 
@@ -522,10 +526,10 @@ Batching not reducing API calls enough
 
 **Solution:**
 ```python
-# Increase merge threshold
+# Lower merge threshold for more aggressive merging
 batcher = ChunkBatcher(
     context_limit=8000,
-    merge_threshold=0.80  # More aggressive (was 0.85)
+    merge_threshold=0.85  # More aggressive (default is 0.95)
 )
 
 # Or increase context limit if model supports it
@@ -554,10 +558,10 @@ Batches not filling context window
 
 **Solution:**
 ```python
-# Lower merge threshold
+# Increase merge threshold (closer to default 0.95)
 batcher = ChunkBatcher(
     context_limit=8000,
-    merge_threshold=0.90  # Less merging (was 0.85)
+    merge_threshold=0.98  # Less merging, better fit (default is 0.95)
 )
 
 # Or use smaller chunks

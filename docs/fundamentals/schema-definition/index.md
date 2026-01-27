@@ -181,7 +181,7 @@ Docling Graph includes production-ready templates for various domains:
 
 Before creating templates, ensure you have:
 <br>✅ **Python 3.10+** installed
-<br>✅ **Docling Graph** installed (`uv sync --extra all`)
+<br>✅ **Docling Graph** installed (`uv sync`)
 <br>✅ **Basic Pydantic knowledge** (recommended but not required)
 <br>✅ **Understanding of your domain** (document types, entities, relationships)
 

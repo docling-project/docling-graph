@@ -83,7 +83,10 @@ chunks = chunker.chunk_document(document)
 ### Basic Usage
 
 ```python
+import json
+
 from docling_graph.core.extractors import DocumentChunker, DocumentProcessor
+from my_templates import ContractTemplate
 
 # Initialize processor
 processor = DocumentProcessor(docling_config="ocr")
@@ -349,45 +352,42 @@ Safety margin: 3.5%
 Chunk size automatically adjusts based on schema complexity:
 
 ```python
+import json
+
 from my_templates import ComplexTemplate
 
 # Schema-aware chunking
 chunker = DocumentChunker(
     provider="mistral",
-    schema_size=len(ComplexTemplate.model_json_schema())
+    schema_json=json.dumps(ComplexTemplate.model_json_schema())
 )
 
 # Behind the scenes:
-# 1. Calculate schema token usage
-schema_tokens = schema_size / 4  # Rough estimate
-
-# 2. Adjust max_tokens for chunks
-adjusted_max = max_tokens - schema_tokens - buffer
-
-# 3. Chunk with adjusted limit
+# 1. Build prompt skeleton with schema JSON and empty content
+# 2. Count exact tokens for system + user prompt
+# 3. max_tokens = context_limit - static_overhead - reserved_output - safety_margin
+# 4. Chunk with the adjusted limit
 chunks = chunker.chunk_document(document)
 ```
 
 **Schema Size Impact:**
 
-| Schema Size | Schema Tokens | Chunk Tokens (8K context) |
-|:------------|:--------------|:--------------------------|
-| **Small** (< 2KB) | ~500 | ~6000 |
-| **Medium** (2-5KB) | ~1000 | ~5500 |
-| **Large** (5-10KB) | ~2000 | ~4500 |
-| **Very Large** (> 10KB) | ~3000+ | ~3500 |
+Chunk size is computed from exact prompt token counts, so larger schemas
+reduce available content tokens deterministically without heuristic ratios.
 
 ### Update Schema Configuration
 
 ```python
-# Update schema size after initialization
+# Update schema JSON after initialization
 chunker = DocumentChunker(provider="mistral")
 
 # Later, update for different template
 from my_templates import LargeTemplate
 
+import json
+
 chunker.update_schema_config(
-    schema_size=len(LargeTemplate.model_json_schema())
+    schema_json=json.dumps(LargeTemplate.model_json_schema())
 )
 
 # Chunker now uses adjusted limits
@@ -523,7 +523,7 @@ chunker = DocumentChunker(
     tokenizer_name="mistralai/Mistral-7B-Instruct-v0.2",
     max_tokens=6000,  # Conservative limit
     merge_peers=True,
-    schema_size=5000  # Large schema
+    schema_json=json.dumps(ContractTemplate.model_json_schema()),
 )
 
 processor = DocumentProcessor(docling_config="ocr")
@@ -744,12 +744,14 @@ if stats['max_tokens_in_chunk'] > max_tokens * 0.95:
 ### 👍 Adjust for Schema Complexity
 
 ```python
-# ✅ Good - Account for schema size
-schema_size = len(template.model_json_schema())
+# ✅ Good - Account for schema JSON
+import json
+
+schema_json = json.dumps(template.model_json_schema())
 
 chunker = DocumentChunker(
     provider="mistral",
-    schema_size=schema_size  # Dynamic adjustment
+    schema_json=schema_json  # Dynamic adjustment
 )
 ```
 

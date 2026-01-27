@@ -28,11 +28,13 @@ Docling-Graph turns documents into validated **Pydantic** objects, then builds a
 
 This transformation enables high-precision use cases in **chemistry, finance, and legal** domains, where AI must capture exact entity connections (compounds and reactions, instruments and dependencies, properties and measurements) **rather than rely on approximate text embeddings**.
 
-This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** using either local runtimes (vLLM, Ollama) or API providers (Mistral, OpenAI, Gemini, IBM WatsonX), all orchestrated through a flexible, config-driven pipeline.
+This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** routed through **LiteLLM** for local runtimes (vLLM, Ollama) and API providers (Mistral, OpenAI, Gemini, IBM WatsonX), all orchestrated through a flexible, config-driven pipeline.
 
 
 
 ## Key Capabilities
+
+- **✍🏻 Input Formats**: Ingest PDFs, images, [DoclingDocument](docs/fundamentals/pipeline-configuration/input-formats.md#docling-document-json), Markdown, URLs and [more](docs/fundamentals/pipeline-configuration/input-formats.md).
 
 - **🧠 Data Extraction**: Extract structured data using [VLM](docs/fundamentals/pipeline-configuration/backend-selection.md) or [LLM](docs/fundamentals/pipeline-configuration/backend-selection.md). Supports [intelligent chunking](docs/fundamentals/extraction-process/chunking-strategies.md) and flexible [processing modes](docs/fundamentals/pipeline-configuration/processing-modes.md).
 
@@ -44,9 +46,9 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **✍🏻 Input Formats**: Process [PDF and images](docs/fundamentals/pipeline-configuration/input-formats.md#pdf-documents), [text and Markdown files](docs/fundamentals/pipeline-configuration/input-formats.md#text-files), [URLs](docs/fundamentals/pipeline-configuration/input-formats.md#urls), [DoclingDocument](docs/fundamentals/pipeline-configuration/input-formats.md#docling-document-json), and [plain text](docs/usage/api/programmatic-examples.md) strings.
-
 - **✨ Batch Optimization**: [Provider-specific batching](docs/usage/advanced/performance-tuning.md#provider-specific-batching) with [real tokenizers](docs/usage/advanced/performance-tuning.md#real-tokenizer-integration) and [improved GPU utilization](docs/usage/advanced/performance-tuning.md#clean-up-resources) for faster inference and better memory handling.
+
+- **🔌 LiteLLM abstraction**: Single interface to local and remote LLM providers (vLLM, Mistral, OpenAI, WatsonX, etc.) via [LiteLLM](docs/reference/llm-clients.md).
 
 - **🐛 Trace Capture**: [Comprehensive debug data](docs/usage/advanced/trace-data-debugging.md) via [`TraceData`](docling_graph/pipeline/trace.py) captures pages, chunks and intermediate schemas and graphs.
 
@@ -78,12 +80,8 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 git clone https://github.com/IBM/docling-graph
 cd docling-graph
 
-# Install with uv (choose your option)
-uv sync                    # Minimal: Core + VLM only
-uv sync --extra all        # Full: All features
-uv sync --extra local      # Local LLM (vLLM, Ollama)
-uv sync --extra remote     # Remote APIs (Mistral, OpenAI, Gemini)
-uv sync --extra watsonx    # IBM WatsonX support
+# Install with uv
+uv sync                    # Core + LiteLLM + VLM
 ```
 
 For detailed installation instructions, see [Installation Guide](docs/fundamentals/installation/index.md).
@@ -127,7 +125,7 @@ from docs.examples.templates.rheology_research import ScholarlyRheologyPaper
 # Create configuration
 config = {
     "source": "https://arxiv.org/pdf/2207.02720",
-    "template": Research,
+    "template": ScholarlyRheologyPaper,
     "backend": "llm",
     "inference": "remote",
     "processing_mode": "many-to-one",
@@ -144,39 +142,11 @@ graph = context.knowledge_graph
 models = context.extracted_models
 metadata = context.graph_metadata
 
-print(f"Extracted {len(models)} rheology researchs")
+print(f"Extracted {len(models)} model(s)")
 print(f"Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
-#### Python API - Optional Trace Data for Debugging
-
-```python
-from docling_graph import run_pipeline
-
-# Enable trace data capture for debugging
-config = {
-    "source": "https://arxiv.org/pdf/2207.02720",
-    "template": Research,
-    "backend": "llm",
-    "inference": "remote",
-    "include_trace": True,  # Capture intermediate data
-    "dump_to_disk": False   # Keep in memory only
-}
-
-context = run_pipeline(config)
-
-# Access trace data for debugging
-if context.trace_data:
-    print(f"Pages processed: {len(context.trace_data.pages)}")
-    print(f"Extractions: {len(context.trace_data.extractions)}")
-    
-    # Check for errors
-    errors = [e for e in context.trace_data.extractions if e.error]
-    if errors:
-        print(f"Found {len(errors)} extraction errors")
-```
-
-For more examples, see [Examples](docs/usage/examples/index.md).
+For debugging, use `--debug` with the CLI to save intermediate artifacts to disk; see [Trace Data & Debugging](docs/usage/advanced/trace-data-debugging.md). For more examples, see [Examples](docs/usage/examples/index.md).
 
 
 
@@ -210,7 +180,7 @@ class Organization(BaseModel):
 For complete guidance, see:
 - [Schema Definition Guide](docs/fundamentals/schema-definition/index.md)
 - [Template Basics](docs/fundamentals/schema-definition/template-basics.md)
-- [Example Templates](docs/examples/templates/)
+- [Example Templates](docs/examples/README.md)
 
 
 
@@ -253,7 +223,7 @@ git clone https://github.com/IBM/docling-graph
 cd docling-graph
 
 # Install with dev dependencies
-uv sync --extra all --extra dev
+uv sync --extra dev
 
 # Run Execute pre-commit checks
 uv run pre-commit run --all-files

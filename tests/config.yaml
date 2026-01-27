@@ -12,26 +12,15 @@ docling:
 models:
   vlm:
     local:
-      default_model: numind/NuExtract-2.0-2B
+      model: numind/NuExtract-2.0-2B
       provider: docling
   llm:
     local:
-      default_model: llama-3.1-8b
+      model: llama-3.1-8b
       provider: vllm
     remote:
-      default_model: mistral-small-latest
+      model: mistral-small-latest
       provider: mistral
-    providers:
-      ollama:
-        default_model: llama3:8b-instruct
-      vllm:
-        default_model: llama-3.1-8b
-      mistral:
-        default_model: mistral-small-latest
-      openai:
-        default_model: gpt-4-turbo
-      gemini:
-        default_model: gemini-2.5-flash
 output:
   default_directory: outputs
   create_visualizations: true

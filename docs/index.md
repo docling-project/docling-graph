@@ -27,7 +27,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ## Quick Navigation
 
-### 🚀 Getting Started
+### Getting Started
 
 <div class="grid cards" markdown>
 
@@ -49,7 +49,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 </div>
 
-### 📚 Core Documentation
+### Core Documentation
 
 <div class="grid cards" markdown>
 

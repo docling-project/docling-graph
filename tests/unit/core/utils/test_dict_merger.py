@@ -24,6 +24,16 @@ class DocumentModel(BaseModel):
     content: List[NestedModel] = []
 
 
+class EntityModel(BaseModel):
+    id: str
+    age: int | None = None
+    email: str | None = None
+
+
+class EntityDocument(BaseModel):
+    entities: List[EntityModel] = []
+
+
 # --- Tests ---
 
 
@@ -87,9 +97,22 @@ def test_merge_list_with_deduplication():
 
     merged = merge_pydantic_models([model1, model2], DocumentModel)
 
-    assert len(merged.content) == 2
-    assert merged.content[0].items == [item_a, item_b]
-    assert merged.content[1].items == [item_b, item_c]
+    assert len(merged.content) == 1
+    assert merged.content[0].id == "doc1"
+    assert merged.content[0].items == [item_a, item_b, item_c]
+
+
+def test_merge_by_id_deep_merge():
+    """Test that entities with same id are deep-merged."""
+    model1 = EntityDocument(entities=[EntityModel(id="John", age=30)])
+    model2 = EntityDocument(entities=[EntityModel(id="John", email="j@b.com")])
+
+    merged = merge_pydantic_models([model1, model2], EntityDocument)
+
+    assert len(merged.entities) == 1
+    assert merged.entities[0].id == "John"
+    assert merged.entities[0].age == 30
+    assert merged.entities[0].email == "j@b.com"
 
 
 def test_merge_empty_list():

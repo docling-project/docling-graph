@@ -481,15 +481,15 @@ PipelineConfig(
 
 ```python
 # LLM Local
-default_model="ibm-granite/granite-4.0-1b"
+model="ibm-granite/granite-4.0-1b"
 provider="vllm"
 
 # LLM Remote
-default_model="mistral-small-latest"
+model="mistral-small-latest"
 provider="mistral"
 
 # VLM Local
-default_model="numind/NuExtract-2.0-8B"
+model="numind/NuExtract-2.0-8B"
 provider="docling"
 ```
 

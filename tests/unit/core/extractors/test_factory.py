@@ -19,8 +19,6 @@ def test_create_llm_many_to_one(mock_strategy, mock_backend):
         backend_name="llm",
         llm_client=mock_llm_client,
         docling_config="ocr",
-        use_chunking=True,
-        llm_consolidation=True,
     )
 
     mock_backend.assert_called_once_with(llm_client=mock_llm_client)

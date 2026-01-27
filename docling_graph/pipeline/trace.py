@@ -42,6 +42,7 @@ class ExtractionData:
     parsed_model: BaseModel | None
     extraction_time: float
     error: str | None = None
+    metadata: dict = field(default_factory=dict)
 
 
 @dataclass

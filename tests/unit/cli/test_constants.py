@@ -5,6 +5,7 @@ from docling_graph.cli.constants import (
     BACKENDS,
     EXPORT_FORMATS,
     INFERENCE_LOCATIONS,
+    LOCAL_PROVIDERS,
     PROCESSING_MODES,
 )
 from docling_graph.config import PipelineConfig
@@ -18,16 +19,8 @@ class TestConstants:
 
     def test_pipeline_config_remote_providers_match_api_providers(self):
         cfg = PipelineConfig()
-        models = getattr(cfg, "models", {})
-        if hasattr(models, "model_dump"):
-            models = models.model_dump()
-        providers = sorted(API_PROVIDERS)
-
-        remote_providers = set()  # fix, initialize as set
-        for val in models.values():
-            if "remote" in val:
-                remote_providers.update(val["remote"].get("providers", []))
-        assert set(remote_providers).issubset(set(providers))
+        assert cfg.models.llm.remote.provider in API_PROVIDERS
+        assert cfg.models.llm.local.provider in LOCAL_PROVIDERS
 
     def test_processing_modes_contains_valid_values(self):
         assert "one-to-one" in PROCESSING_MODES

@@ -14,33 +14,19 @@ flowchart LR
     classDef subgraph_style fill:none,stroke:#969696,stroke-width:2px,stroke-dasharray: 5,color:#969696
 
     %% 2. Define Nodes
-    A@{ shape: procs, label: "BaseLlmClient<br>Template Method Pattern" }
-    
-    subgraph subGraph0["Client Implementations"]
-        B@{ shape: lin-proc, label: "VLLMClient" }
-        C@{ shape: lin-proc, label: "OllamaClient" }
-        D@{ shape: lin-proc, label: "MistralClient" }
-        E@{ shape: lin-proc, label: "OpenAIClient" }
-        F@{ shape: lin-proc, label: "GeminiClient" }
-        G@{ shape: lin-proc, label: "WatsonXClient" }
-    end
+    A@{ shape: procs, label: "LLMClientProtocol" }
+    B@{ shape: lin-proc, label: "LiteLLMClient" }
 
-    H@{ shape: tag-proc, label: "ResponseHandler<br>JSON Parsing" }
-    I("Config<br>models.yaml")
+    H@{ shape: tag-proc, label: "ResponseHandler JSON Parsing" }
+    I("ProviderConfig (tokenizer, merge_threshold)")
 
     %% 3. Define Connections
     A --> B
-    A --> C
-    A --> D
-    A --> E
-    A --> F
-    A --> G
-    subGraph0 --> H
-    subGraph0 --> I
+    B --> H
+    B --> I
 
     %% 4. Apply Classes
-    class A,B,C,D,E,F,G process
+    class A,B process
     class H operator
     class I config
-    class subGraph0 subgraph_style
 ```

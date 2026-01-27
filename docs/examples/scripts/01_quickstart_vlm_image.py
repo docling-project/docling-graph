@@ -12,7 +12,7 @@ Use Cases:
     - Image files (JPG, PNG)
 
 Prerequisites:
-    - Installation: uv sync --extra all
+    - Installation: uv sync
     - Data: Sample billing document from Wikimedia Commons
     - No API keys required (uses local VLM)
 
@@ -49,7 +49,7 @@ sys.path.append(str(project_root))
 try:
     from examples.templates.billing_document import BillingDocument
 
-    from docling_graph import PipelineConfig
+    from docling_graph import PipelineConfig, run_pipeline
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")
@@ -58,8 +58,6 @@ except ImportError:
 # Configuration
 SOURCE_FILE = "https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg"
 TEMPLATE_CLASS = BillingDocument
-OUTPUT_DIR = "outputs/01_quickstart_vlm_image"
-
 console = Console()
 
 
@@ -84,7 +82,6 @@ def main() -> None:
         config = PipelineConfig(
             source=SOURCE_FILE,
             template=TEMPLATE_CLASS,
-            output_dir=OUTPUT_DIR,
             # VLM backend processes images directly
             backend="vlm",
             # VLM only supports local inference
@@ -97,24 +94,14 @@ def main() -> None:
 
         # Execute the pipeline
         console.print("\n[yellow]⚙️  Processing...[/yellow]")
-        config.run()
+        context = run_pipeline(config)
 
         # Success message
         console.print("\n[green]✓ Success![/green]")
-        console.print(f"\n[bold]Output Location:[/bold] [cyan]{OUTPUT_DIR}[/cyan]")
-
-        console.print("\n[bold]📊 Next Steps:[/bold]")
+        graph = context.knowledge_graph
         console.print(
-            f"  1. View interactive graph: [cyan]uv run docling-graph inspect {OUTPUT_DIR}[/cyan]"
-        )
-        console.print(
-            f"  2. Check extracted data: [cyan]cat {OUTPUT_DIR}/docling_graph/nodes.csv[/cyan]"
-        )
-        console.print(
-            f"  3. View relationships: [cyan]cat {OUTPUT_DIR}/docling_graph/edges.csv[/cyan]"
-        )
-        console.print(
-            f"  4. Read summary report: [cyan]cat {OUTPUT_DIR}/docling_graph/report.md[/cyan]"
+            f"\n[bold]Extracted:[/bold] [cyan]{graph.number_of_nodes()} nodes[/cyan] "
+            f"and [cyan]{graph.number_of_edges()} edges[/cyan]"
         )
 
         console.print("\n[bold]💡 What Happened:[/bold]")
@@ -125,16 +112,16 @@ def main() -> None:
         console.print("  • Multiple export formats generated")
 
     except FileNotFoundError:
-        console.print(f"\n[red]✗ Error:[/red] Source file not found: {SOURCE_FILE}")
+        console.print(f"\n[red]Error:[/red] Source file not found: {SOURCE_FILE}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
         console.print("  • Ensure you're running from the project root directory")
         console.print("  • Check that the sample data exists in docs/examples/data/")
         sys.exit(1)
 
     except Exception as e:
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
-        console.print("  • Ensure all dependencies are installed: [cyan]uv sync --extra all[/cyan]")
+        console.print("  • Ensure dependencies are installed: [cyan]uv sync[/cyan]")
         console.print("  • Check that you have sufficient disk space")
         console.print("  • Verify the template class is correctly defined")
         console.print(

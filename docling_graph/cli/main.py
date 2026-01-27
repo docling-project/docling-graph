@@ -11,6 +11,12 @@ from .commands.convert import convert_command
 from .commands.init import init_command
 from .commands.inspect import inspect_command
 
+logging.basicConfig(level=logging.WARNING)
+
+# Suppress noisy INFO logs from RapidOCR (used by docling OCR pipeline)
+for _logger_name in ("RapidOCR", "rapidocr"):
+    logging.getLogger(_logger_name).setLevel(logging.WARNING)
+
 
 def version_callback(value: bool) -> None:
     """Show version and exit."""

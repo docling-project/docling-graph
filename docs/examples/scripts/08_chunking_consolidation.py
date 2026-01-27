@@ -12,7 +12,7 @@ Use Cases:
     - Fine-tuning chunking parameters
 
 Prerequisites:
-    - Installation: uv sync --extra remote
+    - Installation: uv sync
     - Environment: export MISTRAL_API_KEY="your-api-key"
     - Data: Multi-page rheology research
 
@@ -73,7 +73,6 @@ def process_programmatic_merge() -> float:
     config = PipelineConfig(
         source=SOURCE_FILE,
         template=TEMPLATE_CLASS,
-        output_dir="outputs/08_chunking_consolidation/programmatic",
         backend="llm",
         inference="remote",
         provider_override="mistral",
@@ -103,7 +102,6 @@ def process_llm_consolidation() -> float:
     config = PipelineConfig(
         source=SOURCE_FILE,
         template=TEMPLATE_CLASS,
-        output_dir="outputs/08_chunking_consolidation/llm_consolidation",
         backend="llm",
         inference="remote",
         provider_override="mistral",
@@ -138,7 +136,7 @@ def main() -> None:
 
     console.print("\n[yellow]⚠️  Prerequisites:[/yellow]")
     console.print("  • Mistral API key: [cyan]export MISTRAL_API_KEY='...'[/cyan]")
-    console.print("  • Install remote extras: [cyan]uv sync --extra remote[/cyan]")
+    console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
 
     try:
         # Process with both strategies
@@ -203,14 +201,14 @@ def main() -> None:
 
     except Exception as e:
         error_msg = str(e).lower()
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "api" in error_msg or "key" in error_msg:
             console.print("  • Set API key: [cyan]export MISTRAL_API_KEY='your-key'[/cyan]")
             console.print("  • Get key at: https://console.mistral.ai/")
         else:
-            console.print("  • Install dependencies: [cyan]uv sync --extra remote[/cyan]")
+            console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
             console.print("  • Check internet connection")
 
         sys.exit(1)

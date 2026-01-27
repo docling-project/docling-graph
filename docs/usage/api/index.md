@@ -36,36 +36,17 @@ model = context.pydantic_model
 print(f"Extracted {graph.number_of_nodes()} nodes")
 ```
 
-### With File Exports
-
-```python
-from docling_graph import run_pipeline
-
-# Enable file exports
-context = run_pipeline({
-    "source": "document.pdf",
-    "template": "templates.BillingDocument",
-    "backend": "llm",
-    "inference": "remote",
-    "dump_to_disk": True,
-    "output_dir": "outputs"
-})
-
-# Results available both in memory and on disk
-graph = context.knowledge_graph
-```
-
 ---
 
 ## Installation
 
 ```bash
 # Install with all features
-uv sync --extra all
+uv sync
 
 # Or specific features
-uv sync --extra remote  # Remote APIs
-uv sync --extra local   # Local inference
+uv sync  # Remote APIs
+uv sync  # Local inference
 ```
 
 ---
@@ -295,41 +276,6 @@ run_pipeline(config)
 
 ---
 
-## Output Handling
-
-### Access Output Files
-
-```python
-from pathlib import Path
-import json
-import pandas as pd
-
-from docling_graph import PipelineConfig
-
-# Run pipeline
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.BillingDocument",
-    output_dir="outputs"
-)
-run_pipeline(config)
-
-# Read outputs
-nodes = pd.read_csv("outputs/nodes.csv")
-edges = pd.read_csv("outputs/edges.csv")
-
-with open("outputs/graph.json") as f:
-    graph = json.load(f)
-
-with open("outputs/graph_stats.json") as f:
-    stats = json.load(f)
-
-print(f"Nodes: {stats['node_count']}")
-print(f"Edges: {stats['edge_count']}")
-```
-
----
-
 ## Integration Examples
 
 ### Flask Web Application
@@ -358,13 +304,12 @@ def convert_document():
         config = PipelineConfig(
             source=temp_path,
             template=template,
-            output_dir=f"outputs/{temp_id}"
         )
-        run_pipeline(config)
-        
+        context = run_pipeline(config)
+
         return jsonify({
             "status": "success",
-            "output_dir": f"outputs/{temp_id}"
+            "model": context.pydantic_model.model_dump()
         })
     except Exception as e:
         return jsonify({
@@ -390,17 +335,15 @@ import matplotlib.pyplot as plt
 # Cell 2: Process document
 config = PipelineConfig(
     source="research.pdf",
-    template="templates.ScholarlyRheologyPaper",
-    output_dir="outputs/research"
+    template="templates.ScholarlyRheologyPaper"
 )
-run_pipeline(config)
+context = run_pipeline(config)
 
 # Cell 3: Analyze results
-nodes = pd.read_csv("outputs/research/nodes.csv")
-edges = pd.read_csv("outputs/research/edges.csv")
+graph = context.knowledge_graph
 
-print(f"Total nodes: {len(nodes)}")
-print(f"Total edges: {len(edges)}")
+print(f"Total nodes: {graph.number_of_nodes()}")
+print(f"Total edges: {graph.number_of_edges()}")
 
 # Cell 4: Visualize
 node_types = nodes['type'].value_counts()
@@ -419,8 +362,7 @@ from docling_graph import PipelineConfig
 def process_document(**context):
     config = PipelineConfig(
         source=context['params']['source'],
-        template=context['params']['template'],
-        output_dir=f"outputs/{context['ds']}"
+        template=context['params']['template']
     )
     run_pipeline(config)
 
@@ -483,29 +425,6 @@ try:
 except Exception:
     pass  # Silent failure
 ```
-
-### 👍 Organize Outputs
-
-```python
-# ✅ Good - Organized structure
-from datetime import datetime
-
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.BillingDocument",
-    output_dir=f"outputs/invoices/{timestamp}"
-)
-
-# ❌ Avoid - Overwriting outputs
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.BillingDocument",
-    output_dir="outputs"  # Same for all
-)
-```
-
----
 
 ## Next Steps
 

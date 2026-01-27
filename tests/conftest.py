@@ -36,17 +36,17 @@ def sample_config() -> Dict[str, Any]:
         "models": {
             "vlm": {
                 "local": {
-                    "default_model": "numind/NuExtract-2.0-2B",
+                    "model": "numind/NuExtract-2.0-2B",
                     "provider": "docling",
                 }
             },
             "llm": {
                 "local": {
-                    "default_model": "llama-3.1-8b",
+                    "model": "llama-3.1-8b",
                     "provider": "ollama",
                 },
                 "remote": {
-                    "default_model": "mistral-small-latest",
+                    "model": "mistral-small-latest",
                     "provider": "mistral",
                 },
             },
@@ -67,7 +67,7 @@ def sample_config_vlm() -> Dict[str, Any]:
             "processing_mode": "one-to-one",
             "backend": "vlm",
             "inference": "local",
-            "export_format": "json",
+            "export_format": "csv",
         },
         "docling": {
             "pipeline": "vision",
@@ -80,7 +80,7 @@ def sample_config_vlm() -> Dict[str, Any]:
         "models": {
             "vlm": {
                 "local": {
-                    "default_model": "numind/NuExtract-2.0-2B",
+                    "model": "numind/NuExtract-2.0-2B",
                     "provider": "docling",
                 }
             },
@@ -114,7 +114,7 @@ def sample_config_remote() -> Dict[str, Any]:
         "models": {
             "llm": {
                 "remote": {
-                    "default_model": "mistral-small-latest",
+                    "model": "mistral-small-latest",
                     "provider": "mistral",
                 },
             },

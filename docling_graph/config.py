@@ -8,8 +8,10 @@ configurations for the docling-graph pipeline programmatically.
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import Self
+
+from .llm_clients.config import LlmRuntimeOverrides
 
 
 class BackendConfig(BaseModel):
@@ -32,9 +34,9 @@ class ExtractorConfig(BaseModel):
 
 
 class ModelConfig(BaseModel):
-    """Configuration for a specific model."""
+    """Model selection for a backend."""
 
-    default_model: str = Field(..., description="The model name/path to use")
+    model: str = Field(..., description="The model name/path to use")
     provider: str = Field(..., description="The provider for this model")
 
 
@@ -43,13 +45,13 @@ class LLMConfig(BaseModel):
 
     local: ModelConfig = Field(
         default_factory=lambda: ModelConfig(
-            default_model="ibm-granite/granite-4.0-1b",
+            model="ibm-granite/granite-4.0-1b",
             provider="vllm",
         )
     )
     remote: ModelConfig = Field(
         default_factory=lambda: ModelConfig(
-            default_model="mistral-small-latest",
+            model="mistral-small-latest",
             provider="mistral",
         )
     )
@@ -60,7 +62,7 @@ class VLMConfig(BaseModel):
 
     local: ModelConfig = Field(
         default_factory=lambda: ModelConfig(
-            default_model="numind/NuExtract-2.0-8B",
+            model="numind/NuExtract-2.0-8B",
             provider="docling",
         )
     )
@@ -80,6 +82,8 @@ class PipelineConfig(BaseModel):
     All other modules should reference these defaults via PipelineConfig, not duplicate them.
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     # Optional fields (empty by default, filled in at runtime)
     source: Union[str, Path] = Field(default="", description="Path to the source document")
     template: Union[str, type[BaseModel]] = Field(
@@ -98,12 +102,29 @@ class PipelineConfig(BaseModel):
     model_override: str | None = None
     provider_override: str | None = None
 
+    # Optional custom LLM client (implements LLMClientProtocol)
+    llm_client: Any | None = Field(
+        default=None,
+        description="Custom LLM client instance to use for LLM backend.",
+        exclude=True,
+    )
+
     # Models configuration (flat only, with defaults)
     models: ModelsConfig = Field(default_factory=ModelsConfig)
 
+    llm_overrides: LlmRuntimeOverrides = Field(
+        default_factory=LlmRuntimeOverrides, description="Runtime overrides for LLM settings."
+    )
+
     # Extract settings (with defaults)
-    use_chunking: bool = True
-    llm_consolidation: bool = False
+    use_chunking: bool = Field(default=True, description="Enable chunking for document processing")
+    chunk_max_tokens: int | None = Field(
+        default=None,
+        description="Max tokens per chunk when chunking is used (default: 512).",
+    )
+    debug: bool = Field(
+        default=False, description="Enable debug artifacts (controlled by --debug flag)"
+    )
     max_batch_size: int = 1
 
     # Export settings (with defaults)
@@ -126,17 +147,6 @@ class PipelineConfig(BaseModel):
             "Control file exports to disk. "
             "None (default) = auto-detect: CLI mode exports, API mode doesn't. "
             "True = force exports. False = disable exports."
-        ),
-    )
-
-    # Trace data control (with auto-detection)
-    include_trace: bool | None = Field(
-        default=None,
-        description=(
-            "Include trace data (intermediate extractions, per-chunk graphs). "
-            "None (default) = auto-detect: CLI mode includes trace, API mode doesn't. "
-            "When True: Trace data included in return value AND exported to disk (if dump_to_disk=True). "
-            "When False: Only final results, no trace data."
         ),
     )
 
@@ -163,7 +173,8 @@ class PipelineConfig(BaseModel):
             "processing_mode": self.processing_mode,
             "docling_config": self.docling_config,
             "use_chunking": self.use_chunking,
-            "llm_consolidation": self.llm_consolidation,
+            "chunk_max_tokens": self.chunk_max_tokens,
+            "debug": self.debug,
             "model_override": self.model_override,
             "provider_override": self.provider_override,
             "export_format": self.export_format,
@@ -174,8 +185,9 @@ class PipelineConfig(BaseModel):
             "reverse_edges": self.reverse_edges,
             "output_dir": self.output_dir,
             "dump_to_disk": self.dump_to_disk,
-            "include_trace": self.include_trace,
             "models": self.models.model_dump(),
+            "llm_overrides": self.llm_overrides.model_dump(),
+            "llm_client": self.llm_client,
         }
 
     def run(self) -> None:
@@ -198,6 +210,7 @@ class PipelineConfig(BaseModel):
                 "inference": default_config.inference,
                 "processing_mode": default_config.processing_mode,
                 "export_format": default_config.export_format,
+                "chunk_max_tokens": default_config.chunk_max_tokens,
             },
             "docling": {
                 "pipeline": default_config.docling_config,
@@ -208,6 +221,7 @@ class PipelineConfig(BaseModel):
                 },
             },
             "models": default_config.models.model_dump(),
+            "llm_overrides": default_config.llm_overrides.model_dump(),
             "output": {
                 "directory": str(default_config.output_dir),
             },

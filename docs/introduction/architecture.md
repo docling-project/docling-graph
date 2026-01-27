@@ -166,7 +166,7 @@ except ClientError as e:
 
 Docling Graph is designed for extension:
 
-- **LLM Providers:** Extend `BaseLlmClient`
+- **LLM Providers:** Implement `LLMClientProtocol`
 - **Pipeline Stages:** Implement `PipelineStage`
 - **Export Formats:** Extend `BaseExporter`
 

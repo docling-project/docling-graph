@@ -14,8 +14,8 @@ Extract structured information from insurance policy documents including coverag
 ## Prerequisites
 
 ```bash
-# Install with all features
-uv sync --extra all
+# Install dependencies
+uv sync
 
 # For remote API (recommended for complex documents)
 export MISTRAL_API_KEY="your_key_here"
@@ -261,8 +261,7 @@ config = PipelineConfig(
     inference="remote",
     processing_mode="many-to-one",
     model_override="mistral-small-latest",
-    provider_override="mistral",
-    output_dir="outputs/insurance"
+    provider_override="mistral"
 )
 
 print("Processing insurance policy...")
@@ -599,7 +598,6 @@ from pathlib import Path
 from docling_graph import run_pipeline, PipelineConfig
 
 policies_dir = Path("policies")
-output_base = Path("outputs")
 
 for policy_file in policies_dir.glob("*.pdf"):
     print(f"Processing {policy_file.name}...")
@@ -608,8 +606,7 @@ for policy_file in policies_dir.glob("*.pdf"):
         source=str(policy_file),
         template="insurance_template.InsurancePolicy",
         backend="llm",
-        inference="remote",
-        output_dir=str(output_base / policy_file.stem)
+        inference="remote"
     )
     
     run_pipeline(config)

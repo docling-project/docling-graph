@@ -1,98 +1,334 @@
 """
 LLM (Language Model) extraction backend.
-Handles document extraction using LLM models (local or API) with model-aware prompting.
+
+Performs direct full-document extraction via extract_from_markdown() in a single LLM call.
+Best-effort: coerces QuantityWithUnit scalars and prunes invalid fields on validation errors.
 """
 
+import copy
 import gc
 import json
 import logging
-from typing import List, Optional, Type
+import re
+from functools import lru_cache
+from typing import Any, Type
 
 from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
 
-from ....llm_clients.base import BaseLlmClient
-from ....llm_clients.config import ModelConfig, detect_model_capability, get_model_config
-from ....llm_clients.prompts import get_consolidation_prompt, get_extraction_prompt
+from ....protocols import LLMClientProtocol
+from ..contracts import direct
 
 logger = logging.getLogger(__name__)
 
 
 class LlmBackend:
-    """Backend for LLM-based extraction with model-aware prompting and multi-turn consolidation."""
+    """
+    Backend for LLM-based extraction.
 
-    def __init__(self, llm_client: BaseLlmClient) -> None:
+    Performs direct full-document extraction via extract_from_markdown().
+    """
+
+    def __init__(self, llm_client: LLMClientProtocol) -> None:
         """
-        Initialize LLM backend with a client and model configuration.
+        Initialize LLM backend with a client.
 
         Args:
-            llm_client (BaseLlmClient): LLM client instance (Mistral, Ollama, etc.)
+            llm_client: LLM client instance implementing LLMClientProtocol
         """
         self.client = llm_client
 
-        # Get model configuration from centralized registry
-        self.model_config = None
-        # Get model from client (all clients use self.model)
+        # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
 
-        # Try to get config from registry (now works with all clients via .provider property)
-        if hasattr(llm_client, "provider") and model_attr:
-            provider = llm_client.provider
-            self.model_config = get_model_config(provider, model_attr)
-
-            if self.model_config:
-                logger.info(
-                    f"Loaded model config from registry: provider={provider}, "
-                    f"model={model_attr}, capability={self.model_config.capability.value}"
-                )
-            else:
-                logger.warning(
-                    f"Model '{model_attr}' not found in registry for provider '{provider}', "
-                    "using fallback detection"
-                )
-
-        # Fallback: auto-detect from model characteristics
-        if not self.model_config:
-            # Use context_limit property if available, otherwise _context_limit attribute
-            context_limit_raw = getattr(llm_client, "context_limit", None)
-            if context_limit_raw is None:
-                context_limit_raw = getattr(llm_client, "_context_limit", 8000)
-
-            # Ensure context_limit is an int for type safety
-            context_limit: int = int(context_limit_raw) if context_limit_raw is not None else 8000
-
-            model_name = getattr(llm_client, "model", None)
-            # Get max_new_tokens if available (better capability indicator)
-            max_new_tokens = getattr(llm_client, "_max_tokens", None)
-            # Ensure max_new_tokens is None or int (not MagicMock)
-            if max_new_tokens is not None and not isinstance(max_new_tokens, int):
-                max_new_tokens = None
-
-            # Ensure model_name is a string for detect_model_capability
-            model_name_str = str(model_name) if model_name else ""
-
-            logger.info(
-                f"Using fallback capability detection: context={context_limit}, "
-                f"model_name={model_name_str}, max_new_tokens={max_new_tokens}"
-            )
-
-            capability = detect_model_capability(context_limit, model_name_str, max_new_tokens)
-
-            # Create minimal config
-            self.model_config = ModelConfig(
-                model_id=model_name_str or "unknown",
-                context_limit=context_limit,
-                capability=capability,
-            )
+        logger.info("Initialized LlmBackend with client: %s", self.client.__class__.__name__)
 
         rich_print(
             f"[blue][LlmBackend][/blue] Initialized with:\n"
             f"  • Client: [cyan]{self.client.__class__.__name__}[/cyan]\n"
-            f"  • Model: [cyan]{model_attr or 'unknown'}[/cyan]\n"
-            f"  • Model capability: [yellow]{self.model_config.capability.value}[/yellow]\n"
-            f"  • Context limit: {self.model_config.context_limit:,} tokens\n"
-            f"  • Chain of Density: {'enabled' if self.model_config.supports_chain_of_density else 'disabled'}"
+            f"  • Model: [cyan]{model_attr or 'unknown'}[/cyan]"
         )
+
+    @staticmethod
+    @lru_cache(maxsize=32)
+    def _get_schema_json(template: Type[BaseModel]) -> str:
+        """
+        Get cached JSON schema for a Pydantic template.
+
+        Uses LRU cache to avoid repeated serialization of the same template.
+        This provides significant performance improvement when the same template
+        is used multiple times.
+
+        Args:
+            template: Pydantic model class
+
+        Returns:
+            JSON string representation of the model schema
+        """
+        return json.dumps(template.model_json_schema(), indent=2)
+
+    def _log_info(self, message: str, **kwargs: Any) -> None:
+        """Log info message with consistent formatting."""
+        formatted = f"[blue][LlmBackend][/blue] {message}"
+        if kwargs:
+            for key, value in kwargs.items():
+                formatted += f" ([cyan]{value}[/cyan] {key})"
+        rich_print(formatted)
+
+    def _log_success(self, message: str) -> None:
+        """Log success message."""
+        rich_print(f"[blue][LlmBackend][/blue] {message}")
+
+    def _log_warning(self, message: str) -> None:
+        """Log warning message."""
+        rich_print(f"[yellow]Warning:[/yellow] {message}")
+
+    def _log_error(self, message: str, exception: Exception | None = None) -> None:
+        """Log error message with optional exception details."""
+        error_text = f"[red]Error:[/red] {message}"
+        if exception:
+            error_text += f" {type(exception).__name__}: {exception}"
+        rich_print(error_text)
+
+    def _log_validation_error(
+        self, context: str, error: ValidationError, raw_data: dict | list
+    ) -> None:
+        """Log detailed validation error information."""
+        rich_print(f"[blue][LlmBackend][/blue] [yellow]Validation Error for {context}:[/yellow]")
+        rich_print("  The data extracted by the LLM does not match your Pydantic template.")
+        rich_print("[red]Details:[/red]")
+        for err in error.errors():
+            loc = " -> ".join(map(str, err["loc"]))
+            rich_print(f"  - [bold magenta]{loc}[/bold magenta]: [red]{err['msg']}[/red]")
+        rich_print(f"\n[yellow]Extracted Data (raw):[/yellow]\n{raw_data}\n")
+
+    @staticmethod
+    def _is_quantity_with_unit_error(err: dict) -> bool:
+        """True if this validation error is for a QuantityWithUnit expected type."""
+        ctx = err.get("ctx") or {}
+        if isinstance(ctx, dict) and ctx.get("class_name") == "QuantityWithUnit":
+            return True
+        msg = err.get("msg", "")
+        return "QuantityWithUnit" in msg
+
+    @staticmethod
+    def _coerce_scalar_to_quantity_with_unit(v: Any) -> dict:
+        """Coerce a scalar to a QuantityWithUnit-like object."""
+        if isinstance(v, int | float):
+            return {"numeric_value": float(v)}
+        if isinstance(v, str):
+            v_clean = re.sub(r"[^\d.\-eE]", "", v)
+            try:
+                return {"numeric_value": float(v_clean)}
+            except ValueError:
+                return {"text_value": v}
+        return {"numeric_value": None, "text_value": str(v)}
+
+    @staticmethod
+    def _get_at_path(data: dict | list, loc: tuple) -> Any:
+        """Get value at path (loc is tuple of keys/indices)."""
+        if not loc:
+            return data
+        current: Any = data
+        for key in loc:
+            current = current[key]
+        return current
+
+    @staticmethod
+    def _set_at_path(data: dict | list, loc: tuple, value: Any) -> None:
+        """Set value at path (mutates data)."""
+        if not loc:
+            return
+        parent = LlmBackend._get_at_path(data, loc[:-1])
+        if parent is not None:
+            parent[loc[-1]] = value
+
+    @staticmethod
+    def _delete_at_path(data: dict | list, loc: tuple) -> None:
+        """Remove the leaf at loc (mutates data)."""
+        if not loc:
+            return
+        parent = LlmBackend._get_at_path(data, loc[:-1])
+        if parent is None:
+            return
+        leaf = loc[-1]
+        if isinstance(parent, dict):
+            parent.pop(leaf, None)
+        elif isinstance(parent, list) and isinstance(leaf, int) and 0 <= leaf < len(parent):
+            parent.pop(leaf)
+
+    def _apply_quantity_coercion(self, data: dict | list, errors: list) -> bool:
+        """
+        Coerce scalar values at QuantityWithUnit error locations.
+        Returns True if any coercion was applied.
+        """
+        changed = False
+        for err in errors:
+            if not self._is_quantity_with_unit_error(err):
+                continue
+            loc = tuple(err.get("loc", ()))
+            if not loc:
+                continue
+            try:
+                value = self._get_at_path(data, loc)
+            except (KeyError, IndexError, TypeError):
+                continue
+            if isinstance(value, dict):
+                continue
+            coerced = self._coerce_scalar_to_quantity_with_unit(value)
+            self._set_at_path(data, loc, coerced)
+            changed = True
+        return changed
+
+    def _prune_invalid_fields(self, data: dict | list, errors: list) -> None:
+        """
+        Remove offending leaf fields indicated by validation error locs.
+        Mutates data in place. For list element errors, removes the element.
+        """
+        # Sort by loc length descending so we prune deepest first (avoid index shift)
+        sorted_errors = sorted(errors, key=lambda e: len(e.get("loc", ())), reverse=True)
+        seen_locs: set[tuple] = set()
+        for err in sorted_errors:
+            loc = tuple(err.get("loc", ()))
+            if not loc or loc in seen_locs:
+                continue
+            seen_locs.add(loc)
+            self._delete_at_path(data, loc)
+
+    def _validate_extraction(
+        self, parsed_json: dict | list, template: Type[BaseModel], context: str
+    ) -> BaseModel | None:
+        """
+        Validate parsed JSON against Pydantic template.
+
+        Best-effort: on ValidationError, tries (1) QuantityWithUnit coercion,
+        then (2) pruning invalid fields, then re-validates (up to 3 passes).
+        """
+        data: dict | list = copy.deepcopy(parsed_json)
+        max_salvage_passes = 3
+
+        for pass_num in range(max_salvage_passes):
+            try:
+                validated_model = template.model_validate(data)
+                if pass_num > 0:
+                    self._log_warning(
+                        f"Extraction validated after best-effort salvage (pass {pass_num + 1})"
+                    )
+                self._log_success(f"Successfully extracted data from {context}")
+                return validated_model
+            except ValidationError as e:
+                if pass_num == 0:
+                    self._log_validation_error(context, e, parsed_json)
+
+                # First pass: try QuantityWithUnit coercion
+                if pass_num == 0:
+                    if self._apply_quantity_coercion(data, e.errors()):
+                        continue
+
+                # Prune invalid fields and retry
+                self._prune_invalid_fields(data, e.errors())
+
+        self._log_warning("Validation failed after best-effort salvage")
+        return None
+
+    def _call_llm_for_extraction(
+        self, markdown: str, schema_json: str, is_partial: bool, context: str
+    ) -> dict | list | None:
+        """
+        Call LLM and return parsed JSON or None on failure.
+
+        Args:
+            markdown: Markdown content to extract from
+            schema_json: JSON schema string
+            is_partial: Whether this is partial extraction
+            context: Context description for logging
+
+        Returns:
+            Parsed JSON (dict or list) or None if call failed
+        """
+        try:
+            prompt = direct.get_extraction_prompt(
+                markdown_content=markdown,
+                schema_json=schema_json,
+                is_partial=is_partial,
+                model_config=None,  # No capability-based branching
+            )
+
+            parsed_json = self.client.get_json_response(prompt=prompt, schema_json=schema_json)
+
+            if not parsed_json:
+                self._log_warning(f"No valid JSON returned from LLM for {context}")
+                return None
+
+            return parsed_json
+
+        except Exception as e:
+            self._log_error(f"Error during LLM call for {context}", e)
+            return None
+
+    def _repair_json(self, raw_text: str) -> str:
+        """
+        Repair common JSON malformations from small LLMs.
+
+        Applies the following fixes:
+        1. Remove invalid control characters (except newlines, tabs, carriage returns)
+        2. Remove trailing commas before closing brackets/braces
+        3. Balance unmatched braces and brackets
+
+        Args:
+            raw_text: Raw JSON text from LLM
+
+        Returns:
+            Repaired JSON text
+
+        Examples:
+            >>> backend._repair_json('{"key": "value",}')
+            '{"key": "value"}'
+            >>> backend._repair_json('{"key": "value"')
+            '{"key": "value"}'
+        """
+        # Step 1: Remove invalid control characters (keep \n, \t, \r)
+        # Remove control chars in range 0x00-0x1F except \n (0x0A), \t (0x09), \r (0x0D)
+        repaired = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", raw_text)
+
+        # Step 2: Remove trailing commas before closing brackets
+        # Match comma followed by optional whitespace and closing bracket/brace
+        repaired = re.sub(r",(\s*[}\]])", r"\1", repaired)
+
+        # Step 3: Balance unmatched braces and brackets
+        # Count opening and closing braces/brackets
+        open_braces = repaired.count("{")
+        close_braces = repaired.count("}")
+        open_brackets = repaired.count("[")
+        close_brackets = repaired.count("]")
+
+        # Add missing closing braces
+        if open_braces > close_braces:
+            repaired += "}" * (open_braces - close_braces)
+
+        # Add missing closing brackets
+        if open_brackets > close_brackets:
+            repaired += "]" * (open_brackets - close_brackets)
+
+        # Remove extra closing braces (trim from end)
+        if close_braces > open_braces:
+            excess = close_braces - open_braces
+            # Remove excess closing braces from the end
+            for _ in range(excess):
+                repaired = repaired.rstrip()
+                if repaired.endswith("}"):
+                    repaired = repaired[:-1]
+
+        # Remove extra closing brackets (trim from end)
+        if close_brackets > open_brackets:
+            excess = close_brackets - open_brackets
+            # Remove excess closing brackets from the end
+            for _ in range(excess):
+                repaired = repaired.rstrip()
+                if repaired.endswith("]"):
+                    repaired = repaired[:-1]
+
+        return repaired
 
     def extract_from_markdown(
         self,
@@ -102,180 +338,100 @@ class LlmBackend:
         is_partial: bool = False,
     ) -> BaseModel | None:
         """
-        Extract structured data from markdown content using LLM with model-aware prompting.
+        Extract structured data from markdown content (direct mode).
+
+        This is the "power user" mode that attempts full-document extraction
+        in a single LLM call. Best-effort only, no retries or fallbacks.
 
         Args:
-            markdown (str): Markdown content to extract from.
-            template (Type[BaseModel]): Pydantic model template.
-            context (str): Context description for the extraction (e.g., "page 1", "full document").
-            is_partial (bool): If True, use the partial/chunk-based prompt.
+            markdown: Markdown content to extract from
+            template: Pydantic model template
+            context: Context description (e.g., "page 1", "full document")
+            is_partial: If True, use partial/chunk-based prompt
 
         Returns:
-            Optional[BaseModel]: Extracted and validated Pydantic model instance, or None if failed.
+            Extracted and validated Pydantic model instance, or None if failed
         """
-        rich_print(
-            f"[blue][LlmBackend][/blue] Extracting from {context} ([cyan]{len(markdown)}[/cyan] chars)"
-        )
+        # Log extraction start
+        self._log_info(f"Direct extraction from {context}", chars=len(markdown))
 
-        # Validation for empty markdown
+        # Early validation for empty markdown
         if not markdown or len(markdown.strip()) == 0:
-            rich_print(
-                f"[red]Error:[/red] Extracted markdown is empty for {context}. Cannot proceed with LLM extraction."
-            )
+            self._log_error(f"Markdown is empty for {context}. Cannot proceed.")
             return None
 
-        try:
-            # Get the Pydantic schema as JSON
-            schema_json = json.dumps(template.model_json_schema(), indent=2)
+        # Get cached schema JSON
+        schema_json = self._get_schema_json(template)
 
-            # Generate prompt with model configuration
-            prompt = get_extraction_prompt(
-                markdown_content=markdown,
-                schema_json=schema_json,
-                is_partial=is_partial,
-                model_config=self.model_config,
-            )
-
-            # Call LLM with correct method name
-            parsed_json = self.client.get_json_response(prompt=prompt, schema_json=schema_json)
-
-            if not parsed_json:
-                rich_print(
-                    f"[yellow]Warning:[/yellow] No valid JSON returned from LLM for {context}"
-                )
-                return None
-
-            # Use model_validate for proper Pydantic validation
-            try:
-                validated_model = template.model_validate(parsed_json)
-                rich_print(f"[blue][LlmBackend][/blue] Successfully extracted data from {context}")
-                return validated_model
-
-            except ValidationError as e:
-                # Detailed error reporting
-                rich_print(
-                    f"[blue][LlmBackend][/blue] [yellow]Validation Error for {context}:[/yellow]"
-                )
-                rich_print("  The data extracted by the LLM does not match your Pydantic template.")
-                rich_print("[red]Details:[/red]")
-                for error in e.errors():
-                    loc = " -> ".join(map(str, error["loc"]))
-                    rich_print(f"  - [bold magenta]{loc}[/bold magenta]: [red]{error['msg']}[/red]")
-                rich_print(f"\n[yellow]Extracted Data (raw):[/yellow]\n{parsed_json}\n")
-                return None
-
-        except Exception as e:
-            rich_print(
-                f"[red]Error during LLM extraction for {context}:[/red] {type(e).__name__}: {e}"
-            )
-            return None
-
-    def consolidate_from_pydantic_models(
-        self,
-        raw_models: List[BaseModel],
-        programmatic_model: BaseModel,
-        template: Type[BaseModel],
-    ) -> BaseModel | None:
-        """
-        Uses an LLM to consolidate multiple extracted models with multi-turn support.
-
-        Handles both single-prompt and Chain of Density (multi-turn) consolidation
-        based on model capability.
-
-        Args:
-            raw_models: The list of raw models from each batch/page.
-            programmatic_model: The programmatically merged model (as a draft).
-            template: The Pydantic model template to validate against.
-
-        Returns:
-            A single, validated, LLM-consolidated Pydantic model, or None if failed.
-        """
-        capability_str = self.model_config.capability.value if self.model_config else "unknown"
-        rich_print(
-            f"[blue][LlmBackend][/blue] Consolidating {len(raw_models)} models "
-            f"(capability: {capability_str})..."
+        # Call LLM
+        parsed_json = self._call_llm_for_extraction(
+            markdown=markdown,
+            schema_json=schema_json,
+            is_partial=is_partial,
+            context=context,
         )
 
-        try:
-            schema_json = json.dumps(template.model_json_schema(), indent=2)
+        if not parsed_json:
+            return None
 
-            # Get prompt(s) - may be string or list for Chain of Density
-            prompts = get_consolidation_prompt(
-                schema_json=schema_json,
-                raw_models=raw_models,
-                programmatic_model=programmatic_model,
-                model_config=self.model_config,
+        # Validate and return
+        return self._validate_extraction(parsed_json, template, context)
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int | None = None,
+    ) -> Any:
+        """
+        Generate a text response from the LLM for consolidation.
+
+        This method is used by LLM consolidation to generate patches.
+        It returns a simple response object with a 'text' attribute.
+
+        Args:
+            system_prompt: System prompt for the LLM
+            user_prompt: User prompt for the LLM
+            max_tokens: Maximum tokens to generate (optional)
+
+        Returns:
+            Response object with 'text' attribute containing the LLM's response
+        """
+        # Build prompt dictionary
+        prompt = {
+            "system": system_prompt,
+            "user": user_prompt,
+        }
+
+        # Call the LLM client
+        # Note: We're using get_json_response but the consolidation prompt
+        # should guide the LLM to return JSON format
+        try:
+            response = self.client.get_json_response(
+                prompt=prompt,
+                schema_json="{}",  # Empty schema for free-form response
             )
 
-            # Handle multi-turn consolidation (Chain of Density)
-            if isinstance(prompts, list):
-                rich_print(
-                    f"[blue][LlmBackend][/blue] Using Chain of Density ({len(prompts)} stages)..."
-                )
+            # Wrap response in an object with 'text' attribute
+            class Response:
+                def __init__(self, data: Any) -> None:
+                    if isinstance(data, dict):
+                        self.text = json.dumps(data)
+                    elif isinstance(data, str):
+                        self.text = data
+                    else:
+                        self.text = str(data)
 
-                # Stage 1: Initial merge
-                stage1_result = self.client.get_json_response(
-                    prompt=prompts[0], schema_json=schema_json
-                )
-
-                if not stage1_result:
-                    rich_print("[yellow]Warning:[/yellow] Stage 1 consolidation failed")
-                    return None
-
-                # Stage 2: Refinement (inject stage1 result)
-                raw_jsons = "\n\n---\n\n".join(m.model_dump_json(indent=2) for m in raw_models)
-                stage2_prompt = prompts[1].format(
-                    schema=schema_json,
-                    stage1_result=json.dumps(stage1_result, indent=2),
-                    originals=raw_jsons,
-                )
-
-                final_result = self.client.get_json_response(
-                    prompt=stage2_prompt, schema_json=schema_json
-                )
-
-                if not final_result:
-                    rich_print(
-                        "[yellow]Warning:[/yellow] Stage 2 refinement failed, using stage 1 result"
-                    )
-                    parsed_json = stage1_result
-                else:
-                    parsed_json = final_result
-
-            else:
-                # Single-turn consolidation
-                parsed_json = self.client.get_json_response(prompt=prompts, schema_json=schema_json)
-
-            if not parsed_json:
-                rich_print("[yellow]Warning:[/yellow] LLM consolidation returned no valid JSON.")
-                return None
-
-            # Use model_validate for proper Pydantic validation
-            try:
-                validated_model = template.model_validate(parsed_json)
-                rich_print(
-                    "[blue][LlmBackend][/blue] Successfully consolidated and validated model."
-                )
-                return validated_model
-
-            except ValidationError as e:
-                rich_print(
-                    "[blue][LlmBackend][/blue] [yellow]Validation Error during consolidation:[/yellow]"
-                )
-                rich_print(
-                    "  The data consolidated by the LLM does not match your Pydantic template."
-                )
-                rich_print("[red]Details:[/red]")
-
-                for error in e.errors():
-                    loc = " -> ".join(map(str, error["loc"]))
-                    rich_print(f"  - [bold magenta]{loc}[/bold magenta]: [red]{error['msg']}[/red]")
-                rich_print(f"\n[yellow]Consolidated Data (raw):[/yellow]\n{parsed_json}\n")
-                return None
+            return Response(response)
 
         except Exception as e:
-            rich_print(f"[red]Error during LLM consolidation:[/red] {type(e).__name__}: {e}")
-            return None
+            rich_print(f"[blue][LlmBackend][/blue] [red]Error in generate:[/red] {e}")
+
+            # Return empty response on error
+            class EmptyResponse:
+                text = "{}"
+
+            return EmptyResponse()
 
     def cleanup(self) -> None:
         """

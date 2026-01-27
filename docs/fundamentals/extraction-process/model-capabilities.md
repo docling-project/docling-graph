@@ -66,9 +66,9 @@ The system uses a **3-tier priority system** for accurate capability detection:
 !!! note "Context Window Caveat"
     Modern small models can have large contexts (e.g., Granite 1B with 128K)
 
-**Registry Lookup:**
-- For known models in `models.yaml`, explicit capability is always used
-- Fallback detection only applies to unregistered models
+**LiteLLM Metadata:**
+- Capability is inferred from LiteLLM context window and model name
+- Fallback detection only applies when metadata is unavailable
 
 ---
 
@@ -222,46 +222,9 @@ run_pipeline(config)
 
 ## Supported Models
 
-### Complete Model List
-
-See the full list of classified models in [`models.yaml`](https://github.com/IBM/docling-graph/blob/main/docling_graph/llm_clients/models.yaml).
-
-#### SIMPLE Tier (1B-7B)
-
-**Local Models:**
-- `ibm-granite/granite-4.0-1b`
-- `meta-llama/Llama-3.2-1B`
-- `meta-llama/Llama-3.2-3B`
-- `numind/NuExtract-2.0-2B`
-- `Qwen/Qwen2.5-1.5B`
-
-#### STANDARD Tier (7B-13B)
-
-**Local Models:**
-- `meta-llama/Llama-3.1-8B`
-- `mistralai/Mistral-7B-v0.1`
-- `numind/NuExtract-2.0-8B`
-- `Qwen/Qwen2.5-7B`
-
-**Remote APIs:**
-- `mistral-small-latest` (Mistral)
-- `gemini-1.5-flash` (Google)
-
-#### ADVANCED Tier (13B+)
-
-**Remote APIs:**
-- `gpt-4-turbo` (OpenAI)
-- `gpt-4o` (OpenAI)
-- `claude-3.5-sonnet` (Anthropic)
-- `claude-3-opus` (Anthropic)
-- `gemini-2.5-flash` (Google)
-- `gemini-2.5-pro` (Google)
-- `mistral-large-latest` (Mistral)
-- `mistral-medium-latest` (Mistral)
-
-**IBM WatsonX:**
-- `ibm/granite-13b-chat-v2`
-- `meta-llama/llama-3-1-70b-instruct`
+Model capability tiers are derived from LiteLLM metadata at runtime.
+The project no longer keeps a static model list; use LiteLLM's model catalog
+or your provider documentation for supported models.
 
 ---
 

@@ -81,13 +81,9 @@ Graph export formats.
 - `DoclingExporter` - Docling documents
 
 **[LLM Clients](llm-clients.md)**  
-LLM client implementations.
+LiteLLM-backed client for all LLM calls.
 
-- `OllamaClient` - Ollama integration
-- `MistralClient` - Mistral AI
-- `OpenAIClient` - OpenAI
-- `GeminiClient` - Google Gemini
-- `VLLMClient` - vLLM server
+- `LiteLLMClient` - Provider-agnostic client
 
 ---
 

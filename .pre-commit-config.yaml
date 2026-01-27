@@ -17,7 +17,7 @@ repos:
     hooks:
       - id: mypy
         name: MyPy
-        entry: uv run --no-sync mypy docling_graph
+        entry: bash -c "source .venv/bin/activate && mypy docling_graph"
         pass_filenames: false
         language: system
         files: '\.py$'
@@ -25,10 +25,10 @@ repos:
     hooks:
       - id: pytest
         name: Pytest
-        entry: uv run --no-sync pytest --cov=docling_graph --cov-report=xml tests
+        entry: bash -c "source .venv/bin/activate && pytest --cov=docling_graph --cov-report=xml tests"
         pass_filenames: false
         language: system
-        files: '\.py$'	
+        files: '\.py$'
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.8.3
     hooks:

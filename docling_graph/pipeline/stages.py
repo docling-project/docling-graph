@@ -35,7 +35,8 @@ from ..core.input import (
     URLValidator,
 )
 from ..exceptions import ConfigurationError, ExtractionError, PipelineError
-from ..llm_clients import BaseLlmClient, get_client
+from ..llm_clients import get_client
+from ..protocols import LLMClientProtocol
 from .context import PipelineContext
 
 logger = logging.getLogger(__name__)
@@ -405,10 +406,6 @@ class ExtractionStage(PipelineStage):
         logger.info(f"[{self.name()}] Creating extractor...")
         context.extractor = self._create_extractor(context)
 
-        # Pass trace_data to extractor if available
-        if context.trace_data:
-            context.extractor.trace_data = context.trace_data
-
         logger.info(f"[{self.name()}] Extracting from: {context.config.source}")
         context.extracted_models, context.docling_document = context.extractor.extract(
             str(context.config.source), context.template
@@ -420,34 +417,6 @@ class ExtractionStage(PipelineStage):
             )
 
         logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
-
-        # Capture page data if trace is enabled
-        if context.trace_data and context.docling_document:
-            from ..pipeline.trace import PageData
-
-            for page_no in sorted(context.docling_document.pages.keys()):
-                page_md = context.docling_document.export_to_markdown(page_no=page_no)
-
-                # Check if page has tables by examining document-level tables array
-                # Tables are stored at document level with prov array indicating page numbers
-                has_tables = False
-                if hasattr(context.docling_document, "tables") and context.docling_document.tables:
-                    has_tables = any(
-                        any(prov.page_no == page_no for prov in table.prov)
-                        for table in context.docling_document.tables
-                    )
-
-                page_data = PageData(
-                    page_number=page_no,
-                    text_content=page_md,
-                    metadata={
-                        "page_size": len(page_md),
-                        "has_tables": has_tables,
-                    },
-                )
-                context.trace_data.pages.append(page_data)
-
-            logger.info(f"[{self.name()}] Captured {len(context.trace_data.pages)} pages")
 
         return context
 
@@ -485,16 +454,19 @@ class ExtractionStage(PipelineStage):
                 docling_config=conf["docling_config"],
             )
         else:
-            llm_client = self._initialize_llm_client(
-                model_config["provider"], model_config["model"]
-            )
+            if context.config.llm_client is not None:
+                llm_client = context.config.llm_client
+            else:
+                llm_client = self._initialize_llm_client(
+                    model_config["provider"],
+                    model_config["model"],
+                    context.config.llm_overrides,
+                )
             return ExtractorFactory.create_extractor(
                 processing_mode=processing_mode,
                 backend_name="llm",
                 llm_client=llm_client,
                 docling_config=conf["docling_config"],
-                llm_consolidation=conf.get("llm_consolidation", True),
-                use_chunking=conf.get("use_chunking", True),
             )
 
     @staticmethod
@@ -513,19 +485,8 @@ class ExtractionStage(PipelineStage):
                 details={"backend": backend, "inference": inference},
             )
 
-        provider = provider_override or model_config.get(
-            "provider", "ollama" if inference == "local" else "mistral"
-        )
-
-        if model_override:
-            model = model_override
-        elif provider_override and inference == "remote":
-            providers = model_config.get("providers", {})
-            model = providers.get(provider_override, {}).get(
-                "default_model", model_config.get("default_model")
-            )
-        else:
-            model = model_config.get("default_model")
+        provider = provider_override or model_config.get("provider")
+        model = model_override or model_config.get("model")
 
         if not model:
             raise ConfigurationError(
@@ -535,16 +496,28 @@ class ExtractionStage(PipelineStage):
         return {"model": model, "provider": provider}
 
     @staticmethod
-    def _initialize_llm_client(provider: str, model: str) -> BaseLlmClient:
+    def _initialize_llm_client(
+        provider: str, model: str, overrides: Any | None = None
+    ) -> LLMClientProtocol:
         """Initialize LLM client based on provider."""
+        from docling_graph.llm_clients.config import (
+            LlmRuntimeOverrides,
+            resolve_effective_model_config,
+        )
+
         client_class = get_client(provider)
-        return client_class(model=model)
+        effective_config = resolve_effective_model_config(
+            provider,
+            model,
+            overrides=overrides if isinstance(overrides, LlmRuntimeOverrides) else None,
+        )
+        return client_class(model_config=effective_config)
 
     def _extract_from_text(self, context: PipelineContext) -> List[Any]:
         """
         Extract from text-based inputs (plain text, .txt, .md).
 
-        Skips document conversion and directly uses LLM extraction.
+        Uses a single LLM call for direct extraction.
 
         Args:
             context: Pipeline context with normalized text
@@ -580,7 +553,19 @@ class ExtractionStage(PipelineStage):
                 },
             )
 
-        logger.info(f"[{self.name()}] Extracting from text using LLM backend...")
+        # Type assertions for mypy
+        if not isinstance(context.normalized_source, str):
+            raise ExtractionError(
+                "Normalized source must be a string for text extraction",
+                details={"type": type(context.normalized_source).__name__},
+            )
+        if context.template is None:
+            raise ExtractionError(
+                "Template is required for extraction",
+                details={"template": None},
+            )
+
+        logger.info(f"[{self.name()}] Extracting from text using LLM backend (direct extraction)")
 
         # Initialize LLM client
         inference = cast(str, conf["inference"])
@@ -593,25 +578,19 @@ class ExtractionStage(PipelineStage):
             conf.get("provider_override"),
         )
 
-        llm_client = self._initialize_llm_client(model_config["provider"], model_config["model"])
+        if context.config.llm_client is not None:
+            llm_client = context.config.llm_client
+        else:
+            llm_client = self._initialize_llm_client(
+                model_config["provider"],
+                model_config["model"],
+                context.config.llm_overrides,
+            )
 
         # Import LlmBackend here to avoid circular imports
         from ..core.extractors.backends.llm_backend import LlmBackend
 
         llm_backend = LlmBackend(llm_client)
-
-        # Extract directly from text
-        # Type assertions for mypy
-        if not isinstance(context.normalized_source, str):
-            raise ExtractionError(
-                "Normalized source must be a string for text extraction",
-                details={"type": type(context.normalized_source).__name__},
-            )
-        if context.template is None:
-            raise ExtractionError(
-                "Template is required for extraction",
-                details={"template": None},
-            )
 
         extracted_model = llm_backend.extract_from_markdown(
             markdown=context.normalized_source,
@@ -674,70 +653,25 @@ class ExtractionStage(PipelineStage):
                 details={"extractor_type": type(context.extractor).__name__},
             )
 
-        # Check if chunking is enabled
-        use_chunking = context.config.to_dict().get("use_chunking", True)
-
         try:
-            if use_chunking and doc_processor.chunker:
-                # Use the extractor's chunk-based extraction method
-                logger.info(f"[{self.name()}] Using chunk-based extraction")
+            # Convert entire document to markdown and extract in a single call
+            logger.info(f"[{self.name()}] Converting DoclingDocument to markdown")
+            markdown_text = context.docling_document.export_to_markdown()
 
-                # Call the extractor's internal chunk extraction method if available
-                if hasattr(context.extractor, "_extract_with_chunks"):
-                    extracted_models: list[Any] = context.extractor._extract_with_chunks(
-                        backend, context.docling_document, context.template
-                    )
-                else:
-                    # Fallback: extract chunks and process them
-                    chunks = doc_processor.extract_chunks(context.docling_document)
-                    logger.info(f"[{self.name()}] Processing {len(chunks)} chunks")
+            extracted_model = backend.extract_from_markdown(
+                markdown=markdown_text,
+                template=context.template,
+                context="DoclingDocument",
+                is_partial=False,
+            )
 
-                    # Process chunks through backend
-                    partial_models = []
-                    for i, chunk in enumerate(chunks):
-                        logger.info(f"[{self.name()}] Extracting from chunk {i + 1}/{len(chunks)}")
-                        model = backend.extract_from_markdown(
-                            markdown=chunk,
-                            template=context.template,
-                            context=f"DoclingDocument chunk {i + 1}/{len(chunks)}",
-                            is_partial=True,
-                        )
-                        if model:
-                            partial_models.append(model)
-
-                    # Merge partial models
-                    if partial_models:
-                        from ..core.utils.dict_merger import merge_pydantic_models
-
-                        if context.template is None:
-                            raise ExtractionError(
-                                "Template is required for merging partial models",
-                                details={"input_type": "docling_document"},
-                            )
-                        merged_model = merge_pydantic_models(partial_models, context.template)
-                        extracted_models = [merged_model] if merged_model else partial_models[:1]
-                    else:
-                        extracted_models = []
-            else:
-                # No chunking - convert entire document to markdown
-                logger.info(f"[{self.name()}] Converting DoclingDocument to markdown")
-                markdown_text = context.docling_document.export_to_markdown()
-
-                # Extract from the full markdown
-                extracted_model = backend.extract_from_markdown(
-                    markdown=markdown_text,
-                    template=context.template,
-                    context="DoclingDocument",
-                    is_partial=False,
+            if not extracted_model:
+                raise ExtractionError(
+                    "Failed to extract data from DoclingDocument",
+                    details={"markdown_length": len(markdown_text)},
                 )
 
-                if not extracted_model:
-                    raise ExtractionError(
-                        "Failed to extract data from DoclingDocument",
-                        details={"markdown_length": len(markdown_text)},
-                    )
-
-                extracted_models = [extracted_model]
+            extracted_models = [extracted_model]
 
             if not extracted_models:
                 raise ExtractionError(
@@ -891,47 +825,6 @@ class ExportStage(PipelineStage):
         logger.info(f"Saved JSON to {json_path}")
 
         logger.info(f"[{self.name()}] Exported to {graph_dir}")
-        return context
-
-
-class TraceExportStage(PipelineStage):
-    """Export trace data to disk."""
-
-    def name(self) -> str:
-        return "Trace Export"
-
-    def execute(self, context: PipelineContext) -> PipelineContext:
-        """Export all trace data using TraceExporter."""
-        if not context.trace_data or not context.output_manager:
-            logger.info(f"[{self.name()}] Skipped (no trace data or output manager)")
-            return context
-
-        logger.info(f"[{self.name()}] Exporting trace data...")
-
-        from ..core.utils.trace_exporter import TraceExporter
-
-        exporter = TraceExporter(context.output_manager)
-
-        # Queue all trace data
-        for page in context.trace_data.pages:
-            exporter.queue_page_export(page.page_number, page)
-
-        if context.trace_data.chunks:
-            for chunk in context.trace_data.chunks:
-                exporter.queue_chunk_export(chunk.chunk_id, chunk)
-            exporter.queue_chunks_metadata(context.trace_data.chunks)
-
-        for extraction in context.trace_data.extractions:
-            exporter.queue_extraction_export(extraction)
-
-        for graph in context.trace_data.intermediate_graphs:
-            mode = "per_chunk" if graph.source_type == "chunk" else "per_page"
-            exporter.queue_graph_export(graph, mode)
-
-        # Flush all writes
-        exporter.flush()
-
-        logger.info(f"[{self.name()}] Exported {exporter.get_pending_count()} files")
         return context
 
 

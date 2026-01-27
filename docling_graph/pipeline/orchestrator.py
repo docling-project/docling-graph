@@ -8,6 +8,7 @@ of pipeline stages, handles errors, and manages resource cleanup.
 import gc
 import logging
 import time
+from pathlib import Path
 from typing import Any, Dict, Literal, Union
 
 from .. import __version__
@@ -56,15 +57,6 @@ class PipelineOrchestrator:
             # User explicitly set dump_to_disk
             self.dump_to_disk = config.dump_to_disk
 
-        # Auto-detect include_trace based on mode if not explicitly set
-        if config.include_trace is None:
-            # CLI mode: include trace by default
-            # API mode: don't include trace by default (memory-efficient)
-            self.include_trace = mode == "cli"
-        else:
-            # User explicitly set include_trace
-            self.include_trace = config.include_trace
-
         # Core stages (always executed)
         self.stages: list[PipelineStage] = [
             InputNormalizationStage(mode=mode),
@@ -75,12 +67,6 @@ class PipelineOrchestrator:
 
         # Export stages (conditional based on dump_to_disk)
         if self.dump_to_disk:
-            # Add TraceExportStage before other exports if trace is enabled
-            if self.include_trace:
-                from .stages import TraceExportStage
-
-                self.stages.append(TraceExportStage())
-
             self.stages.extend(
                 [
                     DoclingExportStage(),
@@ -107,8 +93,6 @@ class PipelineOrchestrator:
 
         # Initialize OutputDirectoryManager if dumping to disk
         if self.dump_to_disk:
-            from pathlib import Path
-
             from ..core.utils.output_manager import OutputDirectoryManager
 
             source_filename = Path(self.config.source).name if self.config.source else "output"
@@ -117,13 +101,6 @@ class PipelineOrchestrator:
             )
             logger.info(f"Output directory: {context.output_manager.get_document_dir()}")
 
-        # Initialize TraceData if trace is enabled
-        if self.include_trace:
-            from .context import TraceData
-
-            context.trace_data = TraceData()
-            logger.info("Trace data collection enabled")
-
         logger.info("--- Starting Docling-Graph Pipeline ---")
 
         try:
@@ -131,16 +108,6 @@ class PipelineOrchestrator:
                 current_stage = stage
                 logger.info(f">>> Stage: {stage.name()}")
                 context = stage.execute(context)
-
-            # Log trace data summary if enabled
-            if self.include_trace and context.trace_data:
-                logger.info("Trace data collection complete")
-                logger.info(f"  Pages: {len(context.trace_data.pages)}")
-                logger.info(
-                    f"  Chunks: {len(context.trace_data.chunks) if context.trace_data.chunks else 0}"
-                )
-                logger.info(f"  Extractions: {len(context.trace_data.extractions)}")
-                logger.info(f"  Intermediate graphs: {len(context.trace_data.intermediate_graphs)}")
 
             # Calculate total processing time
             pipeline_end_time = time.time()
@@ -158,21 +125,17 @@ class PipelineOrchestrator:
                 if not actual_model or not actual_provider:
                     if self.config.backend == "llm":
                         if self.config.inference == "local":
-                            actual_model = (
-                                actual_model or self.config.models.llm.local.default_model
-                            )
+                            actual_model = actual_model or self.config.models.llm.local.model
                             actual_provider = (
                                 actual_provider or self.config.models.llm.local.provider
                             )
                         else:  # remote
-                            actual_model = (
-                                actual_model or self.config.models.llm.remote.default_model
-                            )
+                            actual_model = actual_model or self.config.models.llm.remote.model
                             actual_provider = (
                                 actual_provider or self.config.models.llm.remote.provider
                             )
                     else:  # vlm
-                        actual_model = actual_model or self.config.models.vlm.local.default_model
+                        actual_model = actual_model or self.config.models.vlm.local.model
                         actual_provider = actual_provider or self.config.models.vlm.local.provider
 
                 metadata = {
@@ -185,7 +148,7 @@ class PipelineOrchestrator:
                     "config": {
                         "pipeline": {
                             "processing_mode": self.config.processing_mode,
-                            "include_trace": self.include_trace,
+                            "debug": self.config.debug,
                             "reverse_edges": self.config.reverse_edges,
                             "docling": self.config.docling_config,
                         },
@@ -195,7 +158,6 @@ class PipelineOrchestrator:
                             "model": actual_model,
                             "provider": actual_provider,
                             "use_chunking": self.config.use_chunking,
-                            "llm_consolidation": self.config.llm_consolidation,
                             "max_batch_size": self.config.max_batch_size,
                         },
                     },
@@ -208,31 +170,6 @@ class PipelineOrchestrator:
                         else 0,
                     },
                 }
-
-                if self.include_trace and context.trace_data:
-                    # Build detailed intermediate graphs info
-                    intermediate_graphs_detail = [
-                        {
-                            "graph_id": g.graph_id,
-                            "source_type": g.source_type,
-                            "source_id": g.source_id,
-                            "nodes": g.node_count,
-                            "edges": g.edge_count,
-                        }
-                        for g in context.trace_data.intermediate_graphs
-                    ]
-
-                    metadata["trace_summary"] = {
-                        "pages": len(context.trace_data.pages),
-                        "chunks": len(context.trace_data.chunks)
-                        if context.trace_data.chunks
-                        else 0,
-                        "extractions": len(context.trace_data.extractions),
-                        "intermediate_graphs": {
-                            "count": len(context.trace_data.intermediate_graphs),
-                            "details": intermediate_graphs_detail,
-                        },
-                    }
 
                 context.output_manager.save_metadata(metadata)
                 logger.info(

@@ -49,20 +49,14 @@ config = PipelineConfig(
     backend="llm",
     inference="remote",
     provider_override="mistral",
-    model_override="mistral-small-latest",
-    output_dir="outputs/invoice"
+    model_override="mistral-small-latest"
 )
 
 # Run pipeline
 print("Processing invoice...")
-run_pipeline(config)
-print(f"✅ Complete! Results in: {config.output_dir}")
-
-# Read results
-import pandas as pd
-nodes = pd.read_csv(f"{config.output_dir}/nodes.csv")
-print(f"\nExtracted {len(nodes)} nodes")
-print(nodes.head())
+context = run_pipeline(config)
+graph = context.knowledge_graph
+print(f"✅ Complete! Extracted {graph.number_of_nodes()} nodes")
 ```
 
 **Run:**
@@ -98,8 +92,7 @@ config = PipelineConfig(
     model_override="llama3:8b",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=False,  # Faster
-    output_dir="outputs/research"
+    llm_consolidation=False  # Faster
 )
 
 print("Processing with Ollama...")
@@ -141,21 +134,18 @@ config = PipelineConfig(
     backend="vlm",
     inference="local",  # VLM only supports local
     processing_mode="one-to-one",
-    docling_config="vision",
-    output_dir="outputs/id_card"
+    docling_config="vision"
 )
 
 print("Extracting from image...")
-run_pipeline(config)
+context = run_pipeline(config)
 print("✅ Complete!")
 
 # Display results
-import json
-with open("outputs/id_card/graph.json") as f:
-    graph = json.load(f)
-    print(f"\nExtracted {len(graph['nodes'])} nodes")
-    for node in graph['nodes'][:5]:
-        print(f"  - {node['label']}: {node.get('properties', {})}")
+graph = context.knowledge_graph
+print(f"\nExtracted {graph.number_of_nodes()} nodes")
+for node_id, node_data in list(graph.nodes(data=True))[:5]:
+    print(f"  - {node_id}: {node_data}")
 ```
 
 **Run:**
@@ -191,22 +181,18 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     use_chunking=True,
     llm_consolidation=True,  # Higher accuracy
-    docling_config="vision",  # Better for complex layouts
-    output_dir="outputs/research"
+    docling_config="vision"  # Better for complex layouts
 )
 
 print("Processing rheology research (this may take a few minutes)...")
-run_pipeline(config)
+context = run_pipeline(config)
 print("✅ Complete!")
 
 # Analyze results
-import json
-with open("outputs/research/graph_stats.json") as f:
-    stats = json.load(f)
-    print(f"\nGraph Statistics:")
-    print(f"  Nodes: {stats['node_count']}")
-    print(f"  Edges: {stats['edge_count']}")
-    print(f"  Density: {stats['density']:.3f}")
+graph = context.knowledge_graph
+print(f"\nGraph Statistics:")
+print(f"  Nodes: {graph.number_of_nodes()}")
+print(f"  Edges: {graph.number_of_edges()}")
 ```
 
 **Run:**
@@ -231,7 +217,7 @@ from pathlib import Path
 from docling_graph import run_pipeline, PipelineConfig
 from tqdm import tqdm
 
-def process_batch(input_dir: str, template: str, output_base: str):
+def process_batch(input_dir: str, template: str):
     """Process all PDFs in a directory."""
     documents = list(Path(input_dir).glob("*.pdf"))
     results = {"success": [], "failed": []}
@@ -242,8 +228,7 @@ def process_batch(input_dir: str, template: str, output_base: str):
         try:
             config = PipelineConfig(
                 source=str(doc),
-                template=template,
-                output_dir=f"{output_base}/{doc.stem}"
+                template=template
             )
             run_pipeline(config)
             results["success"].append(doc.name)
@@ -267,8 +252,7 @@ def process_batch(input_dir: str, template: str, output_base: str):
 if __name__ == "__main__":
     results = process_batch(
         input_dir="documents/invoices",
-        template="templates.billing_document.BillingDocument",
-        output_base="outputs/batch"
+        template="templates.billing_document.BillingDocument"
     )
 ```
 
@@ -311,7 +295,6 @@ logger = logging.getLogger(__name__)
 def process_document(
     source: str,
     template: str,
-    output_dir: Optional[str] = None,
     max_retries: int = 3
 ) -> bool:
     """
@@ -320,23 +303,18 @@ def process_document(
     Args:
         source: Path to source document
         template: Pydantic template path
-        output_dir: Output directory (auto-generated if None)
         max_retries: Maximum retry attempts
     
     Returns:
         True if successful, False otherwise
     """
-    if output_dir is None:
-        output_dir = f"outputs/{Path(source).stem}"
-    
     for attempt in range(1, max_retries + 1):
         try:
             logger.info(f"Processing {source} (attempt {attempt}/{max_retries})")
             
             config = PipelineConfig(
                 source=source,
-                template=template,
-                output_dir=output_dir
+                template=template
             )
             
             run_pipeline(config)
@@ -449,26 +427,17 @@ def process_document():
     
     try:
         # Process document
-        output_dir = Path(app.config['OUTPUT_FOLDER']) / job_id
-        
         config = PipelineConfig(
             source=str(temp_path),
-            template=template,
-            output_dir=str(output_dir)
+            template=template
         )
-        
-        run_pipeline(config)
-        
+
+        context = run_pipeline(config)
+
         return jsonify({
             "status": "success",
             "job_id": job_id,
-            "output_dir": str(output_dir),
-            "files": {
-                "nodes": f"/download/{job_id}/nodes.csv",
-                "edges": f"/download/{job_id}/edges.csv",
-                "graph": f"/download/{job_id}/graph.json",
-                "visualization": f"/download/{job_id}/graph_visualization.html"
-            }
+            "model": context.pydantic_model.model_dump()
         })
         
     except DoclingGraphError as e:
@@ -487,16 +456,6 @@ def process_document():
     finally:
         # Cleanup temp file
         temp_path.unlink(missing_ok=True)
-
-@app.route('/download/<job_id>/<filename>', methods=['GET'])
-def download_file(job_id, filename):
-    """Download processed file."""
-    file_path = Path(app.config['OUTPUT_FOLDER']) / job_id / filename
-    
-    if not file_path.exists():
-        return jsonify({"error": "File not found"}), 404
-    
-    return send_file(file_path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
@@ -538,17 +497,19 @@ sns.set_style("whitegrid")
 # Cell 2: Process Document
 config = PipelineConfig(
     source="documents/research.pdf",
-    template="docs.examples.templates.rheology_research.ScholarlyRheologyPaper",
-    output_dir="outputs/research"
+    template="docs.examples.templates.rheology_research.ScholarlyRheologyPaper"
 )
 
 print("Processing document...")
-run_pipeline(config)
+context = run_pipeline(config)
 print("✅ Complete!")
 
 # Cell 3: Load Results
-nodes = pd.read_csv("outputs/research/nodes.csv")
-edges = pd.read_csv("outputs/research/edges.csv")
+graph = context.knowledge_graph
+nodes = pd.DataFrame([{"id": node_id, **attrs} for node_id, attrs in graph.nodes(data=True)])
+edges = pd.DataFrame(
+    [{"source": u, "target": v, **attrs} for u, v, attrs in graph.edges(data=True)]
+)
 
 print(f"Nodes: {len(nodes)}")
 print(f"Edges: {len(edges)}")
@@ -650,27 +611,6 @@ try:
     run_pipeline(config)
 except:
     pass
-```
-
-### 👍 Organize Outputs
-
-```python
-# ✅ Good - Organized structure
-from datetime import datetime
-
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.BillingDocument",
-    output_dir=f"outputs/invoices/{timestamp}"
-)
-
-# ❌ Avoid - Overwriting
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.BillingDocument",
-    output_dir="outputs"  # Same for all
-)
 ```
 
 ---

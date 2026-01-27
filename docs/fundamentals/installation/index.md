@@ -33,105 +33,17 @@ This installs:
 - ✅ Core graph functionality
 - ❌ LLM providers (not included)
 
-### Full Installation
+### Installation
 
-For all features (VLM + all LLM providers):
+LiteLLM is included by default; no extra installs are required for LLM providers.
 
 ```bash
 # Clone repository
 git clone https://github.com/IBM/docling-graph
 cd docling-graph
 
-# Install all dependencies
-uv sync --extra all
-```
-
-This installs:
-
-- ✅ Everything from minimal
-- ✅ vLLM (local LLM inference)
-- ✅ Ollama client
-- ✅ Mistral AI client
-- ✅ OpenAI client
-- ✅ Google Gemini client
-- ✅ IBM WatsonX client
-
-## Installation Options
-
-### By Feature Set
-
-Choose the installation that matches your needs:
-
-#### Local LLM Support
-
-For local inference with vLLM and Ollama:
-
-```bash
-uv sync --extra local
-```
-
-**Includes**:
-- vLLM (requires GPU)
-- Ollama client
-
-**Use when**:
-- You have GPU available
-- Privacy is critical
-- No API costs desired
-
-#### Remote API Support
-
-For cloud-based LLM providers:
-
-```bash
-uv sync --extra remote
-```
-
-**Includes**:
-- Mistral AI client
-- OpenAI client
-- Google Gemini client
-- IBM WatsonX client
-
-**Use when**:
-- No GPU available
-- Need high-quality models
-- Willing to pay API costs
-
-#### Individual Providers
-
-Install specific providers only:
-
-```bash
-# OpenAI only
-uv sync --extra openai
-
-# Mistral only
-uv sync --extra mistral
-
-# Google Gemini only
-uv sync --extra gemini
-
-# IBM WatsonX only
-uv sync --extra watsonx
-
-# Ollama only (local)
-uv sync --extra ollama
-
-# vLLM only (local, requires GPU)
-uv sync --extra vllm
-```
-
-### Combining Features
-
-You can combine multiple extras:
-
-```bash
-# Local + Remote
-uv sync --extra local --extra remote
-
-# Specific providers
-uv sync --extra ollama --extra openai --extra mistral
+# Install dependencies
+uv sync
 ```
 
 ## System Requirements
@@ -283,7 +195,7 @@ To update to the latest version:
 git pull origin main
 
 # Sync dependencies
-uv sync --extra all
+uv sync
 ```
 
 ## Uninstalling

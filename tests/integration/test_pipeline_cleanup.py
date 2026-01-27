@@ -53,16 +53,6 @@ def test_pipeline_removes_empty_directory_on_failure(invalid_template_config, te
                 assert len(files) > 0, f"Empty directory found: {subdir}"
 
 
-def test_pipeline_keeps_directory_with_partial_results(temp_output_dir, monkeypatch):
-    """Test that pipeline keeps directory if any files were written before failure."""
-    # This test would require a more complex setup where we:
-    # 1. Start the pipeline successfully
-    # 2. Write some files
-    # 3. Then trigger a failure
-    # For now, we'll skip this as it requires mocking internal stages
-    pytest.skip("Requires complex mocking of pipeline stages")
-
-
 def test_pipeline_no_cleanup_when_dump_to_disk_false(temp_output_dir):
     """Test that no cleanup is attempted when dump_to_disk is False."""
     config = PipelineConfig(

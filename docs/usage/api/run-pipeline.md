@@ -31,8 +31,8 @@ context = run_pipeline({
 
 # Access results
 graph = context.knowledge_graph
-model = context.pydantic_model
-print(f"Extracted {graph.number_of_nodes()} nodes")
+models = context.extracted_models or []
+print(f"Extracted {graph.number_of_nodes()} nodes, {len(models)} model(s)")
 ```
 
 ### With File Exports
@@ -105,10 +105,8 @@ context = run_pipeline(config)
 | `processing_mode` | `str` | `"many-to-one"` | Processing strategy |
 | `docling_config` | `str` | `"ocr"` | Docling pipeline: `"ocr"` or `"vision"` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `llm_consolidation` | `bool` | `False` | Enable LLM consolidation |
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports (None=auto: CLI=True, API=False) |
 | `export_format` | `str` | `"csv"` | Export format: `"csv"` or `"cypher"` |
-| `output_dir` | `str` | `"outputs"` | Output directory path |
 | `model_override` | `str` | `None` | Override model name |
 | `provider_override` | `str` | `None` | Override provider name |
 
@@ -125,10 +123,10 @@ Returns a `PipelineContext` object containing:
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `knowledge_graph` | `nx.DiGraph` | NetworkX directed graph with extracted entities and relationships |
-| `pydantic_model` | `BaseModel` | Validated Pydantic model instance |
-| `docling_document` | `DoclingDocument` | Original Docling document object |
-| `chunks` | `list` | Document chunks (if chunking enabled) |
-| `extraction_results` | `list` | Raw extraction results from backend |
+| `extracted_models` | `list[BaseModel]` | List of validated Pydantic model instances (one or more) |
+| `graph_metadata` | `GraphMetadata` | Graph statistics (node/edge counts, etc.) |
+| `docling_document` | `DoclingDocument` or `None` | Original Docling document (if available) |
+| `config` | `PipelineConfig` | Pipeline configuration used |
 
 **Example:**
 ```python
@@ -139,13 +137,9 @@ graph = context.knowledge_graph
 print(f"Nodes: {graph.number_of_nodes()}")
 print(f"Edges: {graph.number_of_edges()}")
 
-# Access the Pydantic model
-model = context.pydantic_model
-print(f"Model type: {type(model).__name__}")
-
-# Access document chunks
-if context.chunks:
-    print(f"Chunks: {len(context.chunks)}")
+# Access extracted Pydantic models
+for model in context.extracted_models or []:
+    print(f"Model type: {type(model).__name__}")
 ```
 
 ---
@@ -220,26 +214,8 @@ context = run_pipeline({
 
 # Access results in memory
 graph = context.knowledge_graph
-invoice = context.pydantic_model
+invoice = (context.extracted_models or [None])[0]
 print(f"Extracted invoice with {graph.number_of_nodes()} entities")
-```
-
-### 📍 With File Exports
-
-```python
-from docling_graph import run_pipeline
-
-# Enable file exports
-context = run_pipeline({
-    "source": "invoice.pdf",
-    "template": "templates.BillingDocument",
-    "dump_to_disk": True,
-    "output_dir": "outputs/invoice"
-})
-
-# Results available both in memory and on disk
-graph = context.knowledge_graph
-# Files also written to outputs/invoice/
 ```
 
 ### 📍 Remote LLM
@@ -260,8 +236,7 @@ context = run_pipeline({
     "provider_override": "mistral",
     "model_override": "mistral-large-latest",
     "processing_mode": "many-to-one",
-    "use_chunking": True,
-    "llm_consolidation": True
+    "use_chunking": True
 })
 
 # Access the knowledge graph
@@ -284,9 +259,10 @@ context = run_pipeline({
     "docling_config": "vision"
 })
 
-# Access extracted data
-id_card = context.pydantic_model
-print(f"Name: {id_card.first_name} {id_card.last_name}")
+# Access extracted data (one-to-one returns one model per page; take first)
+id_card = (context.extracted_models or [None])[0]
+if id_card:
+    print(f"Name: {id_card.first_name} {id_card.last_name}")
 ```
 
 ### 📍 With Error Handling
@@ -365,7 +341,7 @@ def batch_process(input_dir: str, template: str):
             all_graphs.append({
                 "filename": doc.name,
                 "graph": context.knowledge_graph,
-                "model": context.pydantic_model
+                "models": context.extracted_models
             })
             
             results["success"].append(doc.name)
@@ -405,22 +381,13 @@ context = run_pipeline({
 })
 # Returns data in memory only
 
-# Explicit: Enable file exports
-context = run_pipeline({
-    "source": "document.pdf",
-    "template": "templates.BillingDocument",
-    "dump_to_disk": True,
-    "output_dir": "outputs"
-})
-# Returns data AND writes files
-
 # Explicit: Disable file exports
 context = run_pipeline({
     "source": "document.pdf",
     "template": "templates.BillingDocument",
     "dump_to_disk": False
 })
-# Returns data only, even if output_dir is set
+# Returns data only
 ```
 
 !!! note "CLI vs API defaults"
@@ -440,7 +407,7 @@ context = run_pipeline({
     "models": {
         "llm": {
             "remote": {
-                "default_model": "gpt-4-turbo",
+                "model": "gpt-4o",
                 "provider": "openai"
             }
         }
@@ -449,31 +416,6 @@ context = run_pipeline({
 
 # Access results
 graph = context.knowledge_graph
-```
-
-### Multiple Export Formats
-
-```python
-from docling_graph import run_pipeline
-
-# Export as Cypher for Neo4j
-context = run_pipeline({
-    "source": "document.pdf",
-    "template": "templates.BillingDocument",
-    "dump_to_disk": True,
-    "export_format": "cypher",
-    "output_dir": "outputs/neo4j"
-})
-
-# Access graph in memory
-graph = context.knowledge_graph
-
-# Also import files to Neo4j
-import subprocess
-subprocess.run([
-    "cypher-shell",
-    "-f", "outputs/neo4j/graph.cypher"
-])
 ```
 
 ### Conditional Processing
@@ -554,14 +496,14 @@ def process_endpoint():
         
         # Extract data from context
         graph = context.knowledge_graph
-        model = context.pydantic_model
+        models = context.extracted_models or []
         
         return jsonify({
             "status": "success",
             "id": temp_id,
             "nodes": graph.number_of_nodes(),
             "edges": graph.number_of_edges(),
-            "data": model.model_dump() if hasattr(model, 'model_dump') else model.dict()
+            "data": models[0].model_dump() if models else None
         })
         
     except Exception as e:
@@ -697,27 +639,6 @@ try:
     run_pipeline(config)
 except:
     pass
-```
-
-### 👍 Organize Outputs
-
-```python
-# ✅ Good - Unique output directories
-from datetime import datetime
-
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-run_pipeline({
-    "source": "document.pdf",
-    "template": "templates.BillingDocument",
-    "output_dir": f"outputs/{timestamp}"
-})
-
-# ❌ Avoid - Overwriting outputs
-run_pipeline({
-    "source": "document.pdf",
-    "template": "templates.BillingDocument",
-    "output_dir": "outputs"  # Same for all
-})
 ```
 
 ---

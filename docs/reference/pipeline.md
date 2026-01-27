@@ -168,56 +168,68 @@ class PipelineContext:
     extracted_models: List[BaseModel] | None = None
     graph: nx.MultiDiGraph | None = None
     
-    # Trace data (optional)
-    trace_data: TraceData | None = None
+    # Output management
     output_manager: OutputDirectoryManager | None = None
+    output_dir: str | None = None
     
     # Metadata
     metadata: Dict[str, Any] = field(default_factory=dict)
 ```
 
+**Note:** The old `trace_data` field has been replaced with the new debug system. When `debug=True` in the config, all intermediate artifacts are saved to disk in the `debug/` directory. See [Debug Mode Documentation](../usage/advanced/trace-data-debugging.md) for details.
+
 ---
 
-## Trace Data Structure
+## Debug Artifacts
 
-When `include_trace=True`, the pipeline captures intermediate data at each stage:
+When `debug=True` in the pipeline configuration, all intermediate extraction artifacts are saved to `outputs/{document}_{timestamp}/debug/`:
 
+- **slots.jsonl** - Slot metadata (chunks/pages with token counts)
+- **atoms_all.jsonl** - All atomic facts extracted
+- **field_catalog.json** - Global field catalog
+- **reducer_report.json** - Reducer decisions and conflicts
+- **best_effort_model.json** - Final model output
+- **slots_text/** - Full slot text for replay
+- **atoms/** - Per-slot extraction attempts
+- **field_catalog_selected/** - Per-slot field selections
+- **arbitration/** - Conflict resolution requests/responses
+
+See [Debug Mode Documentation](../usage/advanced/trace-data-debugging.md) for complete details on debug artifacts and usage patterns.
+
+---
+
+## Legacy Trace Data (Deprecated)
+
+The old `TraceData` structure with `pages`, `chunks`, `extractions`, and `intermediate_graphs` has been replaced by the new debug system. If you have code using `context.trace_data`, migrate to the new debug artifacts:
+
+**Old approach:**
 ```python
-@dataclass
-class TraceData:
-    """Container for trace data captured during pipeline execution."""
-    
-    # Page-level data
-    pages: List[PageData] = field(default_factory=list)
-    
-    # Chunk-level data (only in many-to-one mode)
-    chunks: List[ChunkData] | None = None
-    
-    # Extraction data
-    extractions: List[ExtractionData] = field(default_factory=list)
-    
-    # Intermediate graphs (before consolidation)
-    intermediate_graphs: List[GraphData] = field(default_factory=list)
+if context.trace_data:
+    for extraction in context.trace_data.extractions:
+        print(extraction.error)
 ```
 
-### PageData
-
-Captures data for each document page:
-
+**New approach:**
 ```python
-@dataclass
-class PageData:
-    """Data for a single page."""
-    page_number: int
-    text_content: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+import json
+from pathlib import Path
+
+# Enable debug mode
+config = PipelineConfig(source="doc.pdf", template="templates.MyTemplate", debug=True)
+context = run_pipeline(config)
+
+# Analyze debug artifacts
+debug_dir = Path(context.output_dir) / "debug"
+atoms_dir = debug_dir / "atoms"
+
+# Check for validation errors
+for attempt_file in atoms_dir.glob("*_attempt*.json"):
+    with open(attempt_file) as f:
+        attempt = json.load(f)
+        if not attempt['validation_success']:
+            print(f"Error in {attempt['slot_id']}: {attempt['error']}")
 ```
 
-### ChunkData
-
-Captures data for each chunk (many-to-one mode only):
-
-```python
 @dataclass
 class ChunkData:
     """Data for a single chunk."""
@@ -396,6 +408,8 @@ After successful execution with `dump_to_disk=True`, the output directory contai
 ```
 outputs/
 └── document_name_timestamp/
+    ├── metadata.json                 # Pipeline metadata and performance metrics
+    │
     ├── docling/                      # Docling exports
     │   ├── document.json             # Docling JSON (if enabled)
     │   └── document.md               # Markdown export (if enabled)
@@ -408,38 +422,33 @@ outputs/
     │   ├── graph.html                # Interactive visualization
     │   └── report.md                 # Extraction report
     │
-    └── debug/                        # Debug/trace data (if include_trace=True)
-        ├── pages/                    # Per-page data
-        │   ├── page_001.json
-        │   └── page_002.json
+    └── debug/                        # Debug artifacts (if debug=True)
+        ├── slots.jsonl               # Slot metadata (one per line)
+        ├── atoms_all.jsonl           # All atomic facts (one per line)
+        ├── field_catalog.json        # Global field catalog
+        ├── reducer_report.json       # Reducer decisions and conflicts
+        ├── best_effort_model.json    # Final model output
+        ├── provenance.json           # Document path and config for replay
         │
-        ├── chunks/                   # Chunk data
-        │   ├── chunk_000.md
-        │   └── metadata.json
+        ├── slots_text/               # Full slot text for replay
+        │   ├── slot_0.txt
+        │   ├── slot_1.txt
+        │   └── ...
         │
-        ├── parsed_models/            # Extraction results
-        │   ├── extraction_000.json
-        │   └── extraction_001.json
+        ├── atoms/                    # Per-slot extraction attempts
+        │   ├── slot_0_attempt1.json
+        │   ├── slot_0_attempt2.json  # Retry if first failed
+        │   ├── slot_1_attempt1.json
+        │   └── ...
         │
-        └── intermediate_graphs/      # Per-chunk graphs (many-to-one mode)
-            ├── chunk_000/
-            │   ├── graph.json
-            │   └── model.json
-            └── chunk_001/
-                └── ...
+        ├── field_catalog_selected/   # Per-slot field selections
+        │   ├── slot_0.json
+        │   ├── slot_1.json
+        │   └── ...
         │
-        ├── per_page/                 # Per-page data (one-to-one mode)
-        │   ├── page_1/
-        │   │   ├── extraction.json
-        │   │   ├── nodes.csv
-        │   │   ├── edges.csv
-        │   │   └── graph.json
-        │   └── page_2/
-        │       └── ...
-        │
-        └── chunks_metadata.json      # Chunk metadata (many-to-one mode)
-        │
-        └── metadata.json             # Pipeline metadata and performance metrics
+        └── arbitration/              # Conflict resolution
+            ├── request.json          # Conflicts sent to LLM
+            └── response.json         # LLM arbitration decisions
 ```
 
 ### metadata.json Structure
@@ -457,7 +466,7 @@ The `metadata.json` file contains pipeline configuration, results, and performan
   "config": {
     "pipeline": {
       "processing_mode": "many-to-one",
-      "include_trace": true,
+      "debug": true,
       "reverse_edges": false,
       "docling": "ocr"
     },

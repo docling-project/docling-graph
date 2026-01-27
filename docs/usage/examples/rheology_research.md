@@ -15,7 +15,7 @@ Extract complex research data from scientific papers including experiments, meas
 
 ```bash
 # Install with remote API support
-uv sync --extra remote
+uv sync
 
 # Set API key
 export MISTRAL_API_KEY="your-key"
@@ -109,8 +109,7 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     use_chunking=True,
     llm_consolidation=True,
-    docling_config="vision",  # Better for complex layouts
-    output_dir="outputs/research"
+    docling_config="vision"  # Better for complex layouts
 )
 
 print("Processing rheology research (may take several minutes)...")

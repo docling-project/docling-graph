@@ -76,15 +76,16 @@ class ResponseHandler:
             return ResponseHandler._validate_structure(parsed, client_name)
 
         except json.JSONDecodeError as e:
-            # If truncated, try to repair the JSON
-            if truncated:
-                repaired = ResponseHandler._attempt_json_repair(content)
-                if repaired is not None:
+            # Try to repair common JSON syntax errors (missing commas, etc.)
+            repaired = ResponseHandler._attempt_json_repair(content)
+            if repaired is not None:
+                if truncated:
                     ResponseHandler._warn_truncation(client_name, max_tokens, recovered=True)
-                    return ResponseHandler._validate_structure(repaired, client_name)
-                else:
-                    # Repair failed - show clear truncation error
-                    ResponseHandler._warn_truncation(client_name, max_tokens, recovered=False)
+                return ResponseHandler._validate_structure(repaired, client_name)
+
+            # If truncated and repair failed, show clear truncation error
+            if truncated:
+                ResponseHandler._warn_truncation(client_name, max_tokens, recovered=False)
 
             # Provide detailed error information
             rich_print(f"[red]Error:[/red] {client_name} JSON parse failed: {e}")
@@ -126,7 +127,78 @@ class ResponseHandler:
         if aggressive:
             content = ResponseHandler._aggressive_clean(content)
 
+        # Normalize JSON whitespace - this is the critical fix for KeyError issues
+        # LLMs often generate JSON with excessive whitespace/newlines that causes
+        # Python's json.loads() to raise KeyError with keys like '\n  "slot_id"'
+        content = ResponseHandler._normalize_json_whitespace(content)
+
         return content.strip()
+
+    @staticmethod
+    def _normalize_json_whitespace(content: str) -> str:
+        """
+        Normalize whitespace in JSON to prevent KeyError issues.
+
+        LLMs often generate JSON with excessive whitespace/newlines that causes
+        Python's json.loads() to raise KeyError with keys like '\n  "slot_id"'.
+
+        This function normalizes all whitespace outside of string values while
+        preserving whitespace inside strings.
+
+        Args:
+            content: JSON string with potentially problematic whitespace
+
+        Returns:
+            Normalized JSON string safe for json.loads()
+        """
+        # Strategy: Use a simple state machine to track if we're inside a string
+        # and only normalize whitespace when outside strings
+
+        result = []
+        in_string = False
+        escape_next = False
+
+        for i, char in enumerate(content):
+            # Handle escape sequences
+            if escape_next:
+                result.append(char)
+                escape_next = False
+                continue
+
+            if char == "\\" and in_string:
+                result.append(char)
+                escape_next = True
+                continue
+
+            # Track string boundaries
+            if char == '"' and not escape_next:
+                in_string = not in_string
+                result.append(char)
+                continue
+
+            # Inside strings: preserve everything
+            if in_string:
+                result.append(char)
+                continue
+
+            # Outside strings: normalize whitespace
+            if char in " \t\n\r":
+                # Only add a single space if the last char wasn't whitespace
+                # and we're not adjacent to structural characters
+                if result and result[-1] not in " \t\n\r{[,:}]":
+                    # Look ahead to see if next non-whitespace is structural
+                    next_idx = i + 1
+                    while next_idx < len(content) and content[next_idx] in " \t\n\r":
+                        next_idx += 1
+
+                    if next_idx < len(content) and content[next_idx] not in "{}[],:":
+                        result.append(" ")
+                continue
+
+            # Structural characters and other content: keep as-is
+            result.append(char)
+
+        return "".join(result)
 
     @staticmethod
     def _extract_from_markdown(content: str) -> str:
@@ -278,9 +350,12 @@ class ResponseHandler:
         Attempt to repair truncated JSON.
 
         Strategies:
-        1. Find the last complete object/array before truncation
-        2. Close unclosed brackets intelligently
-        3. Remove incomplete trailing data
+        1. Fix unterminated strings (for small LLMs)
+        2. Fix missing commas between objects (for small LLMs)
+        3. Truncate at last valid fact (for small LLMs)
+        4. Find the last complete object/array before truncation
+        5. Close unclosed brackets intelligently
+        6. Remove incomplete trailing data
 
         Args:
             content: Potentially truncated JSON string
@@ -290,7 +365,58 @@ class ResponseHandler:
         """
         content = content.strip()
 
-        # Strategy 1: Try to find last complete structure by removing trailing incomplete data
+        # Strategy 1: Fix unterminated strings (common with small LLMs)
+        # Find the last complete object and truncate there
+        try:
+            # Try to parse to get the specific error
+            json.loads(content)
+        except json.JSONDecodeError as e:
+            if "Unterminated string" in str(e):
+                # Find the last complete object and truncate there
+                last_complete = content.rfind("},")
+                if last_complete > 0:
+                    repaired = content[: last_complete + 1] + "\n]}"
+                    try:
+                        return json.loads(repaired)  # type: ignore[no-any-return]
+                    except json.JSONDecodeError:
+                        pass
+
+            # Strategy 2: Fix missing commas between objects
+            if "Expecting ',' delimiter" in str(e):
+                # Add commas between consecutive closing braces
+                repaired = re.sub(r"}\s*{", "},{", content)
+                try:
+                    return json.loads(repaired)  # type: ignore[no-any-return]
+                except json.JSONDecodeError:
+                    pass
+
+        # Strategy 3: Truncate at last valid fact
+        # Find the last complete fact object
+        facts_match = re.search(r'"facts":\s*\[(.*)\]', content, re.DOTALL)
+        if facts_match:
+            facts_content = facts_match.group(1)
+            # Find all complete fact objects
+            fact_objects = re.findall(r"\{[^{}]*\}", facts_content)
+            if fact_objects:
+                # Reconstruct with only complete facts
+                repaired = content[: facts_match.start(1)] + ",".join(fact_objects) + "]}"
+                try:
+                    return json.loads(repaired)  # type: ignore[no-any-return]
+                except json.JSONDecodeError:
+                    pass
+
+        # Strategy 4: Fix common syntax errors (missing commas between fields)
+        # This handles cases like: "field1": "value1"\n"field2": "value2"
+        # Should be: "field1": "value1",\n"field2": "value2"
+        fixed_content = ResponseHandler._fix_missing_commas(content)
+        if fixed_content != content:
+            try:
+                result = json.loads(fixed_content)
+                return result if isinstance(result, dict | list) else None
+            except json.JSONDecodeError:
+                pass  # Continue with other strategies
+
+        # Strategy 5: Try to find last complete structure by removing trailing incomplete data
         # Look for common truncation patterns
         truncation_patterns = [
             r',\s*"[^"]*$',  # Incomplete key: , "partial_key
@@ -311,7 +437,7 @@ class ResponseHandler:
                 except json.JSONDecodeError:
                     continue
 
-        # Strategy 2: Try to close brackets on original content
+        # Strategy 6: Try to close brackets on original content
         repaired = ResponseHandler._close_brackets(content)
         try:
             result = json.loads(repaired)
@@ -319,29 +445,88 @@ class ResponseHandler:
         except json.JSONDecodeError:
             pass
 
-        # Strategy 3: Find last complete array/object element
+        # Strategy 7: Find last complete array/object element
         # For arrays: find last complete element before truncation
         if content.strip().startswith("["):
-            last_complete = ResponseHandler._find_last_complete_array_element(content)
-            if last_complete:
+            last_complete_str = ResponseHandler._find_last_complete_array_element(content)
+            if last_complete_str:
                 try:
-                    result = json.loads(last_complete)
+                    result = json.loads(last_complete_str)
                     return result if isinstance(result, dict | list) else None
                 except json.JSONDecodeError:
                     pass
 
         # For objects: find last complete key-value pair
         if content.strip().startswith("{"):
-            last_complete = ResponseHandler._find_last_complete_object(content)
-            if last_complete:
+            last_complete_str = ResponseHandler._find_last_complete_object(content)
+            if last_complete_str:
                 try:
-                    result = json.loads(last_complete)
+                    result = json.loads(last_complete_str)
                     return result if isinstance(result, dict | list) else None
                 except json.JSONDecodeError:
                     pass
 
         # Unable to repair
         return None
+
+    @staticmethod
+    def _fix_missing_commas(content: str) -> str:
+        """
+        Fix missing commas between JSON object fields.
+
+        Common error pattern from LLMs:
+        {
+          "field1": "value1"
+          "field2": "value2"  <- Missing comma after field1
+        }
+
+        Args:
+            content: JSON string with potential missing commas
+
+        Returns:
+            Fixed JSON string with commas added where needed
+        """
+        # More conservative approach: only fix obvious missing commas
+        # Pattern: Match end of a value followed by whitespace and a new field name
+        # But be careful not to match within strings or after commas
+
+        # First, try to parse as-is to see if it's already valid
+        try:
+            json.loads(content)
+            return content  # Already valid, don't modify
+        except (json.JSONDecodeError, KeyError) as e:
+            # KeyError can happen if JSON has malformed keys with newlines
+            # If we get a KeyError, apply normalization and try again
+            if isinstance(e, KeyError):
+                content = ResponseHandler._normalize_json_whitespace(content)
+                try:
+                    json.loads(content)
+                    return content  # Normalization fixed it
+                except (json.JSONDecodeError, KeyError):
+                    pass  # Continue with other fixes
+            # Continue with fixes for JSONDecodeError
+
+        # Pattern: Match end of a value (string, number, boolean, null, object, array)
+        # followed by whitespace and a new field name, without a comma
+        # Use negative lookbehind to ensure we're not already after a comma
+        patterns = [
+            # After string value: "value"\n"field" (but not after comma)
+            (r'(?<!,)("\s*)\n(\s*"[^"]+"\s*:)', r"\1,\n\2"),
+            # After number value: 123\n"field" (but not after comma)
+            (r'(?<!,)(\d+\.?\d*\s*)\n(\s*"[^"]+"\s*:)', r"\1,\n\2"),
+            # After boolean/null: true\n"field" (but not after comma)
+            (r'(?<!,)((?:true|false|null)\s*)\n(\s*"[^"]+"\s*:)', r"\1,\n\2"),
+            # After closing brace: }\n"field" (but not after comma)
+            (r'(?<!,)(}\s*)\n(\s*"[^"]+"\s*:)', r"\1,\n\2"),
+            # After closing bracket: ]\n"field" (but not after comma)
+            (r'(?<!,)(\]\s*)\n(\s*"[^"]+"\s*:)', r"\1,\n\2"),
+        ]
+
+        fixed = content
+        for pattern, replacement in patterns:
+            fixed = re.sub(pattern, replacement, fixed)
+
+        return fixed
 
     @staticmethod
     def _close_brackets(content: str) -> str:
@@ -506,13 +691,11 @@ class ResponseHandler:
         max_tokens_str = str(max_tokens) if max_tokens else "unknown"
 
         if recovered:
-            rich_print(
-                f"\n[yellow]⚠️  Response Truncated[/yellow] (hit max_tokens={max_tokens_str})"
-            )
+            rich_print(f"\n[yellow]Response Truncated[/yellow] (hit max_tokens={max_tokens_str})")
             rich_print("[yellow]Partial data recovered - results may be incomplete[/yellow]")
             rich_print("[dim]Suggestion: Increase max_tokens or use simpler template[/dim]\n")
         else:
-            rich_print(f"\n[red]❌ Response Truncated[/red] (hit max_tokens={max_tokens_str})")
+            rich_print(f"\n[red]Response Truncated[/red] (hit max_tokens={max_tokens_str})")
             rich_print("[red]Unable to recover partial data - JSON too incomplete[/red]")
             rich_print("\n[yellow]Solutions:[/yellow]")
 

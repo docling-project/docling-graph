@@ -55,7 +55,7 @@ uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
 **Prerequisites:**
 ```bash
 export MISTRAL_API_KEY="your-api-key"
-uv sync --extra remote
+uv sync
 ```
 
 **CLI Command:**
@@ -90,7 +90,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 **Prerequisites:**
 ```bash
 export MISTRAL_API_KEY="your-api-key"
-uv sync --extra remote
+uv sync
 ```
 
 **CLI Command:**
@@ -167,7 +167,7 @@ uv run docling-graph convert "README.md" \
 ```bash
 ollama serve
 ollama pull llama3:8b
-uv sync --extra local
+uv sync
 ```
 
 **One-to-One Mode:**
@@ -246,7 +246,7 @@ cat outputs/cli_06_cypher/docling_graph/graph.cypher | \
 ```bash
 ollama serve
 ollama pull llama3:8b
-uv sync --extra local
+uv sync
 ```
 
 **CLI Command:**
@@ -280,7 +280,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 **Prerequisites:**
 ```bash
 export MISTRAL_API_KEY="your-api-key"
-uv sync --extra remote
+uv sync
 ```
 
 **Programmatic Merge (Fast):**
@@ -353,7 +353,7 @@ export GEMINI_API_KEY="..."
 export WATSONX_API_KEY="..."
 export WATSONX_PROJECT_ID="..."
 
-uv sync --extra remote --extra watsonx
+uv sync
 ```
 
 **OpenAI:**
@@ -468,7 +468,7 @@ ollama pull llama3:8b
 ### 🐛 Installation Issues
 ```bash
 # Reinstall dependencies
-uv sync --extra all --force
+uv sync --force
 
 # Check Python version
 python --version  # Should be 3.10+

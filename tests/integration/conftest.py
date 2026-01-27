@@ -29,23 +29,19 @@ def sample_invoice_markdown():
 def sample_config_yaml():
     """Sample YAML configuration."""
     return """
-    processing_mode: one-to-one
-    backend: llm
-    inference: local
-    docling_config: ocr
-    template: docling_graph.templates.billing_document.BillingDocument
-    source: sample.pdf
-    output_dir: outputs
-    export_format: csv
-    reverse_edges: false
-
-    config:
-    models:
-        llm:
-        local:
-            provider: ollama
-            default_model: llama3.1:8b
-        """
+defaults:
+  processing_mode: one-to-one
+  backend: llm
+  inference: local
+  export_format: csv
+docling:
+  pipeline: ocr
+models:
+  llm:
+    local:
+      provider: ollama
+      model: llama3.1:8b
+"""
 
 
 @pytest.fixture(scope="session")

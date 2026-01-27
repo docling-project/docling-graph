@@ -304,6 +304,19 @@ class CustomLLMClient(LLMClientProtocol):
             )
 
 
+# Use a custom client in the pipeline
+from docling_graph import run_pipeline
+
+config = {
+    "source": "doc.pdf",
+    "template": "templates.BillingDocument",
+    "backend": "llm",
+    "inference": "remote",
+    "llm_client": CustomLLMClient(model="custom-llm-v1", api_key="..."),
+}
+run_pipeline(config)
+
+
 class CustomLLMBackend(TextExtractionBackendProtocol):
     """
     Custom LLM backend for text extraction.

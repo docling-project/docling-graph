@@ -98,7 +98,7 @@ class TestSaveConfig:
         """Should save config as valid YAML."""
         config = {
             "defaults": {"backend": "llm", "inference": "local"},
-            "models": {"vlm": {"local": {"default_model": "test-model"}}},
+            "models": {"vlm": {"local": {"model": "test-model"}}},
         }
         output_path = tmp_path / "config.yaml"
         save_config(config, output_path)

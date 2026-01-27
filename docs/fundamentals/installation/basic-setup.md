@@ -41,38 +41,38 @@ uv sync
 
 **Full (all features)**:
 ```bash
-uv sync --extra all
+uv sync
 ```
 
 **Local LLM only**:
 ```bash
-uv sync --extra local
+uv sync
 ```
 
 **Remote API only**:
 ```bash
-uv sync --extra remote
+uv sync
 ```
 
 **Specific providers**:
 ```bash
 # OpenAI
-uv sync --extra openai
+uv sync
 
 # Mistral
-uv sync --extra mistral
+uv sync
 
 # Gemini
-uv sync --extra gemini
+uv sync
 
 # WatsonX
-uv sync --extra watsonx
+uv sync
 
 # Ollama (local)
-uv sync --extra ollama
+uv sync
 
 # vLLM (local, requires GPU)
-uv sync --extra vllm
+uv sync
 ```
 
 #### Step 4: Verify Installation
@@ -115,7 +115,7 @@ For users who want to get started quickly without GPU:
 # Install
 git clone https://github.com/IBM/docling-graph
 cd docling-graph
-uv sync --extra remote
+uv sync
 
 # Set API key
 export OPENAI_API_KEY="your-key-here"
@@ -157,7 +157,7 @@ For users who want all local capabilities:
 # Install
 git clone https://github.com/IBM/docling-graph
 cd docling-graph
-uv sync --extra local
+uv sync
 
 # Verify GPU
 nvidia-smi
@@ -178,7 +178,7 @@ For maximum flexibility:
 # Install
 git clone https://github.com/IBM/docling-graph
 cd docling-graph
-uv sync --extra all
+uv sync
 
 # Set API keys (optional)
 export OPENAI_API_KEY="your-key-here"
@@ -271,17 +271,17 @@ cd docling-graph
 git pull origin main
 
 # Update dependencies
-uv sync --extra all
+uv sync
 ```
 
 ### Update Specific Components
 
 ```bash
 # Update only remote providers
-uv sync --extra remote
+uv sync
 
 # Update only local providers
-uv sync --extra local
+uv sync
 ```
 
 ## Troubleshooting
@@ -308,7 +308,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Don't use sudo with uv
 # If you used sudo, remove and reinstall:
 rm -rf .venv
-uv sync --extra all
+uv sync
 ```
 
 ### 🐛 Import errors
@@ -331,12 +331,12 @@ uv run python script.py
 **Solution**:
 ```bash
 # Use verbose mode to see progress
-uv sync --extra all --verbose
+uv sync --verbose
 
 # Or install in stages
 uv sync                    # Core first
-uv sync --extra remote     # Then remote
-uv sync --extra local      # Then local
+uv sync     # Then remote
+uv sync     # Then local
 ```
 
 ### 🐛 CUDA not found (for GPU users)

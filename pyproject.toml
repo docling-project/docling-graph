@@ -31,15 +31,24 @@ authors = [
 ]
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "docling[vlm]>=2.70.0,<3.0.0",
+    # Use docling without [vlm] extras to avoid mlx-vlm opencv conflict
+    # mlx-vlm is macOS ARM64 only and requires opencv-python>=4.12.0.88
+    "docling>=2.70.0,<3.0.0",
     "docling-core[chunking, chunking-openai]>=2.50.0,<3.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "networkx>=3.0.0,<4.0.0",
     "rich>=13,<15",
     "typer[all]>=0.12,<1.0.0",
     "python-dotenv>=1.0,<2.0",
+    "litellm>=1.0.0,<2.0.0",
     "pyyaml>=6.0,<7.0",
     "aiofiles>=24.0.0,<26.0.0",
+    # Pin opencv-python to version that supports cv2.setNumThreads()
+    # Required by docling-ibm-models for table structure detection
+    "opencv-python>=4.5.0,<4.10.0",
+    # Pin numpy to 1.x for compatibility with docling-ibm-models
+    # NumPy 2.x breaks binary compatibility with modules compiled against 1.x
+    "numpy>=1.21.0,<2.0.0"
 ]
 
 [project.urls]
@@ -52,20 +61,7 @@ changelog = "https://github.com/ayoub-ibm/docling-graph/blob/main/CHANGELOG.md"
 docling-graph = "docling_graph.cli.main:main"
 
 [project.optional-dependencies]
-# --- Local Clients ---
-ollama = ["ollama"]
-vllm = ["openai"]
-
-# --- Remote Clients ---
-gemini = ["google-genai"]
-mistral = ["mistralai"]
-openai = ["openai"]
-watsonx = ["ibm-watsonx-ai"]
-
-# --- Bundles ---
-local = ["docling-graph[ollama]", "docling-graph[vllm]"]
-remote = ["docling-graph[openai]", "docling-graph[mistral]", "docling-graph[gemini]", "docling-graph[watsonx]"]
-all = ["docling-graph[local]", "docling-graph[remote]"]
+# Legacy provider SDKs removed; LiteLLM is installed by default.
 
 [dependency-groups]
 # Development tools (linters, type-checkers) and utilities
@@ -212,12 +208,8 @@ module = [
     "mypy.*",
     "pandas.*",
     "networkx.*",
-    "vllm.*",
-    "ollama.*",
-    "openai.*",
+    "litellm.*",
     "tiktoken.*",
-    "mistralai.*",
-    "google-genai.*",
     "google.*"
 ]
 ignore_missing_imports = true
@@ -273,7 +265,23 @@ upload_to_vcs_release = true
 [tool.pytest.ini_options]
 filterwarnings = [
     "error",
+    # Ignore ResourceWarnings from unclosed sockets/event loops
+    "ignore::ResourceWarning",
     # Ignore warnings from external dependencies
     "ignore:.*Use BaseMetaSerializer.*:DeprecationWarning",
     "ignore:.*Using `@model_validator` with mode='after' on a classmethod is deprecated.*:pydantic.warnings.PydanticDeprecatedSince212",
+]
+addopts = "--cov=docling_graph --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["docling_graph"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
 ]

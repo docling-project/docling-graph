@@ -169,10 +169,12 @@ class LLMBackend(TextExtractionBackendProtocol):
 
 ```python
 from docling_graph.core.extractors.backends import LLMBackend
-from docling_graph.llm_clients import OllamaClient
+from docling_graph.llm_clients import get_client
+from docling_graph.llm_clients.config import resolve_effective_model_config
 
 # STANDARD tier model (7B-13B)
-client = OllamaClient(model="llama3.1:8b")
+effective = resolve_effective_model_config("ollama", "llama3.1:8b")
+client = get_client("ollama")(model_config=effective)
 backend = LLMBackend(llm_client=client)
 
 # Automatically uses STANDARD tier prompts
@@ -265,7 +267,7 @@ class DocumentChunker:
         provider: str,
         max_tokens: int = None,
         tokenizer_name: str = None,
-        schema_size: int = 0
+        schema_json: str | None = None
     ):
         """
         Initialize chunker.
@@ -274,7 +276,7 @@ class DocumentChunker:
             provider: LLM provider (for tokenizer selection)
             max_tokens: Maximum tokens per chunk
             tokenizer_name: Specific tokenizer to use
-            schema_size: Schema size for dynamic adjustment
+            schema_json: Schema JSON string for dynamic adjustment
         """
     
     def chunk_markdown(
@@ -293,39 +295,41 @@ class DocumentChunker:
             List of markdown chunks
         """
     
-    def update_schema_config(self, schema_size: int):
+    def update_schema_config(self, schema_json: str):
         """
         Update schema configuration dynamically.
         
         Args:
-            schema_size: New schema size in bytes
+            schema_json: New schema JSON string
         """
 ```
 
 **Features:**
 
 - **Real Tokenizers**: Uses provider-specific tokenizers for accurate token counting
-- **Safety Margins**: Applies 20% safety margin to prevent context overflows
-- **Schema-Aware**: Dynamically adjusts chunk size based on schema complexity
+- **Safety Margins**: Reserves a fixed 100-token buffer for protocol overhead
+- **Schema-Aware**: Dynamically adjusts chunk size based on exact prompt tokens
 - **Provider-Specific**: Optimized for each LLM provider
 
 **Example:**
 
 ```python
+import json
+
 from docling_graph.core.extractors import DocumentChunker
 
 # Create chunker with real tokenizer
 chunker = DocumentChunker(
     provider="mistral",
     max_tokens=4096,
-    schema_size=len(MyTemplate.model_json_schema())
+    schema_json=json.dumps(MyTemplate.model_json_schema())
 )
 
 # Chunk with accurate token counting
 chunks = chunker.chunk_markdown(markdown, max_tokens=4096)
 
 # Update for different schema
-chunker.update_schema_config(schema_size=8000)
+chunker.update_schema_config(schema_json=json.dumps(OtherTemplate.model_json_schema()))
 ```
 
 ---

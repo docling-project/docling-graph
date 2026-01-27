@@ -7,6 +7,8 @@ defaults:
   backend: llm                  # llm | vlm
   inference: local              # local | remote
   export_format: csv            # csv | cypher
+  # Max tokens per chunk when chunking is used (null = use default 2048)
+  chunk_max_tokens: null
 
 # Docling pipeline configuration
 docling:
@@ -30,41 +32,33 @@ docling:
     # Creates a subdirectory with one .md file per page
     per_page_markdown: false
 
-# Model configurations organized by type and inference location
+# Model selections by backend and inference location
 models:
-  # Vision-Language Models (VLM)
   vlm:
     local:
-      default_model: "numind/NuExtract-2.0-2B"
+      model: "numind/NuExtract-2.0-2B"
       provider: "docling"
-      # Alternative models:
-      # - "numind/NuExtract-2.0-2B" (faster, less accurate)
 
-  # Language Models (LLM)
   llm:
     local:
-      default_model: "ibm-granite/granite-4.0-1b"
+      model: "ibm-granite/granite-4.0-1b"
       provider: "vllm"
-      # Provider-specific configurations
-      providers:
-        vllm:
-          default_model: "ibm-granite/granite-4.0-1b"
-          base_url: "http://localhost:8000/v1"
-        ollama:
-          default_model: "llama-3.1-8b"
 
     remote:
-      default_model: "mistral-small-latest"
+      model: "mistral-small-latest"
       provider: "mistral"
-      # Multiple API providers supported
-      # Set API key: <PROVIDER>_API_KEY="your_key" using .env or export
-      providers:
-        mistral:
-          default_model: "mistral-small-latest"
-        openai:
-          default_model: "gpt-4-turbo"
-        gemini:
-          default_model: "gemini-2.5-flash"
+
+# Optional: runtime defaults for LLMs (can be overridden by CLI flags)
+llm_overrides:
+  generation:
+    temperature: 0.1
+    max_tokens: null
+    top_p: null
+  reliability:
+    timeout_s: null
+    max_retries: null
+  connection:
+    base_url: null
 
 # Output settings
 output:

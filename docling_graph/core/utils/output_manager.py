@@ -122,62 +122,47 @@ class OutputDirectoryManager:
         return path
 
     def get_debug_dir(self) -> Path:
-        """Get debug/ directory for trace data."""
+        """Get debug/ directory for debug artifacts."""
         path = self.document_dir / "debug"
         path.mkdir(exist_ok=True)
         return path
 
-    # Debug/trace subdirectories
-    def get_page_dir(self, page_num: int) -> Path:
-        """Get debug/pages/page_NNN/ directory."""
-        path = self.get_debug_dir() / "pages" / f"page_{page_num:03d}"
-        path.mkdir(parents=True, exist_ok=True)
-        return path
-
-    def get_chunks_dir(self) -> Path:
-        """Get debug/chunks/ directory."""
-        path = self.get_debug_dir() / "chunks"
+    def get_per_page_dir(self) -> Path:
+        """Get debug/per_page/ directory for per-page debug outputs."""
+        path = self.get_debug_dir() / "per_page"
         path.mkdir(exist_ok=True)
         return path
 
-    def get_parsed_models_dir(self) -> Path:
-        """Get debug/parsed_models/ directory."""
-        path = self.get_debug_dir() / "parsed_models"
+    def get_per_chunk_dir(self) -> Path:
+        """Get debug/per_chunk/ directory for per-chunk debug outputs."""
+        path = self.get_debug_dir() / "per_chunk"
         path.mkdir(exist_ok=True)
         return path
 
-    def get_extractions_dir(self) -> Path:
-        """Deprecated: Use get_parsed_models_dir() instead."""
-        return self.get_parsed_models_dir()
-
-    def get_per_chunk_graph_dir(self, chunk_id: int) -> Path:
-        """Get debug/intermediate_graphs/chunk_NNN/ directory."""
-        path = self.get_debug_dir() / "intermediate_graphs" / f"chunk_{chunk_id:03d}"
-        path.mkdir(parents=True, exist_ok=True)
+    # Debug subdirectories
+    def get_slots_text_dir(self) -> Path:
+        """Get debug/slots_text/ directory for slot text files."""
+        path = self.get_debug_dir() / "slots_text"
+        path.mkdir(exist_ok=True)
         return path
 
-    def get_per_page_graph_dir(self, page_num: int) -> Path:
-        """Get debug/intermediate_graphs/page_NNN/ directory."""
-        path = self.get_debug_dir() / "intermediate_graphs" / f"page_{page_num:03d}"
-        path.mkdir(parents=True, exist_ok=True)
+    def get_atoms_dir(self) -> Path:
+        """Get debug/atoms/ directory for atom extraction attempts."""
+        path = self.get_debug_dir() / "atoms"
+        path.mkdir(exist_ok=True)
         return path
 
-    # Deprecated methods (for backward compatibility during transition)
-    def get_trace_dir(self) -> Path:
-        """Deprecated: Use get_debug_dir() instead."""
-        return self.get_debug_dir()
+    def get_field_catalog_selected_dir(self) -> Path:
+        """Get debug/field_catalog_selected/ directory for per-slot field catalogs."""
+        path = self.get_debug_dir() / "field_catalog_selected"
+        path.mkdir(exist_ok=True)
+        return path
 
-    def get_graphs_dir(self) -> Path:
-        """Deprecated: Use get_docling_graph_dir() instead."""
-        return self.get_docling_graph_dir()
-
-    def get_consolidated_graph_dir(self) -> Path:
-        """Deprecated: Use get_docling_graph_dir() instead."""
-        return self.get_docling_graph_dir()
-
-    def get_visualizations_dir(self) -> Path:
-        """Deprecated: Use get_docling_graph_dir() instead."""
-        return self.get_docling_graph_dir()
+    def get_arbitration_dir(self) -> Path:
+        """Get debug/arbitration/ directory for arbitration requests/responses."""
+        path = self.get_debug_dir() / "arbitration"
+        path.mkdir(exist_ok=True)
+        return path
 
     def save_metadata(self, metadata: dict) -> Path:
         """
@@ -199,18 +184,6 @@ class OutputDirectoryManager:
     def get_document_dir(self) -> Path:
         """Get the main document directory."""
         return self.document_dir
-
-    def get_per_page_dir(self) -> Path:
-        """Get debug/per_page/ directory (convenience method for tests)."""
-        path = self.get_debug_dir() / "per_page"
-        path.mkdir(exist_ok=True)
-        return path
-
-    def get_per_chunk_dir(self) -> Path:
-        """Get debug/per_chunk/ directory (convenience method for tests)."""
-        path = self.get_debug_dir() / "per_chunk"
-        path.mkdir(exist_ok=True)
-        return path
 
     def is_directory_empty(self) -> bool:
         """

@@ -1,16 +1,19 @@
 """
 Structure-preserving document chunker using Docling's HybridChunker.
 
+- Single sizing knob: chunk_max_tokens (with sensible default)
+- Always initializes tokenizer and chunker (no lazy defaults)
+
 Preserves:
 - Tables (not split across chunks)
 - Lists (kept intact)
 - Hierarchical structure (sections with headers)
 - Semantic boundaries
-
-Configurable per LLM provider tokenizer.
 """
 
-from typing import List, Optional, Union
+import logging
+import re
+from typing import List, Union
 
 from docling.chunking import HybridChunker
 from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
@@ -19,67 +22,48 @@ from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
 from transformers import AutoTokenizer
 
-from ...llm_clients.config import (
-    get_recommended_chunk_size,
-    get_tokenizer_for_provider,
-)
+logger = logging.getLogger(__name__)
 
 
 class DocumentChunker:
-    """Structure-preserving document chunker using Docling's HybridChunker."""
+    """
+    Structure-preserving document chunker using Docling's HybridChunker.
+
+    - Single sizing parameter: chunk_max_tokens (defaults to 512)
+    - No coupling to model context limits or output budgets
+    - Always initializes tokenizer and chunker
+    """
 
     def __init__(
         self,
         tokenizer_name: str | None = None,
-        max_tokens: int | None = None,
-        provider: str | None = None,
+        chunk_max_tokens: int = 512,
         merge_peers: bool = True,
-        schema_size: int = 0,
     ) -> None:
         """
-        Initialize the chunker with smart defaults based on provider or custom tokenizer.
-
-        Now uses centralized llm_config.py registry with dynamic adjustment based on schema complexity.
+        Initialize the chunker with explicit parameters.
 
         Args:
-            tokenizer_name: Name of the tokenizer to use
-            max_tokens: Maximum tokens per chunk (if None, calculated from provider)
-            provider: LLM provider name (e.g., "watsonx", "openai")
-            merge_peers: Whether to merge peer sections in chunking
-            schema_size: Size of Pydantic schema JSON for dynamic chunk sizing
+            tokenizer_name: Name of the tokenizer to use (default: sentence-transformers/all-MiniLM-L6-v2)
+            chunk_max_tokens: Maximum tokens per chunk (default: 512)
+            merge_peers: Whether to merge peer sections in chunking (default: True)
         """
-        self.tokenizer: Union[HuggingFaceTokenizer, OpenAITokenizer]
-
-        # Step 1: Determine tokenizer name
-        if tokenizer_name is None and provider is not None:
-            tokenizer_name = get_tokenizer_for_provider(provider)
-
-        elif tokenizer_name is None:
+        if tokenizer_name is None:
             tokenizer_name = "sentence-transformers/all-MiniLM-L6-v2"
 
-        # Step 2: Determine max_tokens (using centralized lookup with schema awareness)
-        if max_tokens is None:
-            if provider is not None:
-                max_tokens = get_recommended_chunk_size(provider, "", schema_size)
-            else:
-                max_tokens = 5120
+        self.tokenizer_name = tokenizer_name
+        self.chunk_max_tokens = chunk_max_tokens
+        self.merge_peers = merge_peers
 
-        # Step 3: Initialize tokenizer and chunker
-        if tokenizer_name != "tiktoken":
-            hf_tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-            self.tokenizer = HuggingFaceTokenizer(
-                tokenizer=hf_tokenizer,
-                max_tokens=max_tokens,
-            )
-        else:
-            # Special handling for OpenAI tiktoken
+        # Initialize tokenizer (library API uses max_tokens)
+        if tokenizer_name == "tiktoken":
             try:
                 import tiktoken
 
-                tt_tokenizer = tiktoken.encoding_for_model("gpt-4o")
-                self.tokenizer = OpenAITokenizer(
+                tt_tokenizer = tiktoken.get_encoding("cl100k_base")
+                self.tokenizer: Union[HuggingFaceTokenizer, OpenAITokenizer] = OpenAITokenizer(
                     tokenizer=tt_tokenizer,
-                    max_tokens=max_tokens,
+                    max_tokens=chunk_max_tokens,
                 )
             except ImportError:
                 rich_print(
@@ -91,110 +75,28 @@ class DocumentChunker:
                 )
                 self.tokenizer = HuggingFaceTokenizer(
                     tokenizer=hf_tokenizer,
-                    max_tokens=max_tokens,
+                    max_tokens=chunk_max_tokens,
                 )
+        else:
+            # HuggingFace tokenizer
+            hf_tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+            self.tokenizer = HuggingFaceTokenizer(
+                tokenizer=hf_tokenizer,
+                max_tokens=chunk_max_tokens,
+            )
 
-        # Step 4: Create HybridChunker instance
+        # Initialize HybridChunker
         self.chunker = HybridChunker(
             tokenizer=self.tokenizer,
             merge_peers=merge_peers,
         )
 
-        self.max_tokens = max_tokens
-        self.original_max_tokens = max_tokens  # Store original for schema adjustments
-        self.tokenizer_name = tokenizer_name
-        self.merge_peers = merge_peers
-
         rich_print(
             f"[blue][DocumentChunker][/blue] Initialized with:\n"
-            f" • Tokenizer: [cyan]{tokenizer_name}[/cyan]\n"
-            f" • Max tokens/chunk: [yellow]{max_tokens}[/yellow]\n"
-            f" • Merge peers: {merge_peers}"
+            f"  • Tokenizer: [cyan]{tokenizer_name}[/cyan]\n"
+            f"  • Chunk Max Tokens: [yellow]{chunk_max_tokens}[/yellow]\n"
+            f"  • Merge Peers: {merge_peers}"
         )
-
-    def update_schema_config(self, schema_size: int) -> None:
-        """
-        Update chunker configuration based on schema size.
-
-        Adjusts max_tokens to reserve space for schema in context window,
-        preventing context overflow when schema is large.
-
-        Args:
-            schema_size: Size of the JSON schema in bytes
-        """
-        import logging
-
-        logger = logging.getLogger(__name__)
-
-        if not self.tokenizer:
-            logger.warning("No tokenizer available for schema config update")
-            return
-
-        # Estimate schema tokens (conservative: 3.5 chars per token)
-        schema_tokens = int(schema_size / 3.5)
-
-        # Adjust max_tokens to reserve space for schema
-        # Keep at least 50% of original capacity
-        min_tokens = int(self.original_max_tokens * 0.5)
-        adjusted_max = self.original_max_tokens - schema_tokens
-
-        if adjusted_max < min_tokens:
-            logger.warning(
-                f"Schema is very large ({schema_tokens} tokens, {schema_size} bytes). "
-                f"Reducing chunk size from {self.original_max_tokens} to minimum {min_tokens}"
-            )
-            self.max_tokens = min_tokens
-        elif adjusted_max < self.original_max_tokens:
-            logger.info(
-                f"Adjusted chunk size from {self.original_max_tokens} to {adjusted_max} "
-                f"to accommodate schema ({schema_tokens} tokens)"
-            )
-            self.max_tokens = adjusted_max
-        else:
-            # Schema is small, no adjustment needed
-            self.max_tokens = self.original_max_tokens
-
-        # Update the tokenizer's max_tokens
-        if hasattr(self.tokenizer, "max_tokens"):
-            self.tokenizer.max_tokens = self.max_tokens
-
-        # Update the chunker's tokenizer max_tokens as well
-        if hasattr(self.chunker, "tokenizer") and hasattr(self.chunker.tokenizer, "max_tokens"):
-            self.chunker.tokenizer.max_tokens = self.max_tokens
-
-        # Note: chunker.max_tokens is a read-only property derived from tokenizer.max_tokens
-        # so we don't need to (and can't) set it directly
-
-        rich_print(
-            f"[blue][DocumentChunker][/blue] Schema config updated:\n"
-            f" • Schema size: {schema_size} bytes (~{schema_tokens} tokens)\n"
-            f" • Adjusted max_tokens: {self.max_tokens} (was {self.original_max_tokens})"
-        )
-
-    @staticmethod
-    def calculate_recommended_max_tokens(
-        context_limit: int,
-        system_prompt_tokens: int = 500,
-        response_buffer_tokens: int = 500,
-    ) -> int:
-        """
-        Calculate recommended max_tokens for a given context window.
-
-        Formula:
-        available = context_limit - system_prompt - response_buffer
-        max_tokens = available * 0.8  # Reserve 20% for metadata enrichment
-
-        Args:
-            context_limit: Total context window (e.g., 8000 for Mistral-Large)
-            system_prompt_tokens: Estimated tokens for system prompt (default: 500)
-            response_buffer_tokens: Space reserved for LLM output (default: 500)
-
-        Returns:
-            Recommended max_tokens value for chunker
-        """
-        available = context_limit - system_prompt_tokens - response_buffer_tokens
-        recommended = int(available * 0.8)
-        return max(512, recommended)  # Minimum 512 tokens
 
     def chunk_document(self, document: DoclingDocument) -> List[str]:
         """
@@ -213,7 +115,6 @@ class DocumentChunker:
 
         for chunk in chunk_iter:
             # Use contextualized text (includes metadata like headers, section captions)
-            # This is essential for LLM extraction to understand chunk context
             enriched_text = self.chunker.contextualize(chunk=chunk)
             chunks.append(enriched_text)
 
@@ -222,6 +123,7 @@ class DocumentChunker:
     def chunk_document_with_stats(self, document: DoclingDocument) -> tuple[List[str], dict]:
         """
         Chunk document and return tokenization statistics.
+
         Useful for debugging/optimization to understand chunk distribution.
 
         Args:
@@ -271,40 +173,43 @@ class DocumentChunker:
         Returns:
             List of text chunks
         """
-        # Rough heuristic: 1 token ≈ 4 characters for most tokenizers
-        max_chars = self.max_tokens * 4
-
-        if len(text) <= max_chars:
+        if self.tokenizer.count_tokens(text) <= self.chunk_max_tokens:
             return [text]
 
-        chunks = []
-        current_pos = 0
+        # Split on sentence boundaries and newlines
+        segments = [seg for seg in re.split(r"(?<=[.!?])\s+|\n\n|\n", text) if seg]
+        chunks: list[str] = []
+        current_segments: list[str] = []
 
-        while current_pos < len(text):
-            end_pos = min(current_pos + max_chars, len(text))
+        for segment in segments:
+            candidate_segments = [*current_segments, segment]
+            candidate_text = " ".join(candidate_segments).strip()
+            if not candidate_text:
+                continue
+            candidate_tokens = self.tokenizer.count_tokens(candidate_text)
 
-            # Try to break at sentence/semantic boundary
-            if end_pos < len(text):
-                # Priority order for breaking points
-                for delimiter in [". ", "! ", "? ", "\n\n", "\n"]:
-                    last_break = text.rfind(delimiter, current_pos, end_pos)
-                    if last_break != -1:
-                        end_pos = last_break + len(delimiter)
-                        break
+            if candidate_tokens <= self.chunk_max_tokens or not current_segments:
+                current_segments = candidate_segments
+                continue
 
-            chunk = text[current_pos:end_pos].strip()
-            if chunk:
-                chunks.append(chunk)
+            chunks.append(" ".join(current_segments).strip())
+            current_segments = [segment]
 
-            current_pos = end_pos
+        if current_segments:
+            chunks.append(" ".join(current_segments).strip())
 
         return chunks
 
     def get_config_summary(self) -> dict:
-        """Get current chunker configuration as dictionary."""
+        """
+        Get current chunker configuration as dictionary.
+
+        Returns:
+            Dictionary with tokenizer_name, chunk_max_tokens, merge_peers, tokenizer_class
+        """
         return {
             "tokenizer_name": self.tokenizer_name,
-            "max_tokens": self.max_tokens,
+            "chunk_max_tokens": self.chunk_max_tokens,
             "merge_peers": self.merge_peers,
             "tokenizer_class": self.tokenizer.__class__.__name__,
         }

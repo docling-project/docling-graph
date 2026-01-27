@@ -103,6 +103,7 @@ class TestOptionalDepsRegistry:
         assert "mistral" in OPTIONAL_DEPS
         assert "openai" in OPTIONAL_DEPS
         assert "gemini" in OPTIONAL_DEPS
+        assert "ibm-watsonx-ai" in OPTIONAL_DEPS
 
     def test_optional_deps_entries_are_valid(self):
         """All registry entries should be OptionalDependency instances."""
@@ -115,7 +116,12 @@ class TestOptionalDepsRegistry:
         assert "local" in INFERENCE_PROVIDERS
         assert "remote" in INFERENCE_PROVIDERS
         assert set(INFERENCE_PROVIDERS["local"]) == {"ollama", "vllm"}
-        assert set(INFERENCE_PROVIDERS["remote"]) == {"mistral", "openai", "gemini"}
+        assert set(INFERENCE_PROVIDERS["remote"]) == {
+            "mistral",
+            "openai",
+            "gemini",
+            "ibm-watsonx-ai",
+        }
 
 
 class TestCheckDependency:

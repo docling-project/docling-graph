@@ -141,6 +141,7 @@ nav:
     - Python API:
       - Overview: usage/api/index.md
       - PipelineConfig: usage/api/pipeline-config.md
+      - LLM Model Config: usage/api/llm-model-config.md
       - run_pipeline: usage/api/run-pipeline.md
       - Batch Processing: usage/api/batch-processing.md
       - Programmatic Examples: usage/api/programmatic-examples.md

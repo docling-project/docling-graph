@@ -30,6 +30,7 @@ from ..validators import (
 )
 
 logger = logging.getLogger(__name__)
+DEFAULT_OUTPUT_DIR = Path("outputs")
 
 
 def convert_command(
@@ -64,18 +65,18 @@ def convert_command(
         typer.Option("--docling-pipeline", "-d", help="Docling pipeline: 'ocr' or 'vision'."),
     ] = None,
     # Extraction options
-    llm_consolidation: Annotated[
-        bool | None,
+    debug: Annotated[
+        bool,
         typer.Option(
-            "--llm-consolidation/--no-llm-consolidation",
-            help="Enable/disable final LLM consolidation step.",
+            "--debug/--no-debug",
+            help="Enable debug artifacts.",
         ),
-    ] = None,
-    use_chunking: Annotated[
-        bool | None,
+    ] = False,
+    chunk_max_tokens: Annotated[
+        int | None,
         typer.Option(
-            "--use-chunking/--no-use-chunking",
-            help="Enable/disable document chunking.",
+            "--chunk-max-tokens",
+            help="Max tokens per chunk when chunking is used (default: 2048).",
         ),
     ] = None,
     # Docling export options
@@ -98,9 +99,48 @@ def convert_command(
         typer.Option(
             "--output-dir", "-o", help="Output directory.", file_okay=False, writable=True
         ),
-    ] = Path("outputs"),
+    ] = DEFAULT_OUTPUT_DIR,
     model: Annotated[str | None, typer.Option("--model", "-m", help="Override model name.")] = None,
     provider: Annotated[str | None, typer.Option("--provider", help="Override provider.")] = None,
+    llm_temperature: Annotated[
+        float | None, typer.Option("--llm-temperature", help="Override LLM temperature.")
+    ] = None,
+    llm_max_tokens: Annotated[
+        int | None, typer.Option("--llm-max-tokens", help="Override LLM max tokens.")
+    ] = None,
+    llm_top_p: Annotated[
+        float | None, typer.Option("--llm-top-p", help="Override LLM top_p.")
+    ] = None,
+    llm_timeout: Annotated[
+        int | None, typer.Option("--llm-timeout", help="Override LLM timeout in seconds.")
+    ] = None,
+    llm_retries: Annotated[
+        int | None, typer.Option("--llm-retries", help="Override LLM max retries.")
+    ] = None,
+    llm_base_url: Annotated[
+        str | None, typer.Option("--llm-base-url", help="Override LLM base URL.")
+    ] = None,
+    llm_context_limit: Annotated[
+        int | None,
+        typer.Option(
+            "--llm-context-limit",
+            help="Override LLM context limit (total context window size in tokens).",
+        ),
+    ] = None,
+    llm_max_output_tokens: Annotated[
+        int | None,
+        typer.Option(
+            "--llm-max-output-tokens",
+            help="Override LLM max output tokens (maximum tokens the model can generate).",
+        ),
+    ] = None,
+    show_llm_config: Annotated[
+        bool,
+        typer.Option(
+            "--show-llm-config/--no-show-llm-config",
+            help="Print resolved LLM config and exit.",
+        ),
+    ] = False,
     export_format: Annotated[
         str | None,
         typer.Option("--export-format", "-e", help="Export format: 'csv' or 'cypher'."),
@@ -124,7 +164,8 @@ def convert_command(
     logger.debug(f"Loaded config keys: {list(config_data.keys())}")
     defaults = config_data.get("defaults", {})
     docling_cfg = config_data.get("docling", {})
-    models_from_yaml = config_data.get("models", {})  # flat models only
+    models_from_yaml = config_data.get("models", {})
+    llm_overrides = config_data.get("llm_overrides", {}) or {}
 
     # Resolve configuration (CLI args override config file)
     processing_mode_val = processing_mode or defaults.get("processing_mode", "many-to-one")
@@ -135,14 +176,9 @@ def convert_command(
     # Docling settings
     docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
 
-    # Resolve extraction settings
-    final_llm_consolidation = (
-        llm_consolidation
-        if llm_consolidation is not None
-        else defaults.get("llm_consolidation", True)
-    )
-    final_use_chunking = (
-        use_chunking if use_chunking is not None else defaults.get("use_chunking", True)
+    # Chunking: resolve from CLI or config defaults
+    final_chunk_max_tokens = (
+        chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
     )
 
     # Docling export settings - use config file as fallback
@@ -185,29 +221,47 @@ def convert_command(
 
     # Display configuration
     rich_print("[yellow][PipelineConfiguration][/yellow]")
-    rich_print(f" • Source: [cyan]{source}[/cyan]")
-    rich_print(f" • Input Type: [cyan]{input_type_display}[/cyan]")
-    rich_print(f" • Template: [cyan]{template}[/cyan]")
-    rich_print(f" • Docling Pipeline: [cyan]{docling_pipeline_val}[/cyan]")
-    rich_print(f" • Processing: [cyan]{processing_mode_val}[/cyan]")
-    rich_print(f" • Backend: [cyan]{backend_val}[/cyan]")
-    rich_print(f" • Inference: [cyan]{inference_val}[/cyan]")
-    rich_print(f" • Export: [cyan]{export_format_val}[/cyan]")
-    rich_print(f" • Reverse edges: [cyan]{reverse_edges}[/cyan]")
+    rich_print(f"  • Source: [cyan]{source}[/cyan]")
+    rich_print(f"  • Input Type: [cyan]{input_type_display}[/cyan]")
+    rich_print(f"  • Template: [cyan]{template}[/cyan]")
+    rich_print(f"  • Docling Pipeline: [cyan]{docling_pipeline_val}[/cyan]")
+    rich_print(f"  • Processing: [cyan]{processing_mode_val}[/cyan]")
+    rich_print(f"  • Backend: [cyan]{backend_val}[/cyan]")
+    rich_print(f"  • Inference: [cyan]{inference_val}[/cyan]")
+    rich_print(f"  • Export: [cyan]{export_format_val}[/cyan]")
+    rich_print(f"  • Reverse edges: [cyan]{reverse_edges}[/cyan]")
 
     # Display Extraction settings
     rich_print("[yellow][ExtractionSettings][/yellow]")
-    rich_print(f" • LLM Consolidation: [cyan]{final_llm_consolidation}[/cyan]")
-    rich_print(f" • Use Chunking: [cyan]{final_use_chunking}[/cyan]")
+    rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
+    if final_chunk_max_tokens is not None:
+        rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
 
     # Display Docling export settings
     rich_print("[yellow][DoclingExport][/yellow]")
-    rich_print(f" • Document JSON: [cyan]{final_export_docling_json}[/cyan]")
-    rich_print(f" • Markdown: [cyan]{final_export_markdown}[/cyan]")
-    rich_print(f" • Per-page MD: [cyan]{final_export_per_page}[/cyan]")
+    rich_print(f"  • Document JSON: [cyan]{final_export_docling_json}[/cyan]")
+    rich_print(f"  • Markdown: [cyan]{final_export_markdown}[/cyan]")
+    rich_print(f"  • Per-page MD: [cyan]{final_export_per_page}[/cyan]")
 
     # Build typed config
     logger.debug("Building PipelineConfig object")
+    if llm_temperature is not None:
+        llm_overrides.setdefault("generation", {})["temperature"] = llm_temperature
+    if llm_max_tokens is not None:
+        llm_overrides.setdefault("generation", {})["max_tokens"] = llm_max_tokens
+    if llm_top_p is not None:
+        llm_overrides.setdefault("generation", {})["top_p"] = llm_top_p
+    if llm_timeout is not None:
+        llm_overrides.setdefault("reliability", {})["timeout_s"] = llm_timeout
+    if llm_retries is not None:
+        llm_overrides.setdefault("reliability", {})["max_retries"] = llm_retries
+    if llm_base_url is not None:
+        llm_overrides.setdefault("connection", {})["base_url"] = llm_base_url
+    if llm_context_limit is not None:
+        llm_overrides["context_limit"] = llm_context_limit
+    if llm_max_output_tokens is not None:
+        llm_overrides["max_output_tokens"] = llm_max_output_tokens
+
     cfg = PipelineConfig(
         source=str(source),
         template=template,
@@ -218,8 +272,9 @@ def convert_command(
         model_override=model,
         provider_override=provider,
         models=models_from_yaml,
-        llm_consolidation=final_llm_consolidation,
-        use_chunking=final_use_chunking,
+        llm_overrides=llm_overrides,
+        debug=debug,
+        chunk_max_tokens=final_chunk_max_tokens,
         export_format=export_format_val,
         export_docling=True,
         export_docling_json=final_export_docling_json,
@@ -231,6 +286,21 @@ def convert_command(
 
     logger.debug(f"PipelineConfig created: backend={cfg.backend}, inference={cfg.inference}")
     logger.debug(f"Output directory: {cfg.output_dir}")
+
+    if show_llm_config and backend_val == "llm":
+        from docling_graph.llm_clients.config import resolve_effective_model_config
+
+        selection = cfg.models.llm.local if cfg.inference == "local" else cfg.models.llm.remote
+        resolved_provider = provider or selection.provider
+        resolved_model = model or selection.model
+        effective = resolve_effective_model_config(
+            resolved_provider,
+            resolved_model,
+            overrides=cfg.llm_overrides,
+        )
+        rich_print("[yellow][ResolvedLLMConfig (no capability/registry)][/yellow]")
+        rich_print(effective.model_dump())
+        raise typer.Exit(code=0)
 
     # Run pipeline with normalized/validated config
     logger.info("Starting pipeline execution")

@@ -21,7 +21,7 @@ Get started with docling-graph in **5 minutes** by extracting structured data fr
 
 ```bash
 # Install docling-graph with all features
-uv sync --extra all
+uv sync
 
 # Verify installation
 uv run docling-graph --version
@@ -87,55 +87,20 @@ from docling_graph import run_pipeline, PipelineConfig
 # Configure pipeline
 config = PipelineConfig(
     source="billing_doc.pdf",
-    template="simple_billing_doc.SimpleBillingDoc",
-    output_dir="quickstart_output"
+    template="simple_billing_doc.SimpleBillingDoc"
 )
 
 # Run extraction
 print("Processing billing document...")
-run_pipeline(config)
-print("✅ Complete! Check quickstart_output/")
+context = run_pipeline(config)
+graph = context.knowledge_graph
+print(f"✅ Complete! Extracted {graph.number_of_nodes()} nodes")
 ```
 
 Run it:
 
 ```bash
 uv run python run_quickstart.py
-```
-
----
-
-## Step 4: View Results
-
-### Interactive Visualization
-
-```bash
-uv run docling-graph inspect quickstart_output/
-```
-
-Opens an HTML visualization showing extracted nodes, relationships, and interactive exploration.
-
-### CSV Data
-
-```bash
-cat quickstart_output/nodes.csv
-cat quickstart_output/edges.csv
-```
-
-## Expected Output Structure
-
-```
-quickstart_output/
-├── metadata.json                # Pipeline metadata
-├── docling/                     # Docling conversion output
-│   ├── document.json            # Docling format
-│   └── document.md              # Markdown export
-└── docling_graph/               # Graph outputs
-    ├── graph.json               # Complete graph
-    ├── nodes.csv                # Extracted data
-    ├── edges.csv                # Relationships
-    ├── graph.html               # Interactive visualization
-    └── report.md                # Summary report
 ```
 
 ---

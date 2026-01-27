@@ -3,7 +3,8 @@ Shared document processing utilities.
 """
 
 import gc
-from typing import Any, List, Literal, Optional, overload
+import logging
+from typing import Any, List, Literal, Optional, cast, overload
 
 from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
 from docling.datamodel.base_models import InputFormat
@@ -37,7 +38,7 @@ class DocumentProcessor:
             chunker_config (dict): Configuration for DocumentChunker.
                 Example: {
                     "tokenizer_name": "mistralai/Mistral-7B-Instruct-v0.2",
-                    "max_tokens": 4096,
+                    "chunk_max_tokens": 4096,
                     "merge_peers": True
                 }
                 Or use provider shortcut:
@@ -52,10 +53,6 @@ class DocumentProcessor:
         self.chunker = None
         if chunker_config:
             self.chunker = DocumentChunker(**chunker_config)
-            rich_print(
-                f"[blue][DocumentProcessor][/blue] Initialized chunker with "
-                f"configuration: {self.chunker.get_config_summary()}"
-            )
 
         if docling_config == "vision":
             # VLM Pipeline - Best for complex layouts and images
@@ -104,6 +101,18 @@ class DocumentProcessor:
         Returns:
             Document: Docling document object.
         """
+        # Suppress RapidOCR INFO logs (RapidOCR() resets logger to INFO in __init__; set handler level so it sticks)
+        if self.docling_config == "ocr":
+            try:
+                from rapidocr.utils import log as _rapidocr_log  # type: ignore[import-untyped]
+
+                _log = _rapidocr_log.logger
+                _log.setLevel(logging.WARNING)
+                for _h in _log.handlers:
+                    _h.setLevel(logging.WARNING)
+            except Exception:
+                pass
+
         rich_print(
             f"[blue][DocumentProcessor][/blue] Converting document: [yellow]{source}[/yellow]"
         )
@@ -179,15 +188,18 @@ class DocumentProcessor:
             )
 
         chunks = self.chunker.chunk_document(document)
+        raw_chunker = self.chunker.chunker
+        if raw_chunker is None:
+            raise ValueError("Chunker not initialized.")
 
         # Extract metadata from chunks
         metadata_list = []
-        for i, chunk_obj in enumerate(self.chunker.chunker.chunk(document)):
+        for i, chunk_obj in enumerate(raw_chunker.chunk(document)):
             # Get page numbers from chunk
             page_numbers = list(
                 {
                     item.prov[0].page_no
-                    for item in chunk_obj.meta.doc_items  # type: ignore[attr-defined]
+                    for item in getattr(chunk_obj.meta, "doc_items", [])
                     if hasattr(item, "prov") and item.prov
                 }
             )
@@ -196,7 +208,7 @@ class DocumentProcessor:
                 {
                     "chunk_id": i,
                     "page_numbers": sorted(page_numbers),
-                    "token_count": len(self.chunker.tokenizer.encode(chunks[i])),  # type: ignore[union-attr]
+                    "token_count": len(self.chunker.tokenizer.tokenizer.encode(chunks[i])),
                 }
             )
 
@@ -277,6 +289,57 @@ class DocumentProcessor:
             f"[blue][DocumentProcessor][/blue] Extracted full document Markdown ([cyan]{len(md)}[/cyan] chars)"
         )
         return md
+
+    def chunk_text(self, text: str) -> tuple[List[str], List[dict]]:
+        """
+        Chunk raw text/markdown content without DoclingDocument.
+
+        This method chunks text-based inputs (TEXT, TEXT_FILE, MARKDOWN)
+        using the DocumentChunker's fallback method which respects sentence boundaries.
+
+        Note: This uses sentence-aware chunking, not the full HybridChunker which requires
+        a DoclingDocument with structure information. For best results with markdown,
+        consider converting to DoclingDocument first.
+
+        Args:
+            text: Raw text or markdown content to chunk
+
+        Returns:
+            Tuple of (chunks, metadata_list) where metadata_list contains:
+            - chunk_id: int
+            - page_numbers: list[int] (always [0] for text inputs)
+            - token_count: int
+
+        Raises:
+            ValueError: If chunker is not initialized
+        """
+        if not self.chunker:
+            raise ValueError(
+                "Chunker not initialized. Pass chunker_config to __init__() to enable chunking."
+            )
+
+        # Use the chunker's fallback method which respects sentence boundaries
+        chunks = self.chunker.chunk_text_fallback(text)
+
+        # Build metadata for each chunk
+        metadata_list: list[dict[str, Any]] = []
+        for chunk_id, chunk_text in enumerate(chunks):
+            token_count = self.chunker.tokenizer.count_tokens(chunk_text)
+            metadata_list.append(
+                {
+                    "chunk_id": chunk_id,
+                    "page_numbers": [0],  # Text inputs don't have pages
+                    "token_count": token_count,
+                }
+            )
+
+        total_tokens = sum(cast(int, m["token_count"]) for m in metadata_list)
+        rich_print(
+            f"[blue][DocumentProcessor][/blue] Chunked text into [cyan]{len(chunks)}[/cyan] chunks "
+            f"([cyan]{total_tokens}[/cyan] total tokens, max [cyan]{self.chunker.chunk_max_tokens}[/cyan] per chunk)"
+        )
+
+        return chunks, metadata_list
 
     def cleanup(self) -> None:
         """Clean up document converter resources."""

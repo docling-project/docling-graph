@@ -140,7 +140,7 @@ class TestConfigurationBuilder:
     def test_build_models_vlm_backend(self, mock_vlm):
         """Should build VLM config for VLM backend."""
         mock_vlm.return_value = {
-            "vlm": {"local": {"provider": "docling", "default_model": "llava"}},
+            "vlm": {"local": {"provider": "docling", "model": "llava"}},
             "llm": {"local": {}, "remote": {}},
         }
 
@@ -154,7 +154,7 @@ class TestConfigurationBuilder:
     def test_build_models_llm_local(self, mock_local_llm):
         """Should build local LLM config for LLM backend with local inference."""
         mock_local_llm.return_value = {
-            "llm": {"local": {"provider": "ollama", "default_model": "llama3"}},
+            "llm": {"local": {"provider": "ollama", "model": "llama3"}},
             "vlm": {"local": {}},
         }
 
@@ -169,7 +169,7 @@ class TestConfigurationBuilder:
         """Should build remote LLM config for LLM backend with remote inference."""
         mock_remote_llm.return_value = {
             "llm": {
-                "remote": {"provider": "openai", "default_model": "gpt-4"},
+                "remote": {"provider": "openai", "model": "gpt-4"},
                 "local": {},
             },
             "vlm": {"local": {}},
@@ -205,7 +205,7 @@ class TestConfigurationBuilder:
         assert "vlm" in result
         assert "local" in result["llm"]
         assert result["llm"]["local"]["provider"] == "ollama"
-        assert result["llm"]["local"]["default_model"] == "llama3"
+        assert result["llm"]["local"]["model"] == "llama3"
 
     @patch("typer.prompt")
     def test_build_remote_llm_config_returns_full_structure(self, mock_prompt):
@@ -219,7 +219,7 @@ class TestConfigurationBuilder:
         assert "vlm" in result
         assert "remote" in result["llm"]
         assert result["llm"]["remote"]["provider"] == "openai"
-        assert result["llm"]["remote"]["default_model"] == "gpt-4"
+        assert result["llm"]["remote"]["model"] == "gpt-4"
 
     @patch("typer.prompt")
     def test_build_output_returns_directory_config(self, mock_prompt):

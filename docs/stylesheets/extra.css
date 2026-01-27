@@ -1,3 +1,7 @@
+/* -------------------------------------------------------------------------- */
+/* Custom Mermaid Styles                              */
+/* -------------------------------------------------------------------------- */
+
 /* 1. Reset global overrides */
 :root, [data-md-color-scheme="default"], [data-md-color-scheme="slate"] {
   --md-mermaid-label-fg-color: inherit;
@@ -38,4 +42,13 @@
   stroke: #969696 !important;
   stroke-width: 2px !important;
   stroke-dasharray: 5 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Custom MkDocs Styles                              */
+/* -------------------------------------------------------------------------- */
+
+[data-md-color-scheme="slate"] {
+  /* Sets the header and tabs color */
+  --md-primary-fg-color: #0d1117;
 }

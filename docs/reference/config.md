@@ -32,7 +32,8 @@ config = PipelineConfig(
     provider_override: str | None = None,
     models: ModelsConfig = ModelsConfig(),
     use_chunking: bool = True,
-    llm_consolidation: bool = False,
+    chunk_max_tokens: int | None = None,
+    debug: bool = False,
     max_batch_size: int = 1,
     dump_to_disk: bool | None = None,
     export_format: Literal["csv", "cypher"] = "csv",
@@ -71,7 +72,8 @@ config = PipelineConfig(
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `llm_consolidation` | `bool` | `False` | Use LLM for consolidation |
+| `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking) |
+| `debug` | `bool` | `False` | Enable debug artifacts |
 | `max_batch_size` | `int` | `1` | Maximum batch size |
 
 #### Export Configuration
@@ -79,7 +81,6 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports. `None`=auto-detect (CLI=True, API=False), `True`=always export, `False`=never export |
-| `include_trace` | `bool` or `None` | `None` | Enable trace data capture. `None`=auto-detect (CLI=True, API=False), `True`=always capture, `False`=never capture |
 | `export_format` | `"csv"` or `"cypher"` | `"csv"` | Graph export format |
 | `export_docling` | `bool` | `True` | Export Docling outputs |
 | `export_docling_json` | `bool` | `True` | Export Docling JSON |
@@ -179,11 +180,11 @@ class LLMConfig(BaseModel):
     """LLM model configurations for local and remote inference."""
     
     local: ModelConfig = Field(default_factory=lambda: ModelConfig(
-        default_model="ibm-granite/granite-4.0-1b",
+        model="ibm-granite/granite-4.0-1b",
         provider="vllm"
     ))
     remote: ModelConfig = Field(default_factory=lambda: ModelConfig(
-        default_model="mistral-small-latest",
+        model="mistral-small-latest",
         provider="mistral"
     ))
 ```
@@ -206,7 +207,7 @@ class VLMConfig(BaseModel):
     """VLM model configuration."""
     
     local: ModelConfig = Field(default_factory=lambda: ModelConfig(
-        default_model="numind/NuExtract-2.0-8B",
+        model="numind/NuExtract-2.0-8B",
         provider="docling"
     ))
 ```
@@ -229,8 +230,8 @@ Configuration for a specific model.
 ```python
 class ModelConfig(BaseModel):
     """Configuration for a specific model."""
-    
-    default_model: str = Field(..., description="Model name/path")
+
+    model: str = Field(..., description="Model name/path")
     provider: str = Field(..., description="Provider name")
 ```
 
@@ -238,7 +239,7 @@ class ModelConfig(BaseModel):
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `default_model` | `str` | Model name or path |
+| `model` | `str` | Model name or path |
 | `provider` | `str` | Provider name (e.g., "vllm", "mistral") |
 
 ---
@@ -311,8 +312,7 @@ config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate",
     processing_mode="one-to-one",
-    use_chunking=False,
-    llm_consolidation=True
+    use_chunking=False
 )
 run_pipeline(config)
 ```
@@ -346,42 +346,46 @@ config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate"
     # dump_to_disk defaults to None (auto-detects as False for API)
-    # include_trace defaults to None (auto-detects as False for API)
+    # debug defaults to False (no debug artifacts)
 )
 
-# Returns data only, no file exports, no trace data
+# Returns data only, no file exports, no debug artifacts
 context = run_pipeline(config)
 graph = context.knowledge_graph
 ```
 
-### Trace Data Capture
+### Debug Mode
 
 ```python
 from docling_graph import run_pipeline
+from pathlib import Path
 
-# CLI mode: Trace enabled by default
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.MyTemplate"
-    # include_trace=None (auto-detects as True for CLI)
-)
-
-# API mode with trace for debugging
+# Enable debug mode for troubleshooting
 config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate",
-    include_trace=True,  # Enable trace data capture
-    dump_to_disk=False   # Keep in memory only
+    debug=True,  # Enable debug mode
+    dump_to_disk=True  # Also save final outputs
 )
 
 context = run_pipeline(config)
 
-# Access trace data
-if context.trace_data:
-    print(f"Pages: {len(context.trace_data.pages)}")
-    print(f"Chunks: {len(context.trace_data.chunks or [])}")
-    print(f"Extractions: {len(context.trace_data.extractions)}")
-    print(f"Intermediate graphs: {len(context.trace_data.intermediate_graphs)}")
+# Debug artifacts saved to outputs/{document}_{timestamp}/debug/
+debug_dir = Path(context.output_dir) / "debug"
+print(f"Debug artifacts saved to: {debug_dir}")
+
+# Analyze debug artifacts
+import json
+
+# Load slot metadata
+with open(debug_dir / "slots.jsonl") as f:
+    slots = [json.loads(line) for line in f]
+    print(f"Total slots: {len(slots)}")
+
+# Load all atoms
+with open(debug_dir / "atoms_all.jsonl") as f:
+    atoms = [json.loads(line) for line in f]
+    print(f"Total atoms extracted: {len(atoms)}")
 ```
 
 ### Explicit Control
@@ -428,7 +432,6 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    llm_consolidation=True,
     max_batch_size=5,
     
     # Export

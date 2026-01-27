@@ -71,7 +71,7 @@ def get_config_value(config: Dict[str, Any], *keys: str, default: Any = None) ->
         Configuration value or default.
 
     Example:
-        >>> get_config_value(config, "models", "llm", "local", "default_model")
+        >>> get_config_value(config, "models", "llm", "local", "model")
     """
     current: Any = config
     for key in keys:

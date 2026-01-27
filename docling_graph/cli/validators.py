@@ -16,11 +16,7 @@ from .constants import (
     LOCAL_PROVIDERS,
     PROCESSING_MODES,
 )
-from .dependencies import (
-    INFERENCE_PROVIDERS,
-    OPTIONAL_DEPS,
-    get_missing_dependencies,
-)
+from .dependencies import INFERENCE_PROVIDERS, OPTIONAL_DEPS, get_missing_dependencies
 
 # Validation option sets mapped to names
 VALIDATION_SETS = {
@@ -66,19 +62,24 @@ def validate_vlm_constraints(backend: str, inference: str) -> None:
 
 
 def validate_provider(provider: str, inference: str) -> str:
-    """Validate provider choice."""
+    """Validate provider choice.
+
+    Ensures that the provider is valid for the selected inference type.
+    Raises ValueError for invalid combinations so that CLI commands and tests
+    can fail fast with clear feedback.
+    """
     valid_providers = LOCAL_PROVIDERS if inference == "local" else API_PROVIDERS
     if provider not in valid_providers:
         raise ValueError(
             f"Invalid provider '{provider}' for inference='{inference}'. "
-            f"Valid options: {', '.join(sorted(valid_providers))}"
+            f"Expected one of: {', '.join(sorted(valid_providers))}."
         )
     return provider
 
 
 def check_provider_installed(provider: str) -> bool:
     """Check if a provider's package is installed."""
-    dep = OPTIONAL_DEPS.get(provider)
+    dep = OPTIONAL_DEPS.get("litellm")
     return dep.is_installed if dep else True
 
 
@@ -119,13 +120,18 @@ def _print_provider_status(provider: str) -> None:
 
 def _get_install_command(provider: str) -> str:
     """Get the installation command for a provider."""
-    return f"uv sync --extra {provider}"
+    return "uv sync"
 
 
 def print_dependency_setup_guide(inference_type: str, provider: str | None = None) -> None:
     """Print setup guide for the selected inference type."""
-    providers = [provider] if provider else INFERENCE_PROVIDERS.get(inference_type, [])
-    missing = get_missing_dependencies(providers)
+    # Determine which providers to check
+    if provider is not None:
+        provider_names = [provider]
+    else:
+        provider_names = INFERENCE_PROVIDERS.get(inference_type, [])
+
+    missing = get_missing_dependencies(provider_names)
 
     if not missing:
         msg = (
@@ -133,24 +139,18 @@ def print_dependency_setup_guide(inference_type: str, provider: str | None = Non
             if provider
             else f"All {inference_type} inference dependencies"
         )
-        rich_print(f"\n[green]{msg} is installed![/green]")
+        rich_print(f"\n[green]{msg} are installed![/green]")
         return
 
     # Show missing dependencies
-    title = f"{provider} provider" if provider else f"{inference_type} inference"
-    rich_print(f"\n[yellow]Note: Setup required for {title}[/yellow]")
-    rich_print(f"\nYou selected [bold]{inference_type}[/bold] inference.")
-    rich_print("\n[blue]Provider dependency status:[/blue]")
-
-    for prov in providers:
-        _print_provider_status(prov)
+    rich_print(f"\n[yellow]Note: Setup required for {inference_type} inference[/yellow]")
+    rich_print("\n[blue]Dependency status:[/blue]")
+    for dep in missing:
+        _print_provider_status(dep.name)
 
     rich_print("\n[blue]Run the following to install missing dependencies:[/blue]")
-    if provider:
-        rich_print(f" {_get_install_command(provider)}")
-    else:
-        extra = "local" if inference_type == "local" else "remote"
-        rich_print(f" uv sync --extra {extra}")
+    for dep in missing:
+        rich_print(f" {dep.get_install_command()}")
     rich_print()
 
 
@@ -158,52 +158,33 @@ def validate_and_warn_dependencies(config_dict: dict, interactive: bool = True) 
     """Validate dependencies and show warnings if missing (optimized)."""
     provider, inference_type = get_provider_from_config(config_dict)
 
-    # Only check the selected provider, not all providers
-    if provider:
-        is_installed = check_provider_installed(provider)
-        if is_installed:
-            if interactive:
-                rich_print(f"\n[green]- {provider} provider is installed[/green]")
-            return True
+    # If no provider is configured, assume dependencies are fine
+    if not provider:
+        return True
 
-        # Show warning for missing provider
+    is_available = check_provider_installed(provider)
+
+    if is_available:
         if interactive:
-            print_dependency_setup_guide(inference_type, provider)
-        return False
-
-    # Fallback: check only providers for the selected inference type
-    providers = INFERENCE_PROVIDERS.get(inference_type, [])
-    missing = get_missing_dependencies(providers)
-
-    if not missing:
-        if interactive:
-            rich_print(f"\n[green]- All {inference_type} dependencies installed[/green]")
+            rich_print("\n[green]- Dependencies are installed[/green]")
         return True
 
     if interactive:
-        print_dependency_setup_guide(inference_type)
+        print_dependency_setup_guide(inference_type, provider)
     return False
 
 
 def print_next_steps_with_deps(config_dict: dict, existing_steps: str) -> None:
     """Print next steps with dependency installation as first step if needed."""
-    provider, inference_type = get_provider_from_config(config_dict)
+    _provider, _inference_type = get_provider_from_config(config_dict)
 
     # Check if dependencies are missing
     needs_install = False
     install_cmd = None
 
-    if provider:
-        if not check_provider_installed(provider):
-            needs_install = True
-            install_cmd = _get_install_command(provider)
-    else:
-        providers = INFERENCE_PROVIDERS.get(inference_type, [])
-        missing = get_missing_dependencies(providers)
-        if missing:
-            needs_install = True
-            extra = "local" if inference_type == "local" else "remote"
-            install_cmd = f"uv sync --extra {extra}"
+    if not check_provider_installed("litellm"):
+        needs_install = True
+        install_cmd = _get_install_command("litellm")
 
     if needs_install and install_cmd:
         # Extract only the content after "Next steps:" to avoid duplication

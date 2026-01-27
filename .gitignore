@@ -57,8 +57,10 @@ coverage.xml
 # Environments
 .env
 .venv
+.vllm
 env/
 venv/
+vllm/
 ENV/
 env.bak/
 venv.bak/
@@ -67,6 +69,7 @@ venv.bak/
 .idea/
 .vscode/
 .bob/
+.cursor/
 
 # Jupyter Notebook
 .ipynb_checkpoints

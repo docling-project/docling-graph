@@ -6,7 +6,9 @@ import copy
 from typing import Any, Dict, List
 
 
-def merge_pydantic_models(models: List[Any], template_class: type) -> Any:
+def merge_pydantic_models(
+    models: List[Any], template_class: type, context_tag: str | None = None
+) -> Any:
     """
     Merge multiple Pydantic model instances into a single model.
 
@@ -32,7 +34,7 @@ def merge_pydantic_models(models: List[Any], template_class: type) -> Any:
 
     # Merge remaining models
     for d in dicts[1:]:
-        deep_merge_dicts(merged, d)
+        deep_merge_dicts(merged, d, context_tag=context_tag)
 
     # Convert back to Pydantic model
     try:
@@ -43,7 +45,11 @@ def merge_pydantic_models(models: List[Any], template_class: type) -> Any:
         return models[0]
 
 
-def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str, Any]:
+def deep_merge_dicts(
+    target: Dict[str, Any],
+    source: Dict[str, Any],
+    context_tag: str | None = None,
+) -> Dict[str, Any]:
     """
     Recursively merge dicts with smart list deduplication.
 
@@ -62,13 +68,15 @@ def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str
 
             # Both dicts: recursive merge
             if isinstance(target_value, dict) and isinstance(source_value, dict):
-                deep_merge_dicts(target_value, source_value)
+                deep_merge_dicts(target_value, source_value, context_tag=context_tag)
 
             # Both lists: smart merge
             elif isinstance(target_value, list) and isinstance(source_value, list):
                 # Check if this is a list of entities (dicts with identity)
                 if target_value and isinstance(target_value[0], dict):
-                    target[key] = _merge_entity_lists(target_value, source_value)
+                    target[key] = _merge_entity_lists(
+                        target_value, source_value, context_tag=context_tag
+                    )
                 else:
                     # Simple list: concatenate and deduplicate
                     for item in source_value:
@@ -85,6 +93,7 @@ def deep_merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> Dict[str
 def _merge_entity_lists(
     target_list: List[Dict],
     source_list: List[Dict],
+    context_tag: str | None = None,
 ) -> List[Dict]:
     """
     Merge two lists of entity dicts, avoiding duplicates.
@@ -94,26 +103,43 @@ def _merge_entity_lists(
     import hashlib
     import json
 
-    def entity_hash(entity: Dict) -> str:
+    def entity_hash(entity: Dict, include_context: bool = False) -> str:
         """Compute content hash for entity."""
         # Use stable fields for identity
         stable_fields = {
             k: v for k, v in entity.items() if k not in {"id", "__class__"} and v is not None
         }
+        if include_context and context_tag:
+            stable_fields["__merge_context__"] = context_tag
         content = json.dumps(stable_fields, sort_keys=True, default=str)
         return hashlib.blake2b(content.encode()).hexdigest()[:16]
 
-    # Build hash -> entity map for target
-    seen_hashes = {entity_hash(e): e for e in target_list}
+    merged: List[Dict] = []
+    id_map: Dict[str, Dict] = {}
+    seen_hashes: Dict[str, Dict] = {}
 
-    # Add source entities if not seen
-    merged = list(seen_hashes.values())
+    for entity in target_list:
+        entity_id = entity.get("id")
+        if entity_id:
+            id_map[entity_id] = entity
+            merged.append(entity)
+        else:
+            e_hash = entity_hash(entity)
+            seen_hashes[e_hash] = entity
+            merged.append(entity)
 
     for source_entity in source_list:
-        s_hash = entity_hash(source_entity)
-        if s_hash not in seen_hashes:
+        source_id = source_entity.get("id")
+        if source_id and source_id in id_map:
+            deep_merge_dicts(id_map[source_id], source_entity, context_tag=context_tag)
+        elif source_id:
             merged.append(source_entity)
-            seen_hashes[s_hash] = source_entity
+            id_map[source_id] = source_entity
+        else:
+            s_hash = entity_hash(source_entity, include_context=True)
+            if s_hash not in seen_hashes:
+                merged.append(source_entity)
+                seen_hashes[s_hash] = source_entity
 
     return merged
 

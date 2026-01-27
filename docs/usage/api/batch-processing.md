@@ -48,7 +48,6 @@ for doc in documents:
 print(f"\nTotal documents: {len(results)}")
 print(f"Total nodes: {sum(r['nodes'] for r in results)}")
 ```
-
 ### With File Exports
 
 ```python
@@ -88,8 +87,7 @@ documents = list(Path("documents").glob("*.pdf"))
 for doc in tqdm(documents, desc="Processing"):
     config = PipelineConfig(
         source=str(doc),
-        template="templates.BillingDocument",
-        output_dir=f"outputs/{doc.stem}"
+        template="templates.BillingDocument"
     )
     
     try:
@@ -272,30 +270,27 @@ import json
 import pandas as pd
 from docling_graph import PipelineConfig
 
-def batch_with_stats(input_dir: str, template: str, output_base: str):
+def batch_with_stats(input_dir: str, template: str):
     """Process documents and collect statistics."""
     documents = list(Path(input_dir).glob("*.pdf"))
     all_stats = []
     
     for doc in documents:
-        output_dir = Path(output_base) / doc.stem
-        
         try:
             # Process document
             config = PipelineConfig(
                 source=str(doc),
-                template=template,
-                output_dir=str(output_dir)
+                template=template
             )
-            run_pipeline(config)
-            
-            # Load statistics
-            stats_file = output_dir / "graph_stats.json"
-            with open(stats_file) as f:
-                stats = json.load(f)
-                stats["document"] = doc.name
-                stats["status"] = "success"
-                all_stats.append(stats)
+            context = run_pipeline(config)
+            graph = context.knowledge_graph
+            stats = {
+                "document": doc.name,
+                "status": "success",
+                "node_count": graph.number_of_nodes(),
+                "edge_count": graph.number_of_edges(),
+            }
+            all_stats.append(stats)
                 
         except Exception as e:
             all_stats.append({
@@ -306,10 +301,6 @@ def batch_with_stats(input_dir: str, template: str, output_base: str):
     
     # Create summary DataFrame
     df = pd.DataFrame(all_stats)
-    
-    # Save summary
-    summary_file = Path(output_base) / "batch_summary.csv"
-    df.to_csv(summary_file, index=False)
     
     # Print statistics
     print("\n=== Batch Statistics ===")
@@ -328,8 +319,7 @@ def batch_with_stats(input_dir: str, template: str, output_base: str):
 # Run with statistics
 df = batch_with_stats(
     input_dir="documents/invoices",
-    template="templates.billing_document.BillingDocument",
-    output_base="outputs/batch_stats"
+    template="templates.billing_document.BillingDocument"
 )
 
 # Analyze results
@@ -347,7 +337,7 @@ print(df.nlargest(5, 'node_count')[['document', 'node_count', 'edge_count']])
 from pathlib import Path
 from docling_graph import PipelineConfig
 
-def smart_batch_process(input_dir: str, output_base: str):
+def smart_batch_process(input_dir: str):
     """Process documents with template selection."""
     documents = Path(input_dir).glob("*")
     
@@ -367,8 +357,7 @@ def smart_batch_process(input_dir: str, output_base: str):
         config = PipelineConfig(
             source=str(doc),
             template=template,
-            backend=backend,
-            output_dir=f"{output_base}/{doc.stem}"
+            backend=backend
         )
         
         try:
@@ -377,7 +366,7 @@ def smart_batch_process(input_dir: str, output_base: str):
         except Exception as e:
             print(f"❌ {doc.name}: {e}")
 
-smart_batch_process("documents/mixed", "outputs/smart")
+smart_batch_process("documents/mixed")
 ```
 
 ---
@@ -392,7 +381,6 @@ import time
 def process_with_retry(
     doc_path: Path,
     template: str,
-    output_dir: str,
     max_retries: int = 3,
     delay: int = 5
 ):
@@ -401,8 +389,7 @@ def process_with_retry(
         try:
             config = PipelineConfig(
                 source=str(doc_path),
-                template=template,
-                output_dir=output_dir
+                template=template
             )
             run_pipeline(config)
             return {"status": "success", "attempts": attempt}
@@ -418,7 +405,7 @@ def process_with_retry(
                     "error": str(e)
                 }
 
-def batch_with_retry(input_dir: str, template: str, output_base: str):
+def batch_with_retry(input_dir: str, template: str):
     """Batch process with retry logic."""
     documents = list(Path(input_dir).glob("*.pdf"))
     results = []
@@ -427,7 +414,6 @@ def batch_with_retry(input_dir: str, template: str, output_base: str):
         result = process_with_retry(
             doc_path=doc,
             template=template,
-            output_dir=f"{output_base}/{doc.stem}",
             max_retries=3
         )
         result["document"] = doc.name
@@ -440,8 +426,7 @@ def batch_with_retry(input_dir: str, template: str, output_base: str):
 
 results = batch_with_retry(
     input_dir="documents/invoices",
-    template="templates.billing_document.BillingDocument",
-    output_base="outputs/retry"
+    template="templates.billing_document.BillingDocument"
 )
 ```
 
@@ -457,12 +442,11 @@ from docling_graph import PipelineConfig
 def batch_with_checkpoint(
     input_dir: str,
     template: str,
-    output_base: str,
     checkpoint_file: str = "checkpoint.json"
 ):
     """Batch process with checkpoint support."""
     documents = list(Path(input_dir).glob("*.pdf"))
-    checkpoint_path = Path(output_base) / checkpoint_file
+    checkpoint_path = Path(checkpoint_file)
     
     # Load checkpoint
     if checkpoint_path.exists():
@@ -483,8 +467,7 @@ def batch_with_checkpoint(
         try:
             config = PipelineConfig(
                 source=str(doc),
-                template=template,
-                output_dir=f"{output_base}/{doc.stem}"
+                template=template
             )
             run_pipeline(config)
             
@@ -511,8 +494,7 @@ def batch_with_checkpoint(
 # Run with checkpoint
 checkpoint = batch_with_checkpoint(
     input_dir="documents/invoices",
-    template="templates.billing_document.BillingDocument",
-    output_base="outputs/checkpoint"
+    template="templates.billing_document.BillingDocument"
 )
 ```
 
@@ -530,7 +512,6 @@ import gc
 def batch_with_memory_management(
     input_dir: str,
     template: str,
-    output_base: str,
     cleanup_interval: int = 10
 ):
     """Batch process with memory cleanup."""
@@ -539,8 +520,7 @@ def batch_with_memory_management(
     for i, doc in enumerate(documents, 1):
         config = PipelineConfig(
             source=str(doc),
-            template=template,
-            output_dir=f"{output_base}/{doc.stem}"
+            template=template
         )
         
         try:
@@ -557,7 +537,6 @@ def batch_with_memory_management(
 batch_with_memory_management(
     input_dir="documents/large_batch",
     template="templates.billing_document.BillingDocument",
-    output_base="outputs/memory_managed",
     cleanup_interval=10
 )
 ```
@@ -642,16 +621,15 @@ class BatchProcessor:
             try:
                 config = PipelineConfig(
                     source=str(doc_path),
-                    template=self.template,
-                    output_dir=str(self.output_base / doc_path.stem)
+                    template=self.template
                 )
-                
-                run_pipeline(config)
-                
-                # Load statistics
-                stats_file = self.output_base / doc_path.stem / "graph_stats.json"
-                with open(stats_file) as f:
-                    stats = json.load(f)
+
+                context = run_pipeline(config)
+                graph = context.knowledge_graph
+                stats = {
+                    "node_count": graph.number_of_nodes(),
+                    "edge_count": graph.number_of_edges(),
+                }
                 
                 return {
                     "status": "success",

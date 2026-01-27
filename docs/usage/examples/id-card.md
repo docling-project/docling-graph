@@ -14,8 +14,8 @@ Extract personal information from ID cards and identity documents using vision-b
 ## Prerequisites
 
 ```bash
-# Install with all features
-uv sync --extra all
+# Install dependencies
+uv sync
 ```
 
 ---
@@ -228,8 +228,7 @@ config = PipelineConfig(
     backend="vlm",
     inference="local",  # VLM only supports local
     processing_mode="one-to-one",
-    docling_config="vision",
-    output_dir="outputs/id_card"
+    docling_config="vision"
 )
 
 print("Processing ID card...")

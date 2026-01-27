@@ -137,8 +137,7 @@ config = PipelineConfig(
     template=Research,
     backend="llm",
     inference="remote",
-    processing_mode="many-to-one",
-    output_dir="outputs/research"
+    processing_mode="many-to-one"
 )
 
 # Run pipeline
@@ -162,7 +161,6 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     use_chunking=True,
     llm_consolidation=True,
-    output_dir="outputs/research",
     export_format="json"
 )
 

@@ -135,8 +135,7 @@ config = PipelineConfig(
     template=Documentation,
     backend="llm",  # Required for text inputs
     inference="remote",
-    processing_mode="many-to-one",
-    output_dir="outputs/docs"
+    processing_mode="many-to-one"
 )
 
 # Run pipeline
@@ -162,8 +161,7 @@ for md_file in markdown_files:
         template=Documentation,
         backend="llm",
         inference="remote",
-        processing_mode="many-to-one",
-        output_dir=f"outputs/{md_file.stem}"
+        processing_mode="many-to-one"
     )
     
     try:
@@ -187,8 +185,7 @@ config = PipelineConfig(
     inference="remote",
     provider_override="openai",
     model_override="gpt-4-turbo",
-    use_chunking=True,
-    output_dir="outputs/api_docs"
+    use_chunking=True
 )
 
 run_pipeline(config)

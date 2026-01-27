@@ -29,7 +29,7 @@ cd docling-graph
 
 ```bash
 # Install with all dependencies
-uv sync --extra all --extra dev
+uv sync --extra dev
 
 # Verify installation
 uv run python -c "import docling_graph; print(docling_graph.__version__)"
@@ -128,7 +128,7 @@ How releases are managed.
 
 ```bash
 # Full development setup
-uv sync --extra all --extra dev
+uv sync --extra dev
 
 # This installs:
 # - Core dependencies

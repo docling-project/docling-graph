@@ -41,7 +41,7 @@ def test_init_vision(mock_chunker_class, mock_converter_class):
 @patch("docling_graph.core.extractors.document_processor.DocumentChunker")
 def test_init_with_chunker(mock_chunker_class, mock_converter_class):
     """Test initialization with chunker configuration."""
-    chunker_config = {"max_tokens": 4096}
+    chunker_config = {"chunk_max_tokens": 4096}
     processor = DocumentProcessor(chunker_config=chunker_config)
 
     assert processor.chunker is not None
@@ -110,7 +110,7 @@ def test_extract_chunks_no_stats(mock_chunker_class, mock_converter_class):
     mock_chunker_instance = mock_chunker_class.return_value
     mock_chunker_instance.chunk_document.return_value = ["chunk1", "chunk2"]
 
-    processor = DocumentProcessor(chunker_config={"max_tokens": 1024})
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 1024})
     chunks = processor.extract_chunks(MagicMock(), with_stats=False)
 
     assert chunks == ["chunk1", "chunk2"]
@@ -127,7 +127,7 @@ def test_extract_chunks_with_stats(mock_chunker_class, mock_converter_class):
         {"total_chunks": 2, "avg_tokens": 10, "max_tokens_in_chunk": 12},
     )
 
-    processor = DocumentProcessor(chunker_config={"max_tokens": 1024})
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 1024})
     chunks, stats = processor.extract_chunks(MagicMock(), with_stats=True)
 
     assert chunks == ["chunk1", "chunk2"]

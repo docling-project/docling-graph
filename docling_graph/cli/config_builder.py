@@ -76,7 +76,7 @@ class ConfigurationBuilder:
 
         for option in config.options:
             help_text = config.option_help.get(option, "")
-            rich_print(f" • {option}: {help_text}")
+            rich_print(f"  • {option}: {help_text}")
 
         self.step_counter += 1
         return cast(
@@ -223,19 +223,35 @@ class ConfigurationBuilder:
         provider = self._prompt_option(
             PromptConfig(
                 label="Local LLM Provider",
-                description="Select provider",
+                description="Select provider (LiteLLM routing)",
                 options=list(LOCAL_PROVIDERS),
                 default="vllm",
                 step_num=self.step_counter,
-                option_help={p: f"Use {p} for local inference" for p in LOCAL_PROVIDERS},
+                option_help={
+                    "vllm": "Use vLLM server (OpenAI-compatible)",
+                    "ollama": "Use Ollama server (local inference)",
+                    "custom": "Enter a custom LiteLLM provider ID",
+                },
             )
         )
 
-        default_model = LOCAL_PROVIDER_DEFAULTS.get(provider, LOCAL_PROVIDER_DEFAULTS["vllm"])
-        model = typer.prompt(
-            f"Select model for {provider}",
-            default=default_model,
-        )
+        if provider == "custom":
+            provider_id = typer.prompt(
+                "Enter LiteLLM provider id (e.g., ollama, vllm, openai)",
+                default="ollama",
+            )
+            default_model = LOCAL_PROVIDER_DEFAULTS.get(provider_id, "llama3.1:8b")
+            model = typer.prompt(
+                f"Enter model for {provider_id}",
+                default=default_model,
+            )
+            provider = provider_id
+        else:
+            default_model = LOCAL_PROVIDER_DEFAULTS.get(provider, LOCAL_PROVIDER_DEFAULTS["vllm"])
+            model = typer.prompt(
+                f"Select model for {provider}",
+                default=default_model,
+            )
 
         return self._build_model_structure(
             vlm_model=VLM_DEFAULT_MODEL,
@@ -251,19 +267,39 @@ class ConfigurationBuilder:
         provider = self._prompt_option(
             PromptConfig(
                 label="API Provider",
-                description="Select API provider",
+                description="Select API provider (LiteLLM routing)",
                 options=list(API_PROVIDERS),
                 default="mistral",
                 step_num=self.step_counter,
-                option_help={p: f"Use {p} API" for p in API_PROVIDERS},
+                option_help={
+                    "mistral": "Use Mistral API",
+                    "openai": "Use OpenAI API",
+                    "gemini": "Use Gemini API",
+                    "watsonx": "Use IBM watsonx",
+                    "custom": "Enter a custom LiteLLM provider ID",
+                },
             )
         )
 
-        default_model = PROVIDER_DEFAULT_MODELS.get(provider, PROVIDER_DEFAULT_MODELS["mistral"])
-        model = typer.prompt(
-            f"Select model for {provider}",
-            default=default_model,
-        )
+        if provider == "custom":
+            provider_id = typer.prompt(
+                "Enter LiteLLM provider id (e.g., openai, anthropic)",
+                default="openai",
+            )
+            default_model = PROVIDER_DEFAULT_MODELS.get(provider_id, "gpt-4o")
+            model = typer.prompt(
+                f"Enter model for {provider_id}",
+                default=default_model,
+            )
+            provider = provider_id
+        else:
+            default_model = PROVIDER_DEFAULT_MODELS.get(
+                provider, PROVIDER_DEFAULT_MODELS["mistral"]
+            )
+            model = typer.prompt(
+                f"Select model for {provider}",
+                default=default_model,
+            )
 
         return self._build_model_structure(
             vlm_model=VLM_DEFAULT_MODEL,
@@ -287,17 +323,17 @@ class ConfigurationBuilder:
         return {
             "vlm": {
                 "local": {
-                    "default_model": vlm_model,
+                    "model": vlm_model,
                     "provider": vlm_provider,
                 }
             },
             "llm": {
                 "local": {
-                    "default_model": llm_local_model,
+                    "model": llm_local_model,
                     "provider": llm_local_provider,
                 },
                 "remote": {
-                    "default_model": llm_remote_model,
+                    "model": llm_remote_model,
                     "provider": llm_remote_provider,
                 },
             },

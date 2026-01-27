@@ -13,7 +13,7 @@ Use Cases:
     - Building knowledge bases from online sources
 
 Prerequisites:
-    - Installation: uv sync --extra remote
+    - Installation: uv sync
     - Environment: export MISTRAL_API_KEY="your-api-key"
     - Internet connection required for URL download
 
@@ -53,7 +53,7 @@ sys.path.append(str(project_root))
 try:
     from examples.templates.rheology_research import ScholarlyRheologyPaper
 
-    from docling_graph import PipelineConfig
+    from docling_graph import PipelineConfig, run_pipeline
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")
@@ -62,8 +62,6 @@ except ImportError:
 # Configuration
 SOURCE_URL = "https://arxiv.org/pdf/2207.02720"  # Example arXiv paper
 TEMPLATE_CLASS = ScholarlyRheologyPaper
-OUTPUT_DIR = "outputs/03_url_processing"
-
 console = Console()
 
 
@@ -87,14 +85,13 @@ def main() -> None:
     console.print("\n[yellow]⚠️  Prerequisites:[/yellow]")
     console.print("  • Internet connection required")
     console.print("  • Mistral API key: [cyan]export MISTRAL_API_KEY='...'[/cyan]")
-    console.print("  • Install remote extras: [cyan]uv sync --extra remote[/cyan]")
+    console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
 
     try:
         # Configure the pipeline
         config = PipelineConfig(
             source=SOURCE_URL,
             template=TEMPLATE_CLASS,
-            output_dir=OUTPUT_DIR,
             # LLM backend for text extraction
             backend="llm",
             # Remote inference via API
@@ -119,22 +116,15 @@ def main() -> None:
         console.print("  • Extracting with LLM")
         console.print("  • Building knowledge graph")
 
-        config.run()
+        context = run_pipeline(config)
 
         # Success message
         console.print("\n[green]✓ Success![/green]")
-        console.print(f"\n[bold]Output Location:[/bold] [cyan]{OUTPUT_DIR}[/cyan]")
-
-        console.print("\n[bold]📊 Next Steps:[/bold]")
+        graph = context.knowledge_graph
         console.print(
-            f"  1. View interactive graph: [cyan]uv run docling-graph inspect {OUTPUT_DIR}[/cyan]"
+            f"\n[bold]Extracted:[/bold] [cyan]{graph.number_of_nodes()} nodes[/cyan] "
+            f"and [cyan]{graph.number_of_edges()} edges[/cyan]"
         )
-        console.print(
-            f"  2. Check extracted data: [cyan]cat {OUTPUT_DIR}/docling_graph/nodes.csv[/cyan]"
-        )
-        console.print(f"  3. View cached PDF: [cyan]ls {OUTPUT_DIR}/docling/[/cyan]")
-        console.print(f"  4. Read markdown: [cyan]cat {OUTPUT_DIR}/docling/document.md[/cyan]")
-
         console.print("\n[bold]💡 What Happened:[/bold]")
         console.print("  • PDF downloaded from arXiv and cached locally")
         console.print("  • Document converted to markdown")
@@ -149,11 +139,10 @@ def main() -> None:
         console.print("  • Supports arXiv, PubMed, and direct PDF URLs")
 
         console.print("\n[bold]🔄 Reprocessing Tip:[/bold]")
-        console.print("  To reprocess without re-downloading, use the cached PDF:")
-        console.print(f"  [cyan]uv run docling-graph convert {OUTPUT_DIR}/docling/*.pdf ...[/cyan]")
+        console.print("  Cached PDFs can be reused to avoid re-downloading")
 
     except FileNotFoundError:
-        console.print(f"\n[red]✗ Error:[/red] Could not download from URL: {SOURCE_URL}")
+        console.print(f"\n[red]Error:[/red] Could not download from URL: {SOURCE_URL}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
         console.print("  • Check your internet connection")
         console.print("  • Verify the URL is accessible")
@@ -163,7 +152,7 @@ def main() -> None:
 
     except Exception as e:
         error_msg = str(e).lower()
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "timeout" in error_msg or "connection" in error_msg:
@@ -176,7 +165,7 @@ def main() -> None:
             )
             console.print("  • Get a key at: https://console.mistral.ai/")
         else:
-            console.print("  • Ensure dependencies: [cyan]uv sync --extra remote[/cyan]")
+            console.print("  • Ensure dependencies: [cyan]uv sync[/cyan]")
             console.print("  • Check URL is a valid PDF")
             console.print("  • Try with a smaller document first")
 

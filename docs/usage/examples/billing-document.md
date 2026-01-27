@@ -13,8 +13,8 @@ Extract complete structured data from billing documents (invoices, credit notes,
 ## Prerequisites
 
 ```bash
-# Install with all features
-uv sync --extra all
+# Install dependencies
+uv sync
 
 # Verify installation
 uv run docling-graph --version
@@ -154,14 +154,14 @@ config = PipelineConfig(
     template="docs.examples.templates.billing_document.BillingDocument",
     backend="vlm",
     inference="local",
-    processing_mode="one-to-one",
-    output_dir="outputs/billing_doc"
+    processing_mode="one-to-one"
 )
 
 # Run extraction
 print("Processing billing document...")
-run_pipeline(config)
-print("✅ Complete! Check outputs/billing_doc/")
+context = run_pipeline(config)
+graph = context.knowledge_graph
+print(f"✅ Complete! Extracted {graph.number_of_nodes()} nodes")
 ```
 
 **Run:**
@@ -282,8 +282,7 @@ for doc in documents:
     config = PipelineConfig(
         source=doc,
         template="docs.examples.templates.billing_document.BillingDocument",
-        backend="llm",
-        output_dir=f"outputs/batch/{doc_name}"
+        backend="llm"
     )
     
     try:

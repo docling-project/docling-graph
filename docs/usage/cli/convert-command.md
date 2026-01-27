@@ -53,6 +53,37 @@ uv run docling-graph convert README.md \
 
 ## Core Options
 
+### Debug Mode
+
+```bash
+--debug
+```
+
+Enable debug mode to save all intermediate extraction artifacts for debugging and analysis.
+
+**When to use:**
+- Debugging extraction issues
+- Analyzing extraction quality
+- Performance profiling
+- Development and testing
+
+**Output:** All debug artifacts saved to `outputs/{document}_{timestamp}/debug/`
+
+**Example:**
+```bash
+# Enable debug mode
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --debug
+
+# Debug artifacts will be in:
+# outputs/document_pdf_20260206_094500/debug/
+```
+
+See [Debug Mode Documentation](../advanced/trace-data-debugging.md) for details on debug artifacts.
+
+---
+
 ### Backend Selection
 
 ```bash
@@ -403,6 +434,20 @@ uv run docling-graph convert research.pdf \
     --use-chunking \
     --llm-consolidation \
     --output-dir "outputs/research"
+```
+
+### 📍 Debug Mode Enabled
+
+```bash
+# Enable debug mode for troubleshooting
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --backend llm \
+    --debug \
+    --output-dir "outputs/debug_run"
+
+# Debug artifacts will be saved to:
+# outputs/debug_run/document_pdf_20260206_094500/debug/
 ```
 
 ### 📍 Local Processing (Ollama)

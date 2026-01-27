@@ -3,6 +3,8 @@ Utility for managing optional dependencies with helpful error messages.
 """
 
 import importlib.util
+import json
+import time
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -95,49 +97,63 @@ class OptionalDependency:
 
 # Registry of all optional dependencies
 OPTIONAL_DEPS: Dict[str, OptionalDependency] = {
-    # Local providers
-    "vllm": OptionalDependency(
-        name="vllm",
-        package="openai",
-        extra="openai",
-        description="vLLM for running local LLMs via OpenAI Local API",
-        inference_type="local",
-    ),
+    # Local inference providers
     "ollama": OptionalDependency(
         name="ollama",
         package="ollama",
         extra="ollama",
-        description="Ollama for running local LLMs",
+        description="Ollama local inference provider",
         inference_type="local",
     ),
-    # Remote providers
-    "openai": OptionalDependency(
-        name="openai",
-        package="openai",
-        extra="openai",
-        description="OpenAI API client",
-        inference_type="remote",
+    "vllm": OptionalDependency(
+        name="vllm",
+        package="vllm",
+        extra="vllm",
+        description="vLLM local inference provider",
+        inference_type="local",
     ),
+    # Remote/API providers
     "mistral": OptionalDependency(
         name="mistral",
         package="mistralai",
         extra="mistral",
-        description="Mistral AI API client",
+        description="Mistral API provider",
+        inference_type="remote",
+    ),
+    "openai": OptionalDependency(
+        name="openai",
+        package="openai",
+        extra="openai",
+        description="OpenAI API provider",
         inference_type="remote",
     ),
     "gemini": OptionalDependency(
         name="gemini",
-        package="google.genai",
+        package="google-generativeai",
         extra="gemini",
-        description="Google Gemini API client",
+        description="Gemini API provider",
+        inference_type="remote",
+    ),
+    "ibm-watsonx-ai": OptionalDependency(
+        name="ibm-watsonx-ai",
+        package="ibm-watsonx-ai",
+        extra="ibm-watsonx-ai",
+        description="IBM watsonx.ai API provider",
+        inference_type="remote",
+    ),
+    # Shared LiteLLM client library used by multiple providers
+    "litellm": OptionalDependency(
+        name="litellm",
+        package="litellm",
+        description="LiteLLM client library",
         inference_type="remote",
     ),
 }
 
 # Mapping of inference types to their providers
 INFERENCE_PROVIDERS: Dict[str, List[str]] = {
-    "local": ["vllm", "ollama"],
-    "remote": ["mistral", "openai", "gemini"],
+    "local": ["ollama", "vllm"],
+    "remote": ["mistral", "openai", "gemini", "ibm-watsonx-ai"],
 }
 
 
