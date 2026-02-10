@@ -6,10 +6,10 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 
 | Path | Description |
 |------|-------------|
-| `docs/examples/scripts/` | Python example scripts (01–10) |
+| `docs/examples/scripts/` | Python example scripts (01–12) |
 | `docs/examples/templates/` | Pydantic templates (e.g. `billing_document.py`, `rheology_research.py`) |
 
-## Example Scripts (01–10)
+## Example Scripts (01–12)
 
 ### Getting Started
 
@@ -29,6 +29,8 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 8. **`08_chunking_consolidation.py`** — Chunking and merge behavior
 9. **`09_batch_processing.py`** — Batch processing with error handling
 10. **`10_provider_configs.py`** — OpenAI, Mistral, Gemini, WatsonX
+11. **`11_custom_litellm_call.py`** — One-off LiteLLM completion (direct call)
+12. **`12_custom_llm_client.py`** — Custom LLM client (bring your own URL) with full pipeline
 
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).
 

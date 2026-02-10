@@ -113,7 +113,7 @@ class TestExtractionStage:
     @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
     @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
     def test_extraction_uses_custom_llm_client(self, mock_init_client, mock_factory):
-        """Test that a custom LLM client bypasses initialization."""
+        """When llm_client is set, the pipeline uses it and does not initialize provider/model."""
         from pydantic import BaseModel
 
         class TestModel(BaseModel):
@@ -139,6 +139,9 @@ class TestExtractionStage:
 
         mock_init_client.assert_not_called()
         mock_factory.assert_called_once()
+        # Extractor must be created with the custom client, not a provider-built one
+        call_kwargs = mock_factory.call_args[1]
+        assert call_kwargs.get("llm_client") is custom_client
 
     @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
     @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
