@@ -68,6 +68,34 @@ class ConsolidationData:
 
 
 @dataclass
+class StagedPassData:
+    """Data captured for a single staged extraction pass."""
+
+    pass_id: int
+    stage_name: str
+    stage_type: Literal["skeleton", "group", "repair"]
+    success: bool
+    attempts: int
+    errors: list[str]
+    duration_seconds: float
+    fields_requested: list[str]
+    fields_returned: list[str]
+    metadata: dict = field(default_factory=dict)
+
+
+@dataclass
+class ConflictResolutionData:
+    """Data captured for an LLM conflict-resolution fallback."""
+
+    trigger: Literal["unresolved_conflicts", "failed_pass_partial", "quality_stalled"]
+    conflict_fields: list[str]
+    success: bool
+    duration_seconds: float
+    error: str | None = None
+    metadata: dict = field(default_factory=dict)
+
+
+@dataclass
 class TraceData:
     """
     Complete trace data for pipeline execution.
@@ -82,6 +110,8 @@ class TraceData:
     extractions: list[ExtractionData] = field(default_factory=list)
     intermediate_graphs: list[GraphData] = field(default_factory=list)
     consolidation: ConsolidationData | None = None
+    staged_passes: list[StagedPassData] = field(default_factory=list)
+    conflict_resolutions: list[ConflictResolutionData] = field(default_factory=list)
 
 
 def trace_data_to_jsonable(trace_data: TraceData, max_text_len: int = 2000) -> dict:
@@ -156,10 +186,40 @@ def trace_data_to_jsonable(trace_data: TraceData, max_text_len: int = 2000) -> d
             "merge_conflicts": c.merge_conflicts,
         }
 
+    staged_passes_out = [
+        {
+            "pass_id": p.pass_id,
+            "stage_name": p.stage_name,
+            "stage_type": p.stage_type,
+            "success": p.success,
+            "attempts": p.attempts,
+            "errors": p.errors,
+            "duration_seconds": p.duration_seconds,
+            "fields_requested": p.fields_requested,
+            "fields_returned": p.fields_returned,
+            "metadata": p.metadata,
+        }
+        for p in trace_data.staged_passes
+    ]
+
+    conflict_resolutions_out = [
+        {
+            "trigger": r.trigger,
+            "conflict_fields": r.conflict_fields,
+            "success": r.success,
+            "duration_seconds": r.duration_seconds,
+            "error": r.error,
+            "metadata": r.metadata,
+        }
+        for r in trace_data.conflict_resolutions
+    ]
+
     return {
         "pages": pages_out,
         "chunks": chunks_out,
         "extractions": extractions_out,
         "intermediate_graphs": intermediate_graphs_out,
         "consolidation": consolidation_out,
+        "staged_passes": staged_passes_out,
+        "conflict_resolutions": conflict_resolutions_out,
     }

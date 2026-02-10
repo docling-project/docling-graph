@@ -19,6 +19,9 @@ class ReportGenerator:
         output_path: Path,
         source_model_count: int = 1,
         include_samples: bool = True,
+        extraction_contract: Optional[str] = None,
+        staged_passes_count: int = 0,
+        llm_consolidation_used: int = 0,
     ) -> None:
         """Generate markdown report for graph.
 
@@ -27,6 +30,9 @@ class ReportGenerator:
             output_path: Path for output markdown file (extension added if missing).
             source_model_count: Number of source Pydantic models.
             include_samples: Whether to include sample nodes/edges.
+            extraction_contract: Extraction contract used (e.g. 'direct', 'staged').
+            staged_passes_count: Number of staged extraction passes (when contract is staged).
+            llm_consolidation_used: Number of LLM consolidation fallbacks used.
 
         Raises:
             ValueError: If graph is empty.
@@ -49,6 +55,15 @@ class ReportGenerator:
             self._create_edge_type_distribution(metadata),
         ]
 
+        if extraction_contract is not None or staged_passes_count > 0 or llm_consolidation_used > 0:
+            report_parts.append(
+                self._create_extraction_diagnostics(
+                    extraction_contract=extraction_contract,
+                    staged_passes_count=staged_passes_count,
+                    llm_consolidation_used=llm_consolidation_used,
+                )
+            )
+
         if include_samples:
             report_parts.append(self._create_sample_nodes(graph))
             report_parts.append(self._create_sample_edges(graph))
@@ -56,6 +71,24 @@ class ReportGenerator:
         # Write report
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n\n".join(report_parts))
+
+    @staticmethod
+    def _create_extraction_diagnostics(
+        extraction_contract: Optional[str] = None,
+        staged_passes_count: int = 0,
+        llm_consolidation_used: int = 0,
+    ) -> str:
+        """Create extraction diagnostics section."""
+        lines = ["## Extraction Diagnostics", ""]
+        if extraction_contract:
+            lines.append(f"- **Extraction contract**: {extraction_contract}")
+        if staged_passes_count > 0:
+            lines.append(f"- **Staged passes**: {staged_passes_count}")
+        if llm_consolidation_used > 0:
+            lines.append(f"- **LLM consolidation fallbacks**: {llm_consolidation_used}")
+        if len(lines) == 2:
+            return "\n".join(lines + ["*No extraction diagnostics available.*"])
+        return "\n".join(lines)
 
     def validate_graph(self, graph: nx.DiGraph) -> bool:
         """Validate that graph is not empty."""

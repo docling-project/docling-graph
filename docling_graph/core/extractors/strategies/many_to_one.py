@@ -1,8 +1,10 @@
 """
 Many-to-one extraction strategy.
 
-Extracts one consolidated model from an entire document using direct
-full-document (or full-text) extraction in a single LLM call.
+Extracts one consolidated model from an entire document.
+
+For LLM backend, extraction behavior is driven by the configured
+extraction contract (e.g., direct single-pass or staged multi-pass).
 """
 
 import logging
@@ -32,8 +34,7 @@ class ManyToOneStrategy(BaseExtractor):
     """
     Many-to-one extraction strategy.
 
-    Extracts one consolidated model from an entire document using
-    direct full-document or full-text extraction (single LLM call).
+    Extracts one consolidated model from an entire document.
     """
 
     def __init__(
@@ -140,7 +141,7 @@ class ManyToOneStrategy(BaseExtractor):
     def _extract_with_llm(
         self, backend: TextExtractionBackendProtocol, source: str, template: Type[BaseModel]
     ) -> Tuple[list[BaseModel], DoclingDocument | None]:
-        """Extract using LLM backend (direct full-document extraction)."""
+        """Extract using LLM backend (contract-driven full-document extraction)."""
         try:
             document = self.doc_processor.convert_to_docling_doc(source)
             return self._extract_direct_mode(backend, document, template)
@@ -177,10 +178,13 @@ class ManyToOneStrategy(BaseExtractor):
         text: str,
         template: Type[BaseModel],
     ) -> Tuple[list[BaseModel], DoclingDocument | None]:
-        """Direct extraction from raw text (single LLM call)."""
-        logger.info("Direct mode: full-text extraction")
+        """Contract-driven extraction from raw text."""
+        logger.info("Contract-driven mode: full-text extraction")
 
         try:
+            if hasattr(self, "trace_data") and self.trace_data is not None and hasattr(backend, "trace_data"):
+                backend.trace_data = self.trace_data
+
             start_time = time.time()
             model = backend.extract_from_markdown(
                 markdown=text,
@@ -234,8 +238,8 @@ class ManyToOneStrategy(BaseExtractor):
         document: DoclingDocument,
         template: Type[BaseModel],
     ) -> Tuple[list[BaseModel], DoclingDocument | None]:
-        """Direct mode: single full-document extraction."""
-        logger.info("Direct mode: full-document extraction")
+        """Contract-driven full-document extraction."""
+        logger.info("Contract-driven mode: full-document extraction")
 
         try:
             if hasattr(self, "trace_data") and self.trace_data:
@@ -249,6 +253,9 @@ class ManyToOneStrategy(BaseExtractor):
 
             full_markdown = self.doc_processor.extract_full_markdown(document)
 
+            if hasattr(self, "trace_data") and self.trace_data is not None and hasattr(backend, "trace_data"):
+                backend.trace_data = self.trace_data
+
             start_time = time.time()
             model = backend.extract_from_markdown(
                 markdown=full_markdown,
@@ -261,6 +268,12 @@ class ManyToOneStrategy(BaseExtractor):
             if hasattr(self, "trace_data") and self.trace_data:
                 from ....pipeline.trace import ExtractionData
 
+                extraction_metadata = {}
+                if hasattr(self.trace_data, "staged_passes") and self.trace_data.staged_passes:
+                    extraction_metadata["extraction_contract"] = "staged"
+                    extraction_metadata["staged_passes_count"] = len(self.trace_data.staged_passes)
+                if hasattr(self.trace_data, "conflict_resolutions") and self.trace_data.conflict_resolutions:
+                    extraction_metadata["llm_consolidation_used"] = len(self.trace_data.conflict_resolutions)
                 self.trace_data.extractions.append(
                     ExtractionData(
                         extraction_id=0,
@@ -269,6 +282,7 @@ class ManyToOneStrategy(BaseExtractor):
                         parsed_model=model,
                         extraction_time=extraction_time,
                         error=None,
+                        metadata=extraction_metadata,
                     )
                 )
 

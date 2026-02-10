@@ -103,6 +103,24 @@ class TestReportGeneratorReportSections:
         assert "Sample Edges" in samples
         assert "works_for" in samples
 
+    def test_create_extraction_diagnostics(self):
+        """Should create extraction diagnostics section when provided."""
+        section = ReportGenerator._create_extraction_diagnostics(
+            extraction_contract="staged",
+            staged_passes_count=5,
+            llm_consolidation_used=1,
+        )
+        assert "## Extraction Diagnostics" in section
+        assert "staged" in section
+        assert "5" in section
+        assert "1" in section
+
+    def test_create_extraction_diagnostics_empty(self):
+        """Should create placeholder when no diagnostics."""
+        section = ReportGenerator._create_extraction_diagnostics()
+        assert "## Extraction Diagnostics" in section
+        assert "No extraction diagnostics" in section
+
 
 class TestReportGeneratorOutput:
     """Test report file generation."""
@@ -156,3 +174,23 @@ class TestReportGeneratorOutput:
         content = output_path.read_text()
         assert "Sample Nodes" not in content
         assert "Sample Edges" not in content
+
+    def test_visualize_includes_extraction_diagnostics_when_provided(self, sample_graph, tmp_path):
+        """Should include extraction diagnostics section when params passed."""
+        generator = ReportGenerator()
+        output_path = tmp_path / "report.md"
+
+        generator.visualize(
+            sample_graph,
+            output_path,
+            source_model_count=1,
+            extraction_contract="staged",
+            staged_passes_count=4,
+            llm_consolidation_used=1,
+        )
+
+        content = output_path.read_text()
+        assert "## Extraction Diagnostics" in content
+        assert "staged" in content
+        assert "4" in content
+        assert "LLM consolidation" in content

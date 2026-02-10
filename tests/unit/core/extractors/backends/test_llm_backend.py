@@ -191,6 +191,34 @@ class TestExtractFromMarkdown:
 
         assert result is None
 
+    @patch("docling_graph.core.extractors.backends.llm_backend.StagedOrchestrator")
+    def test_staged_contract_uses_multi_pass_flow(self, mock_orchestrator_cls, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="staged")
+        orchestrator = mock_orchestrator_cls.return_value
+        orchestrator.extract.return_value = {"name": "Alice", "age": 21}
+
+        result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
+
+        assert result is not None
+        assert result.name == "Alice"
+        assert result.age == 21
+        orchestrator.extract.assert_called_once()
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_staged_contract_partial_extraction_falls_back_to_direct(
+        self, mock_get_prompt, mock_llm_client
+    ):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="staged")
+        mock_get_prompt.return_value = {"system": "sys", "user": "user"}
+        mock_llm_client.get_json_response.return_value = {"name": "Test", "age": 30}
+
+        result = backend.extract_from_markdown(
+            markdown="partial page", template=MockTemplate, is_partial=True
+        )
+
+        assert result is not None
+        mock_get_prompt.assert_called_once()
+
 
 class TestQuantityCoercionAndPruneSalvage:
     """Test best-effort validation: QuantityWithUnit coercion and prune salvage."""
@@ -239,6 +267,53 @@ class TestQuantityCoercionAndPruneSalvage:
         assert result.inner is not None
         assert result.inner.a == "ok"
         assert result.inner.b is None
+
+
+class TestFillMissingRequiredFieldsStableSyntheticIds:
+    """Stable synthetic ID generation: same entity content => same generated ID."""
+
+    def test_content_fingerprint_deterministic(self, llm_backend):
+        """_content_fingerprint is deterministic for same entity."""
+        entity = {"objective": "Study colloidal stability", "experiments": [{"experiment_id": "E1"}]}
+        fp1 = llm_backend._content_fingerprint(entity, exclude_keys=set())
+        fp2 = llm_backend._content_fingerprint(entity, exclude_keys=set())
+        assert fp1 == fp2
+
+    def test_fill_missing_study_id_same_content_same_id(self, llm_backend):
+        """Filling missing study_id for two entities with same content yields same synthetic ID."""
+        data1 = {
+            "studies": [
+                {"objective": "Same objective", "experiments": [{"experiment_id": "EXP-1"}]},
+                {"objective": "Same objective", "experiments": [{"experiment_id": "EXP-1"}]},
+            ]
+        }
+        errors1 = [
+            {"type": "missing", "loc": ("studies", 0, "study_id")},
+            {"type": "missing", "loc": ("studies", 1, "study_id")},
+        ]
+        llm_backend._fill_missing_required_fields(data1, errors1)
+        id0_a = data1["studies"][0]["study_id"]
+        id1_a = data1["studies"][1]["study_id"]
+        # Same content => same fingerprint => same synthetic ID
+        assert id0_a == id1_a
+        assert id0_a.startswith("STUDY-")
+
+    def test_fill_missing_study_id_different_content_different_id(self, llm_backend):
+        """Filling missing study_id for entities with different content yields different IDs."""
+        data = {
+            "studies": [
+                {"objective": "Objective A", "experiments": []},
+                {"objective": "Objective B", "experiments": []},
+            ]
+        }
+        errors = [
+            {"type": "missing", "loc": ("studies", 0, "study_id")},
+            {"type": "missing", "loc": ("studies", 1, "study_id")},
+        ]
+        llm_backend._fill_missing_required_fields(data, errors)
+        assert data["studies"][0]["study_id"] != data["studies"][1]["study_id"]
+        assert data["studies"][0]["study_id"].startswith("STUDY-")
+        assert data["studies"][1]["study_id"].startswith("STUDY-")
 
 
 class TestRheologyQuantityWithUnitRelaxedInput:

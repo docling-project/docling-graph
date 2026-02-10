@@ -16,6 +16,7 @@ from docling_graph.cli.validators import (
     validate_backend_type,
     validate_config_dependencies,
     validate_docling_config,
+    validate_extraction_contract,
     validate_export_format,
     validate_inference,
     validate_option,
@@ -163,6 +164,26 @@ class TestValidateExportFormat:
         """Should raise Exit for invalid format."""
         with pytest.raises(typer.Exit):
             validate_export_format("json")
+
+
+class TestValidateExtractionContract:
+    """Test extraction contract validation."""
+
+    def test_validate_extraction_contract_direct(self):
+        result = validate_extraction_contract("direct")
+        assert result == "direct"
+
+    def test_validate_extraction_contract_staged(self):
+        result = validate_extraction_contract("staged")
+        assert result == "staged"
+
+    def test_validate_extraction_contract_case_insensitive(self):
+        result = validate_extraction_contract("STAGED")
+        assert result == "staged"
+
+    def test_validate_extraction_contract_invalid_raises_exit(self):
+        with pytest.raises(typer.Exit):
+            validate_extraction_contract("atomic")
 
 
 class TestValidateVLMConstraints:

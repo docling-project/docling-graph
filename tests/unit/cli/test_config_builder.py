@@ -93,6 +93,7 @@ class TestConfigurationBuilder:
         """Should return dictionary with default settings."""
         mock_prompt.side_effect = [
             "one-to-one",  # processing_mode
+            "staged",  # extraction_contract
             "llm",  # backend
             "local",  # inference
             "csv",  # export_format
@@ -103,6 +104,7 @@ class TestConfigurationBuilder:
 
         assert isinstance(result, dict)
         assert result["processing_mode"] == "one-to-one"
+        assert result["extraction_contract"] == "staged"
         assert result["backend"] == "llm"
         assert result["inference"] == "local"
         assert result["export_format"] == "csv"
@@ -112,6 +114,7 @@ class TestConfigurationBuilder:
         """Should force local inference for VLM backend."""
         mock_prompt.side_effect = [
             "one-to-one",  # processing_mode
+            "direct",  # extraction_contract
             "vlm",  # backend
             "csv",  # export_format (no inference prompt for VLM)
         ]

@@ -14,6 +14,7 @@ from .constants import (
     API_PROVIDERS,
     BACKENDS,
     DOCLING_PIPELINES,
+    EXTRACTION_CONTRACTS,
     EXPORT_FORMATS,
     INFERENCE_LOCATIONS,
     LOCAL_PROVIDER_DEFAULTS,
@@ -105,6 +106,20 @@ class ConfigurationBuilder:
             )
         )
 
+        extraction_contract = self._prompt_option(
+            PromptConfig(
+                label="Extraction Contract",
+                description="How should LLM extraction prompts/execution be orchestrated?",
+                options=list(EXTRACTION_CONTRACTS),
+                default="direct",
+                step_num=self.step_counter,
+                option_help={
+                    "direct": "Single-pass best-effort extraction (fastest)",
+                    "staged": "Multi-pass staged extraction for improved small-model quality",
+                },
+            )
+        )
+
         backend = self._prompt_option(
             PromptConfig(
                 label="Backend Type",
@@ -154,6 +169,7 @@ class ConfigurationBuilder:
 
         return {
             "processing_mode": processing_mode,
+            "extraction_contract": extraction_contract,
             "backend": backend,
             "inference": inference,
             "export_format": export_format,

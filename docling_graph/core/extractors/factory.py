@@ -21,6 +21,9 @@ class ExtractorFactory:
     def create_extractor(
         processing_mode: Literal["one-to-one", "many-to-one"],
         backend_name: Literal["vlm", "llm"],
+        extraction_contract: Literal["direct", "staged"] = "direct",
+        staged_config: dict | None = None,
+        llm_consolidation: bool = False,
         model_name: str | None = None,
         llm_client: LLMClientProtocol | None = None,
         docling_config: str = "ocr",
@@ -31,6 +34,8 @@ class ExtractorFactory:
         Args:
             processing_mode (str): 'one-to-one' or 'many-to-one'
             backend_name (str): 'vlm' or 'llm'
+            extraction_contract (str): 'direct' or 'staged' (LLM only)
+            staged_config (dict): Optional staged extraction tuning config
             model_name (str): Model name for VLM (optional)
             llm_client (LLMClientProtocol): LLM client instance (optional)
             docling_config (str): Docling pipeline configuration ('ocr' or 'vision')
@@ -38,10 +43,6 @@ class ExtractorFactory:
         Returns:
             BaseExtractor: Configured extractor instance.
         """
-        rich_print("[blue][ExtractorFactory][/blue] Creating extractor:")
-        rich_print(f"  • Mode: [cyan]{processing_mode}[/cyan]")
-        rich_print(f"  • Type: [cyan]{backend_name}[/cyan]")
-        rich_print(f"  • Docling: [cyan]{docling_config}[/cyan]")
 
         # Create backend instance
         backend_obj: Backend
@@ -52,7 +53,19 @@ class ExtractorFactory:
         elif backend_name == "llm":
             if not llm_client:
                 raise ValueError("LLM requires llm_client parameter")
-            backend_obj = LlmBackend(llm_client=llm_client)
+            effective_contract = extraction_contract
+            if processing_mode != "many-to-one" and extraction_contract == "staged":
+                rich_print(
+                    "[yellow][ExtractorFactory][/yellow] "
+                    "Staged contract currently applies only to many-to-one; using direct."
+                )
+                effective_contract = "direct"
+            backend_obj = LlmBackend(
+                llm_client=llm_client,
+                extraction_contract=effective_contract,
+                staged_config=staged_config,
+                llm_consolidation=llm_consolidation,
+            )
         else:
             raise ValueError(f"Unknown backend: {backend_name}")
 

@@ -23,6 +23,7 @@ from ..config_utils import load_config
 from ..validators import (
     validate_backend_type,
     validate_docling_config,
+    validate_extraction_contract,
     validate_export_format,
     validate_inference,
     validate_processing_mode,
@@ -54,6 +55,12 @@ def convert_command(
             "--processing-mode", "-p", help="Processing strategy: 'one-to-one' or 'many-to-one'."
         ),
     ] = None,
+    extraction_contract: Annotated[
+        str | None,
+        typer.Option(
+            "--extraction-contract", help="Extraction contract: 'direct' or 'staged'."
+        ),
+    ] = None,
     backend: Annotated[
         str | None, typer.Option("--backend", "-b", help="Backend: 'llm' or 'vlm'.")
     ] = None,
@@ -77,6 +84,62 @@ def convert_command(
         typer.Option(
             "--chunk-max-tokens",
             help="Max tokens per chunk when chunking is used (default: 2048).",
+        ),
+    ] = None,
+    staged_max_fields_per_group: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-max-fields-per-group",
+            help="Max scalar fields per staged extraction group.",
+        ),
+    ] = None,
+    staged_max_skeleton_fields: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-max-skeleton-fields",
+            help="Max root fields in staged skeleton pass.",
+        ),
+    ] = None,
+    staged_max_repair_rounds: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-max-repair-rounds",
+            help="Maximum targeted repair rounds for staged extraction.",
+        ),
+    ] = None,
+    staged_max_pass_retries: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-max-pass-retries",
+            help="Retries per staged pass.",
+        ),
+    ] = None,
+    staged_quality_depth: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-quality-depth",
+            help="Recursive depth for staged quality checks.",
+        ),
+    ] = None,
+    staged_include_prior_context: Annotated[
+        bool | None,
+        typer.Option(
+            "--staged-include-prior-context/--no-staged-include-prior-context",
+            help="Include prior pass output in staged prompts.",
+        ),
+    ] = None,
+    llm_consolidation: Annotated[
+        bool | None,
+        typer.Option(
+            "--llm-consolidation/--no-llm-consolidation",
+            help="Use LLM for conflict resolution when heuristic staged reconciliation fails.",
+        ),
+    ] = None,
+    staged_merge_similarity_fallback: Annotated[
+        bool | None,
+        typer.Option(
+            "--staged-merge-similarity-fallback/--no-staged-merge-similarity-fallback",
+            help="Use similarity merge when ID/identity match fails (default: on; logs warning when used).",
         ),
     ] = None,
     # Docling export options
@@ -169,6 +232,7 @@ def convert_command(
 
     # Resolve configuration (CLI args override config file)
     processing_mode_val = processing_mode or defaults.get("processing_mode", "many-to-one")
+    extraction_contract_val = extraction_contract or defaults.get("extraction_contract", "direct")
     backend_val = backend or defaults.get("backend", "llm")
     inference_val = inference or defaults.get("inference", "local")
     export_format_val = export_format or defaults.get("export_format", "csv")
@@ -179,6 +243,44 @@ def convert_command(
     # Chunking: resolve from CLI or config defaults
     final_chunk_max_tokens = (
         chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
+    )
+    final_staged_max_fields_per_group = (
+        staged_max_fields_per_group
+        if staged_max_fields_per_group is not None
+        else defaults.get("staged_max_fields_per_group", 10)
+    )
+    final_staged_max_skeleton_fields = (
+        staged_max_skeleton_fields
+        if staged_max_skeleton_fields is not None
+        else defaults.get("staged_max_skeleton_fields", 20)
+    )
+    final_staged_max_repair_rounds = (
+        staged_max_repair_rounds
+        if staged_max_repair_rounds is not None
+        else defaults.get("staged_max_repair_rounds", 2)
+    )
+    final_staged_max_pass_retries = (
+        staged_max_pass_retries
+        if staged_max_pass_retries is not None
+        else defaults.get("staged_max_pass_retries", 1)
+    )
+    final_staged_quality_depth = (
+        staged_quality_depth
+        if staged_quality_depth is not None
+        else defaults.get("staged_quality_depth", 10)
+    )
+    final_staged_include_prior_context = (
+        staged_include_prior_context
+        if staged_include_prior_context is not None
+        else defaults.get("staged_include_prior_context", True)
+    )
+    final_llm_consolidation = (
+        llm_consolidation if llm_consolidation is not None else defaults.get("llm_consolidation", False)
+    )
+    final_staged_merge_similarity_fallback = (
+        staged_merge_similarity_fallback
+        if staged_merge_similarity_fallback is not None
+        else defaults.get("staged_merge_similarity_fallback", True)
     )
 
     # Docling export settings - use config file as fallback
@@ -201,6 +303,7 @@ def convert_command(
 
     # Validate all inputs
     processing_mode_val = validate_processing_mode(processing_mode_val)
+    extraction_contract_val = validate_extraction_contract(extraction_contract_val)
     backend_val = validate_backend_type(backend_val)
     inference_val = validate_inference(inference_val)
     docling_pipeline_val = validate_docling_config(docling_pipeline_val)
@@ -222,26 +325,39 @@ def convert_command(
     # Display configuration
     rich_print("[yellow][PipelineConfiguration][/yellow]")
     rich_print(f"  • Source: [cyan]{source}[/cyan]")
-    rich_print(f"  • Input Type: [cyan]{input_type_display}[/cyan]")
     rich_print(f"  • Template: [cyan]{template}[/cyan]")
-    rich_print(f"  • Docling Pipeline: [cyan]{docling_pipeline_val}[/cyan]")
+    rich_print(f"  • Input Type: [cyan]{input_type_display}[/cyan]")
+    rich_print(f"  • Docling: [cyan]{docling_pipeline_val}[/cyan]")
     rich_print(f"  • Processing: [cyan]{processing_mode_val}[/cyan]")
-    rich_print(f"  • Backend: [cyan]{backend_val}[/cyan]")
     rich_print(f"  • Inference: [cyan]{inference_val}[/cyan]")
     rich_print(f"  • Export: [cyan]{export_format_val}[/cyan]")
     rich_print(f"  • Reverse edges: [cyan]{reverse_edges}[/cyan]")
-
-    # Display Extraction settings
-    rich_print("[yellow][ExtractionSettings][/yellow]")
-    rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
-    if final_chunk_max_tokens is not None:
-        rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
-
+    
     # Display Docling export settings
     rich_print("[yellow][DoclingExport][/yellow]")
     rich_print(f"  • Document JSON: [cyan]{final_export_docling_json}[/cyan]")
     rich_print(f"  • Markdown: [cyan]{final_export_markdown}[/cyan]")
     rich_print(f"  • Per-page MD: [cyan]{final_export_per_page}[/cyan]")
+
+    # Display Extraction settings
+    rich_print("[yellow][ExtractionSettings][/yellow]")
+    rich_print(f"  • Backend: [cyan]{backend_val}[/cyan]")
+    rich_print(f"  • Contract: [cyan]{extraction_contract_val}[/cyan]")
+    rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
+    if final_chunk_max_tokens is not None:
+        rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
+    if extraction_contract_val == "staged":
+        rich_print(
+            "  • Staged Tuning: "
+            f"[cyan]groups={final_staged_max_fields_per_group}, "
+            f"skeleton={final_staged_max_skeleton_fields}, "
+            f"repair={final_staged_max_repair_rounds}, "
+            f"retries={final_staged_max_pass_retries}, "
+            f"quality_depth={final_staged_quality_depth}, "
+            f"prior={final_staged_include_prior_context}[/cyan]"
+        )
+    rich_print(f"  • LLM consolidation: [cyan]{final_llm_consolidation}[/cyan]")
+    rich_print(f"  • Staged merge similarity fallback: [cyan]{final_staged_merge_similarity_fallback}[/cyan]")
 
     # Build typed config
     logger.debug("Building PipelineConfig object")
@@ -268,6 +384,7 @@ def convert_command(
         backend=backend_val,
         inference=inference_val,
         processing_mode=processing_mode_val,
+        extraction_contract=extraction_contract_val,
         docling_config=docling_pipeline_val,
         model_override=model,
         provider_override=provider,
@@ -275,6 +392,14 @@ def convert_command(
         llm_overrides=llm_overrides,
         debug=debug,
         chunk_max_tokens=final_chunk_max_tokens,
+        staged_max_fields_per_group=final_staged_max_fields_per_group,
+        staged_max_skeleton_fields=final_staged_max_skeleton_fields,
+        staged_max_repair_rounds=final_staged_max_repair_rounds,
+        staged_max_pass_retries=final_staged_max_pass_retries,
+        staged_quality_depth=final_staged_quality_depth,
+        staged_include_prior_context=final_staged_include_prior_context,
+        llm_consolidation=final_llm_consolidation,
+        staged_merge_similarity_fallback=final_staged_merge_similarity_fallback,
         export_format=export_format_val,
         export_docling=True,
         export_docling_json=final_export_docling_json,

@@ -164,6 +164,30 @@ class PipelineOrchestrator:
                             "provider": actual_provider,
                             "use_chunking": self.config.use_chunking,
                             "max_batch_size": self.config.max_batch_size,
+                            "extraction_contract": getattr(
+                                self.config, "extraction_contract", "direct"
+                            ),
+                            "llm_consolidation": getattr(
+                                self.config, "llm_consolidation", False
+                            ),
+                            "staged_max_fields_per_group": getattr(
+                                self.config, "staged_max_fields_per_group", 6
+                            ),
+                            "staged_max_skeleton_fields": getattr(
+                                self.config, "staged_max_skeleton_fields", 10
+                            ),
+                            "staged_max_repair_rounds": getattr(
+                                self.config, "staged_max_repair_rounds", 2
+                            ),
+                            "staged_max_pass_retries": getattr(
+                                self.config, "staged_max_pass_retries", 1
+                            ),
+                            "staged_quality_depth": getattr(
+                                self.config, "staged_quality_depth", 3
+                            ),
+                            "staged_include_prior_context": getattr(
+                                self.config, "staged_include_prior_context", True
+                            ),
                         },
                     },
                     "processing_time_seconds": round(pipeline_processing_time, 2),
@@ -172,6 +196,12 @@ class PipelineOrchestrator:
                         "edges": context.graph_metadata.edge_count if context.graph_metadata else 0,
                         "extracted_models": len(context.extracted_models)
                         if context.extracted_models
+                        else 0,
+                        "staged_passes_count": len(context.trace_data.staged_passes)
+                        if context.trace_data and hasattr(context.trace_data, "staged_passes")
+                        else 0,
+                        "llm_consolidation_used": len(context.trace_data.conflict_resolutions)
+                        if context.trace_data and hasattr(context.trace_data, "conflict_resolutions")
                         else 0,
                     },
                 }

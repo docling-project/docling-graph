@@ -3,6 +3,7 @@ import pytest
 from docling_graph.cli.constants import (
     API_PROVIDERS,
     BACKENDS,
+    EXTRACTION_CONTRACTS,
     EXPORT_FORMATS,
     INFERENCE_LOCATIONS,
     LOCAL_PROVIDERS,
@@ -25,6 +26,10 @@ class TestConstants:
     def test_processing_modes_contains_valid_values(self):
         assert "one-to-one" in PROCESSING_MODES
         assert "many-to-one" in PROCESSING_MODES
+
+    def test_extraction_contracts_contains_valid_values(self):
+        assert "direct" in EXTRACTION_CONTRACTS
+        assert "staged" in EXTRACTION_CONTRACTS
 
     def test_backend_types_contains_valid_values(self):
         assert "llm" in BACKENDS

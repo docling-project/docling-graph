@@ -27,6 +27,7 @@ config = PipelineConfig(
     backend: Literal["llm", "vlm"] = "llm",
     inference: Literal["local", "remote"] = "local",
     processing_mode: Literal["one-to-one", "many-to-one"] = "many-to-one",
+    extraction_contract: Literal["direct", "staged"] = "direct",
     docling_config: Literal["ocr", "vision"] = "ocr",
     model_override: str | None = None,
     provider_override: str | None = None,
@@ -70,6 +71,7 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
+| `extraction_contract` | `"direct"` or `"staged"` | `"direct"` | LLM extraction contract (`staged` is optimized for weaker models in many-to-one mode) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking) |

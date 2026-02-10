@@ -7,17 +7,19 @@ Best-effort: coerces QuantityWithUnit scalars and prunes invalid fields on valid
 
 import copy
 import gc
+import hashlib
 import json
 import logging
 import re
 from functools import lru_cache
-from typing import Any, Type
+from typing import Any, Literal, Type
 
 from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
 
 from ....protocols import LLMClientProtocol
-from ..contracts import direct
+from ..contracts import direct, staged as staged_contracts
+from ..contracts.staged import StagedOrchestrator, StagedPassConfig
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,13 @@ class LlmBackend:
     Performs direct full-document extraction via extract_from_markdown().
     """
 
-    def __init__(self, llm_client: LLMClientProtocol) -> None:
+    def __init__(
+        self,
+        llm_client: LLMClientProtocol,
+        extraction_contract: Literal["direct", "staged"] = "direct",
+        staged_config: dict[str, Any] | None = None,
+        llm_consolidation: bool = False,
+    ) -> None:
         """
         Initialize LLM backend with a client.
 
@@ -37,6 +45,10 @@ class LlmBackend:
             llm_client: LLM client instance implementing LLMClientProtocol
         """
         self.client = llm_client
+        self.extraction_contract: Literal["direct", "staged"] = extraction_contract
+        self.staged_config = StagedPassConfig.from_dict(staged_config)
+        self.llm_consolidation = llm_consolidation
+        self.trace_data: Any = None  # Set by strategy when config.debug is True
 
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
@@ -44,7 +56,7 @@ class LlmBackend:
         logger.info("Initialized LlmBackend with client: %s", self.client.__class__.__name__)
 
         rich_print(
-            f"[blue][LlmBackend][/blue] Initialized with:\n"
+            f"[yellow][LlmBackend][/yellow] Initialized with:\n"
             f"  • Client: [cyan]{self.client.__class__.__name__}[/cyan]\n"
             f"  • Model: [cyan]{model_attr or 'unknown'}[/cyan]"
         )
@@ -180,6 +192,53 @@ class LlmBackend:
             changed = True
         return changed
 
+    def _content_fingerprint(self, entity: dict, exclude_keys: set[str] | None = None) -> str:
+        """Stable hash of entity content for deterministic synthetic IDs. Excludes given keys."""
+        exclude = (exclude_keys or set()) | {"__class__"}
+        stable = {k: v for k, v in entity.items() if k not in exclude}
+        content = json.dumps(stable, sort_keys=True, default=str)
+        return hashlib.blake2b(content.encode(), digest_size=8).hexdigest()
+
+    def _fill_missing_required_fields(self, data: dict | list, errors: list) -> bool:
+        """
+        Fill missing required fields (e.g. study_id, experiment_id) with deterministic
+        content-based synthetic IDs so the same logical entity gets the same ID across
+        passes and validation can succeed when the LLM omits identity fields.
+        Returns True if any value was set.
+        """
+        changed = False
+        missing_errors = [e for e in errors if e.get("type") == "missing"]
+        sorted_errors = sorted(missing_errors, key=lambda e: len(e.get("loc", ())))
+        seen_locs: set[tuple] = set()
+        for err in sorted_errors:
+            loc = tuple(err.get("loc", ()))
+            if not loc or loc in seen_locs:
+                continue
+            field_name = loc[-1] if isinstance(loc[-1], str) else None
+            if not field_name:
+                continue
+            try:
+                parent = self._get_at_path(data, loc[:-1])
+                if not (parent is not None and isinstance(parent, dict) and loc[-1] not in parent):
+                    continue
+            except (KeyError, IndexError, TypeError):
+                continue
+            # Deterministic ID from entity content so same logical entity => same ID
+            fingerprint = self._content_fingerprint(parent, exclude_keys={field_name})
+            if field_name.endswith("_id"):
+                prefix = field_name[:-3].upper()
+                if prefix == "EXPERIMENT":
+                    prefix = "EXP"
+                elif prefix == "PROTOCOL":
+                    prefix = "PROTO"
+                value = f"{prefix}-{fingerprint}"
+            else:
+                value = f"GEN-{field_name.upper()}-{fingerprint[:8]}"
+            self._set_at_path(data, loc, value)
+            seen_locs.add(loc)
+            changed = True
+        return changed
+
     def _prune_invalid_fields(self, data: dict | list, errors: list) -> None:
         """
         Remove offending leaf fields indicated by validation error locs.
@@ -202,7 +261,8 @@ class LlmBackend:
         Validate parsed JSON against Pydantic template.
 
         Best-effort: on ValidationError, tries (1) QuantityWithUnit coercion,
-        then (2) pruning invalid fields, then re-validates (up to 3 passes).
+        (2) filling missing required ID fields with generated values (e.g. study_id),
+        (3) pruning invalid fields, then re-validates (up to 3 passes).
         """
         data: dict | list = copy.deepcopy(parsed_json)
         max_salvage_passes = 3
@@ -225,6 +285,10 @@ class LlmBackend:
                     if self._apply_quantity_coercion(data, e.errors()):
                         continue
 
+                # Fill missing required fields (e.g. study_id, experiment_id) with generated IDs
+                if self._fill_missing_required_fields(data, e.errors()):
+                    continue
+
                 # Prune invalid fields and retry
                 self._prune_invalid_fields(data, e.errors())
 
@@ -232,7 +296,12 @@ class LlmBackend:
         return None
 
     def _call_llm_for_extraction(
-        self, markdown: str, schema_json: str, is_partial: bool, context: str
+        self,
+        markdown: str,
+        schema_json: str,
+        is_partial: bool,
+        context: str,
+        template: Type[BaseModel] | None = None,
     ) -> dict | list | None:
         """
         Call LLM and return parsed JSON or None on failure.
@@ -247,23 +316,147 @@ class LlmBackend:
             Parsed JSON (dict or list) or None if call failed
         """
         try:
+            if self.extraction_contract == "staged" and not is_partial:
+                staged_result = self._extract_with_staged_contract(
+                    markdown=markdown,
+                    schema_json=schema_json,
+                    context=context,
+                    template=template,
+                    trace_data=getattr(self, "trace_data", None),
+                )
+                if staged_result:
+                    return staged_result
+                self._log_warning(
+                    f"Staged extraction produced no JSON for {context}; falling back to direct."
+                )
+
             prompt = direct.get_extraction_prompt(
                 markdown_content=markdown,
                 schema_json=schema_json,
                 is_partial=is_partial,
                 model_config=None,  # No capability-based branching
             )
-
             parsed_json = self.client.get_json_response(prompt=prompt, schema_json=schema_json)
-
             if not parsed_json:
                 self._log_warning(f"No valid JSON returned from LLM for {context}")
                 return None
-
             return parsed_json
 
         except Exception as e:
             self._log_error(f"Error during LLM call for {context}", e)
+            return None
+
+    def _call_prompt(
+        self, prompt: dict[str, str], schema_json: str, context: str
+    ) -> dict | list | None:
+        """Call LLM with explicit prompt and schema."""
+        try:
+            parsed_json = self.client.get_json_response(prompt=prompt, schema_json=schema_json)
+            if not parsed_json:
+                self._log_warning(f"No valid JSON returned from LLM for {context}")
+                return None
+            return parsed_json
+        except Exception as e:
+            self._log_error(f"Error during LLM call for {context}", e)
+            return None
+
+    def _extract_with_staged_contract(
+        self,
+        markdown: str,
+        schema_json: str,
+        context: str,
+        template: Type[BaseModel] | None = None,
+        trace_data: Any = None,
+    ) -> dict | list | None:
+        """
+        Multi-pass extraction for small models:
+        skeleton -> focused groups -> targeted repair.
+        """
+        on_pass_complete = None
+        if trace_data is not None and hasattr(trace_data, "staged_passes"):
+            on_pass_complete = trace_data.staged_passes.append
+
+        run_llm_consolidation = None
+        if self.llm_consolidation:
+            run_llm_consolidation = lambda merged, md, fields, schema: self._run_llm_consolidation(
+                merged, md, fields, schema, trace_data, template
+            )
+
+        orchestrator = StagedOrchestrator(
+            llm_call_fn=self._call_prompt,
+            schema_json=schema_json,
+            template=template,
+            config=self.staged_config,
+            on_pass_complete=on_pass_complete,
+            run_llm_consolidation=run_llm_consolidation,
+        )
+        return orchestrator.extract(markdown=markdown, context=context)
+
+    def _run_llm_consolidation(
+        self,
+        merged: dict[str, Any],
+        markdown: str,
+        target_fields: list[str],
+        schema_json: str,
+        trace_data: Any = None,
+        template: Type[BaseModel] | None = None,
+    ) -> dict[str, Any] | None:
+        """Run LLM-backed conflict resolution for target fields; return resolved JSON or None."""
+        import time
+
+        from ....pipeline.trace import ConflictResolutionData
+
+        if not target_fields:
+            return None
+        subschema = staged_contracts.build_root_subschema(schema_json, target_fields)
+        issue_summary = "Quality issues or missing/placeholder values in staged extraction."
+        identity_hint = ""
+        if template is not None:
+            meta = staged_contracts.get_template_graph_metadata(template, schema_json)
+            if meta.root_identity_fields:
+                identity_hint = f"Identity fields (keep consistent): {', '.join(meta.root_identity_fields)}"
+        prompt = staged_contracts.get_consolidation_prompt(
+            markdown_content=markdown,
+            schema_json=subschema,
+            current_extraction=merged,
+            target_fields=target_fields,
+            issue_summary=issue_summary,
+            identity_hint=identity_hint,
+        )
+        start = time.perf_counter()
+        try:
+            result = self._call_prompt(
+                prompt=prompt,
+                schema_json=subschema,
+                context="llm_consolidation",
+            )
+            duration = time.perf_counter() - start
+            if trace_data is not None and hasattr(trace_data, "conflict_resolutions"):
+                trace_data.conflict_resolutions.append(
+                    ConflictResolutionData(
+                        trigger="quality_stalled",
+                        conflict_fields=target_fields,
+                        success=isinstance(result, dict) and bool(result),
+                        duration_seconds=duration,
+                        error=None,
+                        metadata={},
+                    )
+                )
+            return result if isinstance(result, dict) else None
+        except Exception as e:
+            duration = time.perf_counter() - start
+            logger.warning("LLM consolidation failed: %s", e)
+            if trace_data is not None and hasattr(trace_data, "conflict_resolutions"):
+                trace_data.conflict_resolutions.append(
+                    ConflictResolutionData(
+                        trigger="quality_stalled",
+                        conflict_fields=target_fields,
+                        success=False,
+                        duration_seconds=duration,
+                        error=str(e),
+                        metadata={},
+                    )
+                )
             return None
 
     def _repair_json(self, raw_text: str) -> str:
@@ -352,8 +545,9 @@ class LlmBackend:
         Returns:
             Extracted and validated Pydantic model instance, or None if failed
         """
-        # Log extraction start
-        self._log_info(f"Direct extraction from {context}", chars=len(markdown))
+        # Log extraction start (one line: direct vs staged)
+        mode = "Staged" if (self.extraction_contract == "staged" and not is_partial) else "Direct"
+        self._log_info(f"{mode} extraction from {context}", chars=len(markdown))
 
         # Early validation for empty markdown
         if not markdown or len(markdown.strip()) == 0:
@@ -369,6 +563,7 @@ class LlmBackend:
             schema_json=schema_json,
             is_partial=is_partial,
             context=context,
+            template=template,
         )
 
         if not parsed_json:

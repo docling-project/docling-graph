@@ -21,7 +21,12 @@ def test_create_llm_many_to_one(mock_strategy, mock_backend):
         docling_config="ocr",
     )
 
-    mock_backend.assert_called_once_with(llm_client=mock_llm_client)
+    mock_backend.assert_called_once_with(
+        llm_client=mock_llm_client,
+        extraction_contract="direct",
+        staged_config=None,
+        llm_consolidation=False,
+    )
     mock_strategy.assert_called_once()
 
 
@@ -53,7 +58,34 @@ def test_create_one_to_one(mock_strategy, mock_backend):
         docling_config="ocr",
     )
 
-    mock_backend.assert_called_once_with(llm_client=mock_llm_client)
+    mock_backend.assert_called_once_with(
+        llm_client=mock_llm_client,
+        extraction_contract="direct",
+        staged_config=None,
+        llm_consolidation=False,
+    )
+    mock_strategy.assert_called_once()
+
+
+@patch("docling_graph.core.extractors.factory.LlmBackend")
+@patch("docling_graph.core.extractors.factory.OneToOneStrategy")
+def test_staged_contract_falls_back_to_direct_for_one_to_one(mock_strategy, mock_backend):
+    mock_llm_client = MagicMock()
+
+    ExtractorFactory.create_extractor(
+        processing_mode="one-to-one",
+        backend_name="llm",
+        extraction_contract="staged",
+        llm_client=mock_llm_client,
+        docling_config="ocr",
+    )
+
+    mock_backend.assert_called_once_with(
+        llm_client=mock_llm_client,
+        extraction_contract="direct",
+        staged_config=None,
+        llm_consolidation=False,
+    )
     mock_strategy.assert_called_once()
 
 

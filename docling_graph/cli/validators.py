@@ -11,6 +11,7 @@ from .constants import (
     API_PROVIDERS,
     BACKENDS,
     DOCLING_PIPELINES,
+    EXTRACTION_CONTRACTS,
     EXPORT_FORMATS,
     INFERENCE_LOCATIONS,
     LOCAL_PROVIDERS,
@@ -24,6 +25,7 @@ VALIDATION_SETS = {
     "backend": (BACKENDS, "backend type"),
     "inference": (INFERENCE_LOCATIONS, "inference location"),
     "docling_config": (DOCLING_PIPELINES, "docling config"),
+    "extraction_contract": (EXTRACTION_CONTRACTS, "extraction contract"),
     "export_format": (EXPORT_FORMATS, "export format"),
 }
 
@@ -50,6 +52,7 @@ validate_processing_mode = _make_validator("processing_mode")
 validate_backend_type = _make_validator("backend")
 validate_inference = _make_validator("inference")
 validate_docling_config = _make_validator("docling_config")
+validate_extraction_contract = _make_validator("extraction_contract")
 validate_export_format = _make_validator("export_format")
 
 

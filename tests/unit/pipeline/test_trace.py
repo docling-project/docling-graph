@@ -14,9 +14,11 @@ from pydantic import BaseModel
 
 from docling_graph.pipeline.trace import (
     ChunkData,
+    ConflictResolutionData,
     ExtractionData,
     GraphData,
     PageData,
+    StagedPassData,
     TraceData,
     trace_data_to_jsonable,
 )
@@ -376,3 +378,40 @@ class TestTraceData:
         out = trace_data_to_jsonable(trace, max_text_len=100)
         assert len(out["pages"][0]["text_content"]) < 5000
         assert "truncated" in out["pages"][0]["text_content"].lower()
+
+    def test_trace_data_to_jsonable_includes_staged_passes_and_conflict_resolutions(self):
+        """Test that staged_passes and conflict_resolutions are serialized."""
+        trace = TraceData()
+        trace.staged_passes.append(
+            StagedPassData(
+                pass_id=1,
+                stage_name="doc skeleton",
+                stage_type="skeleton",
+                success=True,
+                attempts=1,
+                errors=[],
+                duration_seconds=0.5,
+                fields_requested=["title", "studies"],
+                fields_returned=["title"],
+                metadata={},
+            )
+        )
+        trace.conflict_resolutions.append(
+            ConflictResolutionData(
+                trigger="quality_stalled",
+                conflict_fields=["study_id"],
+                success=True,
+                duration_seconds=1.0,
+                error=None,
+                metadata={},
+            )
+        )
+        out = trace_data_to_jsonable(trace)
+        assert "staged_passes" in out
+        assert len(out["staged_passes"]) == 1
+        assert out["staged_passes"][0]["stage_type"] == "skeleton"
+        assert out["staged_passes"][0]["fields_requested"] == ["title", "studies"]
+        assert "conflict_resolutions" in out
+        assert len(out["conflict_resolutions"]) == 1
+        assert out["conflict_resolutions"][0]["trigger"] == "quality_stalled"
+        assert out["conflict_resolutions"][0]["conflict_fields"] == ["study_id"]

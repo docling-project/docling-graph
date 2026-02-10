@@ -436,6 +436,19 @@ class ExtractionStage(PipelineStage):
         conf = context.config.to_dict()
 
         processing_mode = cast(Literal["one-to-one", "many-to-one"], conf["processing_mode"])
+        extraction_contract = cast(
+            Literal["direct", "staged"], conf.get("extraction_contract", "direct")
+        )
+        staged_config = {
+            "max_fields_per_group": conf.get("staged_max_fields_per_group", 6),
+            "max_skeleton_fields": conf.get("staged_max_skeleton_fields", 10),
+            "max_repair_rounds": conf.get("staged_max_repair_rounds", 2),
+            "max_pass_retries": conf.get("staged_max_pass_retries", 1),
+            "quality_depth": conf.get("staged_quality_depth", 3),
+            "include_prior_context": conf.get("staged_include_prior_context", True),
+            "merge_similarity_fallback": conf.get("staged_merge_similarity_fallback", True),
+        }
+        llm_consolidation = bool(conf.get("llm_consolidation", False))
         backend = cast(Literal["vlm", "llm"], conf["backend"])
         inference = cast(str, conf["inference"])
 
@@ -453,6 +466,9 @@ class ExtractionStage(PipelineStage):
             return ExtractorFactory.create_extractor(
                 processing_mode=processing_mode,
                 backend_name="vlm",
+                extraction_contract=extraction_contract,
+                staged_config=staged_config,
+                llm_consolidation=llm_consolidation,
                 model_name=model_config["model"],
                 docling_config=conf["docling_config"],
             )
@@ -468,6 +484,9 @@ class ExtractionStage(PipelineStage):
             return ExtractorFactory.create_extractor(
                 processing_mode=processing_mode,
                 backend_name="llm",
+                extraction_contract=extraction_contract,
+                staged_config=staged_config,
+                llm_consolidation=llm_consolidation,
                 llm_client=llm_client,
                 docling_config=conf["docling_config"],
             )
@@ -594,7 +613,29 @@ class ExtractionStage(PipelineStage):
         from ..core.extractors.backends.llm_backend import LlmBackend
         from .trace import ExtractionData
 
-        llm_backend = LlmBackend(llm_client)
+        extraction_contract = (
+            context.config.extraction_contract
+            if context.config.processing_mode == "many-to-one"
+            else "direct"
+        )
+        staged_config = {
+            "max_fields_per_group": conf.get("staged_max_fields_per_group", 6),
+            "max_skeleton_fields": conf.get("staged_max_skeleton_fields", 10),
+            "max_repair_rounds": conf.get("staged_max_repair_rounds", 2),
+            "max_pass_retries": conf.get("staged_max_pass_retries", 1),
+            "quality_depth": conf.get("staged_quality_depth", 3),
+            "include_prior_context": conf.get("staged_include_prior_context", True),
+            "merge_similarity_fallback": conf.get("staged_merge_similarity_fallback", True),
+        }
+        llm_consolidation = bool(conf.get("llm_consolidation", False))
+        llm_backend = LlmBackend(
+            llm_client,
+            extraction_contract=extraction_contract,
+            staged_config=staged_config,
+            llm_consolidation=llm_consolidation,
+        )
+        if context.trace_data is not None:
+            llm_backend.trace_data = context.trace_data
 
         start_time = time.time()
         extracted_model = llm_backend.extract_from_markdown(
@@ -877,8 +918,24 @@ class VisualizationStage(PipelineStage):
 
         # Use generic filenames instead of source-based names
         report_path = output_dir / "report"
+        extraction_contract = getattr(context.config, "extraction_contract", None)
+        staged_passes_count = (
+            len(context.trace_data.staged_passes)
+            if context.trace_data and hasattr(context.trace_data, "staged_passes")
+            else 0
+        )
+        llm_consolidation_used = (
+            len(context.trace_data.conflict_resolutions)
+            if context.trace_data and hasattr(context.trace_data, "conflict_resolutions")
+            else 0
+        )
         ReportGenerator().visualize(
-            context.knowledge_graph, report_path, source_model_count=len(context.extracted_models)
+            context.knowledge_graph,
+            report_path,
+            source_model_count=len(context.extracted_models),
+            extraction_contract=extraction_contract,
+            staged_passes_count=staged_passes_count,
+            llm_consolidation_used=llm_consolidation_used,
         )
         logger.info(f"Generated markdown report at {report_path}.md")
 

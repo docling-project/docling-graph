@@ -200,6 +200,7 @@ When `debug=True`, `trace_data` is populated with pages, chunks, extractions, in
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
+| `extraction_contract` | `"direct"` or `"staged"` | `"direct"` | LLM extraction contract for many-to-one mode |
 | `use_chunking` | `bool` | `True` | Enable chunking |
 | `llm_consolidation` | `bool` | `False` | Use LLM for merge |
 
@@ -288,6 +289,7 @@ config = {
     
     # Processing
     "processing_mode": "many-to-one",
+    "extraction_contract": "staged",
     "use_chunking": True,
     "llm_consolidation": True,
     

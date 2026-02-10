@@ -76,6 +76,15 @@ The system uses a **3-tier priority system** for accurate capability detection:
 
 The extraction system automatically adapts based on model capability:
 
+### Contract Selection Guidance
+
+For LLM backend in `many-to-one` mode:
+
+- Use `extraction_contract="direct"` for fastest best-effort extraction.
+- Use `extraction_contract="staged"` when SIMPLE/STANDARD models under-extract
+  entities or hallucinate values in complex templates.
+- Keep `direct` for ADVANCED models unless you need stricter evidence-first behavior.
+
 ### SIMPLE Models (1B-7B)
 
 **Optimized for Speed**
@@ -84,6 +93,8 @@ The extraction system automatically adapts based on model capability:
 - ✅ **Basic Consolidation**: Simple programmatic merging
 - ✅ **Fast Processing**: Optimized for throughput
 - ✅ **Lower Memory**: Efficient resource usage
+- ✅ **Staged Contract Option**: Use `extraction_contract="staged"` for higher fidelity on complex schemas
+- ✅ **Staged Contract Option**: Use `extraction_contract="staged"` for higher fidelity on complex schemas
 
 **Best For:**
 - Simple forms and invoices
@@ -104,7 +115,8 @@ config = PipelineConfig(
     template="templates.BillingDocument",
     backend="llm",
     inference="local",
-    model_override="ibm-granite/granite-4.0-1b"  # SIMPLE tier
+    model_override="ibm-granite/granite-4.0-1b",  # SIMPLE tier
+    extraction_contract="staged",  # Recommended for richer outputs
 )
 run_pipeline(config)
 ```

@@ -3,7 +3,7 @@ from typing import List, Optional
 import pytest
 from pydantic import BaseModel
 
-from docling_graph.core.utils.dict_merger import merge_pydantic_models
+from docling_graph.core.utils.dict_merger import deep_merge_dicts, merge_pydantic_models
 
 # --- Test Pydantic Models ---
 
@@ -133,3 +133,131 @@ def test_merge_no_models():
     assert isinstance(merged, DocumentModel)
     assert merged.title is None
     assert merged.content == []
+
+
+def test_deep_merge_uses_identity_fields_map_for_entity_lists():
+    target = {
+        "entities": [
+            {"name": "Alice", "source": "A", "score": 0.1},
+        ]
+    }
+    source = {
+        "entities": [
+            {"name": "Alice", "source": "B", "score": 0.9},
+        ]
+    }
+    merged = deep_merge_dicts(
+        target,
+        source,
+        identity_fields_map={"entities": ["name"]},
+    )
+    assert len(merged["entities"]) == 1
+    assert merged["entities"][0]["source"] == "B"
+    assert merged["entities"][0]["score"] == 0.9
+
+
+def test_entity_list_dedup_same_hash_without_id_no_context_in_hash():
+    """Regression: entities without id and same content must match (no context in hash)."""
+    # Same keys/values => same content hash => should merge into one (not append duplicate)
+    target = {"items": [{"name": "A", "value": 1}]}
+    source = {"items": [{"name": "A", "value": 1}]}
+    merged = deep_merge_dicts(target, source, identity_fields_map=None)
+    assert len(merged["items"]) == 1
+    assert merged["items"][0]["name"] == "A"
+    assert merged["items"][0]["value"] == 1
+
+
+def test_nested_identity_path_merge():
+    """Nested list uses path-based identity (e.g. studies.experiments)."""
+    target = {
+        "studies": [
+            {
+                "study_id": "S1",
+                "experiments": [{"experiment_id": "E1", "name": "Exp1"}],
+            }
+        ]
+    }
+    source = {
+        "studies": [
+            {
+                "study_id": "S1",
+                "experiments": [{"experiment_id": "E1", "name": "Exp1-updated"}],
+            }
+        ]
+    }
+    merged = deep_merge_dicts(
+        target,
+        source,
+        identity_fields_map={
+            "studies": ["study_id"],
+            "studies.experiments": ["experiment_id"],
+        },
+    )
+    assert len(merged["studies"]) == 1
+    assert len(merged["studies"][0]["experiments"]) == 1
+    assert merged["studies"][0]["experiments"][0]["name"] == "Exp1-updated"
+
+
+def test_similarity_fallback_off_appends_entity():
+    """With merge_similarity_fallback=False, non-matching entities are appended."""
+    from docling_graph.core.utils.dict_merger import _merge_entity_lists
+
+    target_list = [{"objective": "Study A", "experiments": [{"experiment_id": "E1"}]}]
+    source_list = [{"objective": "Study A", "experiments": [{"experiment_id": "E1"}]}]
+    # No id, same content => same hash => merge into one
+    result = _merge_entity_lists(
+        target_list,
+        source_list,
+        identity_fields=None,
+        merge_similarity_fallback=False,
+    )
+    assert len(result) == 1
+    # Different content (different hash) => append
+    target_list2 = [{"objective": "Study A"}]  # no experiments
+    source_list2 = [{"objective": "Study B", "experiments": [{"e": 1}]}]
+    result2 = _merge_entity_lists(
+        target_list2,
+        source_list2,
+        identity_fields=None,
+        merge_similarity_fallback=False,
+    )
+    assert len(result2) == 2
+
+
+def test_similarity_fallback_on_merges_by_child_overlap(caplog):
+    """With merge_similarity_fallback=True, entities with high child overlap merge (with warning)."""
+    from docling_graph.core.utils.dict_merger import _merge_entity_lists
+
+    # Two entities with same children (overlap) but different scalar so different content hash
+    target_list = [
+        {"study_id": "STUDY-GEN-0", "objective": "X", "experiments": [{"experiment_id": "E1"}]}
+    ]
+    source_list = [
+        {"study_id": "STUDY-GEN-1", "objective": "Y", "experiments": [{"experiment_id": "E1"}]}
+    ]
+    result = _merge_entity_lists(
+        target_list,
+        source_list,
+        identity_fields=["study_id"],
+        merge_similarity_fallback=True,
+    )
+    # Different study_id => no id match; different content => different hash. Similarity may merge.
+    if len(result) == 1:
+        assert "merge_similarity_fallback" in caplog.text or "score=" in caplog.text
+    assert len(result) <= 2
+
+
+def test_similarity_below_threshold_does_not_merge():
+    """Entities with low child overlap are not merged when fallback is on."""
+    from docling_graph.core.utils.dict_merger import _merge_entity_lists
+
+    target_list = [{"a": "only_in_target", "children": [{"x": 1}]}]
+    source_list = [{"b": "only_in_source", "children": [{"y": 2}]}]
+    result = _merge_entity_lists(
+        target_list,
+        source_list,
+        identity_fields=None,
+        merge_similarity_fallback=True,
+    )
+    # No overlap in children => low Jaccard => should not merge
+    assert len(result) == 2

@@ -107,10 +107,12 @@ export WATSONX_URL="..."           # IBM WatsonX URL (optional)
 # Initialize configuration
 uv run docling-graph init
 
-# Convert document from URL
+# Convert document from URL (each line except the last must end with \)
 uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
-    --processing-mode "many-to-one"
+    --processing-mode "many-to-one" \
+    --extraction-contract "staged" \
+    --debug
 
 # Visualize results
 uv run docling-graph inspect outputs
@@ -129,6 +131,7 @@ config = {
     "backend": "llm",
     "inference": "remote",
     "processing_mode": "many-to-one",
+    "extraction_contract": "staged",  # robust for smaller models
     "provider_override": "mistral",
     "model_override": "mistral-medium-latest",
     "use_chunking": True,

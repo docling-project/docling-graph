@@ -27,6 +27,7 @@ class ExtractorConfig(BaseModel):
     """Configuration for the extraction strategy."""
 
     strategy: Literal["many-to-one", "one-to-one"] = Field(default="many-to-one")
+    extraction_contract: Literal["direct", "staged"] = Field(default="direct")
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
     use_chunking: bool = Field(default=True)
     llm_consolidation: bool = Field(default=False)
@@ -94,6 +95,7 @@ class PipelineConfig(BaseModel):
     backend: Literal["llm", "vlm"] = Field(default="llm")
     inference: Literal["local", "remote"] = Field(default="local")
     processing_mode: Literal["one-to-one", "many-to-one"] = Field(default="many-to-one")
+    extraction_contract: Literal["direct", "staged"] = Field(default="direct")
 
     # Docling settings (with defaults)
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
@@ -126,6 +128,32 @@ class PipelineConfig(BaseModel):
         default=False, description="Enable debug artifacts (controlled by --debug flag)"
     )
     max_batch_size: int = 1
+    staged_max_fields_per_group: int = Field(
+        default=6, description="Max number of scalar fields per staged extraction group."
+    )
+    staged_max_skeleton_fields: int = Field(
+        default=10, description="Max number of root fields in staged skeleton pass."
+    )
+    staged_max_repair_rounds: int = Field(
+        default=2, description="Maximum targeted repair rounds for staged extraction."
+    )
+    staged_max_pass_retries: int = Field(
+        default=1, description="Retries per staged pass before giving up."
+    )
+    staged_quality_depth: int = Field(
+        default=3, description="Recursive depth for staged quality analysis."
+    )
+    staged_include_prior_context: bool = Field(
+        default=True, description="Include prior pass output in staged prompts."
+    )
+    llm_consolidation: bool = Field(
+        default=False,
+        description="Use LLM for conflict resolution when heuristic staged reconciliation is insufficient.",
+    )
+    staged_merge_similarity_fallback: bool = Field(
+        default=True,
+        description="When True (default), merge entity list items by similarity (e.g. overlapping children) when ID/identity match fails; logs a warning when used.",
+    )
 
     # Export settings (with defaults)
     export_format: Literal["csv", "cypher"] = Field(default="csv")
@@ -171,12 +199,21 @@ class PipelineConfig(BaseModel):
             "backend": self.backend,
             "inference": self.inference,
             "processing_mode": self.processing_mode,
+            "extraction_contract": self.extraction_contract,
             "docling_config": self.docling_config,
             "use_chunking": self.use_chunking,
             "chunk_max_tokens": self.chunk_max_tokens,
             "debug": self.debug,
             "model_override": self.model_override,
             "provider_override": self.provider_override,
+            "staged_max_fields_per_group": self.staged_max_fields_per_group,
+            "staged_max_skeleton_fields": self.staged_max_skeleton_fields,
+            "staged_max_repair_rounds": self.staged_max_repair_rounds,
+            "staged_max_pass_retries": self.staged_max_pass_retries,
+            "staged_quality_depth": self.staged_quality_depth,
+            "staged_include_prior_context": self.staged_include_prior_context,
+            "llm_consolidation": self.llm_consolidation,
+            "staged_merge_similarity_fallback": self.staged_merge_similarity_fallback,
             "export_format": self.export_format,
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
@@ -209,8 +246,17 @@ class PipelineConfig(BaseModel):
                 "backend": default_config.backend,
                 "inference": default_config.inference,
                 "processing_mode": default_config.processing_mode,
+                "extraction_contract": default_config.extraction_contract,
                 "export_format": default_config.export_format,
                 "chunk_max_tokens": default_config.chunk_max_tokens,
+                "staged_max_fields_per_group": default_config.staged_max_fields_per_group,
+                "staged_max_skeleton_fields": default_config.staged_max_skeleton_fields,
+                "staged_max_repair_rounds": default_config.staged_max_repair_rounds,
+                "staged_max_pass_retries": default_config.staged_max_pass_retries,
+                "staged_quality_depth": default_config.staged_quality_depth,
+                "staged_include_prior_context": default_config.staged_include_prior_context,
+                "llm_consolidation": default_config.llm_consolidation,
+                "staged_merge_similarity_fallback": default_config.staged_merge_similarity_fallback,
             },
             "docling": {
                 "pipeline": default_config.docling_config,
