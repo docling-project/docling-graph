@@ -5,7 +5,7 @@
 Debug mode provides comprehensive visibility into the atomic extraction pipeline's intermediate stages, enabling debugging, performance analysis, and quality assurance. When enabled, all extraction artifacts are persisted to disk for inspection and replay.
 
 **What's Captured:**
-- **In-memory `TraceData`**: When `debug=True`, `context.trace_data` is populated with pages, extractions, and intermediate graph summaries (see [PipelineContext](reference/pipeline.md)).
+- **In-memory `TraceData`**: When `debug=True`, `context.trace_data` is populated with pages, extractions, and intermediate graph summaries (see [PipelineContext](../../reference/pipeline.md)).
 - **`debug/trace_data.json`**: When debug is on and output is written to disk, a JSON snapshot of trace data (pages, extractions, graph summaries) is saved under the run's `debug/` directory. Long text fields are truncated to keep the file small.
 - **Provenance**: Document path and configuration for replay
 

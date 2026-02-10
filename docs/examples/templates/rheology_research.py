@@ -15,9 +15,10 @@ Key improvements:
 import re
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, List, Optional, Self, Type, Union
+from typing import Any, List, Optional, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from typing_extensions import Self
 
 # ============================================================================
 # HELPER FUNCTIONS
