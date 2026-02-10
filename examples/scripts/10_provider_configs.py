@@ -12,7 +12,7 @@ Use Cases:
     - Provider-specific features
 
 Prerequisites:
-    - Installation: uv sync --extra remote --extra watsonx
+    - Installation: uv sync  # LiteLLM is included by default
     - API Keys: Set environment variables for desired providers
       - OPENAI_API_KEY
       - MISTRAL_API_KEY
@@ -85,9 +85,7 @@ def check_api_key(env_var: str) -> bool:
     return bool(os.getenv(env_var))
 
 
-def process_with_provider(
-    name: str, provider: str, model: str, output_dir: str
-) -> Tuple[bool, str]:
+def process_with_provider(name: str, provider: str, model: str) -> Tuple[bool, str]:
     """
     Process document with specific provider.
 
@@ -98,7 +96,6 @@ def process_with_provider(
         config = PipelineConfig(
             source=SOURCE_FILE,
             template=TEMPLATE_CLASS,
-            output_dir=output_dir,
             backend="llm",
             inference="remote",
             provider_override=provider,
@@ -138,7 +135,7 @@ def main() -> None:
     configured = [(n, p, m, e) for n, p, m, e in providers if check_api_key(e)]
 
     if not configured:
-        console.print("\n[red]✗ No API keys configured![/red]")
+        console.print("\n[red]No API keys configured![/red]")
         console.print("\n[yellow]Setup Instructions:[/yellow]")
         console.print("  • OpenAI: [cyan]export OPENAI_API_KEY='sk-...'[/cyan]")
         console.print("  • Mistral: [cyan]export MISTRAL_API_KEY='...'[/cyan]")
@@ -153,10 +150,9 @@ def main() -> None:
     # Process with each configured provider
     results = []
     for name, provider, model, _ in configured:
-        output_dir = f"outputs/10_provider_configs/{provider}"
         console.print(f"\n[cyan]Processing with {name}...[/cyan]")
 
-        success, message = process_with_provider(name, provider, model, output_dir)
+        success, message = process_with_provider(name, provider, model)
         results.append((name, provider, model, success, message))
 
         if success:

@@ -13,7 +13,7 @@ Use Cases:
     - Skipping OCR for text-only inputs
 
 Prerequisites:
-    - Installation: uv sync --extra remote
+    - Installation: uv sync
     - Environment: export MISTRAL_API_KEY="your-api-key"
     - Sample files: Create test files or use provided examples
 
@@ -131,7 +131,6 @@ def process_text_input() -> None:
     config = PipelineConfig(
         source=str(text_file),
         template=SimpleDocument,
-        output_dir="outputs/04_input_formats/text_output",
         backend="llm",  # Text requires LLM backend
         inference="remote",
         provider_override="mistral",
@@ -160,7 +159,6 @@ def process_markdown_input() -> None:
     config = PipelineConfig(
         source=str(md_file),
         template=SimpleDocument,
-        output_dir="outputs/04_input_formats/markdown_output",
         backend="llm",  # Markdown requires LLM backend
         inference="remote",
         provider_override="mistral",
@@ -203,7 +201,7 @@ def main() -> None:
 
     console.print("\n[yellow]⚠️  Prerequisites:[/yellow]")
     console.print("  • Mistral API key: [cyan]export MISTRAL_API_KEY='...'[/cyan]")
-    console.print("  • Install remote extras: [cyan]uv sync --extra remote[/cyan]")
+    console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
 
     try:
         # Process different formats
@@ -243,7 +241,7 @@ def main() -> None:
 
     except Exception as e:
         error_msg = str(e).lower()
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "api" in error_msg or "key" in error_msg:
@@ -252,7 +250,7 @@ def main() -> None:
             console.print("  • Text/Markdown require LLM backend (not VLM)")
             console.print("  • Use [cyan]--backend llm[/cyan] for text inputs")
         else:
-            console.print("  • Ensure dependencies: [cyan]uv sync --extra remote[/cyan]")
+            console.print("  • Ensure dependencies: [cyan]uv sync[/cyan]")
             console.print("  • Check file permissions")
 
         sys.exit(1)

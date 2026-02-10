@@ -1913,23 +1913,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Supported Models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#complete-model-list" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Complete Model List
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2776,6 +2759,34 @@
     
   
     PipelineConfig
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage/api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
   
 
     
@@ -4231,23 +4242,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Supported Models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#complete-model-list" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Complete Model List
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -4497,9 +4491,9 @@
 <p class="admonition-title">Context Window Caveat</p>
 <p>Modern small models can have large contexts (e.g., Granite 1B with 128K)</p>
 </div>
-<p><strong>Registry Lookup:</strong>
-- For known models in <code>models.yaml</code>, explicit capability is always used
-- Fallback detection only applies to unregistered models</p>
+<p><strong>LiteLLM Metadata:</strong>
+- Capability is inferred from LiteLLM context window and model name
+- Fallback detection only applies when metadata is unavailable</p>
 <hr />
 <h2 id="adaptive-behavior">Adaptive Behavior<a class="headerlink" href="#adaptive-behavior" title="Permanent link">&para;</a></h2>
 <p>The extraction system automatically adapts based on model capability:</p>
@@ -4622,37 +4616,9 @@
 - Budget constraints</p>
 <hr />
 <h2 id="supported-models">Supported Models<a class="headerlink" href="#supported-models" title="Permanent link">&para;</a></h2>
-<h3 id="complete-model-list">Complete Model List<a class="headerlink" href="#complete-model-list" title="Permanent link">&para;</a></h3>
-<p>See the full list of classified models in <a href="https://github.com/IBM/docling-graph/blob/main/docling_graph/llm_clients/models.yaml"><code>models.yaml</code></a>.</p>
-<h4 id="simple-tier-1b-7b">SIMPLE Tier (1B-7B)<a class="headerlink" href="#simple-tier-1b-7b" title="Permanent link">&para;</a></h4>
-<p><strong>Local Models:</strong>
-- <code>ibm-granite/granite-4.0-1b</code>
-- <code>meta-llama/Llama-3.2-1B</code>
-- <code>meta-llama/Llama-3.2-3B</code>
-- <code>numind/NuExtract-2.0-2B</code>
-- <code>Qwen/Qwen2.5-1.5B</code></p>
-<h4 id="standard-tier-7b-13b">STANDARD Tier (7B-13B)<a class="headerlink" href="#standard-tier-7b-13b" title="Permanent link">&para;</a></h4>
-<p><strong>Local Models:</strong>
-- <code>meta-llama/Llama-3.1-8B</code>
-- <code>mistralai/Mistral-7B-v0.1</code>
-- <code>numind/NuExtract-2.0-8B</code>
-- <code>Qwen/Qwen2.5-7B</code></p>
-<p><strong>Remote APIs:</strong>
-- <code>mistral-small-latest</code> (Mistral)
-- <code>gemini-1.5-flash</code> (Google)</p>
-<h4 id="advanced-tier-13b">ADVANCED Tier (13B+)<a class="headerlink" href="#advanced-tier-13b" title="Permanent link">&para;</a></h4>
-<p><strong>Remote APIs:</strong>
-- <code>gpt-4-turbo</code> (OpenAI)
-- <code>gpt-4o</code> (OpenAI)
-- <code>claude-3.5-sonnet</code> (Anthropic)
-- <code>claude-3-opus</code> (Anthropic)
-- <code>gemini-2.5-flash</code> (Google)
-- <code>gemini-2.5-pro</code> (Google)
-- <code>mistral-large-latest</code> (Mistral)
-- <code>mistral-medium-latest</code> (Mistral)</p>
-<p><strong>IBM WatsonX:</strong>
-- <code>ibm/granite-13b-chat-v2</code>
-- <code>meta-llama/llama-3-1-70b-instruct</code></p>
+<p>Model capability tiers are derived from LiteLLM metadata at runtime.
+The project no longer keeps a static model list; use LiteLLM's model catalog
+or your provider documentation for supported models.</p>
 <hr />
 <h2 id="performance-implications">Performance Implications<a class="headerlink" href="#performance-implications" title="Permanent link">&para;</a></h2>
 <h3 id="speed-vs-accuracy-trade-off">Speed vs Accuracy Trade-off<a class="headerlink" href="#speed-vs-accuracy-trade-off" title="Permanent link">&para;</a></h3>

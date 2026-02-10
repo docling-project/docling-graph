@@ -232,10 +232,11 @@ class Tax(BaseModel):
     tax_type: TaxType = Field(
         default=TaxType.VAT,
         description=(
-            "Type of tax. "
-            "LOOK FOR: 'VAT', 'GST', 'Sales Tax', 'Tax' labels. "
-            "DEFAULT: VAT if not specified. "
-            "EXAMPLES: 'VAT', 'GST', 'Sales Tax'"
+            "WHAT: Type of tax applied. "
+            "EXTRACT: One of the allowed values (VAT, GST, Sales Tax, Other). "
+            "If not explicitly stated, omit this field rather than guessing. "
+            "LOOK FOR: 'VAT', 'GST', 'Sales Tax', 'Tax' labels in tax sections. "
+            "EXAMPLES: VAT, GST, Sales Tax"
         ),
         examples=["VAT", "GST", "Sales Tax"],
     )
@@ -254,10 +255,12 @@ class Tax(BaseModel):
     taxable_amount: float | None = Field(
         None,
         description=(
-            "Amount on which tax is calculated (tax base). "
+            "WHAT: Amount on which tax is calculated (tax base). "
+            "EXTRACT: Numeric value only (e.g., 1000.00, 500.50). "
+            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Taxable Amount', 'Base', 'Net Amount' in tax breakdown. "
-            "EXTRACT: Numeric value without currency symbols. "
-            "EXAMPLES: 1000.00, 500.50"
+            "EXAMPLES: 1000.00, 500.50. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1000.00, 500.50],
     )
@@ -265,10 +268,12 @@ class Tax(BaseModel):
     tax_amount: float | None = Field(
         None,
         description=(
-            "Calculated tax amount. "
+            "WHAT: Calculated tax amount. "
+            "EXTRACT: Numeric value only (e.g., 200.00, 100.10). "
+            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Tax Amount', 'VAT Amount', 'Tax' column in totals or tax breakdown. "
-            "EXTRACT: Numeric value without currency symbols. "
-            "EXAMPLES: 200.00, 100.10"
+            "EXAMPLES: 200.00, 100.10. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[200.00, 100.10],
     )
@@ -327,10 +332,12 @@ class LineItem(BaseModel):
     quantity: float | None = Field(
         None,
         description=(
-            "Quantity ordered or delivered. "
+            "WHAT: Quantity ordered or delivered. "
+            "EXTRACT: Numeric value only (e.g., 1.0, 10.5, 28.0). "
+            "NEVER extract names, text, units, or dates into this field. "
             "LOOK FOR: 'Quantity', 'Qty', 'Quantité', 'Menge' column in line items. "
-            "EXTRACT: Numeric value ONLY (separate from unit). "
-            "EXAMPLES: 1.0, 10.5, 28.0, 100.0"
+            "EXAMPLES: 1.0, 10.5, 28.0, 100.0. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1.0, 10.5, 28.0, 100.0],
     )
@@ -350,10 +357,12 @@ class LineItem(BaseModel):
     unit_price: float | None = Field(
         None,
         description=(
-            "Price per unit (excluding tax). "
-            "LOOK FOR: 'Unit Price', 'Price', 'Rate', 'Prix Unitaire' column. "
-            "EXTRACT: Numeric value without currency symbols. "
-            "EXAMPLES: 100.00, 25.50, 1500.00"
+            "WHAT: Price per unit (excluding tax). "
+            "EXTRACT: Numeric value only (e.g., 100.00, 25.50). "
+            "NEVER extract names, text, or dates into this field. "
+            "LOOK FOR: 'Unit Price', 'Price', 'Rate', 'Prix Unitaire' column in line items. "
+            "EXAMPLES: 100.00, 25.50, 1500.00. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[100.00, 25.50, 1500.00],
     )
@@ -372,10 +381,12 @@ class LineItem(BaseModel):
     line_total: float | None = Field(
         None,
         description=(
-            "Total amount for this line (quantity x unit_price - discount). "
-            "LOOK FOR: 'Total', 'Amount', 'Line Total' column (usually last column). "
-            "EXTRACT: Numeric value without currency symbols. "
-            "EXAMPLES: 1000.00, 500.50, 2500.00"
+            "WHAT: Total amount for this line (quantity x unit_price - discount). "
+            "EXTRACT: Numeric value only (e.g., 1000.00, 500.50). "
+            "NEVER extract names, text, or dates into this field. "
+            "LOOK FOR: 'Total', 'Amount', 'Line Total' column (usually last column in line items). "
+            "EXAMPLES: 1000.00, 500.50, 2500.00. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1000.00, 500.50, 2500.00],
     )
@@ -384,7 +395,14 @@ class LineItem(BaseModel):
     item: Item | None = edge(
         label="REFERENCES_ITEM",
         default=None,
-        description="The product or service being billed",
+        description=(
+            "WHAT: The product or service being billed. "
+            "EXTRACT: As an object with identity fields (item_code, name, category). "
+            "NEVER return as an array. "
+            "LOOK FOR: Item details in line item description or separate item columns. "
+            "EXAMPLES: {'item_code': 'SKU-12345', 'name': 'Laptop Computer'}. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
+        ),
     )
 
     tax: Tax | None = edge(
@@ -405,9 +423,11 @@ class Payment(BaseModel):
     method: PaymentMethod = Field(
         default=PaymentMethod.BANK_TRANSFER,
         description=(
-            "Payment method. "
-            "LOOK FOR: 'Payment Method', 'Payment Means', 'Mode de Paiement' labels. "
-            "EXAMPLES: 'Bank Transfer', 'Card', 'Cash', 'Direct Debit'"
+            "WHAT: Payment method used or accepted. "
+            "EXTRACT: One of the allowed values (Bank Transfer, Card, Cash, Direct Debit, Cheque, Other). "
+            "If not explicitly stated, omit this field rather than guessing. "
+            "LOOK FOR: 'Payment Method', 'Payment Means', 'Mode de Paiement' labels in payment section. "
+            "EXAMPLES: Bank Transfer, Card, Cash, Direct Debit"
         ),
         examples=["Bank Transfer", "Card", "Cash"],
     )
@@ -486,10 +506,11 @@ class Delivery(BaseModel):
     delivery_date: date | None = Field(
         None,
         description=(
-            "Delivery or shipment date. "
-            "LOOK FOR: 'Delivery Date', 'Ship Date', 'Date de Livraison' labels. "
-            "EXTRACT: Parse date and convert to YYYY-MM-DD format. "
-            "EXAMPLES: '2024-01-20', '2024-02-15'"
+            "WHAT: The delivery or shipment date. "
+            "EXTRACT: In ISO format (YYYY-MM-DD). Parse natural language dates. "
+            "LOOK FOR: 'Delivery Date', 'Ship Date', 'Date de Livraison' labels in delivery section. "
+            "EXAMPLES: 2024-01-20, 2024-02-15. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=["2024-01-20", "2024-02-15"],
     )
@@ -578,10 +599,11 @@ class BillingDocument(BaseModel):
     document_type: DocumentType = Field(
         default=DocumentType.INVOICE,
         description=(
-            "Type of billing document. "
-            "LOOK FOR: Document title/header ('INVOICE', 'CREDIT NOTE', 'RECEIPT'). "
-            "DEFAULT: Invoice if not specified. "
-            "EXAMPLES: 'Invoice', 'Credit Note', 'Receipt'"
+            "WHAT: The type of billing document. "
+            "EXTRACT: One of the allowed values (Invoice, Credit Note, Debit Note, Receipt, Other). "
+            "If not explicitly stated, omit this field rather than guessing. "
+            "LOOK FOR: Document title/header text ('INVOICE', 'CREDIT NOTE', 'RECEIPT', 'FACTURE'). "
+            "EXAMPLES: Invoice, Credit Note, Receipt"
         ),
         examples=["Invoice", "Credit Note", "Receipt"],
     )
@@ -589,10 +611,11 @@ class BillingDocument(BaseModel):
     issue_date: date | None = Field(
         None,
         description=(
-            "Date the document was issued. "
-            "LOOK FOR: 'Date', 'Issue Date', 'Invoice Date', 'Date d'Émission' in header. "
-            "EXTRACT: Parse various formats (DD/MM/YYYY, MM-DD-YYYY, DD.MM.YYYY) → YYYY-MM-DD. "
-            "EXAMPLES: '2024-01-15', '2024-02-20'"
+            "WHAT: The date the document was issued. "
+            "EXTRACT: In ISO format (YYYY-MM-DD). Parse natural language dates. "
+            "LOOK FOR: 'Date', 'Issue Date', 'Invoice Date', 'Date d'Émission' labels in document header. "
+            "EXAMPLES: 2024-01-15, 2024-02-20. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=["2024-01-15", "2024-02-20"],
     )
@@ -600,10 +623,11 @@ class BillingDocument(BaseModel):
     due_date: date | None = Field(
         None,
         description=(
-            "Payment due date. "
-            "LOOK FOR: 'Due Date', 'Payment Due', 'Date d'Échéance' labels. "
-            "EXTRACT: Parse and convert to YYYY-MM-DD format. "
-            "EXAMPLES: '2024-02-15', '2024-03-20'"
+            "WHAT: The payment due date. "
+            "EXTRACT: In ISO format (YYYY-MM-DD). Parse natural language dates. "
+            "LOOK FOR: 'Due Date', 'Payment Due', 'Date d'Échéance' labels in header or payment section. "
+            "EXAMPLES: 2024-02-15, 2024-03-20. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=["2024-02-15", "2024-03-20"],
     )
@@ -624,10 +648,12 @@ class BillingDocument(BaseModel):
     subtotal: float | None = Field(
         None,
         description=(
-            "Subtotal before tax and discounts. "
-            "LOOK FOR: 'Subtotal', 'Net Total', 'Total HT' in totals section. "
-            "EXTRACT: Numeric value without currency symbols. "
-            "EXAMPLES: 1000.00, 5000.50"
+            "WHAT: Subtotal before tax and discounts. "
+            "EXTRACT: Numeric value only (e.g., 1000.00, 5000.50). "
+            "NEVER extract names, text, or dates into this field. "
+            "LOOK FOR: 'Subtotal', 'Net Total', 'Total HT' labels in totals section. "
+            "EXAMPLES: 1000.00, 5000.50. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1000.00, 5000.50],
     )
@@ -635,10 +661,12 @@ class BillingDocument(BaseModel):
     discount_total: float | None = Field(
         None,
         description=(
-            "Total discount amount. "
-            "LOOK FOR: 'Discount', 'Remise', 'Descuento' in totals section. "
-            "EXTRACT: Numeric value (positive number). "
-            "EXAMPLES: 100.00, 50.00"
+            "WHAT: Total discount amount applied. "
+            "EXTRACT: Numeric value only (e.g., 100.00, 50.00). "
+            "NEVER extract names, text, or dates into this field. "
+            "LOOK FOR: 'Discount', 'Remise', 'Descuento' labels in totals section. "
+            "EXAMPLES: 100.00, 50.00. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[100.00, 50.00],
     )
@@ -657,10 +685,12 @@ class BillingDocument(BaseModel):
     total_amount: float | None = Field(
         None,
         description=(
-            "Final total amount due (including tax). "
-            "LOOK FOR: 'Total', 'Grand Total', 'Amount Due', 'Total TTC' (usually largest/bold number). "
-            "EXTRACT: Numeric value without currency symbols. "
-            "EXAMPLES: 1200.00, 6000.60"
+            "WHAT: Final total amount due (including tax). "
+            "EXTRACT: Numeric value only (e.g., 1200.00, 6000.60). "
+            "NEVER extract names, text, or dates into this field. "
+            "LOOK FOR: 'Total', 'Grand Total', 'Amount Due', 'Total TTC' labels (usually largest/bold number in totals). "
+            "EXAMPLES: 1200.00, 6000.60. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1200.00, 6000.60],
     )
@@ -668,10 +698,12 @@ class BillingDocument(BaseModel):
     amount_paid: float | None = Field(
         None,
         description=(
-            "Amount already paid (if any). "
-            "LOOK FOR: 'Paid', 'Amount Paid', 'Prepaid', 'Acompte' in totals. "
-            "EXTRACT: Numeric value. "
-            "EXAMPLES: 500.00, 1000.00"
+            "WHAT: Amount already paid (if any). "
+            "EXTRACT: Numeric value only (e.g., 500.00, 1000.00). "
+            "NEVER extract names, text, or dates into this field. "
+            "LOOK FOR: 'Paid', 'Amount Paid', 'Prepaid', 'Acompte' labels in totals section. "
+            "EXAMPLES: 500.00, 1000.00. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[500.00, 1000.00],
     )
@@ -679,10 +711,12 @@ class BillingDocument(BaseModel):
     balance_due: float | None = Field(
         None,
         description=(
-            "Remaining balance due. "
-            "LOOK FOR: 'Balance Due', 'Amount Due', 'Solde', 'Restant à Payer'. "
-            "EXTRACT: Numeric value. "
-            "EXAMPLES: 700.00, 5000.60"
+            "WHAT: Remaining balance due after payments. "
+            "EXTRACT: Numeric value only (e.g., 700.00, 5000.60). "
+            "NEVER extract names, text, postal codes, or dates into this field. "
+            "LOOK FOR: 'Balance Due', 'Amount Due', 'Solde', 'Restant à Payer' labels in totals section. "
+            "EXAMPLES: 700.00, 5000.60. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[700.00, 5000.60],
     )
@@ -705,9 +739,12 @@ class BillingDocument(BaseModel):
     seller: Party = edge(
         label="ISSUED_BY",
         description=(
-            "Party that issued this document (seller/supplier). "
+            "WHAT: The party that issued this document (seller/supplier). "
+            "EXTRACT: As an object with identity fields (name, tax_id, address, etc.). "
+            "NEVER return as an array. "
+            "PRESERVE ROLE: 'From:', 'Seller:', 'Supplier:' indicates seller. "
             "LOOK FOR: Company information in header/top section, 'From', 'Seller', 'Supplier' labels. "
-            "EXTRACT: Complete party details including name, address, contact info, tax ID."
+            "EXAMPLES: {'name': 'Acme Corp', 'tax_id': 'FR12345678901', 'city': 'Paris'}"
         ),
     )
 
@@ -715,9 +752,13 @@ class BillingDocument(BaseModel):
         label="BILLED_TO",
         default=None,
         description=(
-            "Party receiving this document (buyer/customer). "
+            "WHAT: The party receiving this document (buyer/customer). "
+            "EXTRACT: As an object with identity fields (name, tax_id, address, etc.). "
+            "NEVER return as an array. "
+            "PRESERVE ROLE: 'To:', 'Bill To:', 'Customer:' indicates buyer. "
             "LOOK FOR: 'Bill To', 'Customer', 'Buyer', 'Client' section (often left side or below header). "
-            "EXTRACT: Complete party details including name, address, contact info, tax ID."
+            "EXAMPLES: {'name': 'Tech Solutions Inc', 'city': 'London'}. "
+            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
     )
 

@@ -2138,10 +2138,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-handling-partial-results" class="md-nav__link">
+  <a href="#handling-partial-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example: Handling Partial Results
+        📍 Handling Partial Results
       
     </span>
   </a>
@@ -3097,6 +3097,34 @@
     
   
     PipelineConfig
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage/api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
   
 
     
@@ -4749,10 +4777,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-handling-partial-results" class="md-nav__link">
+  <a href="#handling-partial-results" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example: Handling Partial Results
+        📍 Handling Partial Results
       
     </span>
   </a>
@@ -5530,29 +5558,31 @@ flowchart LR
 <h3 id="manual-consolidation">📍 Manual Consolidation<a class="headerlink" href="#manual-consolidation" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmBackend</span>
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">merge_pydantic_models</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">MistralClient</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="c1"># Extract from chunks</span>
-<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
-<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">is_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="k">if</span> <span class="n">model</span><span class="p">:</span>
-<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
-<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="c1"># Programmatic merge</span>
-<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="n">programmatic</span> <span class="o">=</span> <span class="n">merge_pydantic_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
-<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>
-<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="c1"># LLM consolidation</span>
-<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="n">client</span> <span class="o">=</span> <span class="n">MistralClient</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="p">)</span>
-<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
-<a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>
-<a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="n">final</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">consolidate_from_pydantic_models</span><span class="p">(</span>
-<a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>    <span class="n">raw_models</span><span class="o">=</span><span class="n">models</span><span class="p">,</span>
-<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a>    <span class="n">programmatic_model</span><span class="o">=</span><span class="n">programmatic</span><span class="p">,</span>
-<a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a>    <span class="n">template</span><span class="o">=</span><span class="n">template</span>
-<a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a><span class="p">)</span>
-<a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a>
-<a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Consolidated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2"> models into 1&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_effective_model_config</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="c1"># Extract from chunks</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">is_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="k">if</span> <span class="n">model</span><span class="p">:</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="c1"># Programmatic merge</span>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="n">programmatic</span> <span class="o">=</span> <span class="n">merge_pydantic_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="c1"># LLM consolidation</span>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span> <span class="s2">&quot;mistral-large-latest&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="s2">&quot;mistral&quot;</span><span class="p">)(</span><span class="n">model_config</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
+<a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+<a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>
+<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span class="n">final</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">consolidate_from_pydantic_models</span><span class="p">(</span>
+<a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a>    <span class="n">raw_models</span><span class="o">=</span><span class="n">models</span><span class="p">,</span>
+<a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a>    <span class="n">programmatic_model</span><span class="o">=</span><span class="n">programmatic</span><span class="p">,</span>
+<a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a>    <span class="n">template</span><span class="o">=</span><span class="n">template</span>
+<a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a><span class="p">)</span>
+<a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a>
+<a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Consolidated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2"> models into 1&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="handling-merge-failures">📍 Handling Merge Failures<a class="headerlink" href="#handling-merge-failures" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">merge_pydantic_models</span>
@@ -5621,7 +5651,7 @@ flowchart LR
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    <span class="c1"># Zero data loss is always enabled</span>
 <a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="p">)</span>
 </code></pre></div>
-<h3 id="example-handling-partial-results">Example: Handling Partial Results<a class="headerlink" href="#example-handling-partial-results" title="Permanent link">&para;</a></h3>
+<h3 id="handling-partial-results">📍 Handling Partial Results<a class="headerlink" href="#handling-partial-results" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
 <a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>

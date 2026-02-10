@@ -2410,6 +2410,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/run-pipeline/" class="md-nav__link">
         
   
@@ -5162,41 +5190,15 @@
 <a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Automatically uses threshold</span>
 <a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Why Different Thresholds?</strong></p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Provider</th>
-<th style="text-align: left;">Threshold</th>
-<th style="text-align: left;">Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><strong>OpenAI</strong></td>
-<td style="text-align: left;">90%</td>
-<td style="text-align: left;">Robust to near-limit contexts</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Google</strong></td>
-<td style="text-align: left;">88%</td>
-<td style="text-align: left;">Good context handling</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Anthropic</strong></td>
-<td style="text-align: left;">85%</td>
-<td style="text-align: left;">More conservative approach</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>Ollama/Local</strong></td>
-<td style="text-align: left;">75%</td>
-<td style="text-align: left;">Variable performance, safer margin</td>
-</tr>
-</tbody>
-</table>
+<p><strong>Default Threshold:</strong></p>
+<p>All providers now use a <strong>95% threshold</strong> by default. This provides an optimal balance between:
+- <strong>Efficiency</strong>: Fewer API calls, faster processing
+- <strong>Reliability</strong>: Adequate safety margin for context limits
+- <strong>Consistency</strong>: Same behavior across all providers</p>
 <p><strong>Performance Impact:</strong>
-- Higher threshold = Fewer API calls = Faster processing
-- Lower threshold = More safety margin = Better reliability</p>
+- Higher threshold (0.95-0.98) = Fewer API calls = Faster processing
+- Lower threshold (0.80-0.90) = More aggressive merging = Fewer batches but less optimal fit</p>
+<p><strong>Note</strong>: You can override the threshold programmatically if needed (see <a href="../../../fundamentals/extraction-process/batch-processing/">Batch Processing</a>).</p>
 <h3 id="optimal-batch-sizes">Optimal Batch Sizes<a class="headerlink" href="#optimal-batch-sizes" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># ✅ Good - Appropriate batch size</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -5340,7 +5342,7 @@
 <h2 id="gpu-utilization">GPU Utilization<a class="headerlink" href="#gpu-utilization" title="Permanent link">&para;</a></h2>
 <h3 id="enable-gpu-acceleration">Enable GPU Acceleration<a class="headerlink" href="#enable-gpu-acceleration" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Install with GPU support</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span><span class="nb">local</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>uv<span class="w"> </span>sync
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Verify GPU is available</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.cuda.is_available())&quot;</span>
@@ -5725,7 +5727,7 @@
 <h3 id="gpu-not-utilized">🐛 GPU Not Utilized<a class="headerlink" href="#gpu-not-utilized" title="Permanent link">&para;</a></h3>
 <p><strong>Solutions:</strong>
 1. Verify GPU installation: <code>torch.cuda.is_available()</code>
-2. Install GPU dependencies: <code>uv sync --extra local</code>
+2. Install GPU dependencies: <code>uv sync</code>
 3. Check CUDA version compatibility
 4. Use vLLM provider for GPU optimization</p>
 <hr />

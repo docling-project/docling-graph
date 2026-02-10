@@ -12,7 +12,7 @@ Use Cases:
     - Any text-heavy PDF content
 
 Prerequisites:
-    - Installation: uv sync --extra remote
+    - Installation: uv sync
     - Environment: export MISTRAL_API_KEY="your-api-key"
     - Data: Sample rheology research included in repository
 
@@ -51,7 +51,7 @@ sys.path.append(str(project_root))
 try:
     from examples.templates.rheology_research import ScholarlyRheologyPaper
 
-    from docling_graph import PipelineConfig
+    from docling_graph import PipelineConfig, run_pipeline
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")
@@ -60,8 +60,6 @@ except ImportError:
 # Configuration
 SOURCE_FILE = "docs/examples/data/research_paper/rheology.pdf"
 TEMPLATE_CLASS = ScholarlyRheologyPaper
-OUTPUT_DIR = "outputs/02_quickstart_llm_pdf"
-
 console = Console()
 
 
@@ -84,14 +82,13 @@ def main() -> None:
 
     console.print("\n[yellow]⚠️  Prerequisites:[/yellow]")
     console.print("  • Mistral API key must be set: [cyan]export MISTRAL_API_KEY='...'[/cyan]")
-    console.print("  • Install remote extras: [cyan]uv sync --extra remote[/cyan]")
+    console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
 
     try:
         # Configure the pipeline
         config = PipelineConfig(
             source=SOURCE_FILE,
             template=TEMPLATE_CLASS,
-            output_dir=OUTPUT_DIR,
             # LLM backend for text-based extraction
             backend="llm",
             # Remote inference using API
@@ -116,21 +113,15 @@ def main() -> None:
         console.print("  • Merging results programmatically")
         console.print("  • Building knowledge graph")
 
-        config.run()
+        context = run_pipeline(config)
 
         # Success message
         console.print("\n[green]✓ Success![/green]")
-        console.print(f"\n[bold]Output Location:[/bold] [cyan]{OUTPUT_DIR}[/cyan]")
-
-        console.print("\n[bold]📊 Next Steps:[/bold]")
+        graph = context.knowledge_graph
         console.print(
-            f"  1. View interactive graph: [cyan]uv run docling-graph inspect {OUTPUT_DIR}[/cyan]"
+            f"\n[bold]Extracted:[/bold] [cyan]{graph.number_of_nodes()} nodes[/cyan] "
+            f"and [cyan]{graph.number_of_edges()} edges[/cyan]"
         )
-        console.print(
-            f"  2. Check extracted data: [cyan]cat {OUTPUT_DIR}/docling_graph/nodes.csv[/cyan]"
-        )
-        console.print(f"  3. View markdown: [cyan]cat {OUTPUT_DIR}/docling/document.md[/cyan]")
-        console.print(f"  4. Read summary: [cyan]cat {OUTPUT_DIR}/docling_graph/report.md[/cyan]")
 
         console.print("\n[bold]💡 What Happened:[/bold]")
         console.print("  • PDF converted to markdown using Docling")
@@ -146,7 +137,7 @@ def main() -> None:
         console.print("  • Chunking: Enabled for large documents")
 
     except FileNotFoundError:
-        console.print(f"\n[red]✗ Error:[/red] Source file not found: {SOURCE_FILE}")
+        console.print(f"\n[red]Error:[/red] Source file not found: {SOURCE_FILE}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
         console.print("  • Ensure you're running from the project root directory")
         console.print("  • Check that the sample data exists in docs/examples/data/")
@@ -154,7 +145,7 @@ def main() -> None:
 
     except Exception as e:
         error_msg = str(e).lower()
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "api" in error_msg or "key" in error_msg or "auth" in error_msg:
@@ -164,7 +155,7 @@ def main() -> None:
             console.print("  • Get a key at: https://console.mistral.ai/")
             console.print("  • Or use local inference: see Example 07")
         else:
-            console.print("  • Ensure dependencies installed: [cyan]uv sync --extra remote[/cyan]")
+            console.print("  • Ensure dependencies installed: [cyan]uv sync[/cyan]")
             console.print("  • Check your internet connection")
             console.print("  • Verify the template class is correctly defined")
             console.print("  • Try with a smaller document first")

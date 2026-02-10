@@ -2395,6 +2395,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../usage/api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../usage/api/run-pipeline/" class="md-nav__link">
         
   
@@ -3677,22 +3705,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-high-quality-example-scripts" class="md-nav__link">
+  <a href="#example-scripts-0112" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10 High-Quality Example Scripts
+        Example Scripts (01–12)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="10 High-Quality Example Scripts">
+    <nav class="md-nav" aria-label="Example Scripts (01–12)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#beginner-level-getting-started" class="md-nav__link">
+  <a href="#getting-started" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Beginner Level (Getting Started)
+        Getting Started
       
     </span>
   </a>
@@ -3700,10 +3728,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#intermediate-level-core-features" class="md-nav__link">
+  <a href="#core-features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Intermediate Level (Core Features)
+        Core Features
       
     </span>
   </a>
@@ -3711,21 +3739,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#advanced-level-optimization-configuration" class="md-nav__link">
+  <a href="#optimization-providers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Advanced Level (Optimization &amp; Configuration)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Reference
+        Optimization &amp; Providers
       
     </span>
   </a>
@@ -3759,17 +3776,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#features-covered" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features Covered
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -3791,118 +3797,64 @@
 
 
 <h1 id="docling-graph-examples">Docling Graph Examples<a class="headerlink" href="#docling-graph-examples" title="Permanent link">&para;</a></h1>
-<p>Welcome to the <code>docling-graph</code> examples. This directory contains all the resources you need to get started.</p>
+<p>Example scripts and Pydantic templates for docling-graph. Run scripts from the <strong>project root</strong> with <code>uv run python docs/examples/scripts/...</code>.</p>
 <h2 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>/examples/scripts/</code>: Python script examples and CLI recipes</li>
-<li><code>/examples/data/</code>: Sample PDF and image files used by the scripts</li>
-<li><code>/examples/templates/</code>: Pydantic schemas (e.g., <code>billing_document.py</code>) that define what data to extract</li>
-</ul>
-<h2 id="10-high-quality-example-scripts">10 High-Quality Example Scripts<a class="headerlink" href="#10-high-quality-example-scripts" title="Permanent link">&para;</a></h2>
-<p>All Python scripts are located in the <code>/examples/scripts/</code> folder and are designed to be <strong>run from the project's root directory</strong>.</p>
-<h3 id="beginner-level-getting-started">Beginner Level (Getting Started)<a class="headerlink" href="#beginner-level-getting-started" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/examples/scripts/</code></td>
+<td>Python example scripts (01–12)</td>
+</tr>
+<tr>
+<td><code>docs/examples/templates/</code></td>
+<td>Pydantic templates (e.g. <code>billing_document.py</code>, <code>rheology_research.py</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-scripts-0112">Example Scripts (01–12)<a class="headerlink" href="#example-scripts-0112" title="Permanent link">&para;</a></h2>
+<h3 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong><code>01_quickstart_vlm_image.py</code></strong>: Basic VLM extraction from invoice image - The "Hello World" example</li>
-<li><strong><code>02_quickstart_llm_pdf.py</code></strong>: Basic LLM extraction from multi-page rheology research PDF</li>
-<li><strong><code>03_url_processing.py</code></strong>: Download and process documents directly from URLs (arXiv, etc.)</li>
+<li><strong><code>01_quickstart_vlm_image.py</code></strong> — VLM extraction from an invoice image</li>
+<li><strong><code>02_quickstart_llm_pdf.py</code></strong> — LLM extraction from a multi-page PDF (e.g. rheology)</li>
+<li><strong><code>03_url_processing.py</code></strong> — Process documents from URLs (e.g. arXiv)</li>
 </ol>
-<h3 id="intermediate-level-core-features">Intermediate Level (Core Features)<a class="headerlink" href="#intermediate-level-core-features" title="Permanent link">&para;</a></h3>
+<h3 id="core-features">Core Features<a class="headerlink" href="#core-features" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong><code>04_input_formats.py</code></strong>: Process text, Markdown, and DoclingDocument formats</li>
-<li><strong><code>05_processing_modes.py</code></strong>: Compare one-to-one vs many-to-one processing modes</li>
-<li><strong><code>06_export_formats.py</code></strong>: Generate CSV, Cypher, and JSON exports for Neo4j</li>
-<li><strong><code>07_local_inference.py</code></strong>: Privacy-focused offline processing with Ollama</li>
+<li><strong><code>04_input_formats.py</code></strong> — Text, Markdown, and DoclingDocument inputs</li>
+<li><strong><code>05_processing_modes.py</code></strong> — One-to-one vs many-to-one modes</li>
+<li><strong><code>06_export_formats.py</code></strong> — CSV, Cypher, and JSON exports</li>
+<li><strong><code>07_local_inference.py</code></strong> — Local inference with Ollama</li>
 </ol>
-<h3 id="advanced-level-optimization-configuration">Advanced Level (Optimization &amp; Configuration)<a class="headerlink" href="#advanced-level-optimization-configuration" title="Permanent link">&para;</a></h3>
+<h3 id="optimization-providers">Optimization &amp; Providers<a class="headerlink" href="#optimization-providers" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong><code>08_chunking_consolidation.py</code></strong>: Compare programmatic merge vs LLM consolidation</li>
-<li><strong><code>09_batch_processing.py</code></strong>: Process multiple documents efficiently with error handling</li>
-<li><strong><code>10_provider_configs.py</code></strong>: Compare OpenAI, Mistral, Gemini, and WatsonX providers</li>
+<li><strong><code>08_chunking_consolidation.py</code></strong> — Chunking and merge behavior</li>
+<li><strong><code>09_batch_processing.py</code></strong> — Batch processing with error handling</li>
+<li><strong><code>10_provider_configs.py</code></strong> — OpenAI, Mistral, Gemini, WatsonX</li>
+<li><strong><code>11_custom_litellm_call.py</code></strong> — One-off LiteLLM completion (direct call)</li>
+<li><strong><code>12_custom_llm_client.py</code></strong> — Custom LLM client (bring your own URL) with full pipeline</li>
 </ol>
-<h3 id="cli-reference">CLI Reference<a class="headerlink" href="#cli-reference" title="Permanent link">&para;</a></h3>
-<ol>
-<li><strong><code>11_cli_recipes.md</code></strong>: Complete CLI command reference for all examples above</li>
-</ol>
+<p>For CLI usage, see <a href="../usage/cli/">CLI Reference</a> and <a href="../usage/cli/convert-command/">convert command</a>.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Run the simplest example (VLM from image)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># From project root: VLM from image</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>docs/examples/scripts/01_quickstart_vlm_image.py
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Or use CLI directly</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Or use the CLI</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;vlm&quot;</span>
 </code></pre></div>
 <h2 id="learning-path">Learning Path<a class="headerlink" href="#learning-path" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Start Here</strong>: Run <code>01_quickstart_vlm_image.py</code> to understand the basics</li>
-<li><strong>Text Processing</strong>: Try <code>02_quickstart_llm_pdf.py</code> for LLM-based extraction</li>
-<li><strong>Explore Features</strong>: Work through examples 03-07 to learn core capabilities</li>
-<li><strong>Advanced Topics</strong>: Examples 08-10 cover optimization and multi-provider setups</li>
-<li><strong>CLI Reference</strong>: Use <code>11_cli_recipes.md</code> for command-line usage</li>
+<li>Run <strong>01</strong> for a minimal VLM run, then <strong>02</strong> for LLM extraction.</li>
+<li>Use <strong>03–07</strong> for input formats, processing modes, exports, and local inference.</li>
+<li>Use <strong>08–10</strong> for chunking, batch runs, and multiple providers.</li>
 </ol>
-<h2 id="features-covered">Features Covered<a class="headerlink" href="#features-covered" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Feature</th>
-<th>Example Scripts</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>VLM Backend</td>
-<td>01, 06</td>
-</tr>
-<tr>
-<td>LLM Backend</td>
-<td>02, 03, 04, 05, 07, 08, 09, 10</td>
-</tr>
-<tr>
-<td>Local Inference</td>
-<td>05, 07</td>
-</tr>
-<tr>
-<td>Remote Inference</td>
-<td>02, 03, 08, 10</td>
-</tr>
-<tr>
-<td>URL Input</td>
-<td>03</td>
-</tr>
-<tr>
-<td>Text/Markdown Input</td>
-<td>04</td>
-</tr>
-<tr>
-<td>One-to-One Mode</td>
-<td>05</td>
-</tr>
-<tr>
-<td>Many-to-One Mode</td>
-<td>02, 03, 05, 08</td>
-</tr>
-<tr>
-<td>Chunking</td>
-<td>02, 08</td>
-</tr>
-<tr>
-<td>Consolidation</td>
-<td>08</td>
-</tr>
-<tr>
-<td>Export Formats</td>
-<td>06</td>
-</tr>
-<tr>
-<td>Batch Processing</td>
-<td>09</td>
-</tr>
-<tr>
-<td>Multi-Provider</td>
-<td>10</td>
-</tr>
-</tbody>
-</table>
 
 
 

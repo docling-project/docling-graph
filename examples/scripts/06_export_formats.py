@@ -13,7 +13,7 @@ Use Cases:
     - Data archival and exchange
 
 Prerequisites:
-    - Installation: uv sync --extra all
+    - Installation: uv sync
     - No API keys required (uses local VLM)
     - Optional: Neo4j for testing imports
 
@@ -48,7 +48,7 @@ sys.path.append(str(project_root))
 try:
     from examples.templates.billing_document import BillingDocument
 
-    from docling_graph import PipelineConfig
+    from docling_graph import PipelineConfig, run_pipeline
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")
@@ -67,7 +67,6 @@ def export_csv() -> None:
     config = PipelineConfig(
         source=SOURCE_FILE,
         template=TEMPLATE_CLASS,
-        output_dir="outputs/06_export_formats/csv",
         backend="vlm",
         inference="local",
         processing_mode="one-to-one",
@@ -76,9 +75,10 @@ def export_csv() -> None:
     )
 
     console.print("  • Processing with CSV export...")
-    config.run()
+    context = run_pipeline(config)
     console.print("  • [green]✓ Complete[/green]")
-    console.print("  • Files: nodes.csv, edges.csv")
+    graph = context.knowledge_graph
+    console.print(f"  • Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 
 
 def export_cypher() -> None:
@@ -88,7 +88,6 @@ def export_cypher() -> None:
     config = PipelineConfig(
         source=SOURCE_FILE,
         template=TEMPLATE_CLASS,
-        output_dir="outputs/06_export_formats/cypher",
         backend="vlm",
         inference="local",
         processing_mode="one-to-one",
@@ -97,9 +96,10 @@ def export_cypher() -> None:
     )
 
     console.print("  • Processing with Cypher export...")
-    config.run()
+    context = run_pipeline(config)
     console.print("  • [green]✓ Complete[/green]")
-    console.print("  • File: graph.cypher")
+    graph = context.knowledge_graph
+    console.print(f"  • Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 
 
 def main() -> None:
@@ -178,9 +178,9 @@ def main() -> None:
         console.print("    [dim]cypher-shell -u neo4j -p password[/dim]")
 
     except Exception as e:
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
-        console.print("  • Ensure dependencies: [cyan]uv sync --extra all[/cyan]")
+        console.print("  • Ensure dependencies: [cyan]uv sync[/cyan]")
         console.print("  • Check source file exists")
         console.print("  • Verify template is correctly defined")
         sys.exit(1)

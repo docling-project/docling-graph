@@ -12,25 +12,31 @@
         <meta name="author" content="IBM Research">
       
       
+        <link rel="canonical" href="https://ibm.github.io/docling-graph/usage/api/llm-model-config/">
       
+      
+        <link rel="prev" href="../pipeline-config/">
+      
+      
+        <link rel="next" href="../run-pipeline/">
       
       
         
       
       
-      <link rel="icon" href="/docling-graph/assets/logo.png">
+      <link rel="icon" href="../../../assets/logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>Docling Graph Documentation</title>
+        <title>LLM Model Config - Docling Graph Documentation</title>
       
     
     
-      <link rel="stylesheet" href="/docling-graph/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/docling-graph/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="/docling-graph/assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="/docling-graph/stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("/docling-graph/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -77,6 +83,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#select-a-model-and-provider" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -91,9 +102,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/docling-graph/." title="Docling Graph Documentation" class="md-header__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
+    <a href="../../.." title="Docling Graph Documentation" class="md-header__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
       
-  <img src="/docling-graph/assets/logo.png" alt="logo">
+  <img src="../../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -110,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              LLM Model Config
             
           </span>
         </div>
@@ -223,7 +234,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/docling-graph/." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -244,7 +255,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/docling-graph/introduction/" class="md-tabs__link">
+        <a href="../../../introduction/" class="md-tabs__link">
           
   
   
@@ -264,7 +275,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/docling-graph/fundamentals/" class="md-tabs__link">
+        <a href="../../../fundamentals/" class="md-tabs__link">
           
   
   
@@ -280,11 +291,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/docling-graph/usage/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -304,7 +317,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/docling-graph/reference/" class="md-tabs__link">
+        <a href="../../../reference/" class="md-tabs__link">
           
   
   
@@ -324,7 +337,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/docling-graph/community/" class="md-tabs__link">
+        <a href="../../../community/" class="md-tabs__link">
           
   
   
@@ -358,9 +371,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/docling-graph/." title="Docling Graph Documentation" class="md-nav__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
+    <a href="../../.." title="Docling Graph Documentation" class="md-nav__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
       
-  <img src="/docling-graph/assets/logo.png" alt="logo">
+  <img src="../../../assets/logo.png" alt="logo">
 
     </a>
     Docling Graph Documentation
@@ -387,7 +400,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -468,7 +481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/introduction/" class="md-nav__link">
+      <a href="../../../introduction/" class="md-nav__link">
         
   
   
@@ -496,7 +509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/introduction/architecture/" class="md-nav__link">
+      <a href="../../../introduction/architecture/" class="md-nav__link">
         
   
   
@@ -524,7 +537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/introduction/key-concepts/" class="md-nav__link">
+      <a href="../../../introduction/key-concepts/" class="md-nav__link">
         
   
   
@@ -552,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/introduction/use-cases/" class="md-nav__link">
+      <a href="../../../introduction/use-cases/" class="md-nav__link">
         
   
   
@@ -580,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/introduction/quickstart/" class="md-nav__link">
+      <a href="../../../introduction/quickstart/" class="md-nav__link">
         
   
   
@@ -669,7 +682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/" class="md-nav__link">
+      <a href="../../../fundamentals/" class="md-nav__link">
         
   
   
@@ -751,7 +764,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/installation/" class="md-nav__link">
+      <a href="../../../fundamentals/installation/" class="md-nav__link">
         
   
   
@@ -779,7 +792,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/installation/requirements/" class="md-nav__link">
+      <a href="../../../fundamentals/installation/requirements/" class="md-nav__link">
         
   
   
@@ -807,7 +820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/installation/basic-setup/" class="md-nav__link">
+      <a href="../../../fundamentals/installation/basic-setup/" class="md-nav__link">
         
   
   
@@ -835,7 +848,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/installation/gpu-setup/" class="md-nav__link">
+      <a href="../../../fundamentals/installation/gpu-setup/" class="md-nav__link">
         
   
   
@@ -863,7 +876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/installation/api-keys/" class="md-nav__link">
+      <a href="../../../fundamentals/installation/api-keys/" class="md-nav__link">
         
   
   
@@ -953,7 +966,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/" class="md-nav__link">
         
   
   
@@ -981,7 +994,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/template-basics/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/template-basics/" class="md-nav__link">
         
   
   
@@ -1009,7 +1022,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/entities-vs-components/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/entities-vs-components/" class="md-nav__link">
         
   
   
@@ -1037,7 +1050,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/field-definitions/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/field-definitions/" class="md-nav__link">
         
   
   
@@ -1065,7 +1078,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/relationships/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/relationships/" class="md-nav__link">
         
   
   
@@ -1093,7 +1106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/validation/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/validation/" class="md-nav__link">
         
   
   
@@ -1121,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/advanced-patterns/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/advanced-patterns/" class="md-nav__link">
         
   
   
@@ -1149,7 +1162,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/schema-definition/best-practices/" class="md-nav__link">
+      <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
   
@@ -1239,7 +1252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/" class="md-nav__link">
         
   
   
@@ -1267,7 +1280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/configuration-basics/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/configuration-basics/" class="md-nav__link">
         
   
   
@@ -1295,7 +1308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/input-formats/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/input-formats/" class="md-nav__link">
         
   
   
@@ -1323,7 +1336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/backend-selection/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/backend-selection/" class="md-nav__link">
         
   
   
@@ -1351,7 +1364,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/model-configuration/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/model-configuration/" class="md-nav__link">
         
   
   
@@ -1379,7 +1392,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/processing-modes/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/processing-modes/" class="md-nav__link">
         
   
   
@@ -1407,7 +1420,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/docling-settings/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/docling-settings/" class="md-nav__link">
         
   
   
@@ -1435,7 +1448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/export-configuration/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
   
@@ -1463,7 +1476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/pipeline-configuration/configuration-examples/" class="md-nav__link">
+      <a href="../../../fundamentals/pipeline-configuration/configuration-examples/" class="md-nav__link">
         
   
   
@@ -1553,7 +1566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/" class="md-nav__link">
         
   
   
@@ -1581,7 +1594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/document-conversion/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/document-conversion/" class="md-nav__link">
         
   
   
@@ -1609,7 +1622,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/chunking-strategies/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/chunking-strategies/" class="md-nav__link">
         
   
   
@@ -1637,7 +1650,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/extraction-backends/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/extraction-backends/" class="md-nav__link">
         
   
   
@@ -1665,7 +1678,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/model-capabilities/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/model-capabilities/" class="md-nav__link">
         
   
   
@@ -1693,7 +1706,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/model-merging/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/model-merging/" class="md-nav__link">
         
   
   
@@ -1721,7 +1734,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/extraction-process/batch-processing/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/batch-processing/" class="md-nav__link">
         
   
   
@@ -1811,7 +1824,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/graph-management/" class="md-nav__link">
+      <a href="../../../fundamentals/graph-management/" class="md-nav__link">
         
   
   
@@ -1839,7 +1852,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/graph-management/graph-conversion/" class="md-nav__link">
+      <a href="../../../fundamentals/graph-management/graph-conversion/" class="md-nav__link">
         
   
   
@@ -1867,7 +1880,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/graph-management/graph-analysis/" class="md-nav__link">
+      <a href="../../../fundamentals/graph-management/graph-analysis/" class="md-nav__link">
         
   
   
@@ -1895,7 +1908,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/graph-management/export-formats/" class="md-nav__link">
+      <a href="../../../fundamentals/graph-management/export-formats/" class="md-nav__link">
         
   
   
@@ -1923,7 +1936,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/graph-management/visualization/" class="md-nav__link">
+      <a href="../../../fundamentals/graph-management/visualization/" class="md-nav__link">
         
   
   
@@ -1951,7 +1964,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/fundamentals/graph-management/neo4j-integration/" class="md-nav__link">
+      <a href="../../../fundamentals/graph-management/neo4j-integration/" class="md-nav__link">
         
   
   
@@ -1991,28 +2004,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -2030,7 +2046,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2048,7 +2064,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
@@ -2082,10 +2098,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -2094,7 +2113,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
             
   
   
@@ -2130,7 +2149,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   
@@ -2158,7 +2177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/cli/init-command/" class="md-nav__link">
+      <a href="../../cli/init-command/" class="md-nav__link">
         
   
   
@@ -2186,7 +2205,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/cli/convert-command/" class="md-nav__link">
+      <a href="../../cli/convert-command/" class="md-nav__link">
         
   
   
@@ -2214,7 +2233,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/cli/inspect-command/" class="md-nav__link">
+      <a href="../../cli/inspect-command/" class="md-nav__link">
         
   
   
@@ -2242,7 +2261,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/cli/cli-recipes/" class="md-nav__link">
+      <a href="../../cli/cli-recipes/" class="md-nav__link">
         
   
   
@@ -2275,28 +2294,31 @@
                 
   
   
+    
   
   
+  
     
     
     
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
         
           
+          
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="">
             
   
   
@@ -2314,7 +2336,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2332,7 +2354,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/api/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -2360,7 +2382,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/api/pipeline-config/" class="md-nav__link">
+      <a href="../pipeline-config/" class="md-nav__link">
         
   
   
@@ -2385,10 +2407,35 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/docling-graph/usage/api/llm-model-config/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2404,6 +2451,135 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#select-a-model-and-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Select a Model and Provider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-via-python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override via Python (API)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-via-config-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override via Config File
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-via-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override via CLI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Override via CLI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-cli-overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available CLI Overrides
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-limits-and-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Limits and Defaults
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Limits and Defaults">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#context-limit-and-max-output-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Limit and Max Output Tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-threshold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge Threshold
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#view-the-resolved-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View the Resolved Config
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2416,7 +2592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/api/run-pipeline/" class="md-nav__link">
+      <a href="../run-pipeline/" class="md-nav__link">
         
   
   
@@ -2444,7 +2620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/api/batch-processing/" class="md-nav__link">
+      <a href="../batch-processing/" class="md-nav__link">
         
   
   
@@ -2472,7 +2648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/api/programmatic-examples/" class="md-nav__link">
+      <a href="../programmatic-examples/" class="md-nav__link">
         
   
   
@@ -2514,10 +2690,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -2526,7 +2705,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
             
   
   
@@ -2562,7 +2741,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/" class="md-nav__link">
+      <a href="../../examples/" class="md-nav__link">
         
   
   
@@ -2644,7 +2823,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/url-input/" class="md-nav__link">
+      <a href="../../examples/url-input/" class="md-nav__link">
         
   
   
@@ -2672,7 +2851,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/markdown-input/" class="md-nav__link">
+      <a href="../../examples/markdown-input/" class="md-nav__link">
         
   
   
@@ -2700,7 +2879,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/docling-document-input/" class="md-nav__link">
+      <a href="../../examples/docling-document-input/" class="md-nav__link">
         
   
   
@@ -2790,7 +2969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/billing-document/" class="md-nav__link">
+      <a href="../../examples/billing-document/" class="md-nav__link">
         
   
   
@@ -2818,7 +2997,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/id-card/" class="md-nav__link">
+      <a href="../../examples/id-card/" class="md-nav__link">
         
   
   
@@ -2846,7 +3025,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/insurance-policy/" class="md-nav__link">
+      <a href="../../examples/insurance-policy/" class="md-nav__link">
         
   
   
@@ -2874,7 +3053,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/examples/rheology_research/" class="md-nav__link">
+      <a href="../../examples/rheology_research/" class="md-nav__link">
         
   
   
@@ -2924,10 +3103,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -2936,7 +3118,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="">
             
   
   
@@ -2972,7 +3154,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/" class="md-nav__link">
+      <a href="../../advanced/" class="md-nav__link">
         
   
   
@@ -3000,7 +3182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/performance-tuning/" class="md-nav__link">
+      <a href="../../advanced/performance-tuning/" class="md-nav__link">
         
   
   
@@ -3028,7 +3210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/error-handling/" class="md-nav__link">
+      <a href="../../advanced/error-handling/" class="md-nav__link">
         
   
   
@@ -3056,7 +3238,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/trace-data-debugging/" class="md-nav__link">
+      <a href="../../advanced/trace-data-debugging/" class="md-nav__link">
         
   
   
@@ -3084,7 +3266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/custom-backends/" class="md-nav__link">
+      <a href="../../advanced/custom-backends/" class="md-nav__link">
         
   
   
@@ -3112,7 +3294,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/custom-stages/" class="md-nav__link">
+      <a href="../../advanced/custom-stages/" class="md-nav__link">
         
   
   
@@ -3140,7 +3322,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/custom-exporters/" class="md-nav__link">
+      <a href="../../advanced/custom-exporters/" class="md-nav__link">
         
   
   
@@ -3168,7 +3350,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/usage/advanced/testing/" class="md-nav__link">
+      <a href="../../advanced/testing/" class="md-nav__link">
         
   
   
@@ -3265,7 +3447,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/" class="md-nav__link">
+      <a href="../../../reference/" class="md-nav__link">
         
   
   
@@ -3293,7 +3475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/pipeline/" class="md-nav__link">
+      <a href="../../../reference/pipeline/" class="md-nav__link">
         
   
   
@@ -3321,7 +3503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/config/" class="md-nav__link">
+      <a href="../../../reference/config/" class="md-nav__link">
         
   
   
@@ -3349,7 +3531,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/protocols/" class="md-nav__link">
+      <a href="../../../reference/protocols/" class="md-nav__link">
         
   
   
@@ -3377,7 +3559,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/exceptions/" class="md-nav__link">
+      <a href="../../../reference/exceptions/" class="md-nav__link">
         
   
   
@@ -3405,7 +3587,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/converters/" class="md-nav__link">
+      <a href="../../../reference/converters/" class="md-nav__link">
         
   
   
@@ -3433,7 +3615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/extractors/" class="md-nav__link">
+      <a href="../../../reference/extractors/" class="md-nav__link">
         
   
   
@@ -3461,7 +3643,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/exporters/" class="md-nav__link">
+      <a href="../../../reference/exporters/" class="md-nav__link">
         
   
   
@@ -3489,7 +3671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/reference/llm-clients/" class="md-nav__link">
+      <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
   
@@ -3578,7 +3760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/community/" class="md-nav__link">
+      <a href="../../../community/" class="md-nav__link">
         
   
   
@@ -3606,7 +3788,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/community/github-workflow/" class="md-nav__link">
+      <a href="../../../community/github-workflow/" class="md-nav__link">
         
   
   
@@ -3634,7 +3816,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/docling-graph/community/release-process/" class="md-nav__link">
+      <a href="../../../community/release-process/" class="md-nav__link">
         
   
   
@@ -3680,6 +3862,125 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#select-a-model-and-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Select a Model and Provider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-via-python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override via Python (API)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-via-config-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override via Config File
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-via-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override via CLI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Override via CLI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-cli-overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available CLI Overrides
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-limits-and-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Limits and Defaults
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Limits and Defaults">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#context-limit-and-max-output-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Limit and Max Output Tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-threshold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge Threshold
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#view-the-resolved-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View the Resolved Config
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3691,8 +3992,121 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+  
+  
+
+
+<h1 id="llm-model-configuration">LLM Model Configuration<a class="headerlink" href="#llm-model-configuration" title="Permanent link">&para;</a></h1>
+<p>This guide explains how to define models, override settings, and inspect the
+resolved (effective) LLM configuration at runtime.</p>
+<h2 id="select-a-model-and-provider">Select a Model and Provider<a class="headerlink" href="#select-a-model-and-provider" title="Permanent link">&para;</a></h2>
+<p>Model context windows and output limits are resolved dynamically via LiteLLM.
+To use a new model, simply specify the provider and model name in your config
+or via CLI overrides.</p>
+<h2 id="override-via-python-api">Override via Python (API)<a class="headerlink" href="#override-via-python-api" title="Permanent link">&para;</a></h2>
+<p>You can override generation, reliability, connection settings, and model limits at runtime:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;doc.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">model_override</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">provider_override</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">llm_overrides</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="s2">&quot;generation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">2048</span><span class="p">},</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="s2">&quot;reliability&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;timeout_s&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span> <span class="s2">&quot;max_retries&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="s2">&quot;context_limit&quot;</span><span class="p">:</span> <span class="mi">128000</span><span class="p">,</span>           <span class="c1"># Override context window size</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="s2">&quot;max_output_tokens&quot;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>        <span class="c1"># Override max output tokens</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="p">},</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="p">)</span>
+</code></pre></div>
+<h2 id="override-via-config-file">Override via Config File<a class="headerlink" href="#override-via-config-file" title="Permanent link">&para;</a></h2>
+<p>In <code>config.yaml</code>, use the same <code>llm_overrides</code> shape:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">models</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">remote</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nt">llm_overrides</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">generation</span><span class="p">:</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.2</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="nt">max_tokens</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2048</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">reliability</span><span class="p">:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">timeout_s</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">context_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128000</span><span class="w">        </span><span class="c1"># Override context window size</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="nt">max_output_tokens</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4096</span><span class="w">      </span><span class="c1"># Override max output tokens</span>
+</code></pre></div>
+<h2 id="override-via-cli">Override via CLI<a class="headerlink" href="#override-via-cli" title="Permanent link">&para;</a></h2>
+<p>Common overrides:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>doc.pdf<span class="w"> </span>--template<span class="w"> </span>templates.BillingDocument<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--provider<span class="w"> </span>openai<span class="w"> </span>--model<span class="w"> </span>gpt-4o<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--llm-temperature<span class="w"> </span><span class="m">0</span>.2<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>--llm-max-tokens<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span>--llm-timeout<span class="w"> </span><span class="m">120</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span>--llm-context-limit<span class="w"> </span><span class="m">128000</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span>--llm-max-output-tokens<span class="w"> </span><span class="m">4096</span>
+</code></pre></div>
+<h3 id="available-cli-overrides">Available CLI Overrides<a class="headerlink" href="#available-cli-overrides" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>--llm-temperature</code>: Generation temperature (0.0-2.0)</li>
+<li><code>--llm-max-tokens</code>: Maximum tokens in response</li>
+<li><code>--llm-top-p</code>: Top-p sampling parameter</li>
+<li><code>--llm-timeout</code>: Request timeout in seconds</li>
+<li><code>--llm-retries</code>: Maximum retry attempts</li>
+<li><code>--llm-base-url</code>: Custom API base URL</li>
+<li><code>--llm-context-limit</code>: Total context window size in tokens</li>
+<li><code>--llm-max-output-tokens</code>: Maximum tokens the model can generate</li>
+</ul>
+<h2 id="model-limits-and-defaults">Model Limits and Defaults<a class="headerlink" href="#model-limits-and-defaults" title="Permanent link">&para;</a></h2>
+<h3 id="context-limit-and-max-output-tokens">Context Limit and Max Output Tokens<a class="headerlink" href="#context-limit-and-max-output-tokens" title="Permanent link">&para;</a></h3>
+<p>By default, these values are resolved from LiteLLM metadata. If LiteLLM doesn't have information about your model, the system falls back to defaults:</p>
+<ul>
+<li><strong>Default context limit</strong>: 8,192 tokens</li>
+<li><strong>Default max output tokens</strong>: 2,048 tokens</li>
+</ul>
+<p><strong>Important</strong>: If you see warnings about falling back to defaults, provide explicit values via CLI flags or <code>llm_overrides</code> to optimize extraction performance.</p>
+<h3 id="merge-threshold">Merge Threshold<a class="headerlink" href="#merge-threshold" title="Permanent link">&para;</a></h3>
+<p>The <code>merge_threshold</code> controls when chunks are merged into batches (default: <strong>95%</strong>). This is provider-specific and can be overridden programmatically:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkBatcher</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">128000</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">schema_json</span><span class="o">=</span><span class="s1">&#39;{&quot;title&quot;: &quot;Schema&quot;}&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span>  <span class="c1"># Override default 95%</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
+</code></pre></div>
+<p><strong>Note</strong>: Merge threshold is not currently available as a CLI option. Use the Python API for advanced control.</p>
+<h2 id="view-the-resolved-config">View the Resolved Config<a class="headerlink" href="#view-the-resolved-config" title="Permanent link">&para;</a></h2>
+<p>CLI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>doc.pdf<span class="w"> </span>--template<span class="w"> </span>templates.BillingDocument<span class="w"> </span>--show-llm-config
+</code></pre></div>
+<p>Python:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_effective_model_config</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="s2">&quot;gpt-4o&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">effective</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -3762,10 +4176,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/docling-graph/", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "/docling-graph/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="/docling-graph/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

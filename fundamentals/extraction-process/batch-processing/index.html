@@ -3035,6 +3035,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../usage/api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../usage/api/run-pipeline/" class="md-nav__link">
         
   
@@ -4978,7 +5006,7 @@ flowchart LR
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>          <span class="c1"># Total context window</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">system_prompt_tokens</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>    <span class="c1"># System prompt overhead</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">response_buffer_tokens</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>  <span class="c1"># Response space</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>         <span class="c1"># Merge if &lt;85% utilized</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.95</span>         <span class="c1"># Merge if &lt;95% utilized (default)</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span>
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Available for content: 8000 - 500 - 500 = 7000 tokens</span>
@@ -5019,7 +5047,7 @@ flowchart LR
 <hr />
 <h3 id="phase-2-merge-undersized">Phase 2: Merge Undersized<a class="headerlink" href="#phase-2-merge-undersized" title="Permanent link">&para;</a></h3>
 <p><strong>Strategy:</strong> Combine small batches to improve utilization</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">threshold</span> <span class="o">=</span> <span class="n">available_tokens</span> <span class="o">*</span> <span class="n">merge_threshold</span>  <span class="c1"># e.g., 85%</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">threshold</span> <span class="o">=</span> <span class="n">available_tokens</span> <span class="o">*</span> <span class="n">merge_threshold</span>  <span class="c1"># e.g., 95% (default)</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">if</span> <span class="n">batch</span><span class="o">.</span><span class="n">total_tokens</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
@@ -5119,15 +5147,16 @@ flowchart LR
 - Safety margin</p>
 <hr />
 <h3 id="merge-threshold">Merge Threshold<a class="headerlink" href="#merge-threshold" title="Permanent link">&para;</a></h3>
-<p><strong>Definition:</strong> Minimum utilization before merging</p>
+<p><strong>Definition:</strong> Minimum utilization before merging (default: <strong>95%</strong>)</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
 <a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>  <span class="c1"># Merge if &lt;85% utilized</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.95</span>  <span class="c1"># Merge if &lt;95% utilized (default)</span>
 <a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Effects:</strong>
-- <strong>Higher (0.9):</strong> More batches, better fit
-- <strong>Lower (0.7):</strong> Fewer batches, more merging</p>
+- <strong>Higher (0.95-0.98):</strong> More batches, better fit, less merging
+- <strong>Lower (0.80-0.90):</strong> Fewer batches, more aggressive merging</p>
+<p><strong>Default:</strong> 95% for all providers. This ensures efficient batching while maintaining good chunk boundaries.</p>
 <hr />
 <h2 id="complete-examples">Complete Examples<a class="headerlink" href="#complete-examples" title="Permanent link">&para;</a></h2>
 <h3 id="basic-batching">📍 Basic Batching<a class="headerlink" href="#basic-batching" title="Permanent link">&para;</a></h3>
@@ -5147,7 +5176,7 @@ flowchart LR
 <a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">32000</span><span class="p">,</span>  <span class="c1"># Mistral Large</span>
 <a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>    <span class="n">system_prompt_tokens</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
 <a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>    <span class="n">response_buffer_tokens</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.95</span>  <span class="c1"># Default: 95%</span>
 <a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="p">)</span>
 <a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>
 <a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="n">batches</span> <span class="o">=</span> <span class="n">batcher</span><span class="o">.</span><span class="n">batch_chunks</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
@@ -5173,32 +5202,34 @@ flowchart LR
 </code></pre></div>
 <h3 id="integration-with-extraction">📍 Integration with Extraction<a class="headerlink" href="#integration-with-extraction" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmBackend</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">MistralClient</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Initialize backend</span>
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="n">client</span> <span class="o">=</span> <span class="n">MistralClient</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="p">)</span>
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="c1"># Batch chunks</span>
-<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span><span class="n">context_limit</span><span class="o">=</span><span class="mi">32000</span><span class="p">)</span>
-<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="n">batches</span> <span class="o">=</span> <span class="n">batcher</span><span class="o">.</span><span class="n">batch_chunks</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
-<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
-<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="c1"># Extract from batches</span>
-<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
-<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing batch </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">batch_id</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">chunk_count</span><span class="si">}</span><span class="s2"> chunks)&quot;</span><span class="p">)</span>
-<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
-<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span>
-<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>        <span class="n">markdown</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">combined_text</span><span class="p">,</span>
-<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>        <span class="n">template</span><span class="o">=</span><span class="n">InvoiceTemplate</span><span class="p">,</span>
-<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>        <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;batch </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>        <span class="n">is_partial</span><span class="o">=</span><span class="kc">True</span>
-<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>    <span class="p">)</span>
-<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a>
-<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a>    <span class="k">if</span> <span class="n">model</span><span class="p">:</span>
-<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>
-<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2"> models from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span><span class="si">}</span><span class="s2"> batches&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_effective_model_config</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="c1"># Initialize backend</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span> <span class="s2">&quot;mistral-large-latest&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="s2">&quot;mistral&quot;</span><span class="p">)(</span><span class="n">model_config</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="c1"># Batch chunks</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span><span class="n">context_limit</span><span class="o">=</span><span class="mi">32000</span><span class="p">)</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="n">batches</span> <span class="o">=</span> <span class="n">batcher</span><span class="o">.</span><span class="n">batch_chunks</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="c1"># Extract from batches</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing batch </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">batch_id</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">chunk_count</span><span class="si">}</span><span class="s2"> chunks)&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>        <span class="n">markdown</span><span class="o">=</span><span class="n">batch</span><span class="o">.</span><span class="n">combined_text</span><span class="p">,</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>        <span class="n">template</span><span class="o">=</span><span class="n">InvoiceTemplate</span><span class="p">,</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>        <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;batch </span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a>        <span class="n">is_partial</span><span class="o">=</span><span class="kc">True</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a>    <span class="p">)</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>    <span class="k">if</span> <span class="n">model</span><span class="p">:</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a>        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2"> models from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span><span class="si">}</span><span class="s2"> batches&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="automatic-batching-in-pipeline">📍 Automatic Batching in Pipeline<a class="headerlink" href="#automatic-batching-in-pipeline" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
@@ -5281,10 +5312,10 @@ flowchart LR
 <a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average utilization: </span><span class="si">{</span><span class="n">avg_util</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="optimization-tips">Optimization Tips<a class="headerlink" href="#optimization-tips" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># ✅ Good - High utilization (85-95%)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># ✅ Good - High utilization (90-95%)</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
 <a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>  <span class="c1"># Merge undersized batches</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.95</span>  <span class="c1"># Default: merge if &lt;95% utilized</span>
 <a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="p">)</span>
 <a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>
 <a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="c1"># ❌ Bad - Low utilization (&lt;70%)</span>
@@ -5322,19 +5353,19 @@ flowchart LR
 <a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="use-merge-threshold-wisely">👍 Use Merge Threshold Wisely<a class="headerlink" href="#use-merge-threshold-wisely" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># ✅ Good - Balance efficiency and fit</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># ✅ Good - Default balance (recommended)</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>  <span class="c1"># 85% - good balance</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.95</span>  <span class="c1"># Default: 95% - good balance</span>
 <a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="p">)</span>
 <a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="c1"># For many small chunks</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="c1"># For many small chunks (more aggressive merging)</span>
 <a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
-<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.80</span>  <span class="c1"># More aggressive merging</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>  <span class="c1"># More aggressive merging</span>
 <a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="p">)</span>
 <a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>
-<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="c1"># For few large chunks</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="c1"># For few large chunks (less merging)</span>
 <a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
-<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.90</span>  <span class="c1"># Less merging</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.98</span>  <span class="c1"># Minimal merging, better fit</span>
 <a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="monitor-batch-statistics">👍 Monitor Batch Statistics<a class="headerlink" href="#monitor-batch-statistics" title="Permanent link">&para;</a></h3>
@@ -5352,10 +5383,10 @@ flowchart LR
 <h3 id="too-many-batches">🐛 Too Many Batches<a class="headerlink" href="#too-many-batches" title="Permanent link">&para;</a></h3>
 <p>Batching not reducing API calls enough</p>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Increase merge threshold</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Lower merge threshold for more aggressive merging</span>
 <a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
 <a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.80</span>  <span class="c1"># More aggressive (was 0.85)</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.85</span>  <span class="c1"># More aggressive (default is 0.95)</span>
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="p">)</span>
 <a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>
 <a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="c1"># Or increase context limit if model supports it</span>
@@ -5376,10 +5407,10 @@ flowchart LR
 <h3 id="low-utilization">🐛 Low Utilization<a class="headerlink" href="#low-utilization" title="Permanent link">&para;</a></h3>
 <p>Batches not filling context window</p>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Lower merge threshold</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Increase merge threshold (closer to default 0.95)</span>
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">batcher</span> <span class="o">=</span> <span class="n">ChunkBatcher</span><span class="p">(</span>
 <a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.90</span>  <span class="c1"># Less merging (was 0.85)</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.98</span>  <span class="c1"># Less merging, better fit (default is 0.95)</span>
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="p">)</span>
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
 <a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="c1"># Or use smaller chunks</span>

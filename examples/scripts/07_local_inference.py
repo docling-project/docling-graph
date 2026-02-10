@@ -12,7 +12,7 @@ Use Cases:
     - Development and testing
 
 Prerequisites:
-    - Installation: uv sync --extra local
+    - Installation: uv sync
     - Ollama: Install from https://ollama.ai
     - Model: ollama pull llama3:8b
     - Start server: ollama serve
@@ -48,7 +48,7 @@ sys.path.append(str(project_root))
 try:
     from examples.templates.rheology_research import ScholarlyRheologyPaper
 
-    from docling_graph import PipelineConfig
+    from docling_graph import PipelineConfig, run_pipeline
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")
@@ -56,8 +56,6 @@ except ImportError:
 
 SOURCE_FILE = "docs/examples/data/research_paper/rheology.pdf"
 TEMPLATE_CLASS = ScholarlyRheologyPaper
-OUTPUT_DIR = "outputs/07_local_inference"
-
 console = Console()
 
 
@@ -82,7 +80,7 @@ def main() -> None:
     console.print("  1. Install Ollama: [cyan]https://ollama.ai[/cyan]")
     console.print("  2. Pull model: [cyan]ollama pull llama3:8b[/cyan]")
     console.print("  3. Start server: [cyan]ollama serve[/cyan]")
-    console.print("  4. Install extras: [cyan]uv sync --extra local[/cyan]")
+    console.print("  4. Install dependencies: [cyan]uv sync[/cyan]")
 
     console.print("\n[bold]💡 Benefits of Local Inference:[/bold]")
     console.print("  • ✅ Complete privacy - data never leaves your machine")
@@ -96,7 +94,6 @@ def main() -> None:
         config = PipelineConfig(
             source=SOURCE_FILE,
             template=TEMPLATE_CLASS,
-            output_dir=OUTPUT_DIR,
             backend="llm",
             inference="local",  # Local inference
             provider_override="ollama",  # Use Ollama
@@ -112,14 +109,14 @@ def main() -> None:
         console.print("  • Processing with local Ollama")
         console.print("  • Building knowledge graph")
 
-        config.run()
+        context = run_pipeline(config)
 
         console.print("\n[green]✓ Success![/green]")
-        console.print(f"\n[bold]Output Location:[/bold] [cyan]{OUTPUT_DIR}[/cyan]")
-
-        console.print("\n[bold]📊 Next Steps:[/bold]")
-        console.print(f"  1. View graph: [cyan]uv run docling-graph inspect {OUTPUT_DIR}[/cyan]")
-        console.print(f"  2. Check data: [cyan]cat {OUTPUT_DIR}/docling_graph/nodes.csv[/cyan]")
+        graph = context.knowledge_graph
+        console.print(
+            f"\n[bold]Extracted:[/bold] [cyan]{graph.number_of_nodes()} nodes[/cyan] "
+            f"and [cyan]{graph.number_of_edges()} edges[/cyan]"
+        )
 
         console.print("\n[bold]🎯 Local vs Remote Comparison:[/bold]")
         console.print("  • Speed: Remote APIs typically faster")
@@ -134,7 +131,7 @@ def main() -> None:
 
     except Exception as e:
         error_msg = str(e).lower()
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "ollama" in error_msg or "connection" in error_msg:
@@ -143,7 +140,7 @@ def main() -> None:
             console.print("  • Check status: [cyan]ollama list[/cyan]")
             console.print("  • Verify Ollama is running: [cyan]curl http://localhost:11434[/cyan]")
         else:
-            console.print("  • Install dependencies: [cyan]uv sync --extra local[/cyan]")
+            console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
             console.print("  • Check GPU availability for better performance")
             console.print("  • Try smaller model: [cyan]ollama pull llama3:8b[/cyan]")
 

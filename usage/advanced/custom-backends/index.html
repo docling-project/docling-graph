@@ -2410,6 +2410,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/run-pipeline/" class="md-nav__link">
         
   
@@ -4604,149 +4632,162 @@
 <a id="__codelineno-4-70" name="__codelineno-4-70" href="#__codelineno-4-70"></a>            <span class="p">)</span>
 <a id="__codelineno-4-71" name="__codelineno-4-71" href="#__codelineno-4-71"></a>
 <a id="__codelineno-4-72" name="__codelineno-4-72" href="#__codelineno-4-72"></a>
-<a id="__codelineno-4-73" name="__codelineno-4-73" href="#__codelineno-4-73"></a><span class="k">class</span><span class="w"> </span><span class="nc">CustomLLMBackend</span><span class="p">(</span><span class="n">TextExtractionBackendProtocol</span><span class="p">):</span>
-<a id="__codelineno-4-74" name="__codelineno-4-74" href="#__codelineno-4-74"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-75" name="__codelineno-4-75" href="#__codelineno-4-75"></a><span class="sd">    Custom LLM backend for text extraction.</span>
-<a id="__codelineno-4-76" name="__codelineno-4-76" href="#__codelineno-4-76"></a>
-<a id="__codelineno-4-77" name="__codelineno-4-77" href="#__codelineno-4-77"></a><span class="sd">    Args:</span>
-<a id="__codelineno-4-78" name="__codelineno-4-78" href="#__codelineno-4-78"></a><span class="sd">        model: Model name</span>
-<a id="__codelineno-4-79" name="__codelineno-4-79" href="#__codelineno-4-79"></a><span class="sd">        api_key: API key</span>
-<a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>
-<a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;custom-llm-v1&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-4-84" name="__codelineno-4-84" href="#__codelineno-4-84"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-<a id="__codelineno-4-85" name="__codelineno-4-85" href="#__codelineno-4-85"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;CUSTOM_LLM_API_KEY&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-86" name="__codelineno-4-86" href="#__codelineno-4-86"></a>
-<a id="__codelineno-4-87" name="__codelineno-4-87" href="#__codelineno-4-87"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">:</span>
-<a id="__codelineno-4-88" name="__codelineno-4-88" href="#__codelineno-4-88"></a>            <span class="k">raise</span> <span class="n">ClientError</span><span class="p">(</span>
-<a id="__codelineno-4-89" name="__codelineno-4-89" href="#__codelineno-4-89"></a>                <span class="s2">&quot;API key not found&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-90" name="__codelineno-4-90" href="#__codelineno-4-90"></a>                <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;env_var&quot;</span><span class="p">:</span> <span class="s2">&quot;CUSTOM_LLM_API_KEY&quot;</span><span class="p">}</span>
-<a id="__codelineno-4-91" name="__codelineno-4-91" href="#__codelineno-4-91"></a>            <span class="p">)</span>
-<a id="__codelineno-4-92" name="__codelineno-4-92" href="#__codelineno-4-92"></a>
-<a id="__codelineno-4-93" name="__codelineno-4-93" href="#__codelineno-4-93"></a>        <span class="c1"># Initialize client</span>
-<a id="__codelineno-4-94" name="__codelineno-4-94" href="#__codelineno-4-94"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">CustomLLMClient</span><span class="p">(</span>
-<a id="__codelineno-4-95" name="__codelineno-4-95" href="#__codelineno-4-95"></a>            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-<a id="__codelineno-4-96" name="__codelineno-4-96" href="#__codelineno-4-96"></a>            <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span>
-<a id="__codelineno-4-97" name="__codelineno-4-97" href="#__codelineno-4-97"></a>        <span class="p">)</span>
-<a id="__codelineno-4-98" name="__codelineno-4-98" href="#__codelineno-4-98"></a>
-<a id="__codelineno-4-99" name="__codelineno-4-99" href="#__codelineno-4-99"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span>
-<a id="__codelineno-4-100" name="__codelineno-4-100" href="#__codelineno-4-100"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-4-101" name="__codelineno-4-101" href="#__codelineno-4-101"></a>        <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-4-102" name="__codelineno-4-102" href="#__codelineno-4-102"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-4-103" name="__codelineno-4-103" href="#__codelineno-4-103"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-104" name="__codelineno-4-104" href="#__codelineno-4-104"></a>        <span class="n">is_partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<a id="__codelineno-4-105" name="__codelineno-4-105" href="#__codelineno-4-105"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-4-106" name="__codelineno-4-106" href="#__codelineno-4-106"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-107" name="__codelineno-4-107" href="#__codelineno-4-107"></a><span class="sd">        Extract structured data from markdown.</span>
-<a id="__codelineno-4-108" name="__codelineno-4-108" href="#__codelineno-4-108"></a>
-<a id="__codelineno-4-109" name="__codelineno-4-109" href="#__codelineno-4-109"></a><span class="sd">        Args:</span>
-<a id="__codelineno-4-110" name="__codelineno-4-110" href="#__codelineno-4-110"></a><span class="sd">            markdown: Markdown content</span>
-<a id="__codelineno-4-111" name="__codelineno-4-111" href="#__codelineno-4-111"></a><span class="sd">            template: Pydantic model template</span>
-<a id="__codelineno-4-112" name="__codelineno-4-112" href="#__codelineno-4-112"></a><span class="sd">            context: Context description</span>
-<a id="__codelineno-4-113" name="__codelineno-4-113" href="#__codelineno-4-113"></a><span class="sd">            is_partial: Whether this is a partial extraction</span>
-<a id="__codelineno-4-114" name="__codelineno-4-114" href="#__codelineno-4-114"></a>
-<a id="__codelineno-4-115" name="__codelineno-4-115" href="#__codelineno-4-115"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-4-116" name="__codelineno-4-116" href="#__codelineno-4-116"></a><span class="sd">            Extracted model instance or None</span>
-<a id="__codelineno-4-117" name="__codelineno-4-117" href="#__codelineno-4-117"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-4-118" name="__codelineno-4-118" href="#__codelineno-4-118"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-4-119" name="__codelineno-4-119" href="#__codelineno-4-119"></a>            <span class="c1"># Build prompt</span>
-<a id="__codelineno-4-120" name="__codelineno-4-120" href="#__codelineno-4-120"></a>            <span class="n">schema_json</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+<a id="__codelineno-4-73" name="__codelineno-4-73" href="#__codelineno-4-73"></a><span class="c1"># Use a custom client in the pipeline</span>
+<a id="__codelineno-4-74" name="__codelineno-4-74" href="#__codelineno-4-74"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
+<a id="__codelineno-4-75" name="__codelineno-4-75" href="#__codelineno-4-75"></a>
+<a id="__codelineno-4-76" name="__codelineno-4-76" href="#__codelineno-4-76"></a><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-77" name="__codelineno-4-77" href="#__codelineno-4-77"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;doc.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-78" name="__codelineno-4-78" href="#__codelineno-4-78"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-79" name="__codelineno-4-79" href="#__codelineno-4-79"></a>    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;llm&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a>    <span class="s2">&quot;inference&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>    <span class="s2">&quot;llm_client&quot;</span><span class="p">:</span> <span class="n">CustomLLMClient</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;custom-llm-v1&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">),</span>
+<a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a><span class="p">}</span>
+<a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-4-84" name="__codelineno-4-84" href="#__codelineno-4-84"></a>
+<a id="__codelineno-4-85" name="__codelineno-4-85" href="#__codelineno-4-85"></a>
+<a id="__codelineno-4-86" name="__codelineno-4-86" href="#__codelineno-4-86"></a><span class="k">class</span><span class="w"> </span><span class="nc">CustomLLMBackend</span><span class="p">(</span><span class="n">TextExtractionBackendProtocol</span><span class="p">):</span>
+<a id="__codelineno-4-87" name="__codelineno-4-87" href="#__codelineno-4-87"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-88" name="__codelineno-4-88" href="#__codelineno-4-88"></a><span class="sd">    Custom LLM backend for text extraction.</span>
+<a id="__codelineno-4-89" name="__codelineno-4-89" href="#__codelineno-4-89"></a>
+<a id="__codelineno-4-90" name="__codelineno-4-90" href="#__codelineno-4-90"></a><span class="sd">    Args:</span>
+<a id="__codelineno-4-91" name="__codelineno-4-91" href="#__codelineno-4-91"></a><span class="sd">        model: Model name</span>
+<a id="__codelineno-4-92" name="__codelineno-4-92" href="#__codelineno-4-92"></a><span class="sd">        api_key: API key</span>
+<a id="__codelineno-4-93" name="__codelineno-4-93" href="#__codelineno-4-93"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-94" name="__codelineno-4-94" href="#__codelineno-4-94"></a>
+<a id="__codelineno-4-95" name="__codelineno-4-95" href="#__codelineno-4-95"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;custom-llm-v1&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<a id="__codelineno-4-96" name="__codelineno-4-96" href="#__codelineno-4-96"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-4-97" name="__codelineno-4-97" href="#__codelineno-4-97"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+<a id="__codelineno-4-98" name="__codelineno-4-98" href="#__codelineno-4-98"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;CUSTOM_LLM_API_KEY&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-99" name="__codelineno-4-99" href="#__codelineno-4-99"></a>
+<a id="__codelineno-4-100" name="__codelineno-4-100" href="#__codelineno-4-100"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">:</span>
+<a id="__codelineno-4-101" name="__codelineno-4-101" href="#__codelineno-4-101"></a>            <span class="k">raise</span> <span class="n">ClientError</span><span class="p">(</span>
+<a id="__codelineno-4-102" name="__codelineno-4-102" href="#__codelineno-4-102"></a>                <span class="s2">&quot;API key not found&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-103" name="__codelineno-4-103" href="#__codelineno-4-103"></a>                <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;env_var&quot;</span><span class="p">:</span> <span class="s2">&quot;CUSTOM_LLM_API_KEY&quot;</span><span class="p">}</span>
+<a id="__codelineno-4-104" name="__codelineno-4-104" href="#__codelineno-4-104"></a>            <span class="p">)</span>
+<a id="__codelineno-4-105" name="__codelineno-4-105" href="#__codelineno-4-105"></a>
+<a id="__codelineno-4-106" name="__codelineno-4-106" href="#__codelineno-4-106"></a>        <span class="c1"># Initialize client</span>
+<a id="__codelineno-4-107" name="__codelineno-4-107" href="#__codelineno-4-107"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">CustomLLMClient</span><span class="p">(</span>
+<a id="__codelineno-4-108" name="__codelineno-4-108" href="#__codelineno-4-108"></a>            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-4-109" name="__codelineno-4-109" href="#__codelineno-4-109"></a>            <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span>
+<a id="__codelineno-4-110" name="__codelineno-4-110" href="#__codelineno-4-110"></a>        <span class="p">)</span>
+<a id="__codelineno-4-111" name="__codelineno-4-111" href="#__codelineno-4-111"></a>
+<a id="__codelineno-4-112" name="__codelineno-4-112" href="#__codelineno-4-112"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span>
+<a id="__codelineno-4-113" name="__codelineno-4-113" href="#__codelineno-4-113"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-4-114" name="__codelineno-4-114" href="#__codelineno-4-114"></a>        <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-4-115" name="__codelineno-4-115" href="#__codelineno-4-115"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-4-116" name="__codelineno-4-116" href="#__codelineno-4-116"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-117" name="__codelineno-4-117" href="#__codelineno-4-117"></a>        <span class="n">is_partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-4-118" name="__codelineno-4-118" href="#__codelineno-4-118"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-4-119" name="__codelineno-4-119" href="#__codelineno-4-119"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-120" name="__codelineno-4-120" href="#__codelineno-4-120"></a><span class="sd">        Extract structured data from markdown.</span>
 <a id="__codelineno-4-121" name="__codelineno-4-121" href="#__codelineno-4-121"></a>
-<a id="__codelineno-4-122" name="__codelineno-4-122" href="#__codelineno-4-122"></a>            <span class="n">system_prompt</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-4-123" name="__codelineno-4-123" href="#__codelineno-4-123"></a>                <span class="s2">&quot;You are a data extraction expert. &quot;</span>
-<a id="__codelineno-4-124" name="__codelineno-4-124" href="#__codelineno-4-124"></a>                <span class="s2">&quot;Extract structured information from the provided text &quot;</span>
-<a id="__codelineno-4-125" name="__codelineno-4-125" href="#__codelineno-4-125"></a>                <span class="s2">&quot;according to the given schema.&quot;</span>
-<a id="__codelineno-4-126" name="__codelineno-4-126" href="#__codelineno-4-126"></a>            <span class="p">)</span>
+<a id="__codelineno-4-122" name="__codelineno-4-122" href="#__codelineno-4-122"></a><span class="sd">        Args:</span>
+<a id="__codelineno-4-123" name="__codelineno-4-123" href="#__codelineno-4-123"></a><span class="sd">            markdown: Markdown content</span>
+<a id="__codelineno-4-124" name="__codelineno-4-124" href="#__codelineno-4-124"></a><span class="sd">            template: Pydantic model template</span>
+<a id="__codelineno-4-125" name="__codelineno-4-125" href="#__codelineno-4-125"></a><span class="sd">            context: Context description</span>
+<a id="__codelineno-4-126" name="__codelineno-4-126" href="#__codelineno-4-126"></a><span class="sd">            is_partial: Whether this is a partial extraction</span>
 <a id="__codelineno-4-127" name="__codelineno-4-127" href="#__codelineno-4-127"></a>
-<a id="__codelineno-4-128" name="__codelineno-4-128" href="#__codelineno-4-128"></a>            <span class="n">user_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-129" name="__codelineno-4-129" href="#__codelineno-4-129"></a><span class="s2">Extract information from this </span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2">:</span>
-<a id="__codelineno-4-130" name="__codelineno-4-130" href="#__codelineno-4-130"></a>
-<a id="__codelineno-4-131" name="__codelineno-4-131" href="#__codelineno-4-131"></a><span class="si">{</span><span class="n">markdown</span><span class="si">}</span>
-<a id="__codelineno-4-132" name="__codelineno-4-132" href="#__codelineno-4-132"></a>
-<a id="__codelineno-4-133" name="__codelineno-4-133" href="#__codelineno-4-133"></a><span class="s2">Return a JSON object matching this schema:</span>
-<a id="__codelineno-4-134" name="__codelineno-4-134" href="#__codelineno-4-134"></a><span class="si">{</span><span class="n">schema_json</span><span class="si">}</span>
-<a id="__codelineno-4-135" name="__codelineno-4-135" href="#__codelineno-4-135"></a><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-136" name="__codelineno-4-136" href="#__codelineno-4-136"></a>
-<a id="__codelineno-4-137" name="__codelineno-4-137" href="#__codelineno-4-137"></a>            <span class="c1"># Call LLM</span>
-<a id="__codelineno-4-138" name="__codelineno-4-138" href="#__codelineno-4-138"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span>
-<a id="__codelineno-4-139" name="__codelineno-4-139" href="#__codelineno-4-139"></a>                <span class="n">prompt</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">user_prompt</span><span class="p">},</span>
-<a id="__codelineno-4-140" name="__codelineno-4-140" href="#__codelineno-4-140"></a>                <span class="n">schema_json</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">schema_json</span><span class="p">)</span>
-<a id="__codelineno-4-141" name="__codelineno-4-141" href="#__codelineno-4-141"></a>            <span class="p">)</span>
-<a id="__codelineno-4-142" name="__codelineno-4-142" href="#__codelineno-4-142"></a>
-<a id="__codelineno-4-143" name="__codelineno-4-143" href="#__codelineno-4-143"></a>            <span class="c1"># Validate with Pydantic</span>
-<a id="__codelineno-4-144" name="__codelineno-4-144" href="#__codelineno-4-144"></a>            <span class="n">model_instance</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<a id="__codelineno-4-145" name="__codelineno-4-145" href="#__codelineno-4-145"></a>            <span class="k">return</span> <span class="n">model_instance</span>
-<a id="__codelineno-4-146" name="__codelineno-4-146" href="#__codelineno-4-146"></a>
-<a id="__codelineno-4-147" name="__codelineno-4-147" href="#__codelineno-4-147"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-4-148" name="__codelineno-4-148" href="#__codelineno-4-148"></a>            <span class="k">raise</span> <span class="n">ExtractionError</span><span class="p">(</span>
-<a id="__codelineno-4-149" name="__codelineno-4-149" href="#__codelineno-4-149"></a>                <span class="s2">&quot;Markdown extraction failed&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-150" name="__codelineno-4-150" href="#__codelineno-4-150"></a>                <span class="n">details</span><span class="o">=</span><span class="p">{</span>
-<a id="__codelineno-4-151" name="__codelineno-4-151" href="#__codelineno-4-151"></a>                    <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="n">context</span><span class="p">,</span>
-<a id="__codelineno-4-152" name="__codelineno-4-152" href="#__codelineno-4-152"></a>                    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">template</span><span class="o">.</span><span class="vm">__name__</span>
-<a id="__codelineno-4-153" name="__codelineno-4-153" href="#__codelineno-4-153"></a>                <span class="p">},</span>
-<a id="__codelineno-4-154" name="__codelineno-4-154" href="#__codelineno-4-154"></a>                <span class="n">cause</span><span class="o">=</span><span class="n">e</span>
-<a id="__codelineno-4-155" name="__codelineno-4-155" href="#__codelineno-4-155"></a>            <span class="p">)</span>
-<a id="__codelineno-4-156" name="__codelineno-4-156" href="#__codelineno-4-156"></a>
-<a id="__codelineno-4-157" name="__codelineno-4-157" href="#__codelineno-4-157"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">consolidate_from_pydantic_models</span><span class="p">(</span>
-<a id="__codelineno-4-158" name="__codelineno-4-158" href="#__codelineno-4-158"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-4-159" name="__codelineno-4-159" href="#__codelineno-4-159"></a>        <span class="n">raw_models</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-4-160" name="__codelineno-4-160" href="#__codelineno-4-160"></a>        <span class="n">programmatic_model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">,</span>
-<a id="__codelineno-4-161" name="__codelineno-4-161" href="#__codelineno-4-161"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
-<a id="__codelineno-4-162" name="__codelineno-4-162" href="#__codelineno-4-162"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-4-163" name="__codelineno-4-163" href="#__codelineno-4-163"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-164" name="__codelineno-4-164" href="#__codelineno-4-164"></a><span class="sd">        Consolidate multiple models using LLM.</span>
-<a id="__codelineno-4-165" name="__codelineno-4-165" href="#__codelineno-4-165"></a>
-<a id="__codelineno-4-166" name="__codelineno-4-166" href="#__codelineno-4-166"></a><span class="sd">        Args:</span>
-<a id="__codelineno-4-167" name="__codelineno-4-167" href="#__codelineno-4-167"></a><span class="sd">            raw_models: List of extracted models</span>
-<a id="__codelineno-4-168" name="__codelineno-4-168" href="#__codelineno-4-168"></a><span class="sd">            programmatic_model: Programmatically merged model</span>
-<a id="__codelineno-4-169" name="__codelineno-4-169" href="#__codelineno-4-169"></a><span class="sd">            template: Target template</span>
-<a id="__codelineno-4-170" name="__codelineno-4-170" href="#__codelineno-4-170"></a>
-<a id="__codelineno-4-171" name="__codelineno-4-171" href="#__codelineno-4-171"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-4-172" name="__codelineno-4-172" href="#__codelineno-4-172"></a><span class="sd">            Consolidated model instance</span>
-<a id="__codelineno-4-173" name="__codelineno-4-173" href="#__codelineno-4-173"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-4-174" name="__codelineno-4-174" href="#__codelineno-4-174"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-4-175" name="__codelineno-4-175" href="#__codelineno-4-175"></a>            <span class="c1"># Convert models to JSON</span>
-<a id="__codelineno-4-176" name="__codelineno-4-176" href="#__codelineno-4-176"></a>            <span class="n">models_json</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">raw_models</span><span class="p">]</span>
-<a id="__codelineno-4-177" name="__codelineno-4-177" href="#__codelineno-4-177"></a>            <span class="n">programmatic_json</span> <span class="o">=</span> <span class="n">programmatic_model</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+<a id="__codelineno-4-128" name="__codelineno-4-128" href="#__codelineno-4-128"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-4-129" name="__codelineno-4-129" href="#__codelineno-4-129"></a><span class="sd">            Extracted model instance or None</span>
+<a id="__codelineno-4-130" name="__codelineno-4-130" href="#__codelineno-4-130"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-131" name="__codelineno-4-131" href="#__codelineno-4-131"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-4-132" name="__codelineno-4-132" href="#__codelineno-4-132"></a>            <span class="c1"># Build prompt</span>
+<a id="__codelineno-4-133" name="__codelineno-4-133" href="#__codelineno-4-133"></a>            <span class="n">schema_json</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+<a id="__codelineno-4-134" name="__codelineno-4-134" href="#__codelineno-4-134"></a>
+<a id="__codelineno-4-135" name="__codelineno-4-135" href="#__codelineno-4-135"></a>            <span class="n">system_prompt</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-4-136" name="__codelineno-4-136" href="#__codelineno-4-136"></a>                <span class="s2">&quot;You are a data extraction expert. &quot;</span>
+<a id="__codelineno-4-137" name="__codelineno-4-137" href="#__codelineno-4-137"></a>                <span class="s2">&quot;Extract structured information from the provided text &quot;</span>
+<a id="__codelineno-4-138" name="__codelineno-4-138" href="#__codelineno-4-138"></a>                <span class="s2">&quot;according to the given schema.&quot;</span>
+<a id="__codelineno-4-139" name="__codelineno-4-139" href="#__codelineno-4-139"></a>            <span class="p">)</span>
+<a id="__codelineno-4-140" name="__codelineno-4-140" href="#__codelineno-4-140"></a>
+<a id="__codelineno-4-141" name="__codelineno-4-141" href="#__codelineno-4-141"></a>            <span class="n">user_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-142" name="__codelineno-4-142" href="#__codelineno-4-142"></a><span class="s2">Extract information from this </span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2">:</span>
+<a id="__codelineno-4-143" name="__codelineno-4-143" href="#__codelineno-4-143"></a>
+<a id="__codelineno-4-144" name="__codelineno-4-144" href="#__codelineno-4-144"></a><span class="si">{</span><span class="n">markdown</span><span class="si">}</span>
+<a id="__codelineno-4-145" name="__codelineno-4-145" href="#__codelineno-4-145"></a>
+<a id="__codelineno-4-146" name="__codelineno-4-146" href="#__codelineno-4-146"></a><span class="s2">Return a JSON object matching this schema:</span>
+<a id="__codelineno-4-147" name="__codelineno-4-147" href="#__codelineno-4-147"></a><span class="si">{</span><span class="n">schema_json</span><span class="si">}</span>
+<a id="__codelineno-4-148" name="__codelineno-4-148" href="#__codelineno-4-148"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-149" name="__codelineno-4-149" href="#__codelineno-4-149"></a>
+<a id="__codelineno-4-150" name="__codelineno-4-150" href="#__codelineno-4-150"></a>            <span class="c1"># Call LLM</span>
+<a id="__codelineno-4-151" name="__codelineno-4-151" href="#__codelineno-4-151"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span>
+<a id="__codelineno-4-152" name="__codelineno-4-152" href="#__codelineno-4-152"></a>                <span class="n">prompt</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">user_prompt</span><span class="p">},</span>
+<a id="__codelineno-4-153" name="__codelineno-4-153" href="#__codelineno-4-153"></a>                <span class="n">schema_json</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">schema_json</span><span class="p">)</span>
+<a id="__codelineno-4-154" name="__codelineno-4-154" href="#__codelineno-4-154"></a>            <span class="p">)</span>
+<a id="__codelineno-4-155" name="__codelineno-4-155" href="#__codelineno-4-155"></a>
+<a id="__codelineno-4-156" name="__codelineno-4-156" href="#__codelineno-4-156"></a>            <span class="c1"># Validate with Pydantic</span>
+<a id="__codelineno-4-157" name="__codelineno-4-157" href="#__codelineno-4-157"></a>            <span class="n">model_instance</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<a id="__codelineno-4-158" name="__codelineno-4-158" href="#__codelineno-4-158"></a>            <span class="k">return</span> <span class="n">model_instance</span>
+<a id="__codelineno-4-159" name="__codelineno-4-159" href="#__codelineno-4-159"></a>
+<a id="__codelineno-4-160" name="__codelineno-4-160" href="#__codelineno-4-160"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-4-161" name="__codelineno-4-161" href="#__codelineno-4-161"></a>            <span class="k">raise</span> <span class="n">ExtractionError</span><span class="p">(</span>
+<a id="__codelineno-4-162" name="__codelineno-4-162" href="#__codelineno-4-162"></a>                <span class="s2">&quot;Markdown extraction failed&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-163" name="__codelineno-4-163" href="#__codelineno-4-163"></a>                <span class="n">details</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-4-164" name="__codelineno-4-164" href="#__codelineno-4-164"></a>                    <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="n">context</span><span class="p">,</span>
+<a id="__codelineno-4-165" name="__codelineno-4-165" href="#__codelineno-4-165"></a>                    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">template</span><span class="o">.</span><span class="vm">__name__</span>
+<a id="__codelineno-4-166" name="__codelineno-4-166" href="#__codelineno-4-166"></a>                <span class="p">},</span>
+<a id="__codelineno-4-167" name="__codelineno-4-167" href="#__codelineno-4-167"></a>                <span class="n">cause</span><span class="o">=</span><span class="n">e</span>
+<a id="__codelineno-4-168" name="__codelineno-4-168" href="#__codelineno-4-168"></a>            <span class="p">)</span>
+<a id="__codelineno-4-169" name="__codelineno-4-169" href="#__codelineno-4-169"></a>
+<a id="__codelineno-4-170" name="__codelineno-4-170" href="#__codelineno-4-170"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">consolidate_from_pydantic_models</span><span class="p">(</span>
+<a id="__codelineno-4-171" name="__codelineno-4-171" href="#__codelineno-4-171"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-4-172" name="__codelineno-4-172" href="#__codelineno-4-172"></a>        <span class="n">raw_models</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-4-173" name="__codelineno-4-173" href="#__codelineno-4-173"></a>        <span class="n">programmatic_model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">,</span>
+<a id="__codelineno-4-174" name="__codelineno-4-174" href="#__codelineno-4-174"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
+<a id="__codelineno-4-175" name="__codelineno-4-175" href="#__codelineno-4-175"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-4-176" name="__codelineno-4-176" href="#__codelineno-4-176"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-177" name="__codelineno-4-177" href="#__codelineno-4-177"></a><span class="sd">        Consolidate multiple models using LLM.</span>
 <a id="__codelineno-4-178" name="__codelineno-4-178" href="#__codelineno-4-178"></a>
-<a id="__codelineno-4-179" name="__codelineno-4-179" href="#__codelineno-4-179"></a>            <span class="n">system_prompt</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-4-180" name="__codelineno-4-180" href="#__codelineno-4-180"></a>                <span class="s2">&quot;You are a data consolidation expert. &quot;</span>
-<a id="__codelineno-4-181" name="__codelineno-4-181" href="#__codelineno-4-181"></a>                <span class="s2">&quot;Merge multiple extractions into a single coherent result.&quot;</span>
-<a id="__codelineno-4-182" name="__codelineno-4-182" href="#__codelineno-4-182"></a>            <span class="p">)</span>
+<a id="__codelineno-4-179" name="__codelineno-4-179" href="#__codelineno-4-179"></a><span class="sd">        Args:</span>
+<a id="__codelineno-4-180" name="__codelineno-4-180" href="#__codelineno-4-180"></a><span class="sd">            raw_models: List of extracted models</span>
+<a id="__codelineno-4-181" name="__codelineno-4-181" href="#__codelineno-4-181"></a><span class="sd">            programmatic_model: Programmatically merged model</span>
+<a id="__codelineno-4-182" name="__codelineno-4-182" href="#__codelineno-4-182"></a><span class="sd">            template: Target template</span>
 <a id="__codelineno-4-183" name="__codelineno-4-183" href="#__codelineno-4-183"></a>
-<a id="__codelineno-4-184" name="__codelineno-4-184" href="#__codelineno-4-184"></a>            <span class="n">user_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-185" name="__codelineno-4-185" href="#__codelineno-4-185"></a><span class="s2">Consolidate these extractions:</span>
-<a id="__codelineno-4-186" name="__codelineno-4-186" href="#__codelineno-4-186"></a>
-<a id="__codelineno-4-187" name="__codelineno-4-187" href="#__codelineno-4-187"></a><span class="s2">Raw extractions:</span>
-<a id="__codelineno-4-188" name="__codelineno-4-188" href="#__codelineno-4-188"></a><span class="si">{</span><span class="n">models_json</span><span class="si">}</span>
-<a id="__codelineno-4-189" name="__codelineno-4-189" href="#__codelineno-4-189"></a>
-<a id="__codelineno-4-190" name="__codelineno-4-190" href="#__codelineno-4-190"></a><span class="s2">Programmatic merge:</span>
-<a id="__codelineno-4-191" name="__codelineno-4-191" href="#__codelineno-4-191"></a><span class="si">{</span><span class="n">programmatic_json</span><span class="si">}</span>
-<a id="__codelineno-4-192" name="__codelineno-4-192" href="#__codelineno-4-192"></a>
-<a id="__codelineno-4-193" name="__codelineno-4-193" href="#__codelineno-4-193"></a><span class="s2">Return the best consolidated result as JSON.</span>
-<a id="__codelineno-4-194" name="__codelineno-4-194" href="#__codelineno-4-194"></a><span class="s2">&quot;&quot;&quot;</span>
-<a id="__codelineno-4-195" name="__codelineno-4-195" href="#__codelineno-4-195"></a>
-<a id="__codelineno-4-196" name="__codelineno-4-196" href="#__codelineno-4-196"></a>            <span class="n">schema_json</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
-<a id="__codelineno-4-197" name="__codelineno-4-197" href="#__codelineno-4-197"></a>
-<a id="__codelineno-4-198" name="__codelineno-4-198" href="#__codelineno-4-198"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span>
-<a id="__codelineno-4-199" name="__codelineno-4-199" href="#__codelineno-4-199"></a>                <span class="n">prompt</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">user_prompt</span><span class="p">},</span>
-<a id="__codelineno-4-200" name="__codelineno-4-200" href="#__codelineno-4-200"></a>                <span class="n">schema_json</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">schema_json</span><span class="p">)</span>
-<a id="__codelineno-4-201" name="__codelineno-4-201" href="#__codelineno-4-201"></a>            <span class="p">)</span>
+<a id="__codelineno-4-184" name="__codelineno-4-184" href="#__codelineno-4-184"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-4-185" name="__codelineno-4-185" href="#__codelineno-4-185"></a><span class="sd">            Consolidated model instance</span>
+<a id="__codelineno-4-186" name="__codelineno-4-186" href="#__codelineno-4-186"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-187" name="__codelineno-4-187" href="#__codelineno-4-187"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-4-188" name="__codelineno-4-188" href="#__codelineno-4-188"></a>            <span class="c1"># Convert models to JSON</span>
+<a id="__codelineno-4-189" name="__codelineno-4-189" href="#__codelineno-4-189"></a>            <span class="n">models_json</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">raw_models</span><span class="p">]</span>
+<a id="__codelineno-4-190" name="__codelineno-4-190" href="#__codelineno-4-190"></a>            <span class="n">programmatic_json</span> <span class="o">=</span> <span class="n">programmatic_model</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+<a id="__codelineno-4-191" name="__codelineno-4-191" href="#__codelineno-4-191"></a>
+<a id="__codelineno-4-192" name="__codelineno-4-192" href="#__codelineno-4-192"></a>            <span class="n">system_prompt</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-4-193" name="__codelineno-4-193" href="#__codelineno-4-193"></a>                <span class="s2">&quot;You are a data consolidation expert. &quot;</span>
+<a id="__codelineno-4-194" name="__codelineno-4-194" href="#__codelineno-4-194"></a>                <span class="s2">&quot;Merge multiple extractions into a single coherent result.&quot;</span>
+<a id="__codelineno-4-195" name="__codelineno-4-195" href="#__codelineno-4-195"></a>            <span class="p">)</span>
+<a id="__codelineno-4-196" name="__codelineno-4-196" href="#__codelineno-4-196"></a>
+<a id="__codelineno-4-197" name="__codelineno-4-197" href="#__codelineno-4-197"></a>            <span class="n">user_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-198" name="__codelineno-4-198" href="#__codelineno-4-198"></a><span class="s2">Consolidate these extractions:</span>
+<a id="__codelineno-4-199" name="__codelineno-4-199" href="#__codelineno-4-199"></a>
+<a id="__codelineno-4-200" name="__codelineno-4-200" href="#__codelineno-4-200"></a><span class="s2">Raw extractions:</span>
+<a id="__codelineno-4-201" name="__codelineno-4-201" href="#__codelineno-4-201"></a><span class="si">{</span><span class="n">models_json</span><span class="si">}</span>
 <a id="__codelineno-4-202" name="__codelineno-4-202" href="#__codelineno-4-202"></a>
-<a id="__codelineno-4-203" name="__codelineno-4-203" href="#__codelineno-4-203"></a>            <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<a id="__codelineno-4-204" name="__codelineno-4-204" href="#__codelineno-4-204"></a>
-<a id="__codelineno-4-205" name="__codelineno-4-205" href="#__codelineno-4-205"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-4-206" name="__codelineno-4-206" href="#__codelineno-4-206"></a>            <span class="k">raise</span> <span class="n">ExtractionError</span><span class="p">(</span>
-<a id="__codelineno-4-207" name="__codelineno-4-207" href="#__codelineno-4-207"></a>                <span class="s2">&quot;Consolidation failed&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-208" name="__codelineno-4-208" href="#__codelineno-4-208"></a>                <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;num_models&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_models</span><span class="p">)},</span>
-<a id="__codelineno-4-209" name="__codelineno-4-209" href="#__codelineno-4-209"></a>                <span class="n">cause</span><span class="o">=</span><span class="n">e</span>
-<a id="__codelineno-4-210" name="__codelineno-4-210" href="#__codelineno-4-210"></a>            <span class="p">)</span>
-<a id="__codelineno-4-211" name="__codelineno-4-211" href="#__codelineno-4-211"></a>
-<a id="__codelineno-4-212" name="__codelineno-4-212" href="#__codelineno-4-212"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-4-213" name="__codelineno-4-213" href="#__codelineno-4-213"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up resources.&quot;&quot;&quot;</span>
-<a id="__codelineno-4-214" name="__codelineno-4-214" href="#__codelineno-4-214"></a>        <span class="c1"># Close any open connections</span>
-<a id="__codelineno-4-215" name="__codelineno-4-215" href="#__codelineno-4-215"></a>        <span class="k">pass</span>
+<a id="__codelineno-4-203" name="__codelineno-4-203" href="#__codelineno-4-203"></a><span class="s2">Programmatic merge:</span>
+<a id="__codelineno-4-204" name="__codelineno-4-204" href="#__codelineno-4-204"></a><span class="si">{</span><span class="n">programmatic_json</span><span class="si">}</span>
+<a id="__codelineno-4-205" name="__codelineno-4-205" href="#__codelineno-4-205"></a>
+<a id="__codelineno-4-206" name="__codelineno-4-206" href="#__codelineno-4-206"></a><span class="s2">Return the best consolidated result as JSON.</span>
+<a id="__codelineno-4-207" name="__codelineno-4-207" href="#__codelineno-4-207"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-208" name="__codelineno-4-208" href="#__codelineno-4-208"></a>
+<a id="__codelineno-4-209" name="__codelineno-4-209" href="#__codelineno-4-209"></a>            <span class="n">schema_json</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+<a id="__codelineno-4-210" name="__codelineno-4-210" href="#__codelineno-4-210"></a>
+<a id="__codelineno-4-211" name="__codelineno-4-211" href="#__codelineno-4-211"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span>
+<a id="__codelineno-4-212" name="__codelineno-4-212" href="#__codelineno-4-212"></a>                <span class="n">prompt</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">user_prompt</span><span class="p">},</span>
+<a id="__codelineno-4-213" name="__codelineno-4-213" href="#__codelineno-4-213"></a>                <span class="n">schema_json</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">schema_json</span><span class="p">)</span>
+<a id="__codelineno-4-214" name="__codelineno-4-214" href="#__codelineno-4-214"></a>            <span class="p">)</span>
+<a id="__codelineno-4-215" name="__codelineno-4-215" href="#__codelineno-4-215"></a>
+<a id="__codelineno-4-216" name="__codelineno-4-216" href="#__codelineno-4-216"></a>            <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<a id="__codelineno-4-217" name="__codelineno-4-217" href="#__codelineno-4-217"></a>
+<a id="__codelineno-4-218" name="__codelineno-4-218" href="#__codelineno-4-218"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-4-219" name="__codelineno-4-219" href="#__codelineno-4-219"></a>            <span class="k">raise</span> <span class="n">ExtractionError</span><span class="p">(</span>
+<a id="__codelineno-4-220" name="__codelineno-4-220" href="#__codelineno-4-220"></a>                <span class="s2">&quot;Consolidation failed&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-221" name="__codelineno-4-221" href="#__codelineno-4-221"></a>                <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;num_models&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_models</span><span class="p">)},</span>
+<a id="__codelineno-4-222" name="__codelineno-4-222" href="#__codelineno-4-222"></a>                <span class="n">cause</span><span class="o">=</span><span class="n">e</span>
+<a id="__codelineno-4-223" name="__codelineno-4-223" href="#__codelineno-4-223"></a>            <span class="p">)</span>
+<a id="__codelineno-4-224" name="__codelineno-4-224" href="#__codelineno-4-224"></a>
+<a id="__codelineno-4-225" name="__codelineno-4-225" href="#__codelineno-4-225"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-4-226" name="__codelineno-4-226" href="#__codelineno-4-226"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up resources.&quot;&quot;&quot;</span>
+<a id="__codelineno-4-227" name="__codelineno-4-227" href="#__codelineno-4-227"></a>        <span class="c1"># Close any open connections</span>
+<a id="__codelineno-4-228" name="__codelineno-4-228" href="#__codelineno-4-228"></a>        <span class="k">pass</span>
 </code></pre></div>
 <h3 id="usage_1">Usage<a class="headerlink" href="#usage_1" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="sd">&quot;&quot;&quot;Use custom LLM backend.&quot;&quot;&quot;</span>

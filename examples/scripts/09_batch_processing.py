@@ -12,7 +12,7 @@ Use Cases:
     - Production workflows
 
 Prerequisites:
-    - Installation: uv sync --extra all
+    - Installation: uv sync
     - Multiple sample documents
     - Optional: API keys for remote inference
 
@@ -70,7 +70,7 @@ def get_sample_documents() -> List[Tuple[str, type]]:
     ]
 
 
-def process_document(source: str, template: type, output_base: str) -> Tuple[bool, str]:
+def process_document(source: str, template: type) -> Tuple[bool, str]:
     """
     Process a single document.
 
@@ -78,14 +78,11 @@ def process_document(source: str, template: type, output_base: str) -> Tuple[boo
         Tuple of (success, message)
     """
     try:
-        # Create output directory based on source filename
         source_path = Path(source)
-        output_dir = f"{output_base}/{source_path.stem}"
 
         config = PipelineConfig(
             source=source,
             template=template,
-            output_dir=output_dir,
             backend="vlm",  # Use VLM for images
             inference="local",
             processing_mode="one-to-one",
@@ -113,11 +110,8 @@ def main() -> None:
 
     # Get documents to process
     documents = get_sample_documents()
-    output_base = "outputs/09_batch_processing"
-
     console.print("\n[yellow]📋 Batch Configuration:[/yellow]")
     console.print(f"  • Documents to process: [cyan]{len(documents)}[/cyan]")
-    console.print(f"  • Output directory: [cyan]{output_base}[/cyan]")
     console.print("  • Backend: [cyan]VLM (local)[/cyan]")
 
     console.print("\n[yellow]⚙️  Processing batch...[/yellow]")
@@ -139,7 +133,7 @@ def main() -> None:
             source_name = Path(source).name
             progress.update(task, description=f"[cyan]Processing {source_name}...")
 
-            success, message = process_document(source, template, output_base)
+            success, message = process_document(source, template)
             results.append((source_name, success, message))
 
             if success:
@@ -185,11 +179,6 @@ def main() -> None:
     console.print("  • Implement retry logic for transient failures")
     console.print("  • Add rate limiting for API-based processing")
     console.print("  • Save intermediate results for resumability")
-
-    console.print("\n[bold]📊 Output Locations:[/bold]")
-    console.print(f"  • Base directory: [cyan]{output_base}/[/cyan]")
-    console.print("  • Each document in separate subdirectory")
-    console.print(f"  • View all: [cyan]ls {output_base}/[/cyan]")
 
     # Exit with error code if any failed
     if failed > 0:

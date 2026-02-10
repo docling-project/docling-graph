@@ -12,7 +12,7 @@ Use Cases:
     - Comparing output structures
 
 Prerequisites:
-    - Installation: uv sync --extra local
+    - Installation: uv sync
     - Local LLM: Ollama with llama3:8b model
     - Data: Multi-page ID card PDF included
 
@@ -72,7 +72,6 @@ def process_one_to_one() -> None:
     config = PipelineConfig(
         source=SOURCE_FILE,
         template=TEMPLATE_CLASS,
-        output_dir="outputs/05_processing_modes/one_to_one",
         backend="llm",
         inference="local",
         provider_override="ollama",
@@ -98,7 +97,6 @@ def process_many_to_one() -> None:
     config = PipelineConfig(
         source=SOURCE_FILE,
         template=TEMPLATE_CLASS,
-        output_dir="outputs/05_processing_modes/many_to_one",
         backend="llm",
         inference="local",
         provider_override="ollama",
@@ -134,7 +132,7 @@ def main() -> None:
     console.print("\n[yellow]⚠️  Prerequisites:[/yellow]")
     console.print("  • Ollama running: [cyan]ollama serve[/cyan]")
     console.print("  • Model pulled: [cyan]ollama pull llama3:8b[/cyan]")
-    console.print("  • Install local extras: [cyan]uv sync --extra local[/cyan]")
+    console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
 
     try:
         # Process with both modes
@@ -187,7 +185,7 @@ def main() -> None:
         console.print("  • Many-to-One: 1 merged ID card node (or 3 if merge fails)")
 
     except FileNotFoundError:
-        console.print(f"\n[red]✗ Error:[/red] Source file not found: {SOURCE_FILE}")
+        console.print(f"\n[red]Error:[/red] Source file not found: {SOURCE_FILE}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
         console.print("  • Ensure you're running from project root")
         console.print("  • Check sample data exists in docs/examples/data/")
@@ -195,7 +193,7 @@ def main() -> None:
 
     except Exception as e:
         error_msg = str(e).lower()
-        console.print(f"\n[red]✗ Error:[/red] {e}")
+        console.print(f"\n[red]Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "ollama" in error_msg or "connection" in error_msg:
@@ -203,7 +201,7 @@ def main() -> None:
             console.print("  • Pull model: [cyan]ollama pull llama3:8b[/cyan]")
             console.print("  • Check Ollama is running: [cyan]ollama list[/cyan]")
         else:
-            console.print("  • Install dependencies: [cyan]uv sync --extra local[/cyan]")
+            console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
             console.print("  • Check template is correctly defined")
             console.print("  • Try with a smaller document first")
 

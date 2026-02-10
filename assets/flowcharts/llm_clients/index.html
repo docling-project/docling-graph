@@ -2390,6 +2390,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../usage/api/llm-model-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Model Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../usage/api/run-pipeline/" class="md-nav__link">
         
   
@@ -3689,35 +3717,21 @@ flowchart LR
     classDef subgraph_style fill:none,stroke:#969696,stroke-width:2px,stroke-dasharray: 5,color:#969696
 
     %% 2. Define Nodes
-    A@{ shape: procs, label: "BaseLlmClient&lt;br&gt;Template Method Pattern" }
+    A@{ shape: procs, label: "LLMClientProtocol" }
+    B@{ shape: lin-proc, label: "LiteLLMClient" }
 
-    subgraph subGraph0["Client Implementations"]
-        B@{ shape: lin-proc, label: "VLLMClient" }
-        C@{ shape: lin-proc, label: "OllamaClient" }
-        D@{ shape: lin-proc, label: "MistralClient" }
-        E@{ shape: lin-proc, label: "OpenAIClient" }
-        F@{ shape: lin-proc, label: "GeminiClient" }
-        G@{ shape: lin-proc, label: "WatsonXClient" }
-    end
-
-    H@{ shape: tag-proc, label: "ResponseHandler&lt;br&gt;JSON Parsing" }
-    I("Config&lt;br&gt;models.yaml")
+    H@{ shape: tag-proc, label: "ResponseHandler JSON Parsing" }
+    I("ProviderConfig (tokenizer, merge_threshold)")
 
     %% 3. Define Connections
     A --&gt; B
-    A --&gt; C
-    A --&gt; D
-    A --&gt; E
-    A --&gt; F
-    A --&gt; G
-    subGraph0 --&gt; H
-    subGraph0 --&gt; I
+    B --&gt; H
+    B --&gt; I
 
     %% 4. Apply Classes
-    class A,B,C,D,E,F,G process
+    class A,B process
     class H operator
-    class I config
-    class subGraph0 subgraph_style</code></pre>
+    class I config</code></pre>
 
 
 
