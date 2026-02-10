@@ -63,6 +63,29 @@ run_pipeline(config)
 | `model_override` | `str | None` | `None` | Override model name |
 | `provider_override` | `str | None` | `None` | Override provider name |
 
+### Custom LLM Client
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `llm_client` | `LLMClientProtocol \| None` | `None` | Custom LLM client instance. When set, the pipeline uses this client for all LLM calls and does not initialize a provider/model from config. Use this to target a custom inference URL, on-prem endpoint, or any client implementing `get_json_response(prompt, schema_json) -> dict | list`. |
+
+**Usage:** Pass any object that implements `LLMClientProtocol` (e.g. a LiteLLM-backed client with a custom `base_url`). See [LLM Clients — Custom LLM Clients](../../reference/llm-clients.md#custom-llm-clients) for a full example.
+
+```python
+from docling_graph import PipelineConfig, run_pipeline
+
+# Your custom client (must implement get_json_response(prompt, schema_json))
+custom_client = MyLiteLLMEndpointClient(base_url="https://...", model="openai/...")
+
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.BillingDocument",
+    backend="llm",
+    llm_client=custom_client,
+)
+run_pipeline(config)  # or config.run()
+```
+
 ### Extraction Settings
 
 | Parameter | Type | Default | Description |
