@@ -137,6 +137,10 @@ config = PipelineConfig(
 | **Cost** | Low (local) | Medium |
 | **Best For** | Text documents | Complex layouts |
 
+### Extraction contracts (LLM + many-to-one)
+
+For LLM many-to-one extraction you can choose **direct** (default; single-pass then merge) or **staged** (catalog → ID pass → fill pass → merge). Staged is better for complex nested templates. See [Staged Extraction](staged-extraction.md).
+
 ---
 
 ## Pipeline Stages in Code
@@ -222,7 +226,8 @@ from docling_graph.core.extractors import ExtractorFactory
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
-    llm_client=client
+    extraction_contract="direct",  # or "staged" for complex templates
+    llm_client=client,
 )
 models, doc = extractor.extract(source, template)
 ```
@@ -260,8 +265,7 @@ merged = merge_pydantic_models(models, template)
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    use_chunking=True,      # Enable chunking
-    max_batch_size=5        # Process 5 chunks at once
+    use_chunking=True,
 )
 ```
 
@@ -325,11 +329,20 @@ Deep dive into LLM and VLM extraction backends.
 - LLM backend (text-based)
 - VLM backend (vision-based)
 - Backend selection
-- Performance comparison
+- Extraction contracts (direct vs staged)
 
 ---
 
-### 4. [Model Merging](model-merging.md)
+### 4. [Staged Extraction](staged-extraction.md)
+Multi-pass extraction for complex nested templates (ID pass → fill pass → merge).
+
+**Topics:**
+- When to use staged
+- Tuning (presets, workers, fill cap, id shard size)
+
+---
+
+### 5. [Model Merging](model-merging.md)
 Learn how multiple extractions are consolidated into single models.
 
 **Topics:**
@@ -340,7 +353,7 @@ Learn how multiple extractions are consolidated into single models.
 
 ---
 
-### 5. [Batch Processing](batch-processing.md)
+### 6. [Batch Processing](batch-processing.md)
 Optimize extraction with intelligent batching.
 
 **Topics:**
@@ -351,7 +364,7 @@ Optimize extraction with intelligent batching.
 
 ---
 
-### 6. Pipeline Orchestration
+### 7. Pipeline Orchestration
 Understand how pipeline stages are coordinated through the extraction process.
 
 **Topics:**
@@ -400,8 +413,7 @@ config = PipelineConfig(
     source="large_document.pdf",
     template="templates.Contract",
     backend="llm",
-    use_chunking=True,          # Enable chunking
-    max_batch_size=3            # Smaller batches
+    use_chunking=True,
 )
 
 run_pipeline(config)
@@ -458,7 +470,6 @@ config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
     use_chunking=True,
-    max_batch_size=1  # Smaller batches
 )
 ```
 

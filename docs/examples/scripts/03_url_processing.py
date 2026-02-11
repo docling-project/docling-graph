@@ -105,7 +105,6 @@ def main() -> None:
             # Enable chunking for large documents
             use_chunking=True,
             # Programmatic merge (no extra LLM call)
-            llm_consolidation=False,
         )
 
         # Execute the pipeline

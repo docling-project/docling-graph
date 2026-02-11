@@ -831,7 +831,7 @@ print(f"Recommended max_tokens: {recommended}")
 
 Now that you understand chunking:
 
-1. **[Model Capabilities →](model-capabilities.md)** - Learn about adaptive prompting
+1. **[Staged Extraction →](staged-extraction.md)** - Multi-pass extraction for complex templates
 2. **[Extraction Backends →](extraction-backends.md)** - Learn about LLM and VLM backends
 3. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
 4. **[Model Merging →](model-merging.md)** - Consolidate chunk extractions

@@ -201,6 +201,7 @@ Before creating templates, ensure you have:
 1. **[Relationships](relationships.md)** - Complex edge patterns
 2. **[Validation](validation.md)** - Custom validators and normalization
 3. **[Advanced Patterns](advanced-patterns.md)** - Reusable components and complex structures
+4. **[Schema design for staged extraction](staged-extraction-schema.md)** - Identity fields, linkage, and catalog constraints when using staged extraction
 
 ---
 
@@ -221,6 +222,10 @@ Before creating templates, ensure you have:
 ### Q: What if my domain is complex?
 
 **A:** Start simple with core entities, then add complexity. See [Advanced Patterns](advanced-patterns.md) for nested structures.
+
+### Q: How do I design a schema for staged extraction?
+
+**A:** Use [Schema design for staged extraction](staged-extraction-schema.md): ensure root and entities have required, extractable `graph_id_fields`, add examples for ID fields, and keep nesting depth manageable so the ID pass and quality gate succeed.
 
 ---
 

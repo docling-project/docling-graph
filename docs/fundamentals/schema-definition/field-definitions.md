@@ -117,6 +117,16 @@ items: List[Item] = Field(
 
 **Why:** Using `[]` as default creates a shared mutable object (Python gotcha).
 
+### Staged extraction: ID fields
+
+When using **staged extraction** (`extraction_contract="staged"`), fields listed in `graph_id_fields` are used by the ID pass to discover node instances. For reliable staged extraction:
+
+- **Prefer required ID fields** — Use `...` (required) for identity fields so the LLM does not omit them; optional ID fields often lead to validation failures and retries.
+- **Add examples** — The ID-pass prompt uses schema hints (including `examples`) for each path; provide 2–5 concise examples per ID field.
+- **Avoid optional identity fields** — If an ID field is `Optional` and default `None`, the model may leave it empty and the staged validator will reject the node.
+
+See [Schema design for staged extraction](staged-extraction-schema.md) for identity choices, parent linkage, and troubleshooting.
+
 ---
 
 ## Writing Effective Descriptions

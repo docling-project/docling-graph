@@ -195,7 +195,6 @@ def main() -> None:
             llm_client=custom_client,
             processing_mode="many-to-one",
             use_chunking=True,
-            llm_consolidation=False,
             dump_to_disk=True,
             output_dir="outputs/12_custom_llm_client",
         )

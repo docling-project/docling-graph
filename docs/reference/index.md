@@ -278,8 +278,8 @@ def old_function():
 All public APIs use type hints:
 
 ```python
-def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None:
-    """Type-safe function signature."""
+def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> PipelineContext:
+    """Type-safe function signature; returns pipeline context with graph and results."""
     pass
 ```
 
@@ -349,7 +349,6 @@ config = {
     "inference": "remote",
     "model_override": "mistral-small-latest",
     "use_chunking": True,
-    "llm_consolidation": True,
     "export_format": "cypher"
 }
 

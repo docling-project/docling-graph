@@ -9,12 +9,9 @@
 - LLM vs VLM comparison
 - Backend selection criteria
 - Configuration and usage
-- Model capability tiers
+- Extraction contracts (direct vs staged)
 - Performance optimization
 - Error handling
-
-!!! tip "New: Model Capability Detection"
-    Docling Graph now automatically detects model capabilities and adapts prompts and consolidation strategies based on model size. See [Model Capabilities](model-capabilities.md) for details.
 
 ---
 
@@ -61,47 +58,14 @@ config = PipelineConfig(
 
 ---
 
-### Model Capability Detection
+### Extraction contracts (LLM backend)
 
-Docling Graph automatically detects model capabilities based on parameter count and adapts its behavior:
+For many-to-one extraction with the LLM backend you can choose:
 
-```python
-from docling_graph import run_pipeline, PipelineConfig
+- **direct** (default): Single-pass extraction; chunks are extracted and merged programmatically.
+- **staged**: Multi-pass extraction (catalog → ID pass → fill pass → merge), better for complex nested templates and weaker models.
 
-# Small model (1B-7B) - Uses SIMPLE tier
-config = PipelineConfig(
-    backend="llm",
-    inference="local",
-    provider_override="ollama",
-    model_override="llama3.2:3b"  # Automatically detected as SIMPLE
-)
-
-# Medium model (7B-13B) - Uses STANDARD tier
-config = PipelineConfig(
-    backend="llm",
-    inference="local",
-    provider_override="ollama",
-    model_override="llama3.1:8b"  # Automatically detected as STANDARD
-)
-
-# Large model (13B+) - Uses ADVANCED tier
-config = PipelineConfig(
-    backend="llm",
-    inference="remote",
-    provider_override="openai",
-    model_override="gpt-4-turbo"  # Automatically detected as ADVANCED
-)
-```
-
-**Capability Tiers:**
-
-| Tier | Model Size | Prompt Style | Consolidation |
-|:-----|:-----------|:-------------|:--------------|
-| **SIMPLE** | 1B-7B | Minimal instructions | Basic merge |
-| **STANDARD** | 7B-13B | Balanced instructions | Standard merge |
-| **ADVANCED** | 13B+ | Detailed instructions | Chain of Density |
-
-See [Model Capabilities](model-capabilities.md) for complete details.
+See [Staged Extraction](staged-extraction.md) for when and how to use `extraction_contract="staged"`.
 
 ---
 
@@ -264,15 +228,6 @@ final_model = backend.consolidate_from_pydantic_models(
     template=InvoiceTemplate
 )
 ```
-
-!!! info "Chain of Density Consolidation"
-    For ADVANCED tier models (13B+), consolidation uses a multi-turn "Chain of Density" approach:
-    
-    1. **Initial Merge**: Create first consolidated version
-    2. **Refinement**: Identify and resolve conflicts
-    3. **Final Polish**: Ensure completeness and accuracy
-    
-    This produces higher quality results but uses more tokens. See [Model Capabilities](model-capabilities.md#chain-of-density-consolidation).
 
 ---
 
@@ -465,7 +420,6 @@ config = PipelineConfig(
     
     # High accuracy settings
     use_chunking=True,
-    llm_consolidation=True,
     processing_mode="many-to-one",
     
     output_dir="outputs/llm_remote"
@@ -767,7 +721,7 @@ config = PipelineConfig(
 
 Now that you understand extraction backends:
 
-1. **[Model Capabilities →](model-capabilities.md)** - Learn about adaptive prompting
+1. **[Staged Extraction →](staged-extraction.md)** - Multi-pass extraction for complex templates
 2. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
 3. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
 4. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Advanced optimization

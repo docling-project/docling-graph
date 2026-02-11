@@ -161,8 +161,7 @@ PipelineConfig
 ├── Processing Configuration
 │   ├── processing_mode: one-to-one | many-to-one
 │   ├── docling_config: ocr | vision
-│   ├── use_chunking: bool
-│   └── llm_consolidation: bool
+│   └── use_chunking: bool
 │
 ├── Export Configuration
 │   ├── export_format: csv | cypher
@@ -273,7 +272,6 @@ PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    llm_consolidation=False,
     export_format="csv",
     export_docling=True,
     export_docling_json=True,
@@ -328,7 +326,6 @@ config = PipelineConfig(
     inference="local",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=False,
     # ... many more settings
 )
 ```

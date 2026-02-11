@@ -485,44 +485,27 @@ def debug_with_trace(source: str):
     debug_dir = Path(context.output_dir) / "debug"
     
     if debug_dir.exists():
-        # Check for validation errors in atom extractions
-        atoms_dir = debug_dir / "atoms"
-        errors = []
-        for attempt_file in atoms_dir.glob("*_attempt*.json"):
-            with open(attempt_file) as f:
-                attempt = json.load(f)
-                if not attempt['validation_success']:
-                    errors.append(attempt)
-        
-        if errors:
-            print(f"❌ Found {len(errors)} validation errors:")
-            for attempt in errors:
-                print(f"\n  Slot {attempt['slot_id']} (attempt {attempt['attempt']}):")
-                print(f"    Error: {attempt['error']}")
-        
-        # Check confidence distribution
-        with open(debug_dir / "atoms_all.jsonl") as f:
-            atoms = [json.loads(line) for line in f]
-            confidences = [a['confidence'] for a in atoms]
-            
-            if confidences:
-                avg_conf = sum(confidences) / len(confidences)
-                print(f"\n📊 Confidence Statistics:")
-                print(f"    Total atoms: {len(atoms)}")
-                print(f"    Average confidence: {avg_conf:.2f}")
-                print(f"    Min confidence: {min(confidences):.2f}")
-                print(f"    Max confidence: {max(confidences):.2f}")
-        
-        # Check for conflicts
-        with open(debug_dir / "reducer_report.json") as f:
-            report = json.load(f)
-            conflicts = report.get('conflicts', [])
-            
-            if conflicts:
-                print(f"\n⚠️  Found {len(conflicts)} conflicts:")
-                for conflict in conflicts:
-                    print(f"    Field: {conflict['field_path']}")
-                    print(f"    Values: {len(conflict['conflicting_values'])}")
+        expected = [
+            "node_catalog.json",
+            "id_pass.json",
+            "fill_pass.json",
+            "edges_pass.json",
+            "merged_output.json",
+            "staged_trace.json",
+            "trace_data.json",
+        ]
+        print("Debug artifacts:")
+        for name in expected:
+            p = debug_dir / name
+            print(f"  - {name}: {'ok' if p.exists() else 'missing'}")
+
+        staged_trace_path = debug_dir / "staged_trace.json"
+        if staged_trace_path.exists():
+            with open(staged_trace_path) as f:
+                staged_trace = json.load(f)
+            print("\nStaged timings:", staged_trace.get("timings_seconds", {}))
+            print("Per-path counts:", staged_trace.get("per_path_counts", {}))
+            print("Merge stats:", staged_trace.get("merge_stats", {}))
     
     return context
 
@@ -678,7 +661,6 @@ def extract_with_partial_handling(source: str) -> Dict[str, Any]:
         source=source,
         template="templates.BillingDocument",
         processing_mode="many-to-one",
-        llm_consolidation=True  # Try LLM consolidation
     )
     
     results = run_pipeline(config)

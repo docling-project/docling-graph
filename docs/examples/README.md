@@ -29,7 +29,7 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 8. **`08_chunking_consolidation.py`** — Chunking and merge behavior
 9. **`09_batch_processing.py`** — Batch processing with error handling
 10. **`10_provider_configs.py`** — OpenAI, Mistral, Gemini, WatsonX
-11. **`11_custom_litellm_call.py`** — One-off LiteLLM completion (direct call)
+11. **`11_staged_extraction.py`** — Staged extraction (ID pass → fill pass → merge) for complex templates
 12. **`12_custom_llm_client.py`** — Custom LLM client (bring your own URL) with full pipeline
 
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).

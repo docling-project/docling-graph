@@ -92,7 +92,6 @@ config = PipelineConfig(
     model_override="llama3:8b",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=False  # Faster
 )
 
 print("Processing with Ollama...")
@@ -180,7 +179,6 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=True,  # Higher accuracy
     docling_config="vision"  # Better for complex layouts
 )
 

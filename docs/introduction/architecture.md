@@ -83,10 +83,7 @@ else:
 #### Stage 4: Consolidation (if needed)
 ```python
 if len(models) > 1:
-    if llm_consolidation:
-        final_model = llm_backend.consolidate(models, template)
-    else:
-        final_model = programmatic_merge(models)
+    final_model = programmatic_merge(models)
 ```
 
 #### Stage 5: Graph Conversion
@@ -130,7 +127,6 @@ class PipelineConfig(BaseModel):
     inference: Literal["local", "remote"] = "local"
     processing_mode: Literal["one-to-one", "many-to-one"] = "many-to-one"
     use_chunking: bool = True
-    llm_consolidation: bool = False
     export_format: Literal["csv", "cypher"] = "csv"
     output_dir: str = "outputs"
     # ... additional settings

@@ -91,7 +91,6 @@ run_pipeline(config)  # or config.run()
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `llm_consolidation` | `bool` | `False` | Enable LLM consolidation |
 | `max_batch_size` | `int` | `1` | Maximum batch size |
 
 ### Debug Settings
@@ -265,7 +264,6 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=True
 )
 
 run_pipeline(config)
@@ -446,7 +444,6 @@ BASE_CONFIG = {
     "inference": "remote",
     "provider_override": "mistral",
     "use_chunking": True,
-    "llm_consolidation": False
 }
 
 # Create specific configurations
@@ -463,7 +460,6 @@ def process_research(source: str):
         source=source,
         template="templates.ScholarlyRheologyPaper",
         **BASE_CONFIG,
-        llm_consolidation=True  # Override for research
     )
     run_pipeline(config)
 ```
@@ -528,7 +524,6 @@ def get_config(source: str, template: str) -> PipelineConfig:
             inference="remote",
             provider_override="mistral",
             model_override="mistral-large-latest",
-            llm_consolidation=True
         )
     else:
         return PipelineConfig(
@@ -537,7 +532,6 @@ def get_config(source: str, template: str) -> PipelineConfig:
             backend="llm",
             inference="local",
             provider_override="ollama",
-            llm_consolidation=False
         )
 
 config = get_config("document.pdf", "templates.BillingDocument")
@@ -571,10 +565,6 @@ class ConfigBuilder:
         self.config_dict["use_chunking"] = enabled
         return self
     
-    def with_consolidation(self, enabled: bool = True):
-        self.config_dict["llm_consolidation"] = enabled
-        return self
-    
     def build(self) -> PipelineConfig:
         return PipelineConfig(**self.config_dict)
 
@@ -582,7 +572,6 @@ class ConfigBuilder:
 config = (ConfigBuilder("document.pdf", "templates.BillingDocument")
     .with_remote_llm("mistral", "mistral-large-latest")
     .with_chunking(True)
-    .with_consolidation(True)
     .build())
 
 run_pipeline(config)

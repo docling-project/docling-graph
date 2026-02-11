@@ -31,6 +31,7 @@ This guide provides a comprehensive checklist and best practices for creating hi
 - [ ] **ID fields are stable** - Won't change frequently
 - [ ] **ID fields are likely present** - Will be extracted from documents
 - [ ] **Composite IDs make sense** - Multiple fields form natural unique identifier
+- [ ] **Staged extraction (if used)** - Root and all entities in the ID pass have required, extractable `graph_id_fields` with examples; see [Schema design for staged extraction](staged-extraction-schema.md)
 
 ### ✅ Component Configuration
 
@@ -320,6 +321,26 @@ class Person(BaseModel):
     )
 ```
 
+### ❌ Optional graph_id_fields when using staged extraction
+
+```python
+# WRONG - Optional ID field; LLM often omits it → ID pass validation fails
+class Offer(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["nom"])
+    nom: Optional[str] = Field(None, description="Offer name")
+
+# CORRECT - Required ID field with examples
+class Offer(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["nom"])
+    nom: str = Field(
+        ...,
+        description="Offer name as shown in the document.",
+        examples=["ESSENTIELLE", "CONFORT", "STANDARD"]
+    )
+```
+
+When using staged extraction, ID fields must be required and have examples so the ID pass can discover instances. See [Schema design for staged extraction](staged-extraction-schema.md).
+
 ### ❌ Missing Validators
 
 ```python
@@ -385,6 +406,8 @@ Invoice → LineItem → MonetaryAmount
 # ❌ Bad - Excessive nesting (5+ levels)
 Document → Section → Subsection → Paragraph → Sentence → Word
 ```
+
+For **staged extraction**, keep nesting to 2–4 levels when possible; deeper structures increase catalog size and ID-pass prompt length, which can cause truncation or more shards. Ensure parent paths have stable `graph_id_fields` for correct linkage. See [Schema design for staged extraction](staged-extraction-schema.md).
 
 ---
 

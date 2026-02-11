@@ -102,7 +102,6 @@ def process_with_provider(name: str, provider: str, model: str) -> Tuple[bool, s
             model_override=model,
             processing_mode="many-to-one",
             use_chunking=True,
-            llm_consolidation=False,
         )
 
         config.run()

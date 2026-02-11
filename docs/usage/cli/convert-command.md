@@ -239,33 +239,36 @@ uv run docling-graph convert small_doc.pdf \
 
 ---
 
-### LLM Consolidation
+### Staged Extraction Tuning
+
+These flags apply when `--extraction-contract staged` is used in many-to-one mode.
 
 ```bash
---llm-consolidation / --no-llm-consolidation
+--staged-tuning {standard|advanced}
+--staged-retries INT
+--staged-workers INT
+--staged-nodes-fill-cap INT
+--staged-id-shard-size INT
 ```
 
-**Enable for:**
-- Higher accuracy
-- Complex merging scenarios
-- When quality > speed
+- `--staged-tuning`: preset defaults (`standard` or `advanced`).
+- `--staged-retries`: retries per staged pass for invalid JSON responses.
+- `--staged-workers`: parallel workers for **fill pass only**.
+- `--staged-nodes-fill-cap`: max node instances per fill-pass call.
+- `--staged-id-shard-size`: max catalog paths per ID-pass call (`0` disables sharding).
 
-**Disable for:**
-- Faster processing
-- Lower API costs
-- Simple documents
+ID pass always runs sequentially across shards for stable skeleton assembly.
 
 **Example:**
-```bash
-# Enable LLM consolidation
-uv run docling-graph convert document.pdf \
-    --template "templates.ScholarlyRheologyPaper" \
-    --llm-consolidation
 
-# Disable (use programmatic merge)
+```bash
 uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
-    --no-llm-consolidation
+    --processing-mode many-to-one \
+    --extraction-contract staged \
+    --staged-workers 4 \
+    --staged-nodes-fill-cap 12 \
+    --staged-id-shard-size 2
 ```
 
 ---
@@ -432,7 +435,6 @@ uv run docling-graph convert research.pdf \
     --model mistral-large-latest \
     --processing-mode many-to-one \
     --use-chunking \
-    --llm-consolidation \
     --output-dir "outputs/research"
 ```
 
@@ -489,7 +491,6 @@ uv run docling-graph convert small_doc.pdf \
     --backend llm \
     --inference local \
     --no-use-chunking \
-    --no-llm-consolidation \
     --no-docling-json \
     --no-markdown \
     --output-dir "outputs/minimal"
@@ -666,12 +667,7 @@ uv run docling-graph convert document.pdf \
 
 **Solution:**
 ```bash
-# Disable LLM consolidation
-uv run docling-graph convert document.pdf \
-    --template "templates.BillingDocument" \
-    --no-llm-consolidation
-
-# Or disable chunking for small docs
+# Disable chunking for small documents to speed up
 uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --no-use-chunking

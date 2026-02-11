@@ -68,8 +68,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --provider "mistral" \
     --model "mistral-large-latest" \
     --processing-mode "many-to-one" \
-    --use-chunking \
-    --no-llm-consolidation
+    --use-chunking
 ```
 
 **When to Use:**
@@ -292,21 +291,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --inference "remote" \
     --provider "mistral" \
     --processing-mode "many-to-one" \
-    --use-chunking \
-    --no-llm-consolidation
-```
-
-**LLM Consolidation (Intelligent):**
-```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
-    --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
-    --output-dir "outputs/cli_08_llm" \
-    --backend "llm" \
-    --inference "remote" \
-    --provider "mistral" \
-    --processing-mode "many-to-one" \
-    --use-chunking \
-    --llm-consolidation
+    --use-chunking
 ```
 
 ---

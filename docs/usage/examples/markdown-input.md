@@ -116,7 +116,6 @@ uv run docling-graph convert LARGE_DOC.md \
     --backend llm \
     --inference remote \
     --use-chunking \
-    --llm-consolidation
 ```
 
 ---

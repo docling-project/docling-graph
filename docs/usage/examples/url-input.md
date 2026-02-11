@@ -160,7 +160,6 @@ config = PipelineConfig(
     provider_override="mistral",
     model_override="mistral-large-latest",
     use_chunking=True,
-    llm_consolidation=True,
     export_format="json"
 )
 

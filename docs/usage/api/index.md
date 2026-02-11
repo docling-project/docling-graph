@@ -137,7 +137,6 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=True
 )
 
 # Access results in memory

@@ -126,7 +126,6 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    llm_consolidation=True,  # Extra accuracy
     
     # Cypher for Neo4j
     export_format="cypher",
@@ -368,7 +367,6 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    llm_consolidation=True,  # Merge findings
     
     # CSV for analysis
     export_format="csv",

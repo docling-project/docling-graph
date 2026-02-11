@@ -31,6 +31,35 @@ Optimize docling-graph pipeline performance for speed, memory efficiency, and re
 
 ---
 
+## Staged Extraction Tuning
+
+When using `extraction_contract=\"staged\"`, tune these parameters first:
+
+- `staged_id_shard_size`: paths per ID-pass call (`0` = no sharding, single call).
+- `staged_nodes_fill_cap`: instances per fill-pass call.
+- `staged_workers`: fill-pass parallelism only (ID pass remains sequential).
+
+```python
+from docling_graph import PipelineConfig
+
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.MyTemplate",
+    processing_mode="many-to-one",
+    extraction_contract="staged",
+    staged_id_shard_size=2,      # reduce ID payload size
+    staged_nodes_fill_cap=10,    # balance quality vs throughput
+    staged_workers=4,            # parallel fill calls
+)
+```
+
+Tuning guidance:
+- If ID-pass responses truncate, reduce `staged_id_shard_size`.
+- If fill calls are too slow, increase `staged_workers` (within system limits).
+- If fill quality drops, reduce `staged_nodes_fill_cap`.
+
+---
+
 ## Model Selection
 
 ### Local vs Remote
@@ -78,56 +107,6 @@ model_override="mistral-small-latest"  # Accurate (remote)
 
 ---
 
-## Model Capability Tiers
-
-Docling Graph automatically detects model capabilities and optimizes performance:
-
-```python
-from docling_graph import run_pipeline, PipelineConfig
-
-# Small model (1B-7B) - SIMPLE tier
-# - Minimal prompts (fewer tokens)
-# - Basic consolidation (faster)
-config = PipelineConfig(
-    backend="llm",
-    inference="local",
-    provider_override="ollama",
-    model_override="llama3.2:3b"  # Optimized for speed
-)
-
-# Medium model (7B-13B) - STANDARD tier
-# - Balanced prompts
-# - Standard consolidation
-config = PipelineConfig(
-    backend="llm",
-    inference="local",
-    provider_override="ollama",
-    model_override="llama3.1:8b"  # Balanced performance
-)
-
-# Large model (13B+) - ADVANCED tier
-# - Detailed prompts (more tokens but better quality)
-# - Chain of Density consolidation (multi-turn)
-config = PipelineConfig(
-    backend="llm",
-    inference="remote",
-    provider_override="openai",
-    model_override="gpt-4-turbo"  # Optimized for quality
-)
-```
-
-**Performance Impact:**
-
-| Tier | Prompt Tokens | Consolidation | Speed | Quality |
-|:-----|:--------------|:--------------|:------|:--------|
-| **SIMPLE** | ~200-300 | Single-turn | ⚡ Fast | 🟡 Good |
-| **STANDARD** | ~400-500 | Single-turn | ⚡ Fast | 🟢 Better |
-| **ADVANCED** | ~600-800 | Multi-turn | 🐢 Slower | 💎 Best |
-
-See [Model Capabilities](../../fundamentals/extraction-process/model-capabilities.md) for details.
-
----
-
 ## Batch Processing
 
 ### Provider-Specific Batching
@@ -171,61 +150,9 @@ All providers now use a **95% threshold** by default. This provides an optimal b
 
 **Note**: You can override the threshold programmatically if needed (see [Batch Processing](../../fundamentals/extraction-process/batch-processing.md)).
 
-### Optimal Batch Sizes
+### Batch size and staged extraction
 
-```python
-# ✅ Good - Appropriate batch size
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.MyTemplate",
-    use_chunking=True,
-    max_batch_size=5  # Process 5 chunks at a time
-)
-
-# ❌ Avoid - Too large (memory issues)
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.MyTemplate",
-    use_chunking=True,
-    max_batch_size=50  # May run out of memory
-)
-
-# ❌ Avoid - Too small (slow)
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.MyTemplate",
-    use_chunking=True,
-    max_batch_size=1  # Underutilizes resources
-)
-```
-
-### Batch Size Guidelines
-
-**For Local Inference:**
-
-```python
-# GPU with 8GB VRAM
-max_batch_size = 3
-
-# GPU with 16GB VRAM
-max_batch_size = 5
-
-# GPU with 24GB+ VRAM
-max_batch_size = 10
-
-# CPU only
-max_batch_size = 1  # Parallel processing not beneficial
-```
-
-**For Remote APIs:**
-
-```python
-# Most APIs handle batching internally
-max_batch_size = 1  # Send one request at a time
-
-# For APIs with batch endpoints
-max_batch_size = 10  # Check API documentation
-```
+`max_batch_size` is available in the config for metadata and future use. For many-to-one LLM extraction, batching is primarily controlled by chunking and by **staged extraction** when `extraction_contract="staged"` (see [Staged Extraction](../../fundamentals/extraction-process/staged-extraction.md) for `staged_nodes_fill_cap`, `staged_workers`, etc.).
 
 ---
 
@@ -511,7 +438,6 @@ config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate",
     processing_mode="many-to-one",
-    llm_consolidation=False  # Fast merge
 )
 
 # ⚠️ Slow - LLM consolidation (extra API call)
@@ -519,7 +445,6 @@ config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate",
     processing_mode="many-to-one",
-    llm_consolidation=True  # More accurate but slower
 )
 ```
 
@@ -545,7 +470,6 @@ config = PipelineConfig(
     provider_override="openai",
     model_override="gpt-4-turbo",  # ADVANCED tier
     processing_mode="many-to-one",
-    llm_consolidation=True  # Uses Chain of Density
 )
 ```
 
@@ -696,7 +620,6 @@ config = PipelineConfig(
 config = PipelineConfig(
     source="document.pdf",
     template="templates.MyTemplate",
-    llm_consolidation=True  # Extra API call = extra cost
 )
 ```
 
@@ -772,15 +695,15 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 ### Advanced Optimizations
 
 1. **Multi-GPU Processing**: Parallel document processing
-2. **Adaptive Consolidation**: Chain of Density for critical documents
+2. **Staged Extraction**: Use `extraction_contract="staged"` for complex templates
 3. **Memory Profiling**: Monitor and optimize resource usage
-4. **Batch Size Tuning**: Optimize for your hardware
+4. **Chunking**: Tune `chunk_max_tokens` and `use_chunking` for your docs
 
 ---
 
 ## Next Steps
 
-1. **[Model Capabilities →](../../fundamentals/extraction-process/model-capabilities.md)** - Learn about adaptive prompting
+1. **[Staged Extraction →](../../fundamentals/extraction-process/staged-extraction.md)** - Multi-pass extraction tuning
 2. **[Error Handling →](error-handling.md)** - Handle errors gracefully
 3. **[Testing →](testing.md)** - Test performance optimizations
 4. **[GPU Setup →](../../fundamentals/installation/gpu-setup.md)** - Configure GPU

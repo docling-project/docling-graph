@@ -99,10 +99,8 @@ def main() -> None:
             model_override="mistral-large-latest",
             # Many-to-one: merge all pages into single result
             processing_mode="many-to-one",
-            # Enable chunking for large documents
+            # extraction_contract="direct" (default); use "staged" for complex nested templates (see Example 11)
             use_chunking=True,
-            # Use programmatic merge (faster, no extra API call)
-            llm_consolidation=False,
         )
 
         # Execute the pipeline

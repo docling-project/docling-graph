@@ -14,7 +14,7 @@ The Pipeline API provides the main entry point for document extraction and graph
 ### run_pipeline()
 
 ```python
-def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> None
+def run_pipeline(config: Union[PipelineConfig, Dict[str, Any]]) -> PipelineContext
 ```
 
 Run the extraction and graph conversion pipeline.
@@ -25,7 +25,7 @@ Run the extraction and graph conversion pipeline.
 |-----------|------|-------------|
 | `config` | `PipelineConfig` or `dict` | Pipeline configuration |
 
-**Returns:** `None`
+**Returns:** `PipelineContext` with `knowledge_graph`, `extracted_models`, `graph_metadata`, and related results.
 
 **Raises:**
 
@@ -202,7 +202,6 @@ When `debug=True`, `trace_data` is populated with pages, chunks, extractions, in
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
 | `extraction_contract` | `"direct"` or `"staged"` | `"direct"` | LLM extraction contract for many-to-one mode |
 | `use_chunking` | `bool` | `True` | Enable chunking |
-| `llm_consolidation` | `bool` | `False` | Use LLM for merge |
 
 ### Export
 
@@ -291,7 +290,6 @@ config = {
     "processing_mode": "many-to-one",
     "extraction_contract": "staged",
     "use_chunking": True,
-    "llm_consolidation": True,
     
     # Export
     "export_format": "cypher",
@@ -357,7 +355,6 @@ The `metadata.json` file contains pipeline configuration, results, and performan
       "model": "mistral-small-latest",
       "provider": "mistral",
       "use_chunking": true,
-      "llm_consolidation": true,
       "max_batch_size": 1
     }
   },
@@ -418,8 +415,7 @@ run_pipeline({
     "template": "templates.MyTemplate",
     "backend": "llm",
     "inference": "local",  # Faster than remote
-    "use_chunking": False,  # Skip chunking for small docs
-    "llm_consolidation": False  # Skip LLM merge
+    "use_chunking": False  # Skip chunking for small docs
 })
 ```
 

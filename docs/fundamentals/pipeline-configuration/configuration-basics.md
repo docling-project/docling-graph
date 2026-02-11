@@ -34,7 +34,6 @@ config = PipelineConfig(
     processing_mode="many-to-one",  # "one-to-one" or "many-to-one"
     docling_config="ocr",           # "ocr" or "vision"
     use_chunking=True,
-    llm_consolidation=False,
     
     # Export settings
     export_format="csv",        # "csv" or "cypher"
@@ -48,9 +47,9 @@ config = PipelineConfig(
 |:---------|:---------|:--------|
 | **Source** | `source`, `template` | What to extract |
 | **Backend** | `backend`, `inference`, `models` | How to extract |
-| **Processing** | `processing_mode`, `docling_config`, `use_chunking` | How to process |
+| **Processing** | `processing_mode`, `extraction_contract`, `docling_config`, `use_chunking` | How to process |
 | **Export** | `export_format`, `output_dir`, `export_*` | What to output |
-| **Advanced** | `max_batch_size`, `reverse_edges`, `chunker_config` | Optimization |
+| **Advanced** | `staged_*` (staged extraction), `reverse_edges`, `chunker_config` | Optimization |
 
 ---
 
@@ -227,14 +226,12 @@ config = PipelineConfig(
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    llm_consolidation=False
 )
 
 # With consolidation - merges results using LLM
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    llm_consolidation=True
 )
 ```
 
@@ -459,7 +456,6 @@ PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    llm_consolidation=False,
     max_batch_size=1,
     
     # Export defaults

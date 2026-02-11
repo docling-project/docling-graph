@@ -75,12 +75,10 @@ class ManyToOne(ExtractorProtocol):
         self,
         backend: Backend,
         use_chunking: bool = True,
-        llm_consolidation: bool = False
     ):
         """Initialize with backend and options."""
         self.backend = backend
         self.use_chunking = use_chunking
-        self.llm_consolidation = llm_consolidation
     
     def extract(
         self,
@@ -103,7 +101,7 @@ class ManyToOne(ExtractorProtocol):
 
 **Features:**
 - **Zero Data Loss**: Returns partial models if consolidation fails
-- **Adaptive Consolidation**: Uses Chain of Density for ADVANCED tier models
+- **Consolidation**: Programmatic merge of chunk results
 - **Schema-Aware Chunking**: Dynamically adjusts chunk size based on schema
 
 **Example:**
@@ -116,7 +114,6 @@ backend = LLMBackend(model="llama-3.1-8b")
 extractor = ManyToOne(
     backend=backend,
     use_chunking=True,
-    llm_consolidation=True
 )
 
 results = extractor.extract("document.pdf", MyTemplate)
@@ -336,69 +333,40 @@ chunker.update_schema_config(schema_json=json.dumps(OtherTemplate.model_json_sch
 
 ## Factory
 
-### create_extractor()
+### ExtractorFactory.create_extractor()
 
-Factory function for creating extractors.
-
-```python
-def create_extractor(
-    strategy: Literal["one-to-one", "many-to-one"],
-    backend: Backend,
-    **kwargs
-) -> ExtractorProtocol:
-    """
-    Create extractor with strategy.
-    
-    Args:
-        strategy: Extraction strategy
-        backend: Backend instance
-        **kwargs: Additional options
-        
-    Returns:
-        Extractor instance
-    """
-```
-
-**Example:**
+Creates an extractor from pipeline configuration. Used internally by the pipeline; for programmatic use, import from `docling_graph.core.extractors`.
 
 ```python
-from docling_graph.core.extractors import create_extractor
+from docling_graph.core.extractors import ExtractorFactory
 
-extractor = create_extractor(
-    strategy="many-to-one",
-    backend=my_backend,
-    use_chunking=True
+extractor = ExtractorFactory.create_extractor(
+    processing_mode="many-to-one",
+    backend_name="llm",
+    extraction_contract="direct",  # or "staged" for multi-pass (LLM + many-to-one only)
+    staged_config=None,            # optional: pass_retries, workers, nodes_fill_cap, id_shard_size
+    llm_client=client,
+    docling_config="ocr",
 )
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `processing_mode` | `"one-to-one"` \| `"many-to-one"` | Extraction strategy |
+| `backend_name` | `"llm"` \| `"vlm"` | Backend type |
+| `extraction_contract` | `"direct"` \| `"staged"` | LLM contract; `staged` only applies to many-to-one |
+| `staged_config` | `dict` \| `None` | Optional staged tuning (pass_retries, workers, etc.) |
+| `model_name` | `str` \| `None` | Required for VLM |
+| `llm_client` | `LLMClientProtocol` \| `None` | Required for LLM |
+| `docling_config` | `str` | `"ocr"` or `"vision"` |
+
+**Returns:** `BaseExtractor` instance.
 
 ---
 
-## New Features Summary
-
-### Model Capability Detection
-
-Automatic detection of model capabilities based on parameter count:
-
-```python
-# Automatically detected
-backend = LLMBackend(llm_client=client)
-# backend.model_capability = ModelCapability.STANDARD (for 8B model)
-```
-
-### Chain of Density Consolidation
-
-Multi-turn consolidation for ADVANCED tier models (13B+):
-
-```python
-# Automatically enabled for large models
-backend = LLMBackend(llm_client=openai_client)  # GPT-4
-final = backend.consolidate_from_pydantic_models(
-    raw_models=models,
-    programmatic_model=draft,
-    template=MyTemplate
-)
-# Uses 3-turn Chain of Density process
-```
+## Features
 
 ### Zero Data Loss
 
@@ -432,7 +400,7 @@ chunker = DocumentChunker(
 
 ## Related APIs
 
-- **[Model Capabilities](../fundamentals/extraction-process/model-capabilities.md)** - Capability tiers
+- **[Staged Extraction](../fundamentals/extraction-process/staged-extraction.md)** - Multi-pass extraction
 - **[Extraction Process](../fundamentals/extraction-process/index.md)** - Usage guide
 - **[Model Merging](../fundamentals/extraction-process/model-merging.md)** - Zero data loss
 - **[Protocols](protocols.md)** - Backend protocols

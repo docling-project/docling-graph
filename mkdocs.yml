@@ -103,6 +103,7 @@ nav:
       - Relationships: fundamentals/schema-definition/relationships.md
       - Validation: fundamentals/schema-definition/validation.md
       - Advanced Patterns: fundamentals/schema-definition/advanced-patterns.md
+      - Staged Extraction Schema: fundamentals/schema-definition/staged-extraction-schema.md
       - Best Practices: fundamentals/schema-definition/best-practices.md
     - Pipeline Configuration:
       - Overview: fundamentals/pipeline-configuration/index.md
@@ -119,7 +120,7 @@ nav:
       - Document Conversion: fundamentals/extraction-process/document-conversion.md
       - Chunking Strategies: fundamentals/extraction-process/chunking-strategies.md
       - Extraction Backends: fundamentals/extraction-process/extraction-backends.md
-      - Model Capabilities: fundamentals/extraction-process/model-capabilities.md
+      - Staged Extraction: fundamentals/extraction-process/staged-extraction.md
       - Model Merging: fundamentals/extraction-process/model-merging.md
       - Batch Processing: fundamentals/extraction-process/batch-processing.md
     - Graph Management:

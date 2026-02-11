@@ -111,6 +111,8 @@ Select fields that:
 2. **Are stable** (don't change frequently)
 3. **Are likely to be present** in extracted data
 
+**Staged extraction:** When using `extraction_contract="staged"`, only paths with non-empty `graph_id_fields` are sent to the ID pass by default. Entities without `graph_id_fields` are skipped in identity-only mode. The root model must have `graph_id_fields` so at least one root instance can be discovered (required by the quality gate). Prefer required, short, extractable ID fields and add schema examples for better ID-pass prompts. See [Schema design for staged extraction](staged-extraction-schema.md).
+
 #### Examples
 
 ```python
@@ -511,6 +513,18 @@ class Organization(BaseModel):
 ```
 
 **Result:** Same address node is shared across multiple people/organizations.
+
+---
+
+## Staged extraction considerations
+
+When using **staged extraction** (`extraction_contract="staged"`):
+
+- **Entities** that should participate in the ID pass must have `graph_id_fields`. Components (`is_entity=False`) do not appear as separate identity paths when `staged_id_identity_only=True`.
+- **Components** are included in the staged catalog only when the relationship uses `edge()` with an `edge_label`. Components without an edge label are not separate catalog nodes.
+- **Parent linkage** in the fill/merge phase uses `(path, id_tuple)` and parent `(parent_path, parent_id_tuple)`. Ensure parent entities have stable, extractable `graph_id_fields` so references resolve and the quality gate (e.g. `staged_quality_max_parent_lookup_miss`) can pass.
+
+For full guidance (identity choices, depth, troubleshooting), see [Schema design for staged extraction](staged-extraction-schema.md).
 
 ### Pattern 2: Measurements in Research
 

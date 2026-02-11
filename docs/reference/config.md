@@ -78,6 +78,16 @@ config = PipelineConfig(
 | `debug` | `bool` | `False` | Enable debug artifacts |
 | `max_batch_size` | `int` | `1` | Maximum batch size |
 
+#### Staged Tuning Configuration
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `staged_tuning_preset` | `"standard"` or `"advanced"` | `"standard"` | Preset for staged extraction defaults |
+| `staged_pass_retries` | `int` or `None` | `None` | Retries per staged pass (`None` uses preset) |
+| `staged_workers` | `int` or `None` | `None` | Fill-pass worker count only (`None` uses preset) |
+| `staged_nodes_fill_cap` | `int` or `None` | `None` | Max node instances per fill-pass call (`None` uses preset) |
+| `staged_id_shard_size` | `int` or `None` | `None` | Max paths per ID-pass call (`0` = no sharding, `None` uses preset) |
+
 #### Export Configuration
 
 | Field | Type | Default | Description |
@@ -273,7 +283,6 @@ class ExtractorConfig(BaseModel):
     strategy: Literal["many-to-one", "one-to-one"] = Field(default="many-to-one")
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
     use_chunking: bool = Field(default=True)
-    llm_consolidation: bool = Field(default=False)
     chunker_config: Dict[str, Any] | None = Field(default=None)
 ```
 
@@ -376,18 +385,25 @@ context = run_pipeline(config)
 debug_dir = Path(context.output_dir) / "debug"
 print(f"Debug artifacts saved to: {debug_dir}")
 
-# Analyze debug artifacts
+# Analyze staged debug artifacts
 import json
 
-# Load slot metadata
-with open(debug_dir / "slots.jsonl") as f:
-    slots = [json.loads(line) for line in f]
-    print(f"Total slots: {len(slots)}")
+# Core staged artifacts
+for name in [
+    "node_catalog.json",
+    "id_pass.json",
+    "fill_pass.json",
+    "edges_pass.json",
+    "merged_output.json",
+    "staged_trace.json",
+]:
+    p = debug_dir / name
+    print(name, "exists" if p.exists() else "missing")
 
-# Load all atoms
-with open(debug_dir / "atoms_all.jsonl") as f:
-    atoms = [json.loads(line) for line in f]
-    print(f"Total atoms extracted: {len(atoms)}")
+# Example: inspect staged trace timings
+with open(debug_dir / "staged_trace.json") as f:
+    trace = json.load(f)
+    print(trace.get("timings_seconds", {}))
 ```
 
 ### Explicit Control

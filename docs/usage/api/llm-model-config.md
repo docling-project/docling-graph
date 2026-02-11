@@ -46,7 +46,7 @@ models:
 llm_overrides:
   generation:
     temperature: 0.2
-    max_tokens: 2048
+    max_tokens: 512
   reliability:
     timeout_s: 120
   context_limit: 128000        # Override context window size

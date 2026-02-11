@@ -356,7 +356,6 @@ config = PipelineConfig(
     
     # Many-to-one specific settings
     use_chunking=True,  # Enable chunking for large docs
-    llm_consolidation=True,  # Merge results with LLM
     max_batch_size=5  # Process chunks in batches
 )
 ```
@@ -400,7 +399,6 @@ config_many = PipelineConfig(
     template="templates.BillingDocument",
     processing_mode="many-to-one",  # Change mode
     use_chunking=True,  # Enable chunking
-    llm_consolidation=True  # Enable consolidation
 )
 ```
 
@@ -431,7 +429,6 @@ config = PipelineConfig(
     template="templates.Contract",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=True
 )
 
 # Result: One contract with all pages
@@ -493,7 +490,6 @@ else:
         template="templates.BillingDocument",
         processing_mode="many-to-one",
         use_chunking=True,  # Document-wide
-        llm_consolidation=True
     )
 ```
 

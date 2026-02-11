@@ -106,7 +106,6 @@ def process_many_to_one() -> None:
         # Enable chunking for many-to-one
         use_chunking=True,
         # Use programmatic merge
-        llm_consolidation=False,
     )
 
     console.print("  • Processing...")

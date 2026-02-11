@@ -1,3 +1,11 @@
+"""
+Pydantic template for MRH insurance terms (CGV) extraction.
+Optimized for staged extraction.
+
+Extracts a graph-ready contract structure from French multirisque habitation (MRH) CGV,
+with robust parsing helpers for amounts, currencies, and mixed list inputs.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -93,6 +101,34 @@ def _filtrer_liste(v: Any, nom_champ: str, champs_requis: list[str] | None = Non
 
         logger.warning("Suppression élément parasite dans %s: %r", nom_champ, item)
 
+    return out
+
+
+def _normaliser_liste_texte(v: Any) -> list[str]:
+    """
+    Accepte liste mixte (str / dict avec 'nom' ou 'resume') et renvoie une liste de textes propre.
+    """
+    if v is None:
+        return []
+    if isinstance(v, str):
+        txt = v.strip()
+        return [txt] if txt else []
+    if not isinstance(v, list):
+        return []
+
+    out: list[str] = []
+    for item in v:
+        if isinstance(item, str):
+            txt = item.strip()
+            if txt:
+                out.append(txt)
+            continue
+        if isinstance(item, dict):
+            for key in ("nom", "resume", "texte"):
+                val = item.get(key)
+                if isinstance(val, str) and val.strip():
+                    out.append(val.strip())
+                    break
     return out
 
 
@@ -199,8 +235,8 @@ class Bien(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
+    nom: str = Field(
+        ...,
         description=(
             "Nom standardisé du bien (identifiant de déduplication). "
             "Utiliser un libellé cohérent dans tout le document (ex. 'Bâtiment', 'Mobilier')."
@@ -242,14 +278,18 @@ class Exclusion(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["resume"], extra="ignore", populate_by_name=True)
 
-    resume: str | None = Field(
-        None,
-        description="Résumé court servant d'identifiant (utile pour la déduplication).",
+    resume: str = Field(
+        ...,
+        validation_alias=AliasChoices("resume", "titre", "intitule"),
+        description=(
+            "Résumé court et stable servant d'identifiant de l'exclusion. "
+            "Format recommandé: 3 à 10 mots max, sans ponctuation finale."
+        ),
         examples=[
-            "Exclusion vol sans effraction",
-            "Exclusion défaut d'entretien",
-            "Exclusion guerre",
-            "Exclusion risque nucléaire",
+            "Vol sans effraction",
+            "Défaut d'entretien",
+            "Guerre et assimilés",
+            "Risque nucléaire",
         ],
     )
     texte: str | None = Field(
@@ -284,8 +324,8 @@ class Garantie(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
+    nom: str = Field(
+        ...,
         description="Nom de la garantie tel qu'écrit dans le document.",
         examples=[
             "Dégâts des eaux",
@@ -303,22 +343,17 @@ class Garantie(BaseModel):
         ),
     )
 
-    biens_couverts: list[Bien] = edge(
-        label="COUVREBIEN",
+    biens_couverts: list[str] = Field(
         default_factory=list,
         validation_alias=AliasChoices("biens_couverts", "bienscouverts", "biens_couverts"),
         description=(
-            "Quels biens sont couverts par cette garantie. "
-            "Règle pratique (anti-informations dispersées) : "
-            "si la garantie parle de 'biens assurés / bien assuré' sans détailler, "
-            "renseigner au minimum les biens principaux définis à l'Article 1 (souvent 'Bâtiment' et 'Mobilier'). "
-            "Si la garantie/option vise un bien explicite (ex. 'Piscine', 'Jardin', 'Protection du mobilier'), "
-            "ajouter ce bien dans la liste."
+            "Noms des biens couverts par cette garantie (liste texte simplifiée pour extraction staged). "
+            "Si le texte mentionne 'biens assurés' sans détail, mettre au minimum 'Bâtiment' et 'Mobilier'."
         ),
         examples=[
-            [{"nom": "Bâtiment"}, {"nom": "Mobilier"}],
-            [{"nom": "Piscine"}],
-            [{"nom": "Jardin"}],
+            ["Bâtiment", "Mobilier"],
+            ["Piscine"],
+            ["Jardin"],
         ],
     )
 
@@ -343,30 +378,27 @@ class Garantie(BaseModel):
         examples=[[{"texte": "Faire procéder au ramonage avant chaque hiver."}]],
     )
 
-    exclusions_specifiques: list[Exclusion] = edge(
-        label="AEXCLUSION",
+    exclusions_specifiques: list[str] = Field(
         default_factory=list,
         validation_alias=AliasChoices(
             "exclusions_specifiques", "exclusions", "exclusionsspecifiques"
         ),
         description=(
-            "Exclusions spécifiques à cette garantie (typiquement sous un bloc 'EXCLUSIONS SPÉCIFIQUES' "
-            "dans la section de la garantie). "
-            "Ne pas y mettre les exclusions 'communes à toutes les garanties' (Article 7), "
-            "qui doivent aller dans AssuranceMRH.exclusions_communes."
+            "Résumés courts des exclusions spécifiques à cette garantie "
+            "(liste texte simplifiée pour extraction staged)."
         ),
-        examples=[[{"resume": "Exclusion défaut d'entretien"}]],
+        examples=[["Défaut d'entretien"], ["Vol sans effraction"]],
     )
 
     @field_validator("biens_couverts", mode="before")
     @classmethod
     def filtrer_biens_couverts(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "biens_couverts")
+        return _normaliser_liste_texte(v)
 
     @field_validator("exclusions_specifiques", mode="before")
     @classmethod
     def filtrer_exclusions_specifiques(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "exclusions_specifiques")
+        return _normaliser_liste_texte(v)
 
     @model_validator(mode="after")
     def auto_lier_biens_evidents(self) -> Garantie:
@@ -386,7 +418,7 @@ class Garantie(BaseModel):
         }
         bien_nom = mapping.get(self.nom.strip())
         if bien_nom:
-            self.biens_couverts = [Bien(nom=bien_nom)]
+            self.biens_couverts = [bien_nom]
         return self
 
 
@@ -397,8 +429,8 @@ class Option(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
+    nom: str = Field(
+        ...,
         description="Nom de l'option tel qu'écrit dans le document.",
         examples=[
             "Dommages électriques",
@@ -417,35 +449,31 @@ class Option(BaseModel):
         ],
     )
 
-    biens_couverts: list[Bien] = edge(
-        label="COUVREBIEN",
+    biens_couverts: list[str] = Field(
         default_factory=list,
         validation_alias=AliasChoices("biens_couverts", "bienscouverts", "biens_couverts"),
         description=(
-            "Biens couverts par l'option. "
-            "Si l'option correspond à un bien explicite (ex. 'Piscine', 'Jardin'), "
-            "ajouter ce bien au minimum via son 'nom'."
+            "Noms des biens couverts par l'option (liste texte simplifiée pour extraction staged)."
         ),
-        examples=[[{"nom": "Piscine"}], [{"nom": "Jardin"}]],
+        examples=[["Piscine"], ["Jardin"]],
     )
 
-    etend_garanties: list[Garantie] = edge(
-        label="ETENDGARANTIE",
+    etend_garanties: list[str] = Field(
         default_factory=list,
         validation_alias=AliasChoices("etend_garanties", "etendgaranties"),
-        description="Si indiqué, liste des garanties que l'option étend/active.",
-        examples=[[{"nom": "Incendie et événements assimilés"}]],
+        description="Noms des garanties étendues/activées par l'option (liste texte).",
+        examples=[["Incendie et événements assimilés"], ["Vol et Vandalisme"]],
     )
 
     @field_validator("biens_couverts", mode="before")
     @classmethod
     def filtrer_biens_couverts(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "biens_couverts")
+        return _normaliser_liste_texte(v)
 
     @field_validator("etend_garanties", mode="before")
     @classmethod
     def filtrer_etend_garanties(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "etend_garanties", champs_requis=["nom"])
+        return _normaliser_liste_texte(v)
 
     @model_validator(mode="after")
     def auto_lier_biens_evidents(self) -> Option:
@@ -454,7 +482,7 @@ class Option(BaseModel):
         if not self.nom:
             return self
         if self.nom.strip() in {"Jardin", "Piscine"}:
-            self.biens_couverts = [Bien(nom=self.nom.strip())]
+            self.biens_couverts = [self.nom.strip()]
         return self
 
 
@@ -465,8 +493,8 @@ class Offre(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
+    nom: str = Field(
+        ...,
         description="Nom de la formule tel qu'écrit.",
         examples=["ESSENTIELLE", "CONFORT", "CONFORT PLUS", "PROPRIÉTAIRE NON OCCUPANT"],
     )
@@ -537,19 +565,23 @@ class AssuranceMRH(BaseModel):
     Racine du document MRH.
     """
 
-    model_config = ConfigDict(
-        graph_id_fields=["reference_document"], extra="ignore", populate_by_name=True
-    )
+    model_config = ConfigDict(graph_id_fields=["assureur"], extra="ignore", populate_by_name=True)
 
     reference_document: str | None = Field(
         None,
         validation_alias=AliasChoices("reference_document", "referencedocument"),
-        description="Référence/identifiant du document (couverture, pied de page) si présent.",
+        description=(
+            "Référence/identifiant du document (couverture, pied de page) si présent. "
+            "Champ utile mais non utilisé comme ID principal en mode staged."
+        ),
         examples=["CGV-MRH-2023", "HABITATION 2023-10"],
     )
-    assureur: str | None = Field(
-        None,
-        description="Assureur / marque si présent.",
+    assureur: str = Field(
+        ...,
+        description=(
+            "Nom de l'assureur / marque (ID racine principal en mode staged). "
+            "Chercher dans l'en-tête, la couverture, ou le logo textuel."
+        ),
         examples=["Direct Assurance", "AXA", "MMA"],
     )
     date_version: str | None = Field(
@@ -558,11 +590,18 @@ class AssuranceMRH(BaseModel):
         description="Date/version/édition si présente.",
         examples=["2023-10-01", "Édition Janvier 2024"],
     )
-    nom_produit: str | None = Field(
-        None,
+    nom_produit: str = Field(
+        ...,
         validation_alias=AliasChoices("nom_produit", "nomproduit"),
-        description="Nom du produit si présent.",
-        examples=["Assurance Habitation", "Multirisque Habitation", "MRH"],
+        description=(
+            "Nom commercial du produit (ID principal en extraction staged). "
+            "Chercher dans l'en-tête, la couverture, ou le titre principal."
+        ),
+        examples=[
+            "Assurance Habitation",
+            "Multirisque Habitation",
+            "MRH Direct Assurance",
+        ],
     )
 
     offres: list[Offre] = edge(

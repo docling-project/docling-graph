@@ -8,14 +8,11 @@
 **In this guide:**
 - Why merging is needed
 - Programmatic vs LLM merging
-- Chain of Density consolidation
+- Optional LLM consolidation
 - Zero data loss strategies
 - Deduplication strategies
 - Conflict resolution
 - Best practices
-
-!!! tip "New: Chain of Density Consolidation"
-    For ADVANCED tier models (13B+), LLM consolidation now uses a multi-turn "Chain of Density" approach for higher quality results. See [Model Capabilities](model-capabilities.md) for details.
 
 ---
 
@@ -52,8 +49,7 @@ final_model = merge(model_1, model_2, model_3)
 | Strategy | Speed | Accuracy | Cost | Use Case |
 |:---------|:------|:---------|:-----|:---------|
 | **Programmatic** | ⚡ Fast | 🟡 Good | Free | Default, simple merging |
-| **LLM (Standard)** | 🐢 Slow | 🟢 Better | $ API cost | High accuracy needs |
-| **LLM (Chain of Density)** | 🐌 Slower | 💎 Best | $$$ 3x API cost | Critical documents |
+| **LLM consolidation** | 🐢 Slower | 🟢 Better | $ API cost | High accuracy needs |
 
 !!! info "Zero Data Loss"
     All merging strategies now implement zero data loss - if merging fails, the system returns partial models instead of empty results.
@@ -205,77 +201,14 @@ entity_3 = {"name": "Acme Corp", "city": "London"}
 
 ### What is LLM Consolidation?
 
-**LLM consolidation** uses an LLM to intelligently merge models, resolving conflicts and improving accuracy. For ADVANCED tier models (13B+), it uses a multi-turn "Chain of Density" approach.
-
-### Consolidation Modes
-
-#### Standard Consolidation (SIMPLE/STANDARD tiers)
-
-Single-turn consolidation for models < 13B parameters:
-
-```python
-# Automatic for SIMPLE/STANDARD tier models
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.BillingDocument",
-    backend="llm",
-    inference="local",
-    provider_override="ollama",
-    model_override="llama3.1:8b",  # STANDARD tier
-    llm_consolidation=True  # Single-turn consolidation
-)
-```
-
-**Process:**
-1. Receive raw models and programmatic merge
-2. Create consolidated model in one LLM call
-3. Validate and return
-
-**Performance:**
-- Speed: ~3-5 seconds
-- Token usage: ~1000-2000 tokens
-- Accuracy: 95%
-
-#### Chain of Density Consolidation (ADVANCED tier)
-
-Multi-turn consolidation for models ≥ 13B parameters:
-
-```python
-# Automatic for ADVANCED tier models
-config = PipelineConfig(
-    source="contract.pdf",
-    template="templates.Contract",
-    backend="llm",
-    inference="remote",
-    provider_override="openai",
-    model_override="gpt-4-turbo",  # ADVANCED tier
-    llm_consolidation=True  # Chain of Density (3 turns)
-)
-```
-
-**Process:**
-1. **Initial Merge** (Turn 1): Create first consolidated version
-2. **Refinement** (Turn 2): Identify and resolve conflicts
-3. **Final Polish** (Turn 3): Ensure completeness and accuracy
-
-**Performance:**
-- Speed: ~10-15 seconds (3x slower)
-- Token usage: ~3000-6000 tokens (3x more)
-- Accuracy: 98%
+**LLM consolidation** uses an LLM to intelligently merge models, resolving conflicts and improving accuracy. The backend merges chunk results programmatically first, then optionally runs an LLM consolidation step.
 
 ### When to Use
 
-✅ **Use Standard LLM consolidation when:**
-- High accuracy is needed (95%)
+✅ **Use LLM consolidation when:**
+- High accuracy is needed
 - Complex conflict resolution required
-- Using SIMPLE/STANDARD tier models
-- Budget allows API calls
-
-✅ **Use Chain of Density when:**
-- Critical accuracy required (98%)
-- Legal or financial documents
-- Using ADVANCED tier models (13B+)
-- Budget allows 3x API costs
+- Budget allows extra API calls
 
 ❌ **Don't use LLM consolidation when:**
 - Speed is priority
@@ -299,7 +232,6 @@ config = PipelineConfig(
     template="templates.BillingDocument",
     backend="llm",
     inference="remote",
-    llm_consolidation=True  # Enable LLM consolidation
 )
 
 run_pipeline(config)
@@ -336,73 +268,6 @@ validated_model = template.model_validate(llm_output)
 
 ---
 
-### Chain of Density Process
-
-For ADVANCED tier models, consolidation uses three turns:
-
-#### Turn 1: Initial Merge
-
-```python
-# Prompt includes:
-# - Schema definition
-# - All raw models
-# - Programmatic merge result
-
-# LLM creates initial consolidated version
-initial_model = llm.consolidate(
-    schema=schema,
-    raw_models=raw_models,
-    draft=programmatic_merge
-)
-```
-
-#### Turn 2: Refinement
-
-```python
-# Prompt includes:
-# - Initial model from Turn 1
-# - Identified conflicts
-# - Missing information
-
-# LLM refines and resolves conflicts
-refined_model = llm.refine(
-    initial=initial_model,
-    conflicts=identified_conflicts,
-    raw_models=raw_models
-)
-```
-
-#### Turn 3: Final Polish
-
-```python
-# Prompt includes:
-# - Refined model from Turn 2
-# - Completeness checklist
-# - Accuracy verification
-
-# LLM ensures completeness and accuracy
-final_model = llm.polish(
-    refined=refined_model,
-    schema=schema,
-    raw_models=raw_models
-)
-```
-
-**Benefits:**
-- 💎 Highest accuracy (98% vs 95%)
-- 🔍 Better conflict resolution
-- ✅ More complete data extraction
-- 🎯 Fewer validation errors
-
-**Trade-offs:**
-- 🐌 3x slower processing
-- 💰 3x higher API costs
-- 📊 3x more token usage
-
-See [Model Capabilities: Chain of Density](model-capabilities.md#chain-of-density-consolidation) for complete details.
-
----
-
 ### LLM Consolidation Prompt
 
 The LLM receives:
@@ -412,11 +277,6 @@ The LLM receives:
 3. **Draft model:** Programmatic merge result
 
 **Task:** Create the best possible consolidated model
-
-**For Chain of Density (ADVANCED tier):**
-- Turn 1: Initial consolidation
-- Turn 2: Conflict resolution
-- Turn 3: Completeness verification
 
 ---
 
@@ -470,7 +330,6 @@ config = PipelineConfig(
     backend="llm",
     inference="remote",
     provider_override="mistral",
-    llm_consolidation=True,  # Extra accuracy
     
     # Chunking settings
     use_chunking=True,
@@ -718,7 +577,6 @@ Organization(
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    llm_consolidation=False  # Default (90% accuracy)
 )
 ```
 
@@ -732,31 +590,20 @@ config = PipelineConfig(
     backend="llm",
     inference="local",
     model_override="llama3.1:8b",  # STANDARD tier
-    llm_consolidation=True  # 95% accuracy
 )
 ```
 
-### 👍 Use Chain of Density for Critical Documents
+### 👍 Use LLM Consolidation for Critical Documents
 
 ```python
-# ✅ Good - Highest accuracy for critical data
+# ✅ Good - Higher accuracy for critical data (uses extra LLM call)
 config = PipelineConfig(
     source="legal_contract.pdf",
     template="templates.LegalContract",
     backend="llm",
     inference="remote",
-    model_override="gpt-4-turbo",  # ADVANCED tier
-    llm_consolidation=True  # Chain of Density (98% accuracy)
 )
 ```
-
-!!! warning "Cost Consideration"
-    Chain of Density uses 3x more tokens than standard consolidation. For 100 documents:
-    
-    - Standard LLM: ~$10-20
-    - Chain of Density: ~$30-60
-    
-    Use only when accuracy justifies the cost.
 
 ### 👍 Validate Merged Results
 
@@ -810,7 +657,6 @@ class Organization(BaseModel):
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    llm_consolidation=True  # Better preservation
 )
 ```
 
@@ -837,7 +683,6 @@ except ValidationError as e:
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    llm_consolidation=False  # Faster
 )
 ```
 
@@ -878,26 +723,7 @@ merged = custom_merge(models, Invoice)
 | Strategy | Time | Tokens | Accuracy | Cost (100 docs) | Best For |
 |:---------|:-----|:-------|:---------|:----------------|:---------|
 | **Programmatic** | 0.01s | 0 | 90% | $0 | Default, high volume |
-| **LLM Standard** | 3s | 1500 | 95% | $15 | Important documents |
-| **Chain of Density** | 10s | 4500 | 98% | $45 | Critical documents |
-
-### When to Use Each
-
-```python
-# High volume, good accuracy needed
-if document_count > 1000:
-    llm_consolidation = False  # Programmatic
-
-# Important documents, high accuracy needed
-elif document_importance == "high":
-    llm_consolidation = True  # Standard LLM
-    model_override = "llama3.1:8b"  # STANDARD tier
-
-# Critical documents, maximum accuracy needed
-elif document_importance == "critical":
-    llm_consolidation = True  # Chain of Density
-    model_override = "gpt-4-turbo"  # ADVANCED tier
-```
+| **LLM consolidation** | 3s | 1500 | 95% | $15 | Important documents |
 
 ---
 
@@ -905,7 +731,7 @@ elif document_importance == "critical":
 
 Now that you understand model merging:
 
-1. **[Model Capabilities →](model-capabilities.md)** - Learn about Chain of Density
+1. **[Staged Extraction →](staged-extraction.md)** - Multi-pass extraction for complex templates
 2. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
 3. **[Extraction Backends →](extraction-backends.md)** - Understand backends
 4. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Optimize consolidation

@@ -378,7 +378,6 @@ config = PipelineConfig(
     
     # LLM-specific
     use_chunking=True,  # Split large documents
-    llm_consolidation=True,  # Merge results with LLM
     max_batch_size=5  # Process multiple chunks
 )
 ```

@@ -46,15 +46,13 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **✨ Batch Optimization**: [Provider-specific batching](docs/usage/advanced/performance-tuning.md#provider-specific-batching) with [real tokenizers](docs/usage/advanced/performance-tuning.md#real-tokenizer-integration) and [improved GPU utilization](docs/usage/advanced/performance-tuning.md#clean-up-resources) for faster inference and better memory handling.
+- **🪜 Multi-pass Extraction - EXPERIMENTAL**: [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge. Use `extraction_contract="staged"` with many-to-one LLM.
 
-- **🔌 LiteLLM abstraction**: Unified interface to local and remote LLM providers (vLLM, Mistral, OpenAI, WatsonX, etc.) via [LiteLLM](docs/reference/llm-clients.md), offering improved support and greater flexibility.
+- **✨ LiteLLM abstraction**: Unified interface to local and remote LLM providers (vLLM, Mistral, OpenAI, WatsonX, etc.) via [LiteLLM](docs/reference/llm-clients.md), offering improved support and greater flexibility.
 
 - **🐛 Trace Capture**: [Comprehensive debug data](docs/usage/advanced/trace-data-debugging.md) via [`TraceData`](docling_graph/pipeline/trace.py) captures pages, chunks and intermediate schemas and graphs.
 
 ### Coming Soon
-
-* 🪜 **Multi-Stage Extraction:** Define `extraction_stage` in templates to control multi-pass extraction.
 
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 

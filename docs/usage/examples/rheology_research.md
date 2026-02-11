@@ -84,7 +84,6 @@ uv run docling-graph convert research.pdf \
     --model mistral-large-latest \
     --processing-mode many-to-one \
     --use-chunking \
-    --llm-consolidation \
     --docling-pipeline vision \
     --output-dir "outputs/research"
 ```
@@ -108,7 +107,6 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     processing_mode="many-to-one",
     use_chunking=True,
-    llm_consolidation=True,
     docling_config="vision"  # Better for complex layouts
 )
 
@@ -224,7 +222,6 @@ class Experiment(BaseModel):
 uv run docling-graph convert research.pdf \
     --template "templates.ScholarlyRheologyPaper" \
     --use-chunking \
-    --llm-consolidation \
     --processing-mode many-to-one
 ```
 
@@ -244,7 +241,6 @@ uv run docling-graph convert research.pdf \
 uv run docling-graph convert research.pdf \
     --template "templates.ScholarlyRheologyPaper" \
     --model mistral-small-latest \
-    --no-llm-consolidation
 ```
 
 ---
@@ -306,7 +302,6 @@ class Research(BaseModel):
 # Disable consolidation for faster processing
 uv run docling-graph convert research.pdf \
     --template "templates.ScholarlyRheologyPaper" \
-    --no-llm-consolidation
 
 # Or use smaller model
 --model mistral-small-latest
@@ -367,7 +362,6 @@ config = PipelineConfig(
     source="long_paper.pdf",
     template="templates.ScholarlyRheologyPaper",
     use_chunking=True,  # Essential
-    llm_consolidation=True  # Better accuracy
 )
 ```
 

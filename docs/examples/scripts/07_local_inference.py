@@ -100,7 +100,6 @@ def main() -> None:
             model_override="llama3:8b",  # Llama 3 8B model
             processing_mode="many-to-one",
             use_chunking=True,
-            llm_consolidation=False,
         )
 
         console.print("\n[yellow]⚙️  Processing locally (may take 3-5 minutes)...[/yellow]")
