@@ -74,7 +74,9 @@ def main() -> None:
     console.print("  • Extraction contract: [cyan]staged[/cyan]")
 
     console.print("\n[yellow]⚠️  Prerequisites:[/yellow]")
-    console.print("  • Mistral API key: [cyan]export MISTRAL_API_KEY='...'[/cyan] (or use Ollama locally)")
+    console.print(
+        "  • Mistral API key: [cyan]export MISTRAL_API_KEY='...'[/cyan] (or use Ollama locally)"
+    )
     console.print("  • Install dependencies: [cyan]uv sync[/cyan]")
     console.print("  • Sample data: [cyan]docs/examples/data/research_paper/rheology.pdf[/cyan]")
 
@@ -122,7 +124,9 @@ def main() -> None:
         console.print(f"\n[red]Error:[/red] {e}")
         if "api" in error_msg or "key" in error_msg:
             console.print("  • Set Mistral API key: [cyan]export MISTRAL_API_KEY='your-key'[/cyan]")
-            console.print("  • Or switch to local: [cyan]inference='local', provider_override='ollama'[/cyan]")
+            console.print(
+                "  • Or switch to local: [cyan]inference='local', provider_override='ollama'[/cyan]"
+            )
         sys.exit(1)
 
 

@@ -9,6 +9,7 @@ import pytest
 
 from docling_graph.core.input.handlers import (
     DoclingDocumentHandler,
+    DocumentInputHandler,
     TextInputHandler,
     URLInputHandler,
 )
@@ -434,6 +435,54 @@ class TestURLInputHandler:
         assert "headers" in get_call_kwargs
         assert "User-Agent" in get_call_kwargs["headers"]
         assert result.exists()
+
+
+class TestDocumentInputHandler:
+    """Test DocumentInputHandler (unified path: file or raw text -> Path for Docling)."""
+
+    @pytest.fixture
+    def temp_dir(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield Path(tmpdir)
+
+    @pytest.fixture
+    def handler(self):
+        return DocumentInputHandler()
+
+    def test_returns_path_for_pdf(self, handler, temp_dir):
+        pdf_file = temp_dir / "test.pdf"
+        pdf_file.write_bytes(b"%PDF-1.4 fake")
+        result = handler.load(str(pdf_file))
+        assert isinstance(result, Path)
+        assert result == pdf_file
+
+    def test_returns_temp_md_for_txt_file(self, handler, temp_dir):
+        txt_file = temp_dir / "test.txt"
+        txt_file.write_text("Hello world")
+        result = handler.load(str(txt_file))
+        assert isinstance(result, Path)
+        assert result.suffix == ".md"
+        assert result.read_text() == "Hello world"
+
+    def test_returns_temp_md_for_raw_text(self, handler):
+        result = handler.load("Raw text content")
+        assert isinstance(result, Path)
+        assert result.suffix == ".md"
+        assert result.read_text() == "Raw text content"
+
+    def test_rejects_empty_raw_text(self, handler):
+        with pytest.raises(ValidationError, match="empty"):
+            handler.load("")
+
+    def test_rejects_whitespace_only_raw_text(self, handler):
+        with pytest.raises(ValidationError, match="whitespace"):
+            handler.load("   \n\t  ")
+
+    def test_rejects_empty_txt_file(self, handler, temp_dir):
+        empty = temp_dir / "empty.txt"
+        empty.write_text("")
+        with pytest.raises(ValidationError, match="empty"):
+            handler.load(str(empty))
 
 
 class TestDoclingDocumentHandler:

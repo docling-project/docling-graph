@@ -39,6 +39,70 @@ class InputHandler(ABC):
         """
 
 
+class DocumentInputHandler(InputHandler):
+    """
+    Handles any input that goes to Docling for conversion.
+
+    - File path (any extension): returns path as-is; Docling validates format.
+    - .txt file: reads content and writes to a temporary .md file (Docling accepts markdown).
+    - Raw text string (API): writes to a temporary .md file.
+    """
+
+    def load(self, source: Union[str, Path]) -> Path:
+        """
+        Normalize document input to a path Docling can consume.
+
+        Returns:
+            Path to the source file, or to a temporary .md file for text/.txt content.
+        """
+        if isinstance(source, Path):
+            path = source
+        else:
+            path = Path(source)
+
+        # Existing file path
+        if path.exists() and path.is_file():
+            # Normalize .txt to temp .md so Docling gets markdown
+            if path.suffix.lower() in {".txt"}:
+                content = path.read_text(encoding="utf-8")
+                if not content.strip():
+                    raise ValidationError(
+                        "Text input is empty",
+                        details={"file": str(path)},
+                    )
+                return self._write_temp_md(content)
+            return path
+
+        # Raw text string (API mode): write to temp .md
+        if isinstance(source, str):
+            if not source:
+                raise ValidationError(
+                    "Text input is empty",
+                    details={"hint": "Provide non-empty text content"},
+                )
+            if not source.strip():
+                raise ValidationError(
+                    "Text input contains only whitespace",
+                    details={"hint": "Provide text with actual content"},
+                )
+            return self._write_temp_md(source)
+
+        raise ValidationError(
+            "Document input must be a file path or a string",
+            details={"type": type(source).__name__},
+        )
+
+    @staticmethod
+    def _write_temp_md(content: str) -> Path:
+        """Write content to a temporary .md file and return its path."""
+        fd = tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8")
+        try:
+            fd.write(content)
+            return Path(fd.name)
+        finally:
+            fd.close()
+
+
 class TextInputHandler(InputHandler):
     """Handles plain text, .txt, and .md files."""
 

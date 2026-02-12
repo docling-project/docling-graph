@@ -38,7 +38,7 @@ def convert_command(
     source: Annotated[
         str,
         typer.Argument(
-            help="Path to source document (PDF, JPG, PNG, TXT, MD), URL, or DoclingDocument JSON file.",
+            help="Path to source document (any Docling-supported format), URL, or DoclingDocument JSON file. DoclingDocument skips conversion.",
         ),
     ],
     template: Annotated[

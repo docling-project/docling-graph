@@ -8,6 +8,7 @@ pre-processed DoclingDocument JSON files.
 
 from .handlers import (
     DoclingDocumentHandler,
+    DocumentInputHandler,
     InputHandler,
     TextInputHandler,
     URLInputHandler,
@@ -23,6 +24,7 @@ from .validators import (
 __all__ = [
     "DoclingDocumentHandler",
     "DoclingDocumentValidator",
+    "DocumentInputHandler",
     # Handlers
     "InputHandler",
     # Types
