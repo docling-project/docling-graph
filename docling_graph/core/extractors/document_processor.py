@@ -17,6 +17,7 @@ from docling.pipeline.vlm_pipeline import VlmPipeline
 from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
 
+from ...exceptions import ExtractionError
 from .document_chunker import DocumentChunker
 
 
@@ -95,11 +96,17 @@ class DocumentProcessor:
         """
         Converts a document to Docling's Document format.
 
+        Any format supported by Docling (PDF, Office, HTML, images, markdown, etc.)
+        is accepted; Docling validates and may raise for unsupported types.
+
         Args:
-            source (str): Path to the source document.
+            source (str): Path to the source document (or URL).
 
         Returns:
             Document: Docling document object.
+
+        Raises:
+            Exception: Re-raises Docling conversion errors with context.
         """
         # Suppress RapidOCR INFO logs (RapidOCR() resets logger to INFO in __init__; set handler level so it sticks)
         if self.docling_config == "ocr":
@@ -116,7 +123,14 @@ class DocumentProcessor:
         rich_print(
             f"[blue][DocumentProcessor][/blue] Converting document: [yellow]{source}[/yellow]"
         )
-        result = self.converter.convert(source)
+        try:
+            result = self.converter.convert(source)
+        except Exception as e:
+            raise ExtractionError(
+                f"Conversion failed in Docling: {e}",
+                details={"source": source},
+                cause=e,
+            ) from e
 
         rich_print(
             f"[blue][DocumentProcessor][/blue] Converted [cyan]{result.document.num_pages()}[/cyan] pages"

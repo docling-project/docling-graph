@@ -18,11 +18,13 @@ class InputType(Enum):
 
     PDF = "pdf"
     IMAGE = "image"
-    TEXT = "text"  # Raw text strings (Python API only)
+    TEXT = "text"  # Kept for backward compatibility; detection uses DOCUMENT
     TEXT_FILE = "text_file"
     MARKDOWN = "markdown"
     URL = "url"
     DOCLING_DOCUMENT = "docling_document"
+    # Catch-all: any file or raw text sent to Docling for conversion (validated by Docling)
+    DOCUMENT = "document"
 
 
 class InputTypeDetector:
@@ -63,9 +65,9 @@ class InputTypeDetector:
         if cls._is_url(source_str):
             return InputType.URL
 
-        # In API mode, empty strings or whitespace-only strings are treated as text
+        # In API mode, empty strings or whitespace-only are invalid (handler will reject)
         if mode == "api" and not source_str.strip():
-            return InputType.TEXT
+            return InputType.DOCUMENT
 
         # Try to interpret as a file path
         source_path = Path(source_str)
@@ -88,21 +90,19 @@ class InputTypeDetector:
                 )
             return cls._detect_from_file(source_path)
 
-        # API mode: check if file exists, otherwise treat as raw text
+        # API mode: file exists -> detect from file; else treat as raw text (DOCUMENT, normalized to .md for Docling)
         try:
             if source_path.exists():
                 if source_path.is_file():
                     return cls._detect_from_file(source_path)
                 else:
-                    # Path exists but is not a file (e.g., directory)
-                    # In API mode, treat as text
-                    return InputType.TEXT
+                    # Path exists but is not a file (e.g., directory) -> DOCUMENT
+                    return InputType.DOCUMENT
             else:
-                # In API mode, if not a file and not a URL, treat as raw text
-                return InputType.TEXT
+                # Not a file and not a URL -> raw text, sent to Docling after normalizing to .md
+                return InputType.DOCUMENT
         except (OSError, ValueError):
-            # If path checking fails (e.g., invalid path), treat as text
-            return InputType.TEXT
+            return InputType.DOCUMENT
 
     @classmethod
     def _is_url(cls, source: str) -> bool:
@@ -122,52 +122,18 @@ class InputTypeDetector:
         """
         Detect input type from file extension and content.
 
-        Args:
-            file_path: Path to the file
-
-        Returns:
-            InputType enum value
-
-        Raises:
-            ConfigurationError: If file type is not supported
+        Only DoclingDocument JSON is special (skip conversion). All other files
+        are DOCUMENT and are sent to Docling for conversion; Docling validates
+        supported formats.
         """
         extension = file_path.suffix.lower()
 
-        # Check PDF
-        if extension in cls.PDF_EXTENSIONS:
-            return InputType.PDF
-
-        # Check images
-        if extension in cls.IMAGE_EXTENSIONS:
-            return InputType.IMAGE
-
-        # Check text files
-        if extension in cls.TEXT_EXTENSIONS:
-            return InputType.TEXT_FILE
-
-        # Check markdown
-        if extension in cls.MARKDOWN_EXTENSIONS:
-            return InputType.MARKDOWN
-
-        # Check JSON - need to peek inside to see if it's a DoclingDocument
+        # JSON: peek inside to see if it's a DoclingDocument (skip conversion)
         if extension in cls.JSON_EXTENSIONS:
             return cls._detect_json_type(file_path)
 
-        # Unsupported extension
-        raise ConfigurationError(
-            f"Unsupported file type: {extension}",
-            details={
-                "file": str(file_path),
-                "extension": extension,
-                "supported_extensions": (
-                    list(cls.PDF_EXTENSIONS)
-                    + list(cls.IMAGE_EXTENSIONS)
-                    + list(cls.TEXT_EXTENSIONS)
-                    + list(cls.MARKDOWN_EXTENSIONS)
-                    + list(cls.JSON_EXTENSIONS)
-                ),
-            },
-        )
+        # Everything else (PDF, images, .txt, .md, Office, HTML, etc.) -> Docling
+        return InputType.DOCUMENT
 
     @classmethod
     def _detect_json_type(cls, file_path: Path) -> InputType:
@@ -183,9 +149,8 @@ class InputTypeDetector:
         if cls._is_docling_document(file_path):
             return InputType.DOCLING_DOCUMENT
 
-        # Not a DoclingDocument - treat as regular text/JSON
-        # Return TEXT so it can be processed as plain text
-        return InputType.TEXT
+        # Not a DoclingDocument - send to Docling like any other file
+        return InputType.DOCUMENT
 
     @classmethod
     def _is_docling_document(cls, file_path: Path) -> bool:

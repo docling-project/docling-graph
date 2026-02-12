@@ -34,7 +34,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ## Key Capabilities
 
-- **✍🏻 Input Formats**: Ingest PDFs, images, [DoclingDocument](docs/fundamentals/pipeline-configuration/input-formats.md#docling-document-json), Markdown, URLs and [more](docs/fundamentals/pipeline-configuration/input-formats.md).
+- **✍🏻 Input Formats**: All inputs go through [Docling](https://docling-project.github.io/docling/usage/supported_formats/) for conversion (PDF, Office, HTML, images, markdown, etc.); [DoclingDocument](docs/fundamentals/pipeline-configuration/input-formats.md#doclingdocument-json-skip-conversion) JSON skips conversion.
 
 - **🧠 Data Extraction**: Extract structured data using [VLM](docs/fundamentals/pipeline-configuration/backend-selection.md) or [LLM](docs/fundamentals/pipeline-configuration/backend-selection.md). Supports [intelligent chunking](docs/fundamentals/extraction-process/chunking-strategies.md) and flexible [processing modes](docs/fundamentals/pipeline-configuration/processing-modes.md).
 
@@ -46,7 +46,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **🪜 Multi-pass Extraction - EXPERIMENTAL**: [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge. Use `extraction_contract="staged"` with many-to-one LLM.
+- **🪜 Multi-pass Extraction** - EXPERIMENTAL: [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge. Use `extraction_contract="staged"` with many-to-one LLM.
 
 - **✨ LiteLLM abstraction**: Unified interface to local and remote LLM providers (vLLM, Mistral, OpenAI, WatsonX, etc.) via [LiteLLM](docs/reference/llm-clients.md), offering improved support and greater flexibility.
 

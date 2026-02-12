@@ -28,10 +28,9 @@ from ..core import (
 from ..core.input import (
     DoclingDocumentHandler,
     DoclingDocumentValidator,
+    DocumentInputHandler,
     InputType,
     InputTypeDetector,
-    TextInputHandler,
-    TextValidator,
     URLInputHandler,
     URLValidator,
 )
@@ -112,17 +111,6 @@ class InputNormalizationStage(PipelineStage):
         input_type = InputTypeDetector.detect(context.config.source, mode=self.mode)
         logger.info(f"[{self.name()}] Detected: {input_type.value}")
 
-        # CLI mode: reject plain text input
-        if self.mode == "cli" and input_type == InputType.TEXT:
-            raise ConfigurationError(
-                "Plain text input is only supported via Python API",
-                details={
-                    "source": str(context.config.source),
-                    "mode": self.mode,
-                    "hint": "Use a file path (.txt, .md) or URL instead",
-                },
-            )
-
         # Get appropriate validator and handler
         validator = self._get_validator(input_type)
         handler = self._get_handler(input_type)
@@ -174,34 +162,8 @@ class InputNormalizationStage(PipelineStage):
 
         metadata: Dict[str, Any] = {}
 
-        if input_type == InputType.TEXT:
-            metadata = {
-                "input_type": "text",
-                "skip_ocr": True,
-                "skip_segmentation": True,
-                "original_source": "<raw_text>",
-                "is_file": False,
-            }
-        elif input_type == InputType.TEXT_FILE:
-            metadata = {
-                "input_type": "text_file",
-                "skip_ocr": True,
-                "skip_segmentation": True,
-                "original_source": str(source),
-                "is_file": True,
-            }
-        elif input_type == InputType.MARKDOWN:
-            metadata = {
-                "input_type": "markdown",
-                "skip_ocr": True,
-                "skip_segmentation": True,
-                "original_source": str(source),
-                "is_file": True,
-            }
-        elif input_type == InputType.URL:
-            # For URLs, normalized_content is a Path to downloaded file
+        if input_type == InputType.URL:
             if isinstance(normalized_content, Path):
-                # Detect the actual type of downloaded file
                 detected_type = InputTypeDetector._detect_from_file(normalized_content)
                 metadata = {
                     "input_type": "url",
@@ -219,9 +181,10 @@ class InputNormalizationStage(PipelineStage):
                 "original_source": str(source),
                 "is_file": True,
             }
-        elif input_type in (InputType.PDF, InputType.IMAGE):
+        else:
+            # DOCUMENT (all inputs sent to Docling for conversion)
             metadata = {
-                "input_type": "pdf_or_image",
+                "input_type": "document",
                 "skip_ocr": False,
                 "skip_segmentation": False,
                 "original_source": str(source),
@@ -231,41 +194,29 @@ class InputNormalizationStage(PipelineStage):
 
     def _get_validator(self, input_type: InputType) -> Any:
         """Get appropriate validator for input type."""
-        if input_type in (InputType.TEXT, InputType.TEXT_FILE, InputType.MARKDOWN):
-            return TextValidator()
-        elif input_type == InputType.URL:
-            # Get URL config from context if available
+        if input_type == InputType.URL:
             return URLValidator()
-        elif input_type == InputType.DOCLING_DOCUMENT:
+        if input_type == InputType.DOCLING_DOCUMENT:
             return DoclingDocumentValidator()
-        elif input_type in (InputType.PDF, InputType.IMAGE):
-            # PDF and images don't need special validation beyond file existence
-            # which is already done by InputTypeDetector
+        if input_type == InputType.DOCUMENT:
             return _NoOpValidator()
-        else:
-            raise ConfigurationError(
-                f"No validator available for input type: {input_type.value}",
-                details={"input_type": input_type.value},
-            )
+        raise ConfigurationError(
+            f"No validator available for input type: {input_type.value}",
+            details={"input_type": input_type.value},
+        )
 
     def _get_handler(self, input_type: InputType) -> Any:
         """Get appropriate handler for input type."""
-        if input_type in (InputType.TEXT, InputType.TEXT_FILE, InputType.MARKDOWN):
-            return TextInputHandler()
-        elif input_type == InputType.URL:
-            # Get URL config from context if available
+        if input_type == InputType.URL:
             return URLInputHandler()
-        elif input_type == InputType.DOCLING_DOCUMENT:
+        if input_type == InputType.DOCLING_DOCUMENT:
             return DoclingDocumentHandler()
-        elif input_type in (InputType.PDF, InputType.IMAGE):
-            # PDF and images are handled by existing document processor
-            # Return a pass-through handler
-            return _PassThroughHandler()
-        else:
-            raise ConfigurationError(
-                f"No handler available for input type: {input_type.value}",
-                details={"input_type": input_type.value},
-            )
+        if input_type == InputType.DOCUMENT:
+            return DocumentInputHandler()
+        raise ConfigurationError(
+            f"No handler available for input type: {input_type.value}",
+            details={"input_type": input_type.value},
+        )
 
 
 class _NoOpValidator:
@@ -386,32 +337,28 @@ class ExtractionStage(PipelineStage):
         if context.input_metadata:
             input_type = context.input_metadata.get("input_type")
 
-            # Handle DoclingDocument input (already processed)
+            # Handle DoclingDocument input (skip conversion)
             if input_type == "docling_document":
                 logger.info(f"[{self.name()}] Using pre-loaded DoclingDocument")
                 context.extracted_models = self._extract_from_docling_document(context)
-                # DoclingDocument is already in context.docling_document
                 logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
                 return context
 
-            # Handle text-based inputs (plain text, .txt, .md)
-            elif input_type in ["text", "text_file", "markdown"]:
-                logger.info(f"[{self.name()}] Processing text input (type: {input_type})")
-                context.extracted_models = self._extract_from_text(context)
-                # No DoclingDocument for text inputs
-                context.docling_document = None
-                logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
-                return context
-
-        # Default path: PDF/Image processing (existing behavior)
+        # All other inputs: Docling conversion path (file, URL download, text normalized to .md)
         logger.info(f"[{self.name()}] Creating extractor...")
         context.extractor = self._create_extractor(context)
         if context.trace_data and hasattr(context.extractor, "trace_data"):
             context.extractor.trace_data = context.trace_data
 
-        logger.info(f"[{self.name()}] Extracting from: {context.config.source}")
+        # Use normalized path when available (URL download or DOCUMENT handler output)
+        source_for_extract = (
+            context.normalized_source
+            if isinstance(context.normalized_source, Path)
+            else context.config.source
+        )
+        logger.info(f"[{self.name()}] Extracting from: {source_for_extract}")
         context.extracted_models, context.docling_document = context.extractor.extract(
-            str(context.config.source), context.template
+            str(source_for_extract), context.template
         )
 
         if not context.extracted_models:

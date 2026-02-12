@@ -408,7 +408,9 @@ def get_discovery_prompt(
             '{"path": "offres[]", "ids": {"nom": "CONFORT"}, "parent": {"path": "", "ids": {"reference_document": "CGV-2024"}}}]}'
         )
     if no_id_paths:
-        system_prompt += "\nPaths with no id_fields (ids must be {}): " + ", ".join(no_id_paths) + "."
+        system_prompt += (
+            "\nPaths with no id_fields (ids must be {}): " + ", ".join(no_id_paths) + "."
+        )
 
     user_prompt = "List every node instance in this document.\n\n=== DOCUMENT ===\n"
     user_prompt += f"{markdown_content}\n=== END DOCUMENT ===\n\n"
@@ -421,6 +423,7 @@ def get_discovery_prompt(
         '"parent": null or {"path": "...", "ids": {"id_field": "value"}}}, ...]}.'
     )
     return {"system": system_prompt, "user": user_prompt}
+
 
 def _get_spec_by_path(catalog: NodeCatalog) -> dict[str, NodeSpec]:
     """Return path -> NodeSpec for lookup."""
@@ -442,7 +445,9 @@ def _parent_closure(catalog: NodeCatalog, paths: list[str]) -> set[str]:
     return result
 
 
-def get_allowed_paths_for_primary_paths(catalog: NodeCatalog, primary_paths: list[str]) -> list[str]:
+def get_allowed_paths_for_primary_paths(
+    catalog: NodeCatalog, primary_paths: list[str]
+) -> list[str]:
     """Return primary_paths plus parent closure, sorted. For targeted re-ask prompts."""
     return sorted(_parent_closure(catalog, primary_paths))
 
@@ -464,7 +469,6 @@ def get_id_pass_shards(catalog: NodeCatalog, shard_size: int) -> list[tuple[list
         allowed_list = sorted(_parent_closure(catalog, primary_paths))
         shards.append((primary_paths, allowed_list))
     return shards
-
 
 
 def get_identity_paths(catalog: NodeCatalog) -> list[str]:
@@ -516,6 +520,7 @@ def get_id_pass_shards_v2(
         primary = sorted(_parent_closure(catalog, chunk), key=lambda p: (p.count("."), p))
         shards.append((primary, primary))
     return shards
+
 
 def merge_and_dedupe_flat_nodes(
     list_of_flat_nodes: list[list[dict[str, Any]]], catalog: NodeCatalog
@@ -642,7 +647,11 @@ def _validate_one_skeleton_node(
         return [f"Item {i}: not an object"], None, False
     path = _normalize_skeleton_path(item.get("path"))
     if path is None or path not in allowed_paths:
-        return [f"Item {i}: missing or invalid path (must be one of {sorted(allowed_paths)})"], None, False
+        return (
+            [f"Item {i}: missing or invalid path (must be one of {sorted(allowed_paths)})"],
+            None,
+            False,
+        )
     spec = spec_by_path.get(path)
     if not spec:
         return [f"Item {i}: unknown path '{path}'"], None, False
@@ -658,14 +667,26 @@ def _validate_one_skeleton_node(
         is_root = True
     else:
         if not isinstance(parent_raw, dict):
-            return [f"Item {i} (path '{path}'): non-root must have parent {{path, ids}}"], None, False
+            return (
+                [f"Item {i} (path '{path}'): non-root must have parent {{path, ids}}"],
+                None,
+                False,
+            )
         p_path = _normalize_skeleton_path(parent_raw.get("path"))
         if p_path is None or p_path not in allowed_paths:
-            return [f"Item {i} (path '{path}'): parent.path must be one of {sorted(allowed_paths)}"], None, False
+            return (
+                [f"Item {i} (path '{path}'): parent.path must be one of {sorted(allowed_paths)}"],
+                None,
+                False,
+            )
         if p_path != spec.parent_path:
-            return [
-                f"Item {i} (path '{path}'): parent.path '{p_path}' must equal catalog parent_path '{spec.parent_path}'"
-            ], None, False
+            return (
+                [
+                    f"Item {i} (path '{path}'): parent.path '{p_path}' must equal catalog parent_path '{spec.parent_path}'"
+                ],
+                None,
+                False,
+            )
         parent_spec = spec_by_path.get(p_path)
         if not parent_spec:
             return [f"Item {i} (path '{path}'): unknown parent path '{p_path}'"], None, False
@@ -744,7 +765,9 @@ def validate_id_pass_skeleton_response(
     flat_nodes: list[dict[str, Any]] = []
     per_path_counts: dict[str, int] = {spec.path: 0 for spec in catalog.nodes}
     spec_by_path = _get_spec_by_path(catalog)
-    allowed_paths = allowed_paths_override if allowed_paths_override is not None else set(catalog.paths())
+    allowed_paths = (
+        allowed_paths_override if allowed_paths_override is not None else set(catalog.paths())
+    )
     seen_keys: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
     path_ordinals: dict[str, int] = {}
 
@@ -774,7 +797,12 @@ def validate_id_pass_skeleton_response(
         return False, parent_errors, flat_nodes, per_path_counts
 
     if not has_root:
-        return False, ['Missing root instance: expected one node with path "" and parent null'], flat_nodes, per_path_counts
+        return (
+            False,
+            ['Missing root instance: expected one node with path "" and parent null'],
+            flat_nodes,
+            per_path_counts,
+        )
 
     return True, [], flat_nodes, per_path_counts
 

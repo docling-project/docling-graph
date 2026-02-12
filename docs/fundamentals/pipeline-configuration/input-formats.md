@@ -1,6 +1,6 @@
 # Input Formats
 
-Docling Graph supports multiple input formats, allowing you to process various types of documents and data sources through the same pipeline.
+Docling Graph uses a unified ingestion path: all inputs go through Docling except DoclingDocument JSON (which skips conversion), using a unified path: all inputs are converted through Docling; only DoclingDocument JSON skips conversion. See [Docling supported formats](https://docling-project.github.io/docling/usage/supported_formats/) for what Docling accepts.
 
 ## Input Normalization Process
 
@@ -8,170 +8,33 @@ The pipeline automatically detects and validates input types, routing them throu
 
 --8<-- "docs/assets/flowcharts/input_normalization.md"
 
-**Key Features**:
-- **Automatic Type Detection**: Identifies input format from file extension, URL, or content
-- **Validation**: Ensures input meets requirements (non-empty, correct format, etc.)
-- **Smart Routing**: Skips unnecessary stages based on input type
-  - Text/Markdown inputs skip OCR
-  - DoclingDocument inputs skip extraction and go directly to graph conversion
-  - URLs are downloaded and processed based on their content type
+**Key behavior**:
+- **DoclingDocument JSON**: Loaded directly; conversion is skipped.
+- **All other inputs**: Normalized (e.g. URL download, text to temp .md), then sent to Docling. Docling validates format; unsupported types raise Docling errors.
+- **URLs**: Downloaded to a temp file; path is passed to Docling.
 
 ## Supported Input Formats
 
-### 1. PDF Documents
-
-**Description**: Standard PDF files with text, images, and complex layouts.
-
-**File Extensions**: `.pdf`
-
-**Processing**: Full pipeline with OCR/VLM, segmentation, and extraction.
-
-**CLI Example**:
-```bash
-docling-graph convert document.pdf -t templates.billing_document.BillingDocument
-```
-
-**Python API Example**:
-```python
-from docling_graph import PipelineConfig, run_pipeline
-
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.billing_document.BillingDocument",
-    backend="llm",
-    inference="local",
-    processing_mode="many-to-one",
-    docling_config="ocr",
-    output_dir="outputs",
-    export_format="csv"
-)
-
-run_pipeline(config)
-```
+Docling Graph does not whitelist extensions. Any file or URL is sent to Docling; [Docling supported formats](https://docling-project.github.io/docling/usage/supported_formats/) include PDF, Office (DOCX, XLSX, PPTX), images, HTML, Markdown, LaTeX, AsciiDoc, CSV. Unsupported formats produce a Docling conversion error (e.g. `ExtractionError: Conversion failed in Docling: ...`).
 
 ---
 
-### 2. Image Files
+### Document inputs (files, raw text)
 
-**Description**: Image files containing document content (scanned documents, photos of documents, etc.).
+Any Docling-supported file, or raw text (API only). Text and .txt are normalized to markdown, then sent to Docling.
 
-**File Extensions**: `.png`, `.jpg`, `.jpeg`
-
-**Processing**: Full pipeline with OCR/VLM, segmentation, and extraction.
-
-**CLI Example**:
-```bash
-docling-graph convert scanned_invoice.png -t templates.billing_document.BillingDocument
-```
-
-**Python API Example**:
-```python
-config = PipelineConfig(
-    source="scanned_invoice.jpg",
-    template="templates.billing_document.BillingDocument",
-    backend="vlm",  # VLM works well with images
-    inference="local",
-    processing_mode="one-to-one",
-    docling_config="vision",
-    output_dir="outputs",
-    export_format="json"
-)
-
-run_pipeline(config)
-```
+**CLI**: `docling-graph convert document.pdf -t templates.billing_document.BillingDocument`  
+**API**: Same; for raw text use `source="text content"` and `run_pipeline(config, mode="api")`.
 
 ---
 
-### 3. Plain Text Files
+### URLs
 
-**Description**: Simple text files containing unstructured content.
+**Description**: Download and process documents from HTTP/HTTPS URLs.
 
-**File Extensions**: `.txt`
+**Processing**: Content is downloaded to a temporary file; the path is passed to Docling. Supported formats are those Docling supports.
 
-**Processing**: Skips OCR and visual processing. Goes directly to LLM extraction.
-
-**Requirements**:
-- Must use LLM backend (VLM requires visual content)
-- File must not be empty or contain only whitespace
-
-**CLI Example**:
-```bash
-docling-graph convert notes.txt -t templates.report.Report --backend llm
-```
-
-**Python API Example**:
-```python
-config = PipelineConfig(
-    source="meeting_notes.txt",
-    template="templates.report.Report",
-    backend="llm",  # Required for text inputs
-    inference="remote",
-    processing_mode="many-to-one",
-    docling_config="ocr",  # Ignored for text inputs
-    output_dir="outputs",
-    export_format="csv"
-)
-
-run_pipeline(config)
-```
-
----
-
-### 4. Markdown Files
-
-**Description**: Markdown-formatted text files with structure and formatting.
-
-**File Extensions**: `.md`
-
-**Processing**: Skips OCR and visual processing. Markdown structure is preserved during extraction.
-
-**Requirements**:
-- Must use LLM backend
-- File must not be empty
-
-**CLI Example**:
-```bash
-docling-graph convert README.md -t templates.documentation.Documentation --backend llm
-```
-
-**Python API Example**:
-```python
-config = PipelineConfig(
-    source="documentation.md",
-    template="templates.documentation.Documentation",
-    backend="llm",
-    inference="local",
-    processing_mode="many-to-one",
-    output_dir="outputs",
-    export_format="json"
-)
-
-run_pipeline(config)
-```
-
----
-
-### 5. URLs
-
-**Description**: Download and process documents from URLs.
-
-**Format**: `http://` or `https://` URLs
-
-**Processing**: 
-1. Downloads content to temporary location
-2. Detects content type (PDF, image, text, markdown)
-3. Routes to appropriate processing pipeline
-
-**Supported URL Content Types**:
-- PDF documents
-- Image files (PNG, JPG, JPEG)
-- Plain text files
-- Markdown files
-
-**Requirements**:
-- Valid HTTP/HTTPS URL
-- Accessible without authentication (for now)
-- File size under limit (default: 100MB)
+**Requirements**: Valid http/https URL; file size under limit (default: 100MB).
 
 **CLI Example**:
 ```bash
@@ -213,48 +76,13 @@ handler = URLInputHandler(
 
 ---
 
-### 6. Plain Text Strings (Python API Only)
+### Plain text strings (Python API only)
 
-**Description**: Raw text strings passed directly to the pipeline.
-
-**Format**: Python string
-
-**Processing**: Skips OCR and visual processing. Direct LLM extraction.
-
-**Requirements**:
-- Only available via Python API (not CLI)
-- Must use LLM backend
-- String must not be empty or whitespace-only
-
-**Python API Example**:
-```python
-# Direct text input
-text_content = """
-Invoice #12345
-Date: 2024-01-15
-Amount: $1,234.56
-Customer: Acme Corp
-"""
-
-config = PipelineConfig(
-    source=text_content,  # Pass string directly
-    template="templates.billing_document.BillingDocument",
-    backend="llm",
-    inference="local",
-    processing_mode="many-to-one",
-    output_dir="outputs",
-    export_format="json"
-)
-
-run_pipeline(config, mode="api")  # mode="api" required
-```
-
-!!! note "CLI Input Restriction"
-    CLI does not accept plain text strings to avoid ambiguity with file paths.
+Raw text: pass a string as `source` and call `run_pipeline(config, mode="api")`. It is normalized to a temporary markdown file and sent to Docling. CLI does not accept plain text (file path or URL only).
 
 ---
 
-### 7. DoclingDocument JSON (Advanced)
+### DoclingDocument JSON (skip conversion)
 
 **Description**: Pre-processed DoclingDocument JSON files.
 
@@ -316,103 +144,58 @@ run_pipeline(config)
 
 ## Input Format Detection
 
-The pipeline automatically detects input format based on:
-
-1. **File Extension**: `.pdf`, `.png`, `.jpg`, `.txt`, `.md`, `.json`
-2. **URL Scheme**: `http://` or `https://`
-3. **Content Analysis**: For JSON files, checks for DoclingDocument schema
-4. **Fallback**: Plain text for unrecognized formats (API mode only)
-
-**Detection Examples**:
-
-```python
-from docling_graph.core.input.types import InputTypeDetector
-
-# Detect from file path
-input_type = InputTypeDetector.detect("document.pdf", mode="cli")
-# Returns: InputType.PDF
-
-# Detect from URL
-input_type = InputTypeDetector.detect("https://example.com/file.txt", mode="cli")
-# Returns: InputType.URL
-
-# Detect from text (API mode only)
-input_type = InputTypeDetector.detect("Plain text content", mode="api")
-# Returns: InputType.TEXT
-```
+- **URL**: String starting with `http://` or `https://`.
+- **DoclingDocument**: `.json` file with DoclingDocument schema (e.g. `schema_name`, `version`, `pages`).
+- **Document**: Everything else (any file path or, in API mode, raw text). Passed to Docling; no extension whitelist in docling-graph.
 
 ---
 
 ## Processing Pipeline by Input Type
 
-### Visual Documents (PDF, Images)
+### All inputs except DoclingDocument
 ```
-Input → Document Conversion (OCR/VLM) → Segmentation → 
-Extraction → Graph Construction → Export
-```
-
-### Text Documents (.txt, .md, plain text)
-```
-Input → Text Normalization → Extraction (LLM only) → 
-Graph Construction → Export
-```
-
-### URLs
-```
-URL → Download → Type Detection → Route to appropriate pipeline
+Input → Normalize (e.g. URL download, text → .md) → Docling conversion →
+DoclingDocument → Chunking → Extraction → Graph → Export
 ```
 
 ### DoclingDocument JSON
 ```
-Input → Validation → Graph Construction → Export
-(Skips conversion and extraction)
+Input → Load DoclingDocument → Chunking / Extraction → Graph → Export
+(Conversion skipped)
 ```
 
 ---
 
 ## Backend Compatibility
 
-| Input Format | LLM Backend | VLM Backend |
-|--------------|-------------|-------------|
-| PDF | ✅ Yes | ✅ Yes |
-| Images | ✅ Yes | ✅ Yes |
-| Text Files | ✅ Yes | ❌ No |
-| Markdown | ✅ Yes | ❌ No |
-| URLs (PDF/Image) | ✅ Yes | ✅ Yes |
-| URLs (Text/MD) | ✅ Yes | ❌ No |
-| Plain Text | ✅ Yes | ❌ No |
-| DoclingDocument | ✅ Yes | ✅ Yes |
+| Input type | LLM Backend | VLM Backend |
+|------------|-------------|-------------|
+| Documents (files, URLs) | Yes | Yes (PDF/images at Docling level) |
+| DoclingDocument JSON | Yes | Yes |
+| Plain text (API) | Yes | Converted via Docling |
 
-!!! note "Backend Requirements"
-    VLM (Vision Language Model) backend requires visual content. Use LLM backend for text-only inputs.
+VLM backend only supports certain inputs at the Docling level (e.g. PDF, images). Other formats may raise Docling or backend errors.
 
 ---
 
 ## Error Handling
 
-### Empty Files
-```bash
-$ docling-graph convert empty.txt -t templates.Report
-Error: Text input is empty
+### Unsupported format (from Docling)
+When the file type is not supported by Docling:
 ```
+ExtractionError: Conversion failed in Docling: ...
+Details: source=/path/to/file.xyz
+```
+Use a [Docling-supported format](https://docling-project.github.io/docling/usage/supported_formats/) or convert the file first.
 
-### Unsupported Backend
-```bash
-$ docling-graph convert notes.txt -t templates.Report --backend vlm
-Error: VLM backend does not support text-only inputs. Use LLM backend instead.
-```
+### Empty text
+`ValidationError: Text input is empty` — ensure content is non-empty.
+
+### File not found (CLI)
+`ConfigurationError: File not found` — use a valid file path or URL.
 
 ### Invalid URL
-```bash
-$ docling-graph convert ftp://example.com/file.pdf -t templates.BillingDocument
-Error: URL must use http or https scheme
-```
-
-### File Not Found
-```bash
-$ docling-graph convert missing.pdf -t templates.BillingDocument
-Error: File not found: missing.pdf
-```
+`ValidationError: URL must use http or https scheme`
 
 ---
 

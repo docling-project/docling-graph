@@ -98,6 +98,7 @@ def test_discovery_prompt_shape():
 
 def test_catalog_includes_schema_descriptions_and_examples():
     """When the Pydantic model has description and Field(examples=...), catalog carries them into the prompt."""
+
     class ModelWithHints(BaseModel):
         """Root entity for testing schema hints."""
 
@@ -108,7 +109,11 @@ def test_catalog_includes_schema_descriptions_and_examples():
     root = next((n for n in catalog.nodes if n.path == ""), None)
     assert root is not None
     # Model docstring or schema description may appear in description
-    assert "testing" in root.description.lower() or "entity" in root.description.lower() or root.description != ""
+    assert (
+        "testing" in root.description.lower()
+        or "entity" in root.description.lower()
+        or root.description != ""
+    )
     # id_field 'code' has examples in schema -> example_hint should be set
     assert "code" in root.example_hint and ("A1" in root.example_hint or "B2" in root.example_hint)
 
@@ -122,7 +127,9 @@ def test_discovery_prompt_explicitly_handles_no_id_paths():
 
     class Employee(BaseModel):
         email: str
-        addresses: list[Address] = Field(default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"})
+        addresses: list[Address] = Field(
+            default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"}
+        )
         model_config = ConfigDict(graph_id_fields=["email"])
 
     class Company(BaseModel):
@@ -155,7 +162,11 @@ def test_validate_id_pass_skeleton_response_flat_nested_with_parent():
     data = {
         "nodes": [
             {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-            {"path": "employees[]", "ids": {"email": "a@b.com"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
+            {
+                "path": "employees[]",
+                "ids": {"email": "a@b.com"},
+                "parent": {"path": "", "ids": {"company_name": "Acme"}},
+            },
         ]
     }
     ok, _errs, flat_nodes, counts = validate_id_pass_skeleton_response(data, catalog)
@@ -174,7 +185,11 @@ def test_validate_id_pass_skeleton_response_rejects_invalid_path():
     data = {
         "nodes": [
             {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-            {"path": "unknown[]", "ids": {"x": "1"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
+            {
+                "path": "unknown[]",
+                "ids": {"x": "1"},
+                "parent": {"path": "", "ids": {"company_name": "Acme"}},
+            },
         ]
     }
     ok, errs, _flat_nodes, _counts = validate_id_pass_skeleton_response(data, catalog)
@@ -188,7 +203,11 @@ def test_validate_id_pass_skeleton_response_rejects_missing_id_fields():
     data = {
         "nodes": [
             {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-            {"path": "employees[]", "ids": {}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
+            {
+                "path": "employees[]",
+                "ids": {},
+                "parent": {"path": "", "ids": {"company_name": "Acme"}},
+            },
         ]
     }
     ok, errs, _flat_nodes, _counts = validate_id_pass_skeleton_response(data, catalog)
@@ -235,8 +254,18 @@ def test_validate_id_pass_skeleton_response_rejects_orphan_parent_reference():
 def test_flat_nodes_to_path_lists():
     """flat_nodes_to_path_lists groups by path."""
     flat = [
-        {"path": "offres[]", "ids": {"nom": "A"}, "provenance": "p1", "parent": {"path": "", "ids": {}}},
-        {"path": "offres[]", "ids": {"nom": "B"}, "provenance": "p2", "parent": {"path": "", "ids": {}}},
+        {
+            "path": "offres[]",
+            "ids": {"nom": "A"},
+            "provenance": "p1",
+            "parent": {"path": "", "ids": {}},
+        },
+        {
+            "path": "offres[]",
+            "ids": {"nom": "B"},
+            "provenance": "p2",
+            "parent": {"path": "", "ids": {}},
+        },
     ]
     grouped = flat_nodes_to_path_lists(flat)
     assert list(grouped.keys()) == ["offres[]"]
@@ -295,11 +324,26 @@ def test_merge_and_dedupe_flat_nodes():
     catalog = build_node_catalog(SampleCompany)
     list1 = [
         {"path": "", "ids": {"company_name": "A"}, "provenance": "p0", "parent": None},
-        {"path": "employees[]", "ids": {"email": "e1"}, "provenance": "p1", "parent": {"path": "", "ids": {"company_name": "A"}}},
+        {
+            "path": "employees[]",
+            "ids": {"email": "e1"},
+            "provenance": "p1",
+            "parent": {"path": "", "ids": {"company_name": "A"}},
+        },
     ]
     list2 = [
-        {"path": "", "ids": {"company_name": "A"}, "provenance": "dup", "parent": None},  # duplicate root
-        {"path": "employees[]", "ids": {"email": "e2"}, "provenance": "p2", "parent": {"path": "", "ids": {"company_name": "A"}}},
+        {
+            "path": "",
+            "ids": {"company_name": "A"},
+            "provenance": "dup",
+            "parent": None,
+        },  # duplicate root
+        {
+            "path": "employees[]",
+            "ids": {"email": "e2"},
+            "provenance": "p2",
+            "parent": {"path": "", "ids": {"company_name": "A"}},
+        },
     ]
     merged, per_path_counts = merge_and_dedupe_flat_nodes([list1, list2], catalog)
     assert len(merged) == 3  # root once, employees e1 and e2
@@ -317,7 +361,9 @@ def test_merge_and_dedupe_keeps_multiple_component_instances_without_id_fields()
     class Employee(BaseModel):
         name: str = ""
         email: str
-        addresses: list[Address] = Field(default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"})
+        addresses: list[Address] = Field(
+            default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"}
+        )
         model_config = ConfigDict(graph_id_fields=["email"])
 
     class Company(BaseModel):
@@ -328,13 +374,29 @@ def test_merge_and_dedupe_keeps_multiple_component_instances_without_id_fields()
     catalog = build_node_catalog(Company)
     list1 = [
         {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-        {"path": "employees[]", "ids": {"email": "a@b.com"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
-        {"path": "employees[].addresses[]", "ids": {}, "parent": {"path": "employees[]", "ids": {"email": "a@b.com"}}},
+        {
+            "path": "employees[]",
+            "ids": {"email": "a@b.com"},
+            "parent": {"path": "", "ids": {"company_name": "Acme"}},
+        },
+        {
+            "path": "employees[].addresses[]",
+            "ids": {},
+            "parent": {"path": "employees[]", "ids": {"email": "a@b.com"}},
+        },
     ]
     list2 = [
         {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-        {"path": "employees[]", "ids": {"email": "b@b.com"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
-        {"path": "employees[].addresses[]", "ids": {}, "parent": {"path": "employees[]", "ids": {"email": "b@b.com"}}},
+        {
+            "path": "employees[]",
+            "ids": {"email": "b@b.com"},
+            "parent": {"path": "", "ids": {"company_name": "Acme"}},
+        },
+        {
+            "path": "employees[].addresses[]",
+            "ids": {},
+            "parent": {"path": "employees[]", "ids": {"email": "b@b.com"}},
+        },
     ]
     merged, per_path_counts = merge_and_dedupe_flat_nodes([list1, list2], catalog)
     assert per_path_counts.get("", 0) == 1
@@ -379,7 +441,15 @@ def test_catalog_orchestrator_end_to_end():
                 "nodes": [{"path": "", "ids": {"invoice_number": "INV-001"}, "parent": None}],
             }
         if "fill_" in context:
-            return [{"invoice_number": "INV-001", "date": "2024-01-15", "total_amount": 100.0, "vendor_name": "Acme", "items": []}]
+            return [
+                {
+                    "invoice_number": "INV-001",
+                    "date": "2024-01-15",
+                    "total_amount": 100.0,
+                    "vendor_name": "Acme",
+                    "items": [],
+                }
+            ]
         return None
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -417,8 +487,18 @@ def test_merge_filled_into_root_nested_by_parent_id():
     path_descriptors = {
         "": [{"path": "", "ids": {}, "provenance": "p0", "parent": None}],
         "employees[]": [
-            {"path": "employees[]", "ids": {"email": "a@b.com"}, "provenance": "p1", "parent": {"path": "", "ids": {}}},
-            {"path": "employees[]", "ids": {"email": "b@b.com"}, "provenance": "p2", "parent": {"path": "", "ids": {}}},
+            {
+                "path": "employees[]",
+                "ids": {"email": "a@b.com"},
+                "provenance": "p1",
+                "parent": {"path": "", "ids": {}},
+            },
+            {
+                "path": "employees[]",
+                "ids": {"email": "b@b.com"},
+                "provenance": "p2",
+                "parent": {"path": "", "ids": {}},
+            },
         ],
     }
     merged = merge_filled_into_root(path_filled, path_descriptors, catalog)
@@ -439,7 +519,9 @@ def test_merge_filled_into_root_preserves_component_instances_without_id_fields(
 
     class Employee(BaseModel):
         email: str
-        addresses: list[Address] = Field(default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"})
+        addresses: list[Address] = Field(
+            default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"}
+        )
         model_config = ConfigDict(graph_id_fields=["email"])
 
     class Company(BaseModel):
@@ -450,8 +532,16 @@ def test_merge_filled_into_root_preserves_component_instances_without_id_fields(
     catalog = build_node_catalog(Company)
     flat_nodes = [
         {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-        {"path": "employees[]", "ids": {"email": "a@b.com"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
-        {"path": "employees[]", "ids": {"email": "b@b.com"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
+        {
+            "path": "employees[]",
+            "ids": {"email": "a@b.com"},
+            "parent": {"path": "", "ids": {"company_name": "Acme"}},
+        },
+        {
+            "path": "employees[]",
+            "ids": {"email": "b@b.com"},
+            "parent": {"path": "", "ids": {"company_name": "Acme"}},
+        },
         {
             "path": "employees[].addresses[]",
             "ids": {},
@@ -489,7 +579,11 @@ def test_fill_pass_order_bottom_up():
             return {
                 "nodes": [
                     {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
-                    {"path": "employees[]", "ids": {"email": "a@b.com"}, "parent": {"path": "", "ids": {"company_name": "Acme"}}},
+                    {
+                        "path": "employees[]",
+                        "ids": {"email": "a@b.com"},
+                        "parent": {"path": "", "ids": {"company_name": "Acme"}},
+                    },
                 ],
             }
         if "fill_call_0" in context:
@@ -500,7 +594,9 @@ def test_fill_pass_order_bottom_up():
 
     with tempfile.TemporaryDirectory() as tmp:
         config = CatalogOrchestratorConfig(max_nodes_per_call=5, parallel_workers=1)
-        schema_json = '{"type":"object","properties":{"company_name":{},"industry":{},"employees":{}}}'
+        schema_json = (
+            '{"type":"object","properties":{"company_name":{},"industry":{},"employees":{}}}'
+        )
         orch = CatalogOrchestrator(
             llm_call_fn=mock_llm,
             schema_json=schema_json,
@@ -560,7 +656,9 @@ def test_id_pass_shards_run_sequentially_even_with_fill_workers():
             parallel_workers=4,
             id_shard_size=1,
         )
-        schema_json = '{"type":"object","properties":{"company_name":{},"industry":{},"employees":{}}}'
+        schema_json = (
+            '{"type":"object","properties":{"company_name":{},"industry":{},"employees":{}}}'
+        )
         orch = CatalogOrchestrator(
             llm_call_fn=mock_llm,
             schema_json=schema_json,
