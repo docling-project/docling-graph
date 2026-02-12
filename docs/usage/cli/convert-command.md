@@ -204,6 +204,17 @@ uv run docling-graph convert document.pdf \
     --model mistral-large-latest
 ```
 
+### LLM connection overrides
+
+Use `--llm-base-url` to point to a custom endpoint (e.g. on-prem OpenAI-compatible server). API keys are set via environment variables or `config.yaml` (`llm_overrides.connection`), not CLI. See [LLM Model Configuration](../api/llm-model-config.md) for the full list of overrides and on-prem setup.
+
+For the on-prem flow, use fixed env vars:
+
+```bash
+export CUSTOM_LLM_BASE_URL="https://your-llm.example.com/v1"
+export CUSTOM_LLM_API_KEY="your-api-key"
+```
+
 ---
 
 ## Extraction Options

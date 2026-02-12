@@ -30,6 +30,9 @@ logger = logging.getLogger(__name__)
 # Load .env for provider credentials
 load_dotenv()
 
+CUSTOM_LLM_BASE_URL_ENV = "CUSTOM_LLM_BASE_URL"
+CUSTOM_LLM_API_KEY_ENV = "CUSTOM_LLM_API_KEY"
+
 
 class GenerationDefaults(BaseModel):
     """Default generation parameters."""
@@ -390,6 +393,7 @@ def _resolve_connection(
         value = os.getenv(key)
         return value or None
 
+    # Precedence: provider defaults -> provider env -> fixed custom env -> explicit overrides
     env_api_key = _env_value(connection.api_key_env)
     api_key = connection.api_key or (SecretStr(env_api_key) if env_api_key is not None else None)
     base_url = connection.base_url or _env_value(connection.base_url_env)
@@ -397,7 +401,17 @@ def _resolve_connection(
     project_id = connection.project_id or _env_value(connection.project_id_env)
     headers = dict(connection.headers)
 
+    # Fixed custom endpoint env vars for on-prem/OpenAI-compatible usage
+    if provider_id.lower() == "openai":
+        custom_base_url = _env_value(CUSTOM_LLM_BASE_URL_ENV)
+        custom_api_key = _env_value(CUSTOM_LLM_API_KEY_ENV)
+        if custom_base_url is not None:
+            base_url = custom_base_url
+        if custom_api_key is not None:
+            api_key = SecretStr(custom_api_key)
+
     if overrides:
+        # Explicit overrides take final precedence
         if overrides.api_key is not None:
             api_key = overrides.api_key
         if overrides.base_url is not None:

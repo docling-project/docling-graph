@@ -38,8 +38,9 @@ def init_command() -> None:
     rich_print("\n[bold cyan]Validating dependencies...[/bold cyan]")
     deps_valid = validate_and_warn_dependencies(config_dict)
 
-    # Save configuration
-    if not _save_config_safe(config_dict, output_path):
+    # Save configuration (strip init-only hints)
+    config_to_save = {k: v for k, v in config_dict.items() if k != "_init_hints"}
+    if not _save_config_safe(config_to_save, output_path):
         raise typer.Exit(code=1)
 
     # Print next steps (consolidated logic handles dependency installation)

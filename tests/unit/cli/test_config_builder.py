@@ -44,17 +44,19 @@ class TestConfigurationBuilder:
         builder = ConfigurationBuilder()
         assert builder.step_counter == 1
 
+    @patch("docling_graph.cli.config_builder.ConfigurationBuilder._build_export_format")
     @patch("docling_graph.cli.config_builder.ConfigurationBuilder._build_output")
     @patch("docling_graph.cli.config_builder.ConfigurationBuilder._build_models")
     @patch("docling_graph.cli.config_builder.ConfigurationBuilder._build_docling")
     @patch("docling_graph.cli.config_builder.ConfigurationBuilder._build_defaults")
     def test_build_config_calls_all_builders(
-        self, mock_defaults, mock_docling, mock_models, mock_output
+        self, mock_defaults, mock_docling, mock_models, mock_output, mock_export
     ):
         """Should call all builder methods in sequence."""
         mock_defaults.return_value = {"backend": "llm", "inference": "local"}
         mock_docling.return_value = {"pipeline": "ocr"}
         mock_models.return_value = {"llm": {"local": {"provider": "ollama"}}}
+        mock_export.return_value = "csv"
         mock_output.return_value = {"directory": "./output"}
 
         builder = ConfigurationBuilder()
@@ -63,6 +65,7 @@ class TestConfigurationBuilder:
         mock_defaults.assert_called_once()
         mock_docling.assert_called_once()
         mock_models.assert_called_once_with("llm", "local")
+        mock_export.assert_called_once()
         mock_output.assert_called_once()
 
         assert "defaults" in result
@@ -96,7 +99,6 @@ class TestConfigurationBuilder:
             "staged",  # extraction_contract
             "llm",  # backend
             "local",  # inference
-            "csv",  # export_format
         ]
 
         builder = ConfigurationBuilder()
@@ -107,7 +109,6 @@ class TestConfigurationBuilder:
         assert result["extraction_contract"] == "staged"
         assert result["backend"] == "llm"
         assert result["inference"] == "local"
-        assert result["export_format"] == "csv"
 
     @patch("typer.prompt")
     def test_build_defaults_vlm_forces_local(self, mock_prompt):
@@ -116,7 +117,6 @@ class TestConfigurationBuilder:
             "one-to-one",  # processing_mode
             "direct",  # extraction_contract
             "vlm",  # backend
-            "csv",  # export_format (no inference prompt for VLM)
         ]
 
         builder = ConfigurationBuilder()
@@ -124,6 +124,14 @@ class TestConfigurationBuilder:
 
         assert result["backend"] == "vlm"
         assert result["inference"] == "local"
+
+    @patch("typer.prompt")
+    def test_build_export_format_returns_value(self, mock_prompt):
+        """Should return selected export format."""
+        mock_prompt.return_value = "cypher"
+        builder = ConfigurationBuilder()
+        result = builder._build_export_format()
+        assert result == "cypher"
 
     @patch("typer.confirm")
     @patch("typer.prompt")
@@ -224,6 +232,23 @@ class TestConfigurationBuilder:
         assert result["llm"]["remote"]["provider"] == "openai"
         assert result["llm"]["remote"]["model"] == "gpt-4"
 
+    @patch("typer.confirm")
+    @patch("typer.prompt")
+    def test_build_remote_llm_config_custom_triggers_custom_endpoint_prompt(
+        self, mock_prompt, mock_confirm
+    ):
+        """Choosing custom API provider prompts custom endpoint follow-up."""
+        mock_prompt.side_effect = ["custom", "openai", "gpt-4o"]
+        mock_confirm.return_value = True
+
+        builder = ConfigurationBuilder()
+        result = builder._build_remote_llm_config()
+
+        assert "remote" in result["llm"]
+        assert result["llm"]["remote"]["provider"] == "openai"
+        assert result["llm"]["remote"]["model"] == "gpt-4o"
+        assert builder._use_custom_endpoint is True
+
     @patch("typer.prompt")
     def test_build_output_returns_directory_config(self, mock_prompt):
         """Should return output directory configuration."""
@@ -296,3 +321,13 @@ class TestPrintNextSteps:
 
         # Should include general instructions (not config-specific)
         assert "Pydantic model" in result or "convert" in result
+
+    def test_print_next_steps_includes_custom_endpoint_env_when_configured(self):
+        """When custom endpoint hint is set, next steps include export hints."""
+        config = {
+            "defaults": {"backend": "llm"},
+            "_init_hints": {"use_custom_endpoint": True},
+        }
+        result = print_next_steps(config, return_text=True)
+        assert "CUSTOM_LLM_BASE_URL" in result
+        assert "CUSTOM_LLM_API_KEY" in result

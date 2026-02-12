@@ -268,7 +268,7 @@ config = PipelineConfig(
 **Setup:**
 ```bash
 # Set API key
-export GOOGLE_API_KEY="your-api-key"
+export GEMINI_API_KEY="your-api-key"
 ```
 
 **Supported Models:**
@@ -453,7 +453,7 @@ config = PipelineConfig(
 # Set via environment variables (recommended)
 export OPENAI_API_KEY="your-key"
 export MISTRAL_API_KEY="your-key"
-export GOOGLE_API_KEY="your-key"
+export GEMINI_API_KEY="your-key"
 export WATSONX_API_KEY="your-key"
 export WATSONX_PROJECT_ID="your-project-id"
 ```
@@ -463,7 +463,7 @@ Or via `.env` file:
 # .env file
 OPENAI_API_KEY=your-key
 MISTRAL_API_KEY=your-key
-GOOGLE_API_KEY=your-key
+GEMINI_API_KEY=your-key
 ```
 
 **See:** [Installation: API Keys](../installation/api-keys.md)

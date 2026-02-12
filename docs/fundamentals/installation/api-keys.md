@@ -89,6 +89,22 @@ WATSONX_URL=https://us-south.ml.cloud.ibm.com
 echo ".env" >> .gitignore
 ```
 
+### Config-based API key and custom endpoints
+
+You can set the API key or endpoint URL in `config.yaml` under `llm_overrides.connection`:
+
+- `api_key`: API key value (prefer env or `.env` for secrets)
+- `base_url`: Custom base URL (e.g. for on-prem OpenAI-compatible servers)
+
+For on-prem or custom OpenAI-compatible endpoints, use the fixed env vars:
+
+```bash
+export CUSTOM_LLM_BASE_URL="https://your-llm.example.com/v1"
+export CUSTOM_LLM_API_KEY="your-api-key"
+```
+
+Run `docling-graph init` and choose "Use custom endpoint" for guided setup.
+
 ## Provider-Specific Setup
 
 ### OpenAI

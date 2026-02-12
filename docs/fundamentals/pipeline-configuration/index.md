@@ -295,7 +295,7 @@ Some settings can be configured via environment variables:
 # API Keys
 export OPENAI_API_KEY="your-key"
 export MISTRAL_API_KEY="your-key"
-export GOOGLE_API_KEY="your-key"
+export GEMINI_API_KEY="your-key"
 export WATSONX_API_KEY="your-key"
 
 # Model Configuration

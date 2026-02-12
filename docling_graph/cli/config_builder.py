@@ -51,6 +51,7 @@ class ConfigurationBuilder:
 
     def __init__(self) -> None:
         self.step_counter = 1
+        self._use_custom_endpoint = False
 
     def build_config(self) -> Dict[str, Any]:
         """Build configuration through interactive prompts (optimized)."""
@@ -60,15 +61,21 @@ class ConfigurationBuilder:
         # Build all sections
         defaults = self._build_defaults()
         models = self._build_models(defaults["backend"], defaults["inference"])
+        defaults["export_format"] = self._build_export_format()
         docling = self._build_docling()
         output = self._build_output()
 
-        return {
+        result = {
             "defaults": defaults,
             "docling": docling,
             "models": models,
             "output": output,
         }
+
+        if self._use_custom_endpoint:
+            result["_init_hints"] = {"use_custom_endpoint": True}
+
+        return result
 
     def _prompt_option(self, config: PromptConfig) -> str:
         """Generic option prompt with reusable pattern."""
@@ -153,7 +160,16 @@ class ConfigurationBuilder:
                 )
             )
 
-        export_format = self._prompt_option(
+        return {
+            "processing_mode": processing_mode,
+            "extraction_contract": extraction_contract,
+            "backend": backend,
+            "inference": inference,
+        }
+
+    def _build_export_format(self) -> str:
+        """Build export format prompt after model selection."""
+        return self._prompt_option(
             PromptConfig(
                 label="Export Format",
                 description="Output format for results",
@@ -166,14 +182,6 @@ class ConfigurationBuilder:
                 },
             )
         )
-
-        return {
-            "processing_mode": processing_mode,
-            "extraction_contract": extraction_contract,
-            "backend": backend,
-            "inference": inference,
-            "export_format": export_format,
-        }
 
     def _build_docling(self) -> Dict[str, Any]:
         """Build Docling settings section."""
@@ -211,7 +219,6 @@ class ConfigurationBuilder:
 
     def _build_models(self, backend: str, inference: str) -> Dict[str, Any]:
         """Build model configuration based on backend and inference type."""
-        rich_print("\n── [bold]Model Configuration[/bold] ──")
         if backend == "vlm":
             return self._build_vlm_config()
         elif inference == "local":
@@ -298,6 +305,10 @@ class ConfigurationBuilder:
         )
 
         if provider == "custom":
+            self._use_custom_endpoint = typer.confirm(
+                "Use custom endpoint (URL and API key via environment variables)?",
+                default=False,
+            )
             provider_id = typer.prompt(
                 "Enter LiteLLM provider id (e.g., openai, anthropic)",
                 default="openai",
@@ -377,8 +388,21 @@ def print_next_steps(config_dict: dict, return_text: bool = False) -> str | None
         "\n[bold green]Next steps:[/bold green]",
         "   1. Create a Pydantic model that matches your extraction needs. See docs/guides for detailed instructions.",
         "       You can also start from one of the templates in docs/examples/templates.",
-        "   2. Run: [bold cyan]docling-graph convert <source> --template <path>[/bold cyan]",
     ]
+
+    # Custom endpoint env vars (on-prem)
+    use_custom = bool((config_dict.get("_init_hints") or {}).get("use_custom_endpoint"))
+    if use_custom:
+        steps.append("   2. Set endpoint environment variables (e.g. in .env or shell):")
+        steps.append("      [cyan]export CUSTOM_LLM_BASE_URL=...[/cyan]")
+        steps.append("      [cyan]export CUSTOM_LLM_API_KEY=...[/cyan]")
+        steps.append(
+            "   3. Run: [bold cyan]docling-graph convert <source> --template <path>[/bold cyan]"
+        )
+    else:
+        steps.append(
+            "   2. Run: [bold cyan]docling-graph convert <source> --template <path>[/bold cyan]"
+        )
 
     text = "\n".join(steps)
     if return_text:

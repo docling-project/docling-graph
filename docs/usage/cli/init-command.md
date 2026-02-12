@@ -26,6 +26,9 @@ This launches an interactive wizard that guides you through:
 4. Model selection
 5. Processing mode
 6. Export format
+7. (If LLM backend) Use custom endpoint (URL and API key via environment variables)
+
+When enabled, the wizard expects the fixed env var names `CUSTOM_LLM_BASE_URL` and `CUSTOM_LLM_API_KEY`.
 
 ---
 
@@ -231,6 +234,10 @@ Next steps:
 
 2. Set your API key:
    export MISTRAL_API_KEY="your-api-key-here"
+
+   (If you chose custom endpoint, set instead:)
+   export CUSTOM_LLM_BASE_URL="https://your-llm.example.com/v1"
+   export CUSTOM_LLM_API_KEY="your-key"
 
 3. Run your first conversion:
    uv run docling-graph convert document.pdf \

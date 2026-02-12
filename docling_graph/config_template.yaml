@@ -74,7 +74,9 @@ llm_overrides:
     timeout_s: null
     max_retries: null
   connection:
+    # Custom endpoint (on-prem): use fixed env vars CUSTOM_LLM_BASE_URL and CUSTOM_LLM_API_KEY
     base_url: null
+    api_key: null
 
 # Output settings
 output:

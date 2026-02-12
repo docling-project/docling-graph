@@ -74,9 +74,11 @@ docling-graph convert doc.pdf --template templates.BillingDocument \
 - `--llm-top-p`: Top-p sampling parameter
 - `--llm-timeout`: Request timeout in seconds
 - `--llm-retries`: Maximum retry attempts
-- `--llm-base-url`: Custom API base URL
+- `--llm-base-url`: Custom API base URL (e.g. for on-prem OpenAI-compatible servers)
 - `--llm-context-limit`: Total context window size in tokens
 - `--llm-max-output-tokens`: Maximum tokens the model can generate
+
+API keys are not passed via CLI; use environment variables or `llm_overrides.connection.api_key` in config. For on-prem OpenAI-compatible servers: use `provider=openai`, `--llm-base-url`, and set `CUSTOM_LLM_BASE_URL` / `CUSTOM_LLM_API_KEY`.
 
 ## Model Limits and Defaults
 
