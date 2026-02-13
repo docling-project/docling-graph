@@ -21,6 +21,7 @@ class ReportGenerator:
         include_samples: bool = True,
         extraction_contract: str | None = None,
         staged_passes_count: int = 0,
+        llm_diagnostics: dict | None = None,
     ) -> None:
         """Generate markdown report for graph.
 
@@ -58,6 +59,7 @@ class ReportGenerator:
                 self._create_extraction_diagnostics(
                     extraction_contract=extraction_contract,
                     staged_passes_count=staged_passes_count,
+                    llm_diagnostics=llm_diagnostics,
                 )
             )
 
@@ -73,6 +75,7 @@ class ReportGenerator:
     def _create_extraction_diagnostics(
         extraction_contract: str | None = None,
         staged_passes_count: int = 0,
+        llm_diagnostics: dict | None = None,
     ) -> str:
         """Create extraction diagnostics section."""
         lines = ["## Extraction Diagnostics", ""]
@@ -80,6 +83,19 @@ class ReportGenerator:
             lines.append(f"- **Extraction contract**: {extraction_contract}")
         if staged_passes_count > 0:
             lines.append(f"- **Staged passes**: {staged_passes_count}")
+        if llm_diagnostics:
+            attempted = llm_diagnostics.get("structured_attempted")
+            failed = llm_diagnostics.get("structured_failed")
+            fallback = llm_diagnostics.get("fallback_used")
+            if attempted is not None:
+                lines.append(f"- **Structured attempted**: {attempted}")
+            if failed is not None:
+                lines.append(f"- **Structured failed**: {failed}")
+            if fallback is not None:
+                lines.append(f"- **Legacy fallback used**: {fallback}")
+            error_cls = llm_diagnostics.get("fallback_error_class")
+            if error_cls:
+                lines.append(f"- **Fallback trigger**: {error_cls}")
         if len(lines) == 2:
             return "\n".join([*lines, "*No extraction diagnostics available.*"])
         return "\n".join(lines)

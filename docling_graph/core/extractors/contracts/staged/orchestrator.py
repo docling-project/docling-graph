@@ -18,6 +18,7 @@ from typing import Any, Callable
 from pydantic import BaseModel
 from rich import print as rich_print
 
+from .....llm_clients.schema_utils import build_compact_semantic_guide
 from . import catalog as catalog_mod
 from .catalog import (
     EdgeSpec,
@@ -133,6 +134,8 @@ def get_fill_batch_prompt(
     spec: NodeSpec,
     instances: list[dict[str, Any]],
     schema_json: str,
+    structured_output: bool = True,
+    schema_dict: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     """instances: list of ID descriptors (path, ids, parent). Preview uses ids only."""
     n = len(instances)
@@ -145,13 +148,15 @@ def get_fill_batch_prompt(
         f"with all schema fields from the document. Path: {path} ({spec.node_type}). "
         "Return a JSON array with one object per instance in the same order."
     )
-    user_prompt = (
-        "Fill these node instances from the document.\n\n=== DOCUMENT ===\n"
-        f"{markdown_content}\n=== END DOCUMENT ===\n\n"
-        "=== INSTANCES ===\n" + instances_preview + "\n=== END ===\n\n"
-        "=== SCHEMA ===\n" + schema_json + "\n=== END ===\n\n"
-        f"Return a JSON array of exactly {n} objects."
-    )
+    user_prompt = "Fill these node instances from the document.\n\n=== DOCUMENT ===\n"
+    user_prompt += f"{markdown_content}\n=== END DOCUMENT ===\n\n"
+    user_prompt += "=== INSTANCES ===\n" + instances_preview + "\n=== END ===\n\n"
+    if structured_output:
+        user_prompt += "=== SEMANTIC FIELD GUIDANCE ===\n"
+        user_prompt += build_compact_semantic_guide(schema_dict or {}) + "\n=== END ===\n\n"
+    else:
+        user_prompt += "=== SCHEMA ===\n" + schema_json + "\n=== END ===\n\n"
+    user_prompt += f"Return a JSON array of exactly {n} objects."
     return {"system": system_prompt, "user": user_prompt}
 
 
@@ -265,7 +270,7 @@ def merge_filled_into_root(
 def _maybe_resolve_conflicts(
     merged: dict[str, Any],
     catalog: NodeCatalog,
-    llm_call_fn: Callable[[dict[str, str], str, str], dict | list | None],
+    llm_call_fn: Callable[..., dict | list | None],
     context: str,
 ) -> dict[str, Any]:
     """
@@ -380,11 +385,12 @@ def _evaluate_quality_gate(
 class CatalogOrchestrator:
     def __init__(
         self,
-        llm_call_fn: Callable[[dict[str, str], str, str], dict | list | None],
+        llm_call_fn: Callable[..., dict | list | None],
         schema_json: str,
         template: type[BaseModel],
         config: CatalogOrchestratorConfig,
         debug_dir: str | None = None,
+        structured_output: bool = True,
         on_trace: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         self._llm = llm_call_fn
@@ -392,6 +398,7 @@ class CatalogOrchestrator:
         self._template = template
         self._config = config
         self._debug_dir = debug_dir or ""
+        self._structured_output = structured_output
         self._on_trace = on_trace
         self._catalog = catalog_mod.build_node_catalog(template)
 
@@ -467,6 +474,7 @@ class CatalogOrchestrator:
             allowed_paths=allowed_paths,
             compact=self._config.id_compact_prompt,
             include_schema_in_user=not self._config.id_compact_prompt,
+            structured_output=self._structured_output,
         )
         id_schema = catalog_mod.build_discovery_schema(self._catalog, allowed_paths)
         if self._debug_dir and shard_idx == 0:
@@ -493,7 +501,11 @@ class CatalogOrchestrator:
         errs: list[str] = []
         for attempt in range(max_retries + 1):
             id_result = self._llm(
-                id_prompt, id_schema, f"{context} catalog_id_pass_shard_{shard_idx}"
+                id_prompt,
+                id_schema,
+                f"{context} catalog_id_pass_shard_{shard_idx}",
+                response_top_level="object",
+                response_schema_name="staged_id_pass",
             )
             if isinstance(id_result, list):
                 id_result = {"nodes": id_result}
@@ -539,6 +551,7 @@ class CatalogOrchestrator:
                     allowed_paths=allowed_paths,
                     compact=self._config.id_compact_prompt,
                     include_schema_in_user=not self._config.id_compact_prompt,
+                    structured_output=self._structured_output,
                 )
                 id_prompt["user"] = id_prompt["user"] + "\n\n=== FIX ===\n" + err_feedback
         if not ok and len(primary_paths) > max(1, int(self._config.id_shard_min_size)):
@@ -559,12 +572,15 @@ class CatalogOrchestrator:
                     allowed_paths=sub_allowed,
                     compact=self._config.id_compact_prompt,
                     include_schema_in_user=not self._config.id_compact_prompt,
+                    structured_output=self._structured_output,
                 )
                 sub_schema = catalog_mod.build_discovery_schema(self._catalog, sub_allowed)
                 sub_result = self._llm(
                     sub_prompt,
                     sub_schema,
                     f"{context} catalog_id_pass_shard_{shard_idx}_split",
+                    response_top_level="object",
+                    response_schema_name="staged_id_pass",
                 )
                 if isinstance(sub_result, list):
                     sub_result = {"nodes": sub_result}
@@ -603,8 +619,29 @@ class CatalogOrchestrator:
             sub_schema: str,
             call_index: int,
         ) -> tuple[str, int, list[dict[str, Any]], dict[str, Any]]:
-            prompt = get_fill_batch_prompt(markdown, spec.path, spec, batch_descriptors, sub_schema)
-            out = self._llm(prompt, sub_schema, f"{context} fill_call_{call_index}")
+            schema_dict: dict[str, Any] | None = None
+            if self._structured_output:
+                try:
+                    parsed = json.loads(sub_schema)
+                    schema_dict = parsed if isinstance(parsed, dict) else None
+                except json.JSONDecodeError:
+                    schema_dict = None
+            prompt = get_fill_batch_prompt(
+                markdown,
+                spec.path,
+                spec,
+                batch_descriptors,
+                sub_schema,
+                structured_output=self._structured_output,
+                schema_dict=schema_dict,
+            )
+            out = self._llm(
+                prompt,
+                sub_schema,
+                f"{context} fill_call_{call_index}",
+                response_top_level="array",
+                response_schema_name="staged_fill_pass",
+            )
             if isinstance(out, list):
                 result_raw = out
             elif isinstance(out, dict) and "items" in out:

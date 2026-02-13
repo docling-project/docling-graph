@@ -23,6 +23,8 @@ config = PipelineConfig(
     inference="remote",
     model_override="gpt-4o",
     provider_override="openai",
+    structured_output=True,  # default; set False for legacy prompt-schema mode
+    structured_sparse_check=True,  # default; set False to disable sparse-result fallback guard
     llm_overrides={
         "generation": {"temperature": 0.2, "max_tokens": 2048},
         "reliability": {"timeout_s": 120, "max_retries": 1},
@@ -63,6 +65,7 @@ docling-graph convert doc.pdf --template templates.BillingDocument \
   --llm-temperature 0.2 \
   --llm-max-tokens 2048 \
   --llm-timeout 120 \
+  --schema-enforced-llm \
   --llm-context-limit 128000 \
   --llm-max-output-tokens 4096
 ```
@@ -77,8 +80,28 @@ docling-graph convert doc.pdf --template templates.BillingDocument \
 - `--llm-base-url`: Custom API base URL (e.g. for on-prem OpenAI-compatible servers)
 - `--llm-context-limit`: Total context window size in tokens
 - `--llm-max-output-tokens`: Maximum tokens the model can generate
+- `--schema-enforced-llm/--no-schema-enforced-llm`: Enable/disable API-enforced JSON schema mode
+- `--structured-sparse-check/--no-structured-sparse-check`: Enable/disable sparse structured-result fallback guard
+
+Runtime behavior:
+- With `structured_output=True`, Docling Graph attempts API-level `json_schema` first.
+- If that request fails, it logs diagnostics and retries once with legacy prompt-schema mode.
+- If schema mode succeeds but the returned JSON is clearly sparse for the schema, it performs
+  the same one-time legacy retry to prevent silent quality regressions.
 
 API keys are not passed via CLI; use environment variables or `llm_overrides.connection.api_key` in config. For on-prem OpenAI-compatible servers: use `provider=openai`, `--llm-base-url`, and set `CUSTOM_LLM_BASE_URL` / `CUSTOM_LLM_API_KEY`.
+
+## Recommended Quality Metrics
+
+When validating structured output rollouts, track:
+
+- schema conformance rate before salvage/repair,
+- salvage invocation rate (how often repair/coercion is needed),
+- strict-mode failure rate by model/provider,
+- latency and token deltas versus legacy prompt-schema mode.
+
+This allows you to compare quality and cost impact between:
+`structured_output=True` (default) and `structured_output=False` (fallback).
 
 ## Model Limits and Defaults
 

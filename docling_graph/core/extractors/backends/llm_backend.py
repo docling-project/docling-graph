@@ -40,6 +40,8 @@ class LlmBackend:
         llm_client: LLMClientProtocol,
         extraction_contract: Literal["direct", "staged"] = "direct",
         staged_config: dict[str, Any] | None = None,
+        structured_output: bool = True,
+        structured_sparse_check: bool = True,
     ) -> None:
         """
         Initialize LLM backend with a client.
@@ -50,7 +52,10 @@ class LlmBackend:
         self.client = llm_client
         self.extraction_contract: Literal["direct", "staged"] = extraction_contract
         self._staged_config_raw = staged_config or {}
+        self.structured_output = structured_output
+        self.structured_sparse_check = structured_sparse_check
         self.trace_data: Any = None  # Set by strategy when config.debug is True
+        self.last_call_diagnostics: dict[str, Any] = {}
 
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
@@ -80,6 +85,13 @@ class LlmBackend:
             JSON string representation of the model schema
         """
         return json.dumps(template.model_json_schema(), indent=2)
+
+    @staticmethod
+    @lru_cache(maxsize=32)
+    def _get_schema_dict(template: Type[BaseModel]) -> dict[str, Any]:
+        """Get cached schema dict for a Pydantic template."""
+        schema = template.model_json_schema()
+        return schema if isinstance(schema, dict) else {}
 
     def _log_info(self, message: str, **kwargs: Any) -> None:
         """Log info message with consistent formatting."""
@@ -297,10 +309,74 @@ class LlmBackend:
         self._log_warning("Validation failed after best-effort salvage")
         return None
 
+    @staticmethod
+    def _count_non_empty_values(value: Any) -> int:
+        """Count non-empty populated values recursively."""
+        if value is None:
+            return 0
+        if isinstance(value, str):
+            return 1 if value.strip() else 0
+        if isinstance(value, int | float | bool):
+            return 1
+        if isinstance(value, list):
+            return sum(LlmBackend._count_non_empty_values(v) for v in value)
+        if isinstance(value, dict):
+            return sum(LlmBackend._count_non_empty_values(v) for v in value.values())
+        return 1
+
+    @staticmethod
+    def _count_schema_leaf_fields(schema: dict[str, Any]) -> int:
+        """Approximate number of schema leaf fields for sparsity checks."""
+        _defs = schema.get("$defs")
+        defs: dict[str, Any] = _defs if isinstance(_defs, dict) else {}
+
+        def _resolve(node: dict[str, Any]) -> dict[str, Any]:
+            ref = node.get("$ref")
+            if isinstance(ref, str) and ref.startswith("#/$defs/"):
+                key = ref.split("/")[-1]
+                resolved = defs.get(key)
+                if isinstance(resolved, dict):
+                    return resolved
+            return node
+
+        def _walk(node: dict[str, Any], depth: int) -> int:
+            if depth > 6:
+                return 0
+            node = _resolve(node)
+            props = node.get("properties") if isinstance(node.get("properties"), dict) else {}
+            if not props:
+                return 1
+            total = 0
+            for raw in props.values():
+                if not isinstance(raw, dict):
+                    continue
+                item = _resolve(raw)
+                if item.get("type") == "array" and isinstance(item.get("items"), dict):
+                    total += _walk(item["items"], depth + 1)
+                else:
+                    total += _walk(item, depth + 1)
+            return max(total, 1)
+
+        return _walk(schema, 1)
+
+    def _is_sparse_structured_result(
+        self, parsed_json: dict | list, schema_dict: dict[str, Any], markdown: str
+    ) -> bool:
+        """Detect obvious structured-output under-extraction before graph conversion."""
+        if len(markdown) < 400:
+            return False
+        non_empty = self._count_non_empty_values(parsed_json)
+        schema_leafs = self._count_schema_leaf_fields(schema_dict)
+        if schema_leafs < 10:
+            return False
+        ratio = non_empty / max(schema_leafs, 1)
+        return ratio < 0.40
+
     def _call_llm_for_extraction(
         self,
         markdown: str,
         schema_json: str,
+        schema_dict: dict[str, Any],
         is_partial: bool,
         context: str,
         template: Type[BaseModel] | None = None,
@@ -337,11 +413,138 @@ class LlmBackend:
                 schema_json=schema_json,
                 is_partial=is_partial,
                 model_config=None,  # No capability-based branching
+                structured_output=self.structured_output,
+                schema_dict=schema_dict,
             )
-            parsed_json = self.client.get_json_response(prompt=prompt, schema_json=schema_json)
+            self.last_call_diagnostics = {
+                "structured_attempted": bool(self.structured_output),
+                "structured_failed": False,
+                "fallback_used": False,
+                "fallback_error_class": None,
+            }
+            structured_primary_attempt_parsed_json: dict | list | None = None
+            structured_primary_attempt_raw: str | None = None
+            try:
+                parsed_json = self.client.get_json_response(
+                    prompt=prompt,
+                    schema_json=schema_json,
+                    structured_output=self.structured_output,
+                    response_top_level="object",
+                    response_schema_name="direct_extraction",
+                )
+                if self.structured_output and self.trace_data is not None:
+                    structured_primary_attempt_parsed_json = copy.deepcopy(parsed_json)
+                    primary_diag = getattr(self.client, "last_call_diagnostics", None)
+                    if isinstance(primary_diag, dict):
+                        raw_value = primary_diag.get("raw_response")
+                        if isinstance(raw_value, str):
+                            structured_primary_attempt_raw = raw_value
+            except ClientError as e:
+                if not self.structured_output:
+                    raise
+                if self.trace_data is not None:
+                    primary_diag = getattr(self.client, "last_call_diagnostics", None)
+                    if isinstance(primary_diag, dict):
+                        raw_value = primary_diag.get("raw_response")
+                        if isinstance(raw_value, str):
+                            structured_primary_attempt_raw = raw_value
+                self._log_warning(
+                    f"Structured output failed for {context}; falling back to legacy prompt-schema mode."
+                )
+                self.last_call_diagnostics = {
+                    "structured_attempted": True,
+                    "structured_failed": True,
+                    "fallback_used": True,
+                    "fallback_error_class": type(e).__name__,
+                }
+                logger.warning(
+                    "Structured output failed (provider=%s, model=%s): %s",
+                    getattr(self.client, "provider", "unknown"),
+                    getattr(self.client, "model", getattr(self.client, "model_id", "unknown")),
+                    str(e),
+                )
+                legacy_prompt = direct.get_extraction_prompt(
+                    markdown_content=markdown,
+                    schema_json=schema_json,
+                    is_partial=is_partial,
+                    model_config=None,
+                    structured_output=True,
+                    schema_dict=schema_dict,
+                    force_legacy_prompt_schema=True,
+                )
+                parsed_json = self.client.get_json_response(
+                    prompt=legacy_prompt,
+                    schema_json=schema_json,
+                    structured_output=False,
+                    response_top_level="object",
+                    response_schema_name="direct_extraction",
+                )
             if not parsed_json:
                 self._log_warning(f"No valid JSON returned from LLM for {context}")
                 return None
+            if (
+                self.structured_output
+                and self.structured_sparse_check
+                and not self.last_call_diagnostics.get("fallback_used")
+                and self._is_sparse_structured_result(parsed_json, schema_dict, markdown)
+            ):
+                self._log_warning(
+                    f"Structured output appears sparse for {context}; retrying legacy prompt-schema mode."
+                )
+                self.last_call_diagnostics = {
+                    "structured_attempted": True,
+                    "structured_failed": True,
+                    "fallback_used": True,
+                    "fallback_error_class": "SparseStructuredOutput",
+                }
+                legacy_prompt = direct.get_extraction_prompt(
+                    markdown_content=markdown,
+                    schema_json=schema_json,
+                    is_partial=is_partial,
+                    model_config=None,
+                    structured_output=True,
+                    schema_dict=schema_dict,
+                    force_legacy_prompt_schema=True,
+                )
+                legacy_json = self.client.get_json_response(
+                    prompt=legacy_prompt,
+                    schema_json=schema_json,
+                    structured_output=False,
+                    response_top_level="object",
+                    response_schema_name="direct_extraction",
+                )
+                if legacy_json:
+                    parsed_json = legacy_json
+            if self.trace_data is not None:
+                if structured_primary_attempt_parsed_json is not None:
+                    self.last_call_diagnostics["structured_primary_attempt_parsed_json"] = (
+                        structured_primary_attempt_parsed_json
+                    )
+                if structured_primary_attempt_raw is not None:
+                    self.last_call_diagnostics["structured_primary_attempt_raw"] = (
+                        structured_primary_attempt_raw
+                    )
+            client_diag = getattr(self.client, "last_call_diagnostics", None)
+            if isinstance(client_diag, dict) and client_diag:
+                self.last_call_diagnostics["structured_attempted"] = bool(
+                    self.last_call_diagnostics.get("structured_attempted")
+                    or client_diag.get("structured_attempted")
+                )
+                self.last_call_diagnostics["structured_failed"] = bool(
+                    self.last_call_diagnostics.get("structured_failed")
+                    or client_diag.get("structured_failed")
+                )
+                self.last_call_diagnostics["fallback_used"] = bool(
+                    self.last_call_diagnostics.get("fallback_used")
+                    or client_diag.get("fallback_used")
+                )
+                if not self.last_call_diagnostics.get("fallback_error_class"):
+                    self.last_call_diagnostics["fallback_error_class"] = client_diag.get(
+                        "fallback_error_class"
+                    )
+                for passthrough_key in ("provider", "model"):
+                    if passthrough_key in client_diag:
+                        self.last_call_diagnostics[passthrough_key] = client_diag[passthrough_key]
             return parsed_json
 
         except Exception as e:
@@ -360,29 +563,120 @@ class LlmBackend:
         return None
 
     def _call_with_optional_max_tokens(
-        self, prompt: dict[str, str], schema_json: str, max_tokens: int | None
+        self,
+        prompt: dict[str, str],
+        schema_json: str,
+        max_tokens: int | None,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "staged_extraction",
+        structured_output_override: bool | None = None,
     ) -> dict | list | None:
         """Invoke client with temporary max_tokens override when supported."""
+        structured_output = (
+            self.structured_output
+            if structured_output_override is None
+            else structured_output_override
+        )
         generation = getattr(self.client, "_generation", None)
         if generation is None or max_tokens is None:
-            return self.client.get_json_response(prompt=prompt, schema_json=schema_json)
+            return self.client.get_json_response(
+                prompt=prompt,
+                schema_json=schema_json,
+                structured_output=structured_output,
+                response_top_level=response_top_level,
+                response_schema_name=response_schema_name,
+            )
         original = getattr(generation, "max_tokens", None)
         try:
             generation.max_tokens = max_tokens
-            return self.client.get_json_response(prompt=prompt, schema_json=schema_json)
+            return self.client.get_json_response(
+                prompt=prompt,
+                schema_json=schema_json,
+                structured_output=structured_output,
+                response_top_level=response_top_level,
+                response_schema_name=response_schema_name,
+            )
         finally:
             generation.max_tokens = original
 
     def _call_prompt(
-        self, prompt: dict[str, str], schema_json: str, context: str
+        self,
+        prompt: dict[str, str],
+        schema_json: str,
+        context: str,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "staged_extraction",
     ) -> dict | list | None:
         """Call LLM with explicit prompt/schema and staged truncation recovery."""
         try:
             max_tokens = self._get_staged_call_max_tokens(context)
-            parsed_json = self._call_with_optional_max_tokens(prompt, schema_json, max_tokens)
+            self.last_call_diagnostics = {
+                "structured_attempted": bool(self.structured_output),
+                "structured_failed": False,
+                "fallback_used": False,
+                "fallback_error_class": None,
+            }
+            try:
+                parsed_json = self._call_with_optional_max_tokens(
+                    prompt=prompt,
+                    schema_json=schema_json,
+                    max_tokens=max_tokens,
+                    response_top_level=response_top_level,
+                    response_schema_name=response_schema_name,
+                )
+            except ClientError as e:
+                if not self.structured_output:
+                    raise
+                self._log_warning(
+                    f"Structured output failed for {context}; retrying with legacy prompt-schema mode."
+                )
+                self.last_call_diagnostics = {
+                    "structured_attempted": True,
+                    "structured_failed": True,
+                    "fallback_used": True,
+                    "fallback_error_class": type(e).__name__,
+                }
+                legacy_prompt = {
+                    "system": prompt["system"],
+                    "user": (
+                        prompt["user"]
+                        + "\n\n=== TARGET SCHEMA ===\n"
+                        + schema_json
+                        + "\n=== END SCHEMA ===\n\n"
+                    ),
+                }
+                parsed_json = self._call_with_optional_max_tokens(
+                    prompt=legacy_prompt,
+                    schema_json=schema_json,
+                    max_tokens=max_tokens,
+                    response_top_level=response_top_level,
+                    response_schema_name=response_schema_name,
+                    structured_output_override=False,
+                )
             if not parsed_json:
                 self._log_warning(f"No valid JSON returned from LLM for {context}")
                 return None
+            client_diag = getattr(self.client, "last_call_diagnostics", None)
+            if isinstance(client_diag, dict) and client_diag:
+                self.last_call_diagnostics["structured_attempted"] = bool(
+                    self.last_call_diagnostics.get("structured_attempted")
+                    or client_diag.get("structured_attempted")
+                )
+                self.last_call_diagnostics["structured_failed"] = bool(
+                    self.last_call_diagnostics.get("structured_failed")
+                    or client_diag.get("structured_failed")
+                )
+                self.last_call_diagnostics["fallback_used"] = bool(
+                    self.last_call_diagnostics.get("fallback_used")
+                    or client_diag.get("fallback_used")
+                )
+                if not self.last_call_diagnostics.get("fallback_error_class"):
+                    self.last_call_diagnostics["fallback_error_class"] = client_diag.get(
+                        "fallback_error_class"
+                    )
+                for passthrough_key in ("provider", "model"):
+                    if passthrough_key in client_diag:
+                        self.last_call_diagnostics[passthrough_key] = client_diag[passthrough_key]
             return parsed_json
         except Exception as e:
             details = getattr(e, "details", {}) if isinstance(e, ClientError) else {}
@@ -403,7 +697,11 @@ class LlmBackend:
                                 f"Retrying truncated staged call for {context} with max_tokens={retry_max}"
                             )
                             parsed_json = self._call_with_optional_max_tokens(
-                                prompt, schema_json, retry_max
+                                prompt=prompt,
+                                schema_json=schema_json,
+                                max_tokens=retry_max,
+                                response_top_level=response_top_level,
+                                response_schema_name=response_schema_name,
                             )
                             if parsed_json:
                                 return parsed_json
@@ -437,6 +735,7 @@ class LlmBackend:
             template=template,
             config=catalog_config,
             debug_dir=debug_dir or None,
+            structured_output=self.structured_output,
             on_trace=_on_trace if trace_data is not None else None,
         )
         logger.info("[StagedExtraction] Starting catalog extraction (ID + fill + edges)")
@@ -539,11 +838,13 @@ class LlmBackend:
 
         # Get cached schema JSON
         schema_json = self._get_schema_json(template)
+        schema_dict = self._get_schema_dict(template)
 
         # Call LLM
         parsed_json = self._call_llm_for_extraction(
             markdown=markdown,
             schema_json=schema_json,
+            schema_dict=schema_dict,
             is_partial=is_partial,
             context=context,
             template=template,
@@ -588,6 +889,7 @@ class LlmBackend:
             response = self.client.get_json_response(
                 prompt=prompt,
                 schema_json="{}",  # Empty schema for free-form response
+                structured_output=False,
             )
 
             # Wrap response in an object with 'text' attribute

@@ -15,7 +15,14 @@ class MockLLMClient:
         self.responses = []
         self.call_count = 0
 
-    def get_json_response(self, prompt: dict | str, schema_json: str) -> dict | None:
+    def get_json_response(
+        self,
+        prompt: dict | str,
+        schema_json: str,
+        structured_output: bool = True,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction_result",
+    ) -> dict | None:
         """Return mock JSON response."""
         self.call_count += 1
         if self.responses:

@@ -112,6 +112,85 @@ class TestExtractionStage:
 
     @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
     @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_extraction_passes_structured_output_default_true(self, mock_init_client, mock_factory):
+        from pydantic import BaseModel
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = ([TestModel(name="ok")], Mock())
+        mock_factory.return_value = mock_extractor
+        config = PipelineConfig(
+            source="test.pdf", template=TestModel, backend="llm", inference="local"
+        )
+        context = PipelineContext(config=config, template=TestModel)
+
+        ExtractionStage().execute(context)
+
+        kwargs = mock_factory.call_args.kwargs
+        assert kwargs["structured_output"] is True
+        assert kwargs["structured_sparse_check"] is True
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_extraction_passes_structured_output_false_when_disabled(
+        self, mock_init_client, mock_factory
+    ):
+        from pydantic import BaseModel
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = ([TestModel(name="ok")], Mock())
+        mock_factory.return_value = mock_extractor
+        config = PipelineConfig(
+            source="test.pdf",
+            template=TestModel,
+            backend="llm",
+            inference="local",
+            structured_output=False,
+        )
+        context = PipelineContext(config=config, template=TestModel)
+
+        ExtractionStage().execute(context)
+
+        kwargs = mock_factory.call_args.kwargs
+        assert kwargs["structured_output"] is False
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_extraction_passes_structured_sparse_check_false_when_disabled(
+        self, mock_init_client, mock_factory
+    ):
+        from pydantic import BaseModel
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = ([TestModel(name="ok")], Mock())
+        mock_factory.return_value = mock_extractor
+        config = PipelineConfig(
+            source="test.pdf",
+            template=TestModel,
+            backend="llm",
+            inference="local",
+            structured_sparse_check=False,
+        )
+        context = PipelineContext(config=config, template=TestModel)
+
+        ExtractionStage().execute(context)
+
+        kwargs = mock_factory.call_args.kwargs
+        assert kwargs["structured_sparse_check"] is False
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
     def test_extraction_uses_custom_llm_client(self, mock_init_client, mock_factory):
         """When llm_client is set, the pipeline uses it and does not initialize provider/model."""
         from pydantic import BaseModel

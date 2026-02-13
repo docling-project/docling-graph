@@ -22,6 +22,8 @@ class ExtractorFactory:
         processing_mode: Literal["one-to-one", "many-to-one"],
         backend_name: Literal["vlm", "llm"],
         extraction_contract: Literal["direct", "staged"] = "direct",
+        structured_output: bool = True,
+        structured_sparse_check: bool = True,
         staged_config: dict | None = None,
         model_name: str | None = None,
         llm_client: LLMClientProtocol | None = None,
@@ -63,6 +65,8 @@ class ExtractorFactory:
                 llm_client=llm_client,
                 extraction_contract=effective_contract,
                 staged_config=staged_config,
+                structured_output=structured_output,
+                structured_sparse_check=structured_sparse_check,
             )
         else:
             raise ValueError(f"Unknown backend: {backend_name}")

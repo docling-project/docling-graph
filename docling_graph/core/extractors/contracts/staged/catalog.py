@@ -13,6 +13,8 @@ from typing import Any, get_args, get_origin
 
 from pydantic import BaseModel
 
+from .....llm_clients.schema_utils import build_compact_semantic_guide
+
 
 def _unwrap_model_from_annotation(annotation: Any) -> type[BaseModel] | None:
     if isinstance(annotation, type) and issubclass(annotation, BaseModel):
@@ -351,6 +353,7 @@ def get_discovery_prompt(
     *,
     compact: bool = False,
     include_schema_in_user: bool = True,
+    structured_output: bool = True,
 ) -> dict[str, str]:
     """Prompt for node-skeleton discovery. Asks for path, ids, and parent using exact catalog paths."""
     if allowed_paths is None:
@@ -416,8 +419,14 @@ def get_discovery_prompt(
     user_prompt += f"{markdown_content}\n=== END DOCUMENT ===\n\n"
     user_prompt += f"=== ALLOWED PATHS ===\n{allowed_block}\n=== END ===\n\n"
     user_prompt += f"=== CATALOG ===\n{paths_block}\n=== END ===\n\n"
-    if include_schema_in_user:
+    if include_schema_in_user and not structured_output:
         user_prompt += f"=== SCHEMA ===\n{schema_json}\n=== END ===\n\n"
+    if structured_output:
+        try:
+            semantic_guide = build_compact_semantic_guide(json.loads(schema_json))
+            user_prompt += f"=== SEMANTIC FIELD GUIDANCE ===\n{semantic_guide}\n=== END ===\n\n"
+        except json.JSONDecodeError:
+            pass
     user_prompt += (
         'Return JSON: {"nodes": [{"path": "...", "ids": {"id_field": "value"} OR {}, '
         '"parent": null or {"path": "...", "ids": {"id_field": "value"}}}, ...]}.'

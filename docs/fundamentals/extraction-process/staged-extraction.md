@@ -6,6 +6,12 @@
 
 Set `extraction_contract="staged"` in your config or use `--extraction-contract staged` on the CLI.
 
+!!! warning "Experimental feature - Not production-ready"
+    **Staged extraction** is still in an **experimental** phase.
+    
+    Expect ongoing quality improvements, but also be aware that **clean breaks** may happen and **backward compatibility is not guaranteed** yet.
+
+
 **When to use:**
 
 - Nested Pydantic templates with lists and sub-objects (e.g. offers with included guarantees)

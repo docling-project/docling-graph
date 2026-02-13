@@ -141,6 +141,17 @@ class PipelineConfig(BaseModel):
         default_factory=LlmRuntimeOverrides, description="Runtime overrides for LLM settings."
     )
 
+    # LLM output mode (default ON): API schema-enforced output via response_format json_schema.
+    # Set False to use legacy prompt-embedded schema mode.
+    structured_output: bool = Field(
+        default=True,
+        description="Enable schema-enforced structured output for LLM extraction.",
+    )
+    structured_sparse_check: bool = Field(
+        default=True,
+        description="Enable sparse structured-output quality check with automatic legacy fallback.",
+    )
+
     # Extract settings (with defaults)
     use_chunking: bool = Field(default=True, description="Enable chunking for document processing")
     chunk_max_tokens: int | None = Field(
@@ -256,6 +267,8 @@ class PipelineConfig(BaseModel):
             "processing_mode": self.processing_mode,
             "extraction_contract": self.extraction_contract,
             "docling_config": self.docling_config,
+            "structured_output": self.structured_output,
+            "structured_sparse_check": self.structured_sparse_check,
             "use_chunking": self.use_chunking,
             "chunk_max_tokens": self.chunk_max_tokens,
             "debug": self.debug,
@@ -310,6 +323,8 @@ class PipelineConfig(BaseModel):
                 "extraction_contract": default_config.extraction_contract,
                 "export_format": default_config.export_format,
                 "chunk_max_tokens": default_config.chunk_max_tokens,
+                "structured_output": default_config.structured_output,
+                "structured_sparse_check": default_config.structured_sparse_check,
                 "staged_tuning_preset": default_config.staged_tuning_preset,
                 "staged_pass_retries": default_config.staged_pass_retries,
                 "staged_workers": default_config.staged_workers,

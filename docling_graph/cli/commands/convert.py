@@ -77,6 +77,20 @@ def convert_command(
             help="Enable debug artifacts.",
         ),
     ] = False,
+    schema_enforced_llm: Annotated[
+        bool | None,
+        typer.Option(
+            "--schema-enforced-llm/--no-schema-enforced-llm",
+            help="Use API schema-enforced output for LLM calls (default: enabled).",
+        ),
+    ] = None,
+    structured_sparse_check: Annotated[
+        bool | None,
+        typer.Option(
+            "--structured-sparse-check/--no-structured-sparse-check",
+            help="Enable sparse structured-output check and legacy retry (default: enabled).",
+        ),
+    ] = None,
     chunk_max_tokens: Annotated[
         int | None,
         typer.Option(
@@ -243,6 +257,16 @@ def convert_command(
         if staged_id_shard_size is not None
         else defaults.get("staged_id_shard_size")
     )
+    final_structured_output = (
+        schema_enforced_llm
+        if schema_enforced_llm is not None
+        else bool(defaults.get("structured_output", True))
+    )
+    final_structured_sparse_check = (
+        structured_sparse_check
+        if structured_sparse_check is not None
+        else bool(defaults.get("structured_sparse_check", True))
+    )
 
     # Docling export settings - use config file as fallback
     docling_export_settings = docling_cfg.get("export", {})
@@ -304,6 +328,8 @@ def convert_command(
     rich_print("[yellow][ExtractionSettings][/yellow]")
     rich_print(f"  • Backend: [cyan]{backend_val}[/cyan]")
     rich_print(f"  • Contract: [cyan]{extraction_contract_val}[/cyan]")
+    rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
+    rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
     if final_chunk_max_tokens is not None:
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
@@ -355,6 +381,8 @@ def convert_command(
         provider_override=provider,
         models=models_from_yaml,
         llm_overrides=llm_overrides,
+        structured_output=final_structured_output,
+        structured_sparse_check=final_structured_sparse_check,
         debug=debug,
         chunk_max_tokens=final_chunk_max_tokens,
         staged_tuning_preset=final_staged_tuning_preset,
