@@ -1,234 +1,194 @@
-"""
-Trace data classes for capturing intermediate pipeline data.
+"""Event-based trace models for debug pipeline output."""
 
-This module defines dataclasses for capturing detailed trace information
-during pipeline execution, useful for debugging and analysis.
-"""
+from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any
 
-import networkx as nx
 from pydantic import BaseModel
 
 
 @dataclass
-class PageData:
-    """Data captured for a single page during document processing."""
+class TraceEvent:
+    """One chronological debug trace event."""
 
-    page_number: int
-    text_content: str
-    metadata: dict = field(default_factory=dict)
-
-
-@dataclass
-class ChunkData:
-    """Data captured for a single chunk during document chunking."""
-
-    chunk_id: int
-    page_numbers: list[int]
-    text_content: str
-    token_count: int
-    metadata: dict = field(default_factory=dict)
+    sequence: int
+    timestamp: float
+    stage: str
+    event_type: str
+    payload: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
-class ExtractionData:
-    """Data captured for a single extraction operation."""
+class EventTrace:
+    """Chronological event log for pipeline debugging."""
 
-    extraction_id: int
-    source_type: Literal["page", "chunk"]
-    source_id: int
-    parsed_model: BaseModel | None
-    extraction_time: float
-    error: str | None = None
-    metadata: dict = field(default_factory=dict)
+    events: list[TraceEvent] = field(default_factory=list)
+    _next_sequence: int = 0
 
+    def emit(self, event_type: str, stage: str, payload: dict[str, Any] | None = None) -> None:
+        self.events.append(
+            TraceEvent(
+                sequence=self._next_sequence,
+                timestamp=time.time(),
+                stage=stage,
+                event_type=event_type,
+                payload=payload or {},
+            )
+        )
+        self._next_sequence += 1
 
-@dataclass
-class GraphData:
-    """Data captured for an intermediate graph (per-page or per-chunk)."""
+    def find_events(self, event_type: str) -> list[TraceEvent]:
+        return [e for e in self.events if e.event_type == event_type]
 
-    graph_id: int
-    source_type: Literal["page", "chunk"]
-    source_id: int
-    graph: nx.DiGraph
-    pydantic_model: BaseModel
-    node_count: int
-    edge_count: int
-
-
-@dataclass
-class ConsolidationData:
-    """Data captured during graph consolidation/merging."""
-
-    strategy: Literal["llm", "programmatic"]
-    input_graph_ids: list[int]
-    merge_conflicts: list[dict] | None = None
+    def latest_payload(self, event_type: str) -> dict[str, Any] | None:
+        for event in reversed(self.events):
+            if event.event_type == event_type:
+                return event.payload
+        return None
 
 
-@dataclass
-class StagedPassData:
-    """Data captured for a single staged extraction pass."""
-
-    pass_id: int
-    stage_name: str
-    stage_type: Literal["id_pass", "fill_pass", "merge"]
-    success: bool
-    attempts: int
-    errors: list[str]
-    duration_seconds: float
-    fields_requested: list[str]
-    fields_returned: list[str]
-    metadata: dict = field(default_factory=dict)
+def _truncate_text(value: str, max_text_len: int) -> str:
+    if len(value) <= max_text_len:
+        return value
+    return value[:max_text_len] + f"... [truncated, total {len(value)} chars]"
 
 
-@dataclass
-class ConflictResolutionData:
-    """Data captured for an LLM conflict-resolution fallback."""
-
-    trigger: Literal["unresolved_conflicts", "failed_pass_partial", "quality_stalled"]
-    conflict_fields: list[str]
-    success: bool
-    duration_seconds: float
-    error: str | None = None
-    metadata: dict = field(default_factory=dict)
-
-
-@dataclass
-class TraceData:
-    """
-    Complete trace data for pipeline execution.
-
-    This contains all intermediate data captured during pipeline execution,
-    useful for debugging, analysis, and understanding the extraction process.
-    Populated only when config.debug is True.
-    """
-
-    pages: list[PageData] = field(default_factory=list)
-    chunks: list[ChunkData] | None = None
-    extractions: list[ExtractionData] = field(default_factory=list)
-    intermediate_graphs: list[GraphData] = field(default_factory=list)
-    consolidation: ConsolidationData | None = None
-    staged_passes: list[StagedPassData] = field(default_factory=list)
-    conflict_resolutions: list[ConflictResolutionData] = field(default_factory=list)
-    # Catalog-based staged extraction trace (config, timings, per_path_counts, etc.)
-    staged_trace: dict | None = None
+def _to_jsonable(value: Any, max_text_len: int) -> Any:
+    if isinstance(value, BaseModel):
+        return _to_jsonable(value.model_dump(), max_text_len)
+    if isinstance(value, str):
+        return _truncate_text(value, max_text_len)
+    if isinstance(value, list):
+        return [_to_jsonable(v, max_text_len) for v in value]
+    if isinstance(value, tuple):
+        return [_to_jsonable(v, max_text_len) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _to_jsonable(v, max_text_len) for k, v in value.items()}
+    return value
 
 
-def trace_data_to_jsonable(trace_data: TraceData, max_text_len: int = 2000) -> dict:
-    """
-    Convert TraceData to a JSON-serializable dict for export.
+def event_trace_to_jsonable(trace: EventTrace, max_text_len: int = 2000) -> dict[str, Any]:
+    """Convert EventTrace into compact step-first JSON payload."""
 
-    Large text fields are truncated; graphs are exported as summaries only
-    (node_count, edge_count) to keep file size manageable.
-    """
+    skip_steps = {"docling_export", "graph_export", "visualization"}
 
-    def _truncate(s: str) -> str:
-        if len(s) <= max_text_len:
-            return s
-        return s[:max_text_len] + f"... [truncated, total {len(s)} chars]"
+    def _step_name(event: TraceEvent) -> str:
+        if event.event_type == "page_markdown_extracted":
+            return "docling_conversion"
+        if event.stage == "graph_conversion":
+            return "graph_mapping"
+        if event.stage == "extraction":
+            return "data_extraction"
+        if event.stage == "docling_export":
+            return "docling_export"
+        if event.stage == "visualization":
+            return "visualization"
+        if event.stage == "export":
+            return "graph_export"
+        return event.stage
 
-    pages_out = [
-        {
-            "page_number": p.page_number,
-            "text_content": _truncate(p.text_content),
-            "metadata": p.metadata,
-        }
-        for p in trace_data.pages
-    ]
+    sorted_events = sorted(trace.events, key=lambda e: e.sequence)
+    ordered_step_names: list[str] = []
+    steps_by_name: dict[str, dict[str, Any]] = {}
 
-    chunks_out: list[dict] | None = None
-    if trace_data.chunks:
-        chunks_out = [
-            {
-                "chunk_id": c.chunk_id,
-                "page_numbers": c.page_numbers,
-                "text_content": _truncate(c.text_content),
-                "token_count": c.token_count,
-                "metadata": c.metadata,
+    for event in sorted_events:
+        payload = _to_jsonable(event.payload, max_text_len)
+        step_name = _step_name(event)
+
+        if step_name not in steps_by_name:
+            ordered_step_names.append(step_name)
+            steps_by_name[step_name] = {
+                "started_at": event.timestamp,
+                "finished_at": event.timestamp,
+                "artifacts": {},
+                "had_failure": False,
             }
-            for c in trace_data.chunks
-        ]
 
-    extractions_out = []
-    for e in trace_data.extractions:
-        parsed = None
-        if e.parsed_model is not None and hasattr(e.parsed_model, "model_dump"):
-            parsed = e.parsed_model.model_dump()
-        extractions_out.append(
+        step_obj = steps_by_name[step_name]
+        step_obj["finished_at"] = event.timestamp
+        if "failed" in event.event_type:
+            step_obj["had_failure"] = True
+        artifacts = step_obj["artifacts"]
+
+        if event.event_type == "page_markdown_extracted":
+            artifacts.setdefault("pages", []).append(payload)
+        elif event.event_type in ("extraction_completed", "extraction_failed"):
+            artifacts.setdefault("extractions", []).append(payload)
+        elif event.event_type == "structured_output_fallback_triggered":
+            artifacts.setdefault("fallbacks", []).append(payload)
+        elif event.event_type == "staged_trace_emitted":
+            artifacts.setdefault("staged_traces", []).append(payload)
+        elif event.event_type == "graph_created":
+            artifacts["graph"] = payload
+        elif event.event_type == "export_written":
+            artifacts.setdefault("exports", []).append(payload)
+        elif event.event_type == "pipeline_started":
+            artifacts["start"] = payload
+        elif event.event_type == "pipeline_finished":
+            artifacts["finish"] = payload
+        elif event.event_type == "pipeline_failed":
+            artifacts["failure"] = payload
+
+    docling_conversion = steps_by_name.get("docling_conversion", {})
+    data_extraction = steps_by_name.get("data_extraction", {})
+    graph_mapping = steps_by_name.get("graph_mapping", {})
+
+    page_count = len((docling_conversion.get("artifacts") or {}).get("pages", []))
+    extraction_artifacts = (data_extraction.get("artifacts") or {}).get("extractions", [])
+    extraction_success = any(
+        isinstance(item, dict) and item.get("error") in (None, "") for item in extraction_artifacts
+    )
+    fallback_used = bool((data_extraction.get("artifacts") or {}).get("fallbacks"))
+    graph_payload = (graph_mapping.get("artifacts") or {}).get("graph", {})
+    node_count = graph_payload.get("node_count", 0) if isinstance(graph_payload, dict) else 0
+    edge_count = graph_payload.get("edge_count", 0) if isinstance(graph_payload, dict) else 0
+
+    overall_processing_time = 0.0
+    if sorted_events:
+        overall_processing_time = max(0.0, sorted_events[-1].timestamp - sorted_events[0].timestamp)
+
+    steps_out: list[dict[str, Any]] = []
+    for step_name in ordered_step_names:
+        if step_name in skip_steps:
+            continue
+        step_obj = steps_by_name[step_name]
+        processing_time = max(0.0, step_obj["finished_at"] - step_obj["started_at"])
+        status = "failed" if step_obj.get("had_failure") else "success"
+        artifacts = step_obj.get("artifacts", {})
+        if step_name == "pipeline":
+            # Keep high-signal pipeline context only; summary already carries final counts.
+            start_payload = artifacts.get("start", {})
+            failure_payload = artifacts.get("failure")
+            artifacts = {
+                "mode": start_payload.get("mode"),
+                "source": start_payload.get("source"),
+                "processing_mode": start_payload.get("processing_mode"),
+                "backend": start_payload.get("backend"),
+                "inference": start_payload.get("inference"),
+                "debug": start_payload.get("debug"),
+            }
+            if failure_payload is not None:
+                artifacts["failure"] = failure_payload
+        steps_out.append(
             {
-                "extraction_id": e.extraction_id,
-                "source_type": e.source_type,
-                "source_id": e.source_id,
-                "parsed_model": parsed,
-                "extraction_time": e.extraction_time,
-                "error": e.error,
-                "metadata": e.metadata,
+                "name": step_name,
+                "runtime_seconds": round(processing_time, 4),
+                "status": status,
+                "artifacts": artifacts,
             }
         )
 
-    intermediate_graphs_out = [
-        {
-            "graph_id": g.graph_id,
-            "source_type": g.source_type,
-            "source_id": g.source_id,
-            "node_count": g.node_count,
-            "edge_count": g.edge_count,
-        }
-        for g in trace_data.intermediate_graphs
-    ]
-
-    consolidation_out: dict | None = None
-    if trace_data.consolidation is not None:
-        c = trace_data.consolidation
-        consolidation_out = {
-            "strategy": c.strategy,
-            "input_graph_ids": c.input_graph_ids,
-            "merge_conflicts": c.merge_conflicts,
-        }
-
-    staged_passes_out = [
-        {
-            "pass_id": p.pass_id,
-            "stage_name": p.stage_name,
-            "stage_type": p.stage_type,
-            "success": p.success,
-            "attempts": p.attempts,
-            "errors": p.errors,
-            "duration_seconds": p.duration_seconds,
-            "fields_requested": p.fields_requested,
-            "fields_returned": p.fields_returned,
-            "metadata": p.metadata,
-        }
-        for p in trace_data.staged_passes
-    ]
-
-    conflict_resolutions_out = [
-        {
-            "trigger": r.trigger,
-            "conflict_fields": r.conflict_fields,
-            "success": r.success,
-            "duration_seconds": r.duration_seconds,
-            "error": r.error,
-            "metadata": r.metadata,
-        }
-        for r in trace_data.conflict_resolutions
-    ]
-
-    staged_trace_out = (
-        trace_data.staged_trace
-        if hasattr(trace_data, "staged_trace") and trace_data.staged_trace is not None
-        else None
-    )
-
-    return {
-        "pages": pages_out,
-        "chunks": chunks_out,
-        "extractions": extractions_out,
-        "intermediate_graphs": intermediate_graphs_out,
-        "consolidation": consolidation_out,
-        "staged_passes": staged_passes_out,
-        "conflict_resolutions": conflict_resolutions_out,
-        "staged_trace": staged_trace_out,
+    out: dict[str, Any] = {
+        "summary": {
+            "runtime_seconds": round(overall_processing_time, 4),
+            "page_count": page_count,
+            "extraction_success": extraction_success,
+            "fallback_used": fallback_used,
+            "node_count": node_count,
+            "edge_count": edge_count,
+        },
+        "steps": steps_out,
     }
+    return out

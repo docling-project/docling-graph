@@ -98,13 +98,13 @@ class OneToOneStrategy(BaseExtractor):
         # Import for trace data capture
         import time
 
-        from ....pipeline.trace import ExtractionData, PageData
-
         # Capture page trace when debug/trace is enabled
         if hasattr(self, "trace_data") and self.trace_data:
             for page_num, page_md in enumerate(page_markdowns, start=1):
-                self.trace_data.pages.append(
-                    PageData(page_number=page_num, text_content=page_md, metadata={})
+                self.trace_data.emit(
+                    "page_markdown_extracted",
+                    "extraction",
+                    {"page_number": page_num, "text_content": page_md, "metadata": {}},
                 )
 
         extraction_id = 0
@@ -133,16 +133,19 @@ class OneToOneStrategy(BaseExtractor):
                 backend_diag = getattr(backend, "last_call_diagnostics", None)
                 if isinstance(backend_diag, dict) and backend_diag:
                     extraction_metadata.update(backend_diag)
-                extraction_data = ExtractionData(
-                    extraction_id=extraction_id,
-                    source_type="page",
-                    source_id=page_num - 1,  # 0-indexed
-                    parsed_model=model,
-                    extraction_time=extraction_time,
-                    error=error,
-                    metadata=extraction_metadata,
+                self.trace_data.emit(
+                    "extraction_completed" if error is None else "extraction_failed",
+                    "extraction",
+                    {
+                        "extraction_id": extraction_id,
+                        "source_type": "page",
+                        "source_id": page_num - 1,
+                        "parsed_model": model,
+                        "extraction_time": extraction_time,
+                        "error": error,
+                        "metadata": extraction_metadata,
+                    },
                 )
-                self.trace_data.extractions.append(extraction_data)
                 extraction_id += 1
 
             if model:

@@ -443,6 +443,19 @@ class LlmBackend:
                 if not self.structured_output:
                     raise
                 if self.trace_data is not None:
+                    self.trace_data.emit(
+                        "structured_output_fallback_triggered",
+                        "extraction",
+                        {
+                            "context": context,
+                            "reason": type(e).__name__,
+                            "provider": getattr(self.client, "provider", "unknown"),
+                            "model": getattr(
+                                self.client, "model", getattr(self.client, "model_id", "unknown")
+                            ),
+                        },
+                    )
+                if self.trace_data is not None:
                     primary_diag = getattr(self.client, "last_call_diagnostics", None)
                     if isinstance(primary_diag, dict):
                         raw_value = primary_diag.get("raw_response")
@@ -488,6 +501,19 @@ class LlmBackend:
                 and not self.last_call_diagnostics.get("fallback_used")
                 and self._is_sparse_structured_result(parsed_json, schema_dict, markdown)
             ):
+                if self.trace_data is not None:
+                    self.trace_data.emit(
+                        "structured_output_fallback_triggered",
+                        "extraction",
+                        {
+                            "context": context,
+                            "reason": "SparseStructuredOutput",
+                            "provider": getattr(self.client, "provider", "unknown"),
+                            "model": getattr(
+                                self.client, "model", getattr(self.client, "model_id", "unknown")
+                            ),
+                        },
+                    )
                 self._log_warning(
                     f"Structured output appears sparse for {context}; retrying legacy prompt-schema mode."
                 )
@@ -627,6 +653,19 @@ class LlmBackend:
             except ClientError as e:
                 if not self.structured_output:
                     raise
+                if self.trace_data is not None:
+                    self.trace_data.emit(
+                        "structured_output_fallback_triggered",
+                        "extraction",
+                        {
+                            "context": context,
+                            "reason": type(e).__name__,
+                            "provider": getattr(self.client, "provider", "unknown"),
+                            "model": getattr(
+                                self.client, "model", getattr(self.client, "model_id", "unknown")
+                            ),
+                        },
+                    )
                 self._log_warning(
                     f"Structured output failed for {context}; retrying with legacy prompt-schema mode."
                 )
@@ -726,8 +765,8 @@ class LlmBackend:
         catalog_config = CatalogOrchestratorConfig.from_dict(self._staged_config_raw)
 
         def _on_trace(trace_dict: dict) -> None:
-            if trace_data is not None and hasattr(trace_data, "staged_trace"):
-                trace_data.staged_trace = trace_dict
+            if trace_data is not None:
+                trace_data.emit("staged_trace_emitted", "extraction", trace_dict)
 
         orchestrator = CatalogOrchestrator(
             llm_call_fn=self._call_prompt,

@@ -243,7 +243,7 @@ class TestExtractFromMarkdown:
         rich = {"f1": "a", "f2": "b", "f3": "c", "f4": "d", "f5": "e"}
         mock_llm_client.get_json_response.side_effect = [sparse, rich]
         mock_llm_client.last_call_diagnostics = {"raw_response": '{"f1":"only one"}'}
-        llm_backend.trace_data = object()  # Simulate debug mode trace capture enabled
+        llm_backend.trace_data = MagicMock()  # Simulate debug mode trace capture enabled
         markdown = "x" * 1200
         result = llm_backend.extract_from_markdown(markdown=markdown, template=LargeTemplate)
         assert result is not None

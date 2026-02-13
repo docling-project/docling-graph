@@ -332,8 +332,9 @@ class TestTraceDataWithDebug:
 
         context = run_pipeline(config, mode="api")
         assert context.trace_data is not None
-        assert len(context.trace_data.extractions) >= 1
-        assert context.trace_data.extractions[0].parsed_model is not None
+        extraction_events = context.trace_data.find_events("extraction_completed")
+        assert len(extraction_events) >= 1
+        assert extraction_events[0].payload.get("parsed_model") is not None
 
     @patch("docling_graph.core.converters.graph_converter.validate_graph_structure")
     @patch("docling_graph.core.extractors.backends.llm_backend.LlmBackend.extract_from_markdown")

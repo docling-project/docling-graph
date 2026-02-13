@@ -199,22 +199,22 @@ class ManyToOneStrategy(BaseExtractor):
             extraction_time = time.time() - start_time
 
             if hasattr(self, "trace_data") and self.trace_data:
-                from ....pipeline.trace import ExtractionData
-
                 extraction_metadata: dict[str, Any] = {}
                 backend_diag = getattr(backend, "last_call_diagnostics", None)
                 if isinstance(backend_diag, dict) and backend_diag:
                     extraction_metadata.update(backend_diag)
-                self.trace_data.extractions.append(
-                    ExtractionData(
-                        extraction_id=0,
-                        source_type="chunk",
-                        source_id=0,
-                        parsed_model=model,
-                        extraction_time=extraction_time,
-                        error=None,
-                        metadata=extraction_metadata,
-                    )
+                self.trace_data.emit(
+                    "extraction_completed",
+                    "extraction",
+                    {
+                        "extraction_id": 0,
+                        "source_type": "chunk",
+                        "source_id": 0,
+                        "parsed_model": model,
+                        "extraction_time": extraction_time,
+                        "error": None,
+                        "metadata": extraction_metadata,
+                    },
                 )
 
             if model:
@@ -227,17 +227,18 @@ class ManyToOneStrategy(BaseExtractor):
         except Exception as e:
             logger.error(f"Direct text extraction failed: {e}")
             if hasattr(self, "trace_data") and self.trace_data:
-                from ....pipeline.trace import ExtractionData
-
-                self.trace_data.extractions.append(
-                    ExtractionData(
-                        extraction_id=0,
-                        source_type="chunk",
-                        source_id=0,
-                        parsed_model=None,
-                        extraction_time=0.0,
-                        error=str(e),
-                    )
+                self.trace_data.emit(
+                    "extraction_failed",
+                    "extraction",
+                    {
+                        "extraction_id": 0,
+                        "source_type": "chunk",
+                        "source_id": 0,
+                        "parsed_model": None,
+                        "extraction_time": 0.0,
+                        "error": str(e),
+                        "metadata": {},
+                    },
                 )
             return [], None
 
@@ -252,12 +253,12 @@ class ManyToOneStrategy(BaseExtractor):
 
         try:
             if hasattr(self, "trace_data") and self.trace_data:
-                from ....pipeline.trace import PageData
-
                 page_markdowns = self.doc_processor.extract_page_markdowns(document)
                 for page_num, page_md in enumerate(page_markdowns, start=1):
-                    self.trace_data.pages.append(
-                        PageData(page_number=page_num, text_content=page_md, metadata={})
+                    self.trace_data.emit(
+                        "page_markdown_extracted",
+                        "extraction",
+                        {"page_number": page_num, "text_content": page_md, "metadata": {}},
                     )
 
             full_markdown = self.doc_processor.extract_full_markdown(document)
@@ -279,28 +280,27 @@ class ManyToOneStrategy(BaseExtractor):
             extraction_time = time.time() - start_time
 
             if hasattr(self, "trace_data") and self.trace_data:
-                from ....pipeline.trace import ExtractionData
-
                 extraction_metadata: dict[str, Any] = {}
                 backend_diag = getattr(backend, "last_call_diagnostics", None)
                 if isinstance(backend_diag, dict) and backend_diag:
                     extraction_metadata.update(backend_diag)
-                if getattr(self.trace_data, "staged_trace", None):
+                if self.trace_data.find_events("staged_trace_emitted"):
                     extraction_metadata["extraction_contract"] = "staged"
-                    extraction_metadata["staged_passes_count"] = 3
-                elif hasattr(self.trace_data, "staged_passes") and self.trace_data.staged_passes:
-                    extraction_metadata["extraction_contract"] = "staged"
-                    extraction_metadata["staged_passes_count"] = len(self.trace_data.staged_passes)
-                self.trace_data.extractions.append(
-                    ExtractionData(
-                        extraction_id=0,
-                        source_type="chunk",
-                        source_id=0,
-                        parsed_model=model,
-                        extraction_time=extraction_time,
-                        error=None,
-                        metadata=extraction_metadata,
+                    extraction_metadata["staged_passes_count"] = len(
+                        self.trace_data.find_events("staged_trace_emitted")
                     )
+                self.trace_data.emit(
+                    "extraction_completed",
+                    "extraction",
+                    {
+                        "extraction_id": 0,
+                        "source_type": "chunk",
+                        "source_id": 0,
+                        "parsed_model": model,
+                        "extraction_time": extraction_time,
+                        "error": None,
+                        "metadata": extraction_metadata,
+                    },
                 )
 
             if model:
@@ -313,16 +313,17 @@ class ManyToOneStrategy(BaseExtractor):
         except Exception as e:
             logger.error(f"Direct extraction failed: {e}")
             if hasattr(self, "trace_data") and self.trace_data:
-                from ....pipeline.trace import ExtractionData
-
-                self.trace_data.extractions.append(
-                    ExtractionData(
-                        extraction_id=0,
-                        source_type="chunk",
-                        source_id=0,
-                        parsed_model=None,
-                        extraction_time=0.0,
-                        error=str(e),
-                    )
+                self.trace_data.emit(
+                    "extraction_failed",
+                    "extraction",
+                    {
+                        "extraction_id": 0,
+                        "source_type": "chunk",
+                        "source_id": 0,
+                        "parsed_model": None,
+                        "extraction_time": 0.0,
+                        "error": str(e),
+                        "metadata": {},
+                    },
                 )
             return [], document

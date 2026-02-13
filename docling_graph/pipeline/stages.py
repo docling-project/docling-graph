@@ -574,7 +574,6 @@ class ExtractionStage(PipelineStage):
 
         # Import LlmBackend here to avoid circular imports
         from ..core.extractors.backends.llm_backend import LlmBackend
-        from .trace import ExtractionData
 
         extraction_contract = (
             context.config.extraction_contract
@@ -629,16 +628,18 @@ class ExtractionStage(PipelineStage):
             backend_diag = getattr(llm_backend, "last_call_diagnostics", None)
             if isinstance(backend_diag, dict) and backend_diag:
                 extraction_metadata.update(backend_diag)
-            context.trace_data.extractions.append(
-                ExtractionData(
-                    extraction_id=0,
-                    source_type="chunk",
-                    source_id=0,
-                    parsed_model=extracted_model,
-                    extraction_time=extraction_time,
-                    error=None,
-                    metadata=extraction_metadata,
-                )
+            context.trace_data.emit(
+                "extraction_completed",
+                "extraction",
+                {
+                    "extraction_id": 0,
+                    "source_type": "chunk",
+                    "source_id": 0,
+                    "parsed_model": extracted_model,
+                    "extraction_time": extraction_time,
+                    "error": None,
+                    "metadata": extraction_metadata,
+                },
             )
 
         if not extracted_model:
@@ -774,6 +775,17 @@ class DoclingExportStage(PipelineStage):
             include_markdown=conf.get("export_markdown", True),
             per_page=conf.get("export_per_page_markdown", False),
         )
+        if context.trace_data is not None:
+            context.trace_data.emit(
+                "export_written",
+                "docling_export",
+                {
+                    "target": str(docling_dir),
+                    "export_docling_json": conf.get("export_docling_json", True),
+                    "export_markdown": conf.get("export_markdown", True),
+                    "export_per_page_markdown": conf.get("export_per_page_markdown", False),
+                },
+            )
 
         logger.info(f"[{self.name()}] Exported to {docling_dir}")
         return context
@@ -800,39 +812,20 @@ class GraphConversionStage(PipelineStage):
             raise PipelineError(
                 "No extracted models available for graph conversion", details={"stage": self.name()}
             )
-        # Capture intermediate graphs if trace is enabled and in many-to-one mode
-        if context.trace_data and context.config.processing_mode == "many-to-one":
-            from ..pipeline.trace import GraphData
-
-            # Use a converter without cleanup/validation for trace to avoid duplicate logs
-            trace_converter = GraphConverter(
-                add_reverse_edges=context.config.reverse_edges,
-                validate_graph=False,
-                auto_cleanup=False,
-                registry=context.node_registry,
-            )
-            for i, model in enumerate(context.extracted_models):
-                # Create individual graph for this model (no cleanup/validation logs)
-                temp_graph, temp_metadata = trace_converter.pydantic_list_to_graph([model])
-
-                graph_data = GraphData(
-                    graph_id=i,
-                    source_type="chunk",
-                    source_id=i,
-                    graph=temp_graph,
-                    pydantic_model=model,
-                    node_count=temp_metadata.node_count,
-                    edge_count=temp_metadata.edge_count,
-                )
-                context.trace_data.intermediate_graphs.append(graph_data)
-
-            logger.info(
-                f"[{self.name()}] Captured {len(context.trace_data.intermediate_graphs)} intermediate graphs"
-            )
-
         context.knowledge_graph, context.graph_metadata = converter.pydantic_list_to_graph(
             context.extracted_models
         )
+        if context.trace_data is not None:
+            context.trace_data.emit(
+                "graph_created",
+                "graph_conversion",
+                {
+                    "processing_mode": context.config.processing_mode,
+                    "source_model_count": len(context.extracted_models),
+                    "node_count": context.graph_metadata.node_count,
+                    "edge_count": context.graph_metadata.edge_count,
+                },
+            )
 
         logger.info(
             f"[{self.name()}] Created graph: "
@@ -874,6 +867,16 @@ class ExportStage(PipelineStage):
         json_path = graph_dir / "graph.json"
         JSONExporter().export(context.knowledge_graph, json_path)
         logger.info(f"Saved JSON to {json_path}")
+        if context.trace_data is not None:
+            context.trace_data.emit(
+                "export_written",
+                "export",
+                {
+                    "target": str(graph_dir),
+                    "format": export_format,
+                    "json_path": str(json_path),
+                },
+            )
 
         logger.info(f"[{self.name()}] Exported to {graph_dir}")
         return context
@@ -912,8 +915,12 @@ class VisualizationStage(PipelineStage):
         staged_passes_count = 0
         llm_diagnostics: dict[str, Any] = {}
         if context.trace_data:
-            if context.trace_data.extractions:
-                first_meta = context.trace_data.extractions[0].metadata
+            extraction_events = context.trace_data.find_events("extraction_completed")
+            if extraction_events:
+                first_payload = extraction_events[0].payload
+                first_meta = (
+                    first_payload.get("metadata") if isinstance(first_payload, dict) else {}
+                )
                 if isinstance(first_meta, dict):
                     for key in (
                         "structured_attempted",
@@ -923,10 +930,7 @@ class VisualizationStage(PipelineStage):
                     ):
                         if key in first_meta:
                             llm_diagnostics[key] = first_meta[key]
-            if getattr(context.trace_data, "staged_trace", None):
-                staged_passes_count = 3
-            elif hasattr(context.trace_data, "staged_passes"):
-                staged_passes_count = len(context.trace_data.staged_passes)
+            staged_passes_count = len(context.trace_data.find_events("staged_trace_emitted"))
         ReportGenerator().visualize(
             context.knowledge_graph,
             report_path,
@@ -940,6 +944,12 @@ class VisualizationStage(PipelineStage):
         html_path = output_dir / "graph.html"
         InteractiveVisualizer().save_cytoscape_graph(context.knowledge_graph, html_path)
         logger.info(f"Generated interactive HTML graph at {html_path}")
+        if context.trace_data is not None:
+            context.trace_data.emit(
+                "export_written",
+                "visualization",
+                {"report_path": str(report_path) + ".md", "html_path": str(html_path)},
+            )
 
         logger.info(f"[{self.name()}] Generated visualizations")
         return context

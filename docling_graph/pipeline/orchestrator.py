@@ -25,7 +25,7 @@ from .stages import (
     TemplateLoadingStage,
     VisualizationStage,
 )
-from .trace import TraceData
+from .trace import EventTrace
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,19 @@ class PipelineOrchestrator:
 
         # Initialize in-memory trace when debug is enabled (CLI --debug or PipelineConfig(debug=True))
         if self.config.debug:
-            context.trace_data = TraceData()
+            context.trace_data = EventTrace()
+            context.trace_data.emit(
+                "pipeline_started",
+                "pipeline",
+                {
+                    "mode": self.mode,
+                    "source": str(self.config.source),
+                    "processing_mode": self.config.processing_mode,
+                    "backend": self.config.backend,
+                    "inference": self.config.inference,
+                    "debug": self.config.debug,
+                },
+            )
 
         # Initialize OutputDirectoryManager if dumping to disk
         if self.dump_to_disk:
@@ -190,15 +202,9 @@ class PipelineOrchestrator:
                         if context.extracted_models
                         else 0,
                         "staged_passes_count": (
-                            3
-                            if context.trace_data
-                            and getattr(context.trace_data, "staged_trace", None)
-                            else (
-                                len(context.trace_data.staged_passes)
-                                if context.trace_data
-                                and hasattr(context.trace_data, "staged_passes")
-                                else 0
-                            )
+                            len(context.trace_data.find_events("staged_trace_emitted"))
+                            if context.trace_data is not None
+                            else 0
                         ),
                     },
                 }
@@ -208,17 +214,31 @@ class PipelineOrchestrator:
                     f"Saved metadata to {context.output_manager.get_document_dir() / 'metadata.json'}"
                 )
 
+            if context.trace_data is not None:
+                context.trace_data.emit(
+                    "pipeline_finished",
+                    "pipeline",
+                    {
+                        "processing_time_seconds": round(pipeline_processing_time, 2),
+                        "nodes": context.graph_metadata.node_count if context.graph_metadata else 0,
+                        "edges": context.graph_metadata.edge_count if context.graph_metadata else 0,
+                        "extracted_models": len(context.extracted_models)
+                        if context.extracted_models
+                        else 0,
+                    },
+                )
+
             # Export trace data to debug dir when debug is on and we're writing to disk
             if context.trace_data and context.output_manager and self.dump_to_disk:
                 import json
 
-                from .trace import trace_data_to_jsonable
+                from .trace import event_trace_to_jsonable
 
                 debug_dir = context.output_manager.get_debug_dir()
                 trace_path = debug_dir / "trace_data.json"
                 with open(trace_path, "w", encoding="utf-8") as f:
                     json.dump(
-                        trace_data_to_jsonable(context.trace_data),
+                        event_trace_to_jsonable(context.trace_data),
                         f,
                         indent=2,
                         ensure_ascii=False,
@@ -243,6 +263,16 @@ class PipelineOrchestrator:
         except Exception as e:
             stage_name = current_stage.name() if current_stage else "Unknown"
             logger.error(f"Pipeline failed at stage: {stage_name}")
+            if context.trace_data is not None:
+                context.trace_data.emit(
+                    "pipeline_failed",
+                    "pipeline",
+                    {
+                        "stage": stage_name,
+                        "error_type": type(e).__name__,
+                        "error": str(e),
+                    },
+                )
 
             # Cleanup empty output directory if dump_to_disk was enabled
             if self.dump_to_disk and context.output_manager:

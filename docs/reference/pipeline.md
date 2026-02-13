@@ -172,10 +172,10 @@ class PipelineContext:
 
     # Output and debug
     output_manager: OutputDirectoryManager | None = None
-    trace_data: TraceData | None = None  # Populated when config.debug is True
+    trace_data: EventTrace | None = None  # Populated when config.debug is True
 ```
 
-When `debug=True`, `trace_data` is populated with pages, chunks, extractions, intermediate graph summaries, and consolidation info. When output is written to disk, a snapshot is saved as `debug/trace_data.json`. See [Debug Mode](../usage/advanced/trace-data-debugging.md) for details.
+When `debug=True`, `trace_data` is populated as a chronological event log (`EventTrace`). When output is written to disk, it is saved as `debug/trace_data.json` in compact form with `summary` (including `runtime_seconds`), and ordered `steps` entries (`name`, `runtime_seconds`, `status`, `artifacts`). See [Debug Mode](../usage/advanced/trace-data-debugging.md) for details.
 
 ---
 
@@ -327,7 +327,7 @@ outputs/
     │   └── report.md                 # Extraction report
     │
     └── debug/                        # Debug output (if debug=True)
-        └── trace_data.json           # Pages, chunks, extractions, intermediate graphs, consolidation
+        └── trace_data.json           # Compact summary + ordered steps with canonical artifacts
 ```
 
 ### metadata.json Structure
