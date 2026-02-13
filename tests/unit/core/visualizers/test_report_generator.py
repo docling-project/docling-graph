@@ -119,6 +119,21 @@ class TestReportGeneratorReportSections:
         assert "## Extraction Diagnostics" in section
         assert "No extraction diagnostics" in section
 
+    def test_create_extraction_diagnostics_with_structured_fallback_metadata(self):
+        section = ReportGenerator._create_extraction_diagnostics(
+            extraction_contract="direct",
+            llm_diagnostics={
+                "structured_attempted": True,
+                "structured_failed": True,
+                "fallback_used": True,
+                "fallback_error_class": "ClientError",
+            },
+        )
+        assert "Structured attempted" in section
+        assert "Structured failed" in section
+        assert "Legacy fallback used" in section
+        assert "ClientError" in section
+
 
 class TestReportGeneratorOutput:
     """Test report file generation."""

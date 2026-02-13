@@ -16,6 +16,8 @@ from typing import Any, TypedDict
 
 from pydantic import BaseModel
 
+from .....llm_clients.schema_utils import build_compact_semantic_guide
+
 
 class PromptDict(TypedDict):
     """Type definition for prompt dictionaries."""
@@ -59,6 +61,17 @@ _USER_PROMPT_TEMPLATE = (
     "Return ONLY a JSON object that follows the target schema."
 )
 
+_USER_PROMPT_TEMPLATE_COMPACT = (
+    "Extract information from this {document_type}:\n\n"
+    "=== {delimiter} ===\n"
+    "{markdown_content}\n"
+    "=== END {delimiter} ===\n\n"
+    "=== SEMANTIC FIELD GUIDANCE ===\n"
+    "{semantic_guide}\n"
+    "=== END GUIDANCE ===\n\n"
+    "Return ONLY a JSON object that follows the API-enforced schema."
+)
+
 
 # ---------------------------------------------------------------------------
 # Public API: Prompt generation
@@ -70,6 +83,9 @@ def get_extraction_prompt(
     schema_json: str,
     is_partial: bool = False,
     model_config: Any | None = None,  # Kept for backward compatibility, not used
+    structured_output: bool = True,
+    schema_dict: dict[str, Any] | None = None,
+    force_legacy_prompt_schema: bool = False,
 ) -> dict[str, str]:
     """
     Generate system and user prompts for LLM extraction.
@@ -114,5 +130,13 @@ def get_extraction_prompt(
         markdown_content=markdown_content,
         schema_json=schema_json,
     )
+    if structured_output and not force_legacy_prompt_schema:
+        semantic_guide = build_compact_semantic_guide(schema_dict or {})
+        user_prompt = _USER_PROMPT_TEMPLATE_COMPACT.format(
+            document_type=document_type,
+            delimiter=delimiter,
+            markdown_content=markdown_content,
+            semantic_guide=semantic_guide,
+        )
 
     return {"system": system_prompt, "user": user_prompt}

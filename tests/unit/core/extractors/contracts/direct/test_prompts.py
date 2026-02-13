@@ -21,7 +21,9 @@ class TestGetExtractionPrompt:
         markdown = "This is page 1 content."
         schema = '{"title": "Test", "type": "object"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema, is_partial=True)
+        prompt_dict = get_extraction_prompt(
+            markdown, schema, is_partial=True, structured_output=False
+        )
 
         # Verify structure
         assert "system" in prompt_dict
@@ -46,7 +48,9 @@ class TestGetExtractionPrompt:
         markdown = "This is the full document content."
         schema = '{"title": "Test", "type": "object"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema, is_partial=False)
+        prompt_dict = get_extraction_prompt(
+            markdown, schema, is_partial=False, structured_output=False
+        )
 
         # Verify structure
         assert "system" in prompt_dict
@@ -71,7 +75,7 @@ class TestGetExtractionPrompt:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         system = prompt_dict["system"]
         # Check for key instruction elements
@@ -84,7 +88,7 @@ class TestGetExtractionPrompt:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         system = prompt_dict["system"]
         # Check for relationship-specific guidance
@@ -100,7 +104,9 @@ class TestGetExtractionPrompt:
 
         # Should work with model_config parameter (even though it's not used)
         model_config = SimpleNamespace(capability="STANDARD")
-        prompt_dict = get_extraction_prompt(markdown, schema, model_config=model_config)
+        prompt_dict = get_extraction_prompt(
+            markdown, schema, model_config=model_config, structured_output=False
+        )
 
         assert "system" in prompt_dict
         assert "user" in prompt_dict
@@ -111,7 +117,7 @@ class TestGetExtractionPrompt:
         schema = '{"title": "Test"}'
 
         # Should work without model_config parameter
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         assert "system" in prompt_dict
         assert "user" in prompt_dict
@@ -121,7 +127,7 @@ class TestGetExtractionPrompt:
         markdown = "Test content"
         schema = '{"title": "TestSchema", "properties": {"name": {"type": "string"}}}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         user = prompt_dict["user"]
         assert schema in user
@@ -132,7 +138,7 @@ class TestGetExtractionPrompt:
         markdown = "This is unique test content 12345"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         user = prompt_dict["user"]
         assert markdown in user
@@ -142,8 +148,8 @@ class TestGetExtractionPrompt:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt1 = get_extraction_prompt(markdown, schema, is_partial=True)
-        prompt2 = get_extraction_prompt(markdown, schema, is_partial=True)
+        prompt1 = get_extraction_prompt(markdown, schema, is_partial=True, structured_output=False)
+        prompt2 = get_extraction_prompt(markdown, schema, is_partial=True, structured_output=False)
 
         # Same inputs should produce same outputs
         assert prompt1["system"] == prompt2["system"]
@@ -154,13 +160,42 @@ class TestGetExtractionPrompt:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        partial_prompt = get_extraction_prompt(markdown, schema, is_partial=True)
-        complete_prompt = get_extraction_prompt(markdown, schema, is_partial=False)
+        partial_prompt = get_extraction_prompt(
+            markdown, schema, is_partial=True, structured_output=False
+        )
+        complete_prompt = get_extraction_prompt(
+            markdown, schema, is_partial=False, structured_output=False
+        )
 
         # System prompts should be different
         assert partial_prompt["system"] != complete_prompt["system"]
         # User prompts should be different (different document type)
         assert partial_prompt["user"] != complete_prompt["user"]
+
+    def test_structured_output_mode_uses_compact_guide(self):
+        markdown = "Test content"
+        schema = (
+            '{"type":"object","properties":{"name":{"type":"string","description":"Person name"}}}'
+        )
+
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=True)
+
+        user = prompt_dict["user"]
+        assert "SEMANTIC FIELD GUIDANCE" in user
+        assert "TARGET SCHEMA" not in user
+
+    def test_force_legacy_prompt_schema_overrides_structured_compact_mode(self):
+        markdown = "Test content"
+        schema = '{"type":"object","properties":{"name":{"type":"string"}}}'
+        prompt_dict = get_extraction_prompt(
+            markdown,
+            schema,
+            structured_output=True,
+            force_legacy_prompt_schema=True,
+        )
+        user = prompt_dict["user"]
+        assert "TARGET SCHEMA" in user
+        assert "SEMANTIC FIELD GUIDANCE" not in user
 
 
 class TestPromptQuality:
@@ -171,7 +206,7 @@ class TestPromptQuality:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         system = prompt_dict["system"].lower()
         # Should mention not using empty strings/arrays/objects
@@ -182,7 +217,7 @@ class TestPromptQuality:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         system = prompt_dict["system"]
         user = prompt_dict["user"]
@@ -196,7 +231,7 @@ class TestPromptQuality:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         system = prompt_dict["system"].lower()
         # Should mention following/matching the schema
@@ -207,7 +242,7 @@ class TestPromptQuality:
         markdown = "Test content"
         schema = '{"title": "Test"}'
 
-        prompt_dict = get_extraction_prompt(markdown, schema)
+        prompt_dict = get_extraction_prompt(markdown, schema, structured_output=False)
 
         system = prompt_dict["system"].lower()
         # Should mention extracting only what's in the text

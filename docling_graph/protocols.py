@@ -6,7 +6,7 @@ for backends, extractors, and clients. Using Protocols instead of abstract
 base classes provides better type checking and duck typing support.
 """
 
-from typing import Any, Dict, List, Mapping, Protocol, Type, TypeGuard, runtime_checkable
+from typing import Any, Dict, List, Literal, Mapping, Protocol, Type, TypeGuard, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -90,13 +90,21 @@ class LLMClientProtocol(Protocol):
     """
 
     def get_json_response(
-        self, prompt: str | Mapping[str, str], schema_json: str
+        self,
+        prompt: str | Mapping[str, str],
+        schema_json: str,
+        structured_output: bool = True,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "extraction_result",
     ) -> Dict[str, Any] | List[Any]:
         """Execute LLM call and return parsed JSON.
 
         Args:
             prompt: The full prompt to send to the model (string or dict with 'system'/'user' keys).
             schema_json: The Pydantic schema in JSON format.
+            structured_output: If True, enforce schema via API-level structured output.
+            response_top_level: Expected JSON root type (object/array) for structured mode.
+            response_schema_name: Schema name used in provider response_format payload.
 
         Returns:
             Parsed JSON dictionary from the LLM response.

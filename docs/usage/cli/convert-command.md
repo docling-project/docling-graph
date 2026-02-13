@@ -270,6 +270,24 @@ These flags apply when `--extraction-contract staged` is used in many-to-one mod
 
 ID pass always runs sequentially across shards for stable skeleton assembly.
 
+### Structured Output Mode
+
+Structured output is enabled by default for LLM extraction and enforces schema
+through LiteLLM `response_format=json_schema`.
+
+```bash
+--schema-enforced-llm / --no-schema-enforced-llm
+--structured-sparse-check / --no-structured-sparse-check
+```
+
+- Use `--schema-enforced-llm` (default) for strict schema-constrained output.
+- Use `--no-schema-enforced-llm` to fall back to legacy prompt-embedded schema mode.
+- Use `--no-structured-sparse-check` to disable the sparse structured-result quality guard.
+- When schema mode fails at runtime (unsupported backend/model or malformed request),
+  Docling Graph logs the error and automatically retries once using legacy prompt-schema mode.
+- Even when schema mode succeeds technically, Docling Graph can trigger the same fallback once
+  if the structured payload is detected as obviously sparse for the target schema.
+
 **Example:**
 
 ```bash

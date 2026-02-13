@@ -8,6 +8,8 @@ defaults:
   backend: llm                  # llm | vlm
   inference: local              # local | remote
   export_format: csv            # csv | cypher
+  structured_output: true       # true | false (schema-enforced output via LiteLLM response_format)
+  structured_sparse_check: true # true | false (auto-fallback when structured result looks sparse)
   # Max tokens per chunk when chunking is used (null = use default 512)
   chunk_max_tokens: null
   # Staged (3-pass) tuning: ID pass → fill (bottom-up) → merge. Preset + optional overrides.

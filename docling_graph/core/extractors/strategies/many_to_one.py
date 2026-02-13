@@ -9,7 +9,7 @@ extraction contract (e.g., direct single-pass or staged multi-pass).
 
 import logging
 import time
-from typing import Tuple, Type, cast
+from typing import Any, Tuple, Type, cast
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
@@ -201,6 +201,10 @@ class ManyToOneStrategy(BaseExtractor):
             if hasattr(self, "trace_data") and self.trace_data:
                 from ....pipeline.trace import ExtractionData
 
+                extraction_metadata: dict[str, Any] = {}
+                backend_diag = getattr(backend, "last_call_diagnostics", None)
+                if isinstance(backend_diag, dict) and backend_diag:
+                    extraction_metadata.update(backend_diag)
                 self.trace_data.extractions.append(
                     ExtractionData(
                         extraction_id=0,
@@ -209,6 +213,7 @@ class ManyToOneStrategy(BaseExtractor):
                         parsed_model=model,
                         extraction_time=extraction_time,
                         error=None,
+                        metadata=extraction_metadata,
                     )
                 )
 
@@ -276,7 +281,10 @@ class ManyToOneStrategy(BaseExtractor):
             if hasattr(self, "trace_data") and self.trace_data:
                 from ....pipeline.trace import ExtractionData
 
-                extraction_metadata: dict[str, str | int] = {}
+                extraction_metadata: dict[str, Any] = {}
+                backend_diag = getattr(backend, "last_call_diagnostics", None)
+                if isinstance(backend_diag, dict) and backend_diag:
+                    extraction_metadata.update(backend_diag)
                 if getattr(self.trace_data, "staged_trace", None):
                     extraction_metadata["extraction_contract"] = "staged"
                     extraction_metadata["staged_passes_count"] = 3

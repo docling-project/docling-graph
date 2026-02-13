@@ -40,13 +40,15 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 - **💎 Graph Construction**: Convert validated Pydantic models into NetworkX [directed graphs](docs/fundamentals/graph-management/graph-conversion.md) with semantic relationships and stable node IDs, and rich edge metadata.
 
-- **📦 Export**: Save graphs in multiple Neo4j-compatible formats [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), and [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export) for bulk import.
+- **📦 Export**: Save graphs in multiple KG databases compatible formats like [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), and [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export) for bulk import.
 
-- **📊 Visualization**: Explore graphs with [interactive HTML](docs/fundamentals/graph-management/visualization.md) pages, and detailed [Markdown reports](docs/fundamentals/graph-management/visualization.md#markdown-reports).
+- **🔍 Visualization**: Explore graphs with [interactive HTML](docs/fundamentals/graph-management/visualization.md) pages, and detailed [Markdown reports](docs/fundamentals/graph-management/visualization.md#markdown-reports).
 
 ### Latest Changes
 
 - **🪜 Multi-pass Extraction** - EXPERIMENTAL: [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge. Use `extraction_contract="staged"` with many-to-one LLM.
+
+- **📐 Structured Extraction**: LLM extraction now uses API schema-enforced output by default (`response_format=json_schema` via LiteLLM). Disable with `structured_output=False` (API) or `--no-schema-enforced-llm` (CLI) to fall back to the legacy prompt-schema mode if your LLM provider doesn’t support it.
 
 - **✨ LiteLLM abstraction**: Unified interface to local and remote LLM providers (vLLM, Mistral, OpenAI, WatsonX, etc.) via [LiteLLM](docs/reference/llm-clients.md), offering improved support and greater flexibility.
 
@@ -57,8 +59,6 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 
 * 🧲 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
-
-* 🔍 **External OCR Engine:** Pass custom OCR engine URL to convert documents before graph creation.
 
 * 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
@@ -132,6 +132,7 @@ config = {
     "extraction_contract": "staged",  # robust for smaller models
     "provider_override": "mistral",
     "model_override": "mistral-medium-latest",
+    "structured_output": True,  # default
     "use_chunking": True,
 }
 

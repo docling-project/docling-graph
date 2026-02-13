@@ -18,6 +18,7 @@ import pytest
 from pydantic import BaseModel
 
 from docling_graph.core.extractors.backends.llm_backend import LlmBackend
+from docling_graph.exceptions import ClientError
 
 
 def _load_rheology_quantity_with_unit() -> type[BaseModel] | None:
@@ -39,6 +40,21 @@ def _load_rheology_quantity_with_unit() -> type[BaseModel] | None:
 class MockTemplate(BaseModel):
     name: str
     age: int
+
+
+class LargeTemplate(BaseModel):
+    f1: str | None = None
+    f2: str | None = None
+    f3: str | None = None
+    f4: str | None = None
+    f5: str | None = None
+    f6: str | None = None
+    f7: str | None = None
+    f8: str | None = None
+    f9: str | None = None
+    f10: str | None = None
+    f11: str | None = None
+    f12: str | None = None
 
 
 # Minimal QuantityWithUnit and template for coercion tests (model name must be QuantityWithUnit)
@@ -125,9 +141,10 @@ class TestExtractFromMarkdown:
         assert not call_kwargs["is_partial"]
 
         # Verify LLM call
-        mock_llm_client.get_json_response.assert_called_with(
-            prompt={"system": "sys", "user": "user"}, schema_json=schema_json
-        )
+        called_kwargs = mock_llm_client.get_json_response.call_args.kwargs
+        assert called_kwargs["prompt"] == {"system": "sys", "user": "user"}
+        assert called_kwargs["schema_json"] == schema_json
+        assert called_kwargs["structured_output"] is True
 
     def test_empty_markdown_returns_none(self, llm_backend):
         """Test that empty or whitespace-only markdown returns None."""
@@ -190,6 +207,64 @@ class TestExtractFromMarkdown:
         result = llm_backend.extract_from_markdown(markdown="Some content", template=MockTemplate)
 
         assert result is None
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_structured_failure_falls_back_to_legacy_prompt_schema(
+        self, mock_get_prompt, llm_backend, mock_llm_client
+    ):
+        mock_get_prompt.side_effect = [
+            {"system": "sys", "user": "compact"},
+            {"system": "sys", "user": "legacy"},
+        ]
+        mock_llm_client.get_json_response.side_effect = [
+            ClientError("structured failed"),
+            {"name": "Test", "age": 30},
+        ]
+        result = llm_backend.extract_from_markdown(markdown="Some content", template=MockTemplate)
+        assert result is not None
+        assert mock_llm_client.get_json_response.call_count == 2
+        first = mock_llm_client.get_json_response.call_args_list[0].kwargs
+        second = mock_llm_client.get_json_response.call_args_list[1].kwargs
+        assert first["structured_output"] is True
+        assert second["structured_output"] is False
+        assert llm_backend.last_call_diagnostics["structured_attempted"] is True
+        assert llm_backend.last_call_diagnostics["structured_failed"] is True
+        assert llm_backend.last_call_diagnostics["fallback_used"] is True
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_sparse_structured_result_triggers_legacy_retry(
+        self, mock_get_prompt, llm_backend, mock_llm_client
+    ):
+        mock_get_prompt.side_effect = [
+            {"system": "sys", "user": "compact"},
+            {"system": "sys", "user": "legacy"},
+        ]
+        sparse = {"f1": "only one"}
+        rich = {"f1": "a", "f2": "b", "f3": "c", "f4": "d", "f5": "e"}
+        mock_llm_client.get_json_response.side_effect = [sparse, rich]
+        mock_llm_client.last_call_diagnostics = {"raw_response": '{"f1":"only one"}'}
+        llm_backend.trace_data = object()  # Simulate debug mode trace capture enabled
+        markdown = "x" * 1200
+        result = llm_backend.extract_from_markdown(markdown=markdown, template=LargeTemplate)
+        assert result is not None
+        assert result.f5 == "e"
+        assert mock_llm_client.get_json_response.call_count == 2
+        assert llm_backend.last_call_diagnostics["fallback_used"] is True
+        assert "structured_primary_attempt_parsed_json" in llm_backend.last_call_diagnostics
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_sparse_structured_result_does_not_retry_when_check_disabled(
+        self, mock_get_prompt, mock_llm_client
+    ):
+        backend = LlmBackend(llm_client=mock_llm_client, structured_sparse_check=False)
+        mock_get_prompt.return_value = {"system": "sys", "user": "compact"}
+        sparse = {"f1": "only one"}
+        mock_llm_client.get_json_response.return_value = sparse
+        markdown = "x" * 1200
+        result = backend.extract_from_markdown(markdown=markdown, template=LargeTemplate)
+        assert result is not None
+        assert mock_llm_client.get_json_response.call_count == 1
+        assert backend.last_call_diagnostics["fallback_used"] is False
 
     @patch("docling_graph.core.extractors.backends.llm_backend.CatalogOrchestrator")
     def test_staged_contract_uses_catalog_flow(self, mock_orchestrator_cls, mock_llm_client):
@@ -530,3 +605,29 @@ class TestStagedPromptRetries:
         )
         assert out == {"name": "A", "age": 1}
         assert mock_llm_client.get_json_response.call_count == 2
+
+    def test_call_prompt_falls_back_to_legacy_schema_mode_on_structured_failure(
+        self, mock_llm_client
+    ):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+            structured_output=True,
+        )
+        mock_llm_client.get_json_response.side_effect = [
+            ClientError("schema mode unsupported"),
+            [{"id": "x"}],
+        ]
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            '{"type":"array","items":{"type":"object"}}',
+            "doc fill_call_0",
+            response_top_level="array",
+        )
+        assert out == [{"id": "x"}]
+        assert mock_llm_client.get_json_response.call_count == 2
+        first = mock_llm_client.get_json_response.call_args_list[0].kwargs
+        second = mock_llm_client.get_json_response.call_args_list[1].kwargs
+        assert first["structured_output"] is True
+        assert second["structured_output"] is False

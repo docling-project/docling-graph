@@ -387,6 +387,8 @@ class ExtractionStage(PipelineStage):
             Literal["direct", "staged"], conf.get("extraction_contract", "direct")
         )
         staged_config = {
+            "structured_output": bool(conf.get("structured_output", True)),
+            "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
             "max_pass_retries": conf.get("staged_pass_retries", 1),
             "catalog_max_nodes_per_call": conf.get("staged_nodes_fill_cap", 5),
             "parallel_workers": conf.get("staged_workers", 1),
@@ -429,6 +431,8 @@ class ExtractionStage(PipelineStage):
                 staged_config=staged_config,
                 model_name=model_config["model"],
                 docling_config=conf["docling_config"],
+                structured_output=bool(conf.get("structured_output", True)),
+                structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
             )
         else:
             if context.config.llm_client is not None:
@@ -446,6 +450,8 @@ class ExtractionStage(PipelineStage):
                 staged_config=staged_config,
                 llm_client=llm_client,
                 docling_config=conf["docling_config"],
+                structured_output=bool(conf.get("structured_output", True)),
+                structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
             )
 
     @staticmethod
@@ -576,6 +582,8 @@ class ExtractionStage(PipelineStage):
             else "direct"
         )
         staged_config = {
+            "structured_output": bool(conf.get("structured_output", True)),
+            "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
             "max_pass_retries": conf.get("staged_pass_retries", 1),
             "catalog_max_nodes_per_call": conf.get("staged_nodes_fill_cap", 5),
             "parallel_workers": conf.get("staged_workers", 1),
@@ -601,6 +609,8 @@ class ExtractionStage(PipelineStage):
             llm_client,
             extraction_contract=extraction_contract,
             staged_config=staged_config,
+            structured_output=bool(conf.get("structured_output", True)),
+            structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
         )
         if context.trace_data is not None:
             llm_backend.trace_data = context.trace_data
@@ -615,6 +625,10 @@ class ExtractionStage(PipelineStage):
         extraction_time = time.time() - start_time
 
         if context.trace_data is not None:
+            extraction_metadata: dict[str, Any] = {}
+            backend_diag = getattr(llm_backend, "last_call_diagnostics", None)
+            if isinstance(backend_diag, dict) and backend_diag:
+                extraction_metadata.update(backend_diag)
             context.trace_data.extractions.append(
                 ExtractionData(
                     extraction_id=0,
@@ -623,6 +637,7 @@ class ExtractionStage(PipelineStage):
                     parsed_model=extracted_model,
                     extraction_time=extraction_time,
                     error=None,
+                    metadata=extraction_metadata,
                 )
             )
 
@@ -895,7 +910,19 @@ class VisualizationStage(PipelineStage):
         report_path = output_dir / "report"
         extraction_contract = getattr(context.config, "extraction_contract", None)
         staged_passes_count = 0
+        llm_diagnostics: dict[str, Any] = {}
         if context.trace_data:
+            if context.trace_data.extractions:
+                first_meta = context.trace_data.extractions[0].metadata
+                if isinstance(first_meta, dict):
+                    for key in (
+                        "structured_attempted",
+                        "structured_failed",
+                        "fallback_used",
+                        "fallback_error_class",
+                    ):
+                        if key in first_meta:
+                            llm_diagnostics[key] = first_meta[key]
             if getattr(context.trace_data, "staged_trace", None):
                 staged_passes_count = 3
             elif hasattr(context.trace_data, "staged_passes"):
@@ -906,6 +933,7 @@ class VisualizationStage(PipelineStage):
             source_model_count=len(context.extracted_models),
             extraction_contract=extraction_contract,
             staged_passes_count=staged_passes_count,
+            llm_diagnostics=llm_diagnostics,
         )
         logger.info(f"Generated markdown report at {report_path}.md")
 

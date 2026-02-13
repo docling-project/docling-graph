@@ -3,7 +3,7 @@ One-to-one extraction strategy.
 Processes each page independently and returns multiple models.
 """
 
-from typing import List, Tuple, Type
+from typing import Any, List, Tuple, Type
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
@@ -129,6 +129,10 @@ class OneToOneStrategy(BaseExtractor):
 
             # Capture trace data if enabled
             if hasattr(self, "trace_data") and self.trace_data:
+                extraction_metadata: dict[str, Any] = {}
+                backend_diag = getattr(backend, "last_call_diagnostics", None)
+                if isinstance(backend_diag, dict) and backend_diag:
+                    extraction_metadata.update(backend_diag)
                 extraction_data = ExtractionData(
                     extraction_id=extraction_id,
                     source_type="page",
@@ -136,6 +140,7 @@ class OneToOneStrategy(BaseExtractor):
                     parsed_model=model,
                     extraction_time=extraction_time,
                     error=error,
+                    metadata=extraction_metadata,
                 )
                 self.trace_data.extractions.append(extraction_data)
                 extraction_id += 1

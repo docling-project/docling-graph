@@ -10,11 +10,12 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Literal, Mapping
 
 from ..exceptions import ClientError, ConfigurationError
 from .config import EffectiveModelConfig
 from .response_handler import ResponseHandler
+from .schema_utils import normalize_schema_for_response_format
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class LiteLLMClient:
         self._generation = model_config.generation
         self._reliability = model_config.reliability
         self._connection = model_config.connection
+        self.last_call_diagnostics: dict[str, Any] = {}
 
         self._setup_client(**kwargs)
         logger.info("%s initialized for model: %s", self.__class__.__name__, self.model)
@@ -54,18 +56,40 @@ class LiteLLMClient:
             )
 
     def get_json_response(
-        self, prompt: str | Mapping[str, str], schema_json: str
+        self,
+        prompt: str | Mapping[str, str],
+        schema_json: str,
+        structured_output: bool = True,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "extraction_result",
     ) -> Dict[str, Any] | list[Any]:
+        self.last_call_diagnostics = {
+            "structured_attempted": bool(structured_output),
+            "structured_failed": False,
+            "fallback_used": False,
+            "fallback_error_class": None,
+            "provider": self._config.provider_id,
+            "model": self.model,
+        }
         messages = self._prepare_messages(prompt)
-        raw_response, metadata = self._call_api(messages, schema_json=schema_json)
+        raw_response, metadata = self._call_api(
+            messages,
+            schema_json=schema_json,
+            structured_output=structured_output,
+            response_top_level=response_top_level,
+            response_schema_name=response_schema_name,
+        )
+        self.last_call_diagnostics["raw_response"] = raw_response
         truncated = self._check_truncation(metadata)
-        return ResponseHandler.parse_json_response(
+        parsed = ResponseHandler.parse_json_response(
             raw_response,
             self.__class__.__name__,
             aggressive_clean=self._needs_aggressive_cleaning(),
             truncated=truncated,
             max_tokens=self.max_tokens,
         )
+        self.last_call_diagnostics["parsed_json"] = parsed
+        return parsed
 
     def _prepare_messages(self, prompt: str | Mapping[str, str]) -> list[Dict[str, str]]:
         if isinstance(prompt, Mapping):
@@ -93,7 +117,7 @@ class LiteLLMClient:
         self, messages: list[Dict[str, str]], **params: Any
     ) -> tuple[str, Dict[str, Any]]:
         try:
-            request = self._build_request(messages)
+            request = self._build_request(messages, **params)
             response = litellm.completion(**request)
 
             choices = response.get("choices", [])
@@ -114,13 +138,37 @@ class LiteLLMClient:
         except Exception as e:
             if isinstance(e, ClientError):
                 raise
+            if params.get("structured_output", True):
+                self.last_call_diagnostics.update(
+                    {
+                        "structured_failed": True,
+                        "fallback_error_class": type(e).__name__,
+                    }
+                )
+                raise ClientError(
+                    "Structured output request failed. Disable structured output for this model "
+                    "or use a model/provider that supports response_format json_schema.",
+                    details={
+                        "model": self.model,
+                        "provider": self._config.provider_id,
+                        "error": str(e),
+                    },
+                    cause=e,
+                ) from e
             raise ClientError(
                 f"LiteLLM API call failed: {type(e).__name__}",
                 details={"model": self.model, "error": str(e)},
                 cause=e,
             ) from e
 
-    def _build_request(self, messages: list[Dict[str, str]]) -> dict[str, Any]:
+    def _build_request(
+        self,
+        messages: list[Dict[str, str]],
+        schema_json: str | None = None,
+        structured_output: bool = True,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "extraction_result",
+    ) -> dict[str, Any]:
         gen = self.generation
         max_tokens = gen.max_tokens or self._max_output_tokens
         model_name = self.model_config.litellm_model
@@ -133,7 +181,22 @@ class LiteLLMClient:
             "timeout": self.timeout,
             "drop_params": True,
         }
-        if self.model_config.provider_id != "vllm":
+        if structured_output:
+            try:
+                schema_dict = json.loads(schema_json or "{}")
+            except json.JSONDecodeError as e:
+                raise ClientError(
+                    "Invalid schema_json passed for structured output.",
+                    details={"error": str(e), "schema_json_preview": (schema_json or "")[:200]},
+                    cause=e,
+                ) from e
+            normalized = normalize_schema_for_response_format(
+                schema_dict,
+                top_level=response_top_level,
+                name=response_schema_name,
+            )
+            request["response_format"] = {"type": "json_schema", "json_schema": normalized}
+        else:
             request["response_format"] = {"type": "json_object"}
 
         if gen.top_p is not None:

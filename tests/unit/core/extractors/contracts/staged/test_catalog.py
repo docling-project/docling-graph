@@ -434,7 +434,9 @@ def test_catalog_orchestrator_end_to_end():
 
     call_log: list[tuple[str, str]] = []
 
-    def mock_llm(prompt: dict, schema_json: str, context: str) -> dict | list | None:
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
         call_log.append((context, schema_json[:80]))
         if "catalog_id_pass" in context:
             return {
@@ -574,7 +576,9 @@ def test_fill_pass_order_bottom_up():
         CatalogOrchestratorConfig,
     )
 
-    def mock_llm(prompt: dict, schema_json: str, context: str) -> dict | list | None:
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
         if "catalog_id_pass" in context:
             return {
                 "nodes": [
@@ -642,7 +646,9 @@ def test_id_pass_shards_run_sequentially_even_with_fill_workers():
 
     id_contexts: list[str] = []
 
-    def mock_llm(prompt: dict, schema_json: str, context: str) -> dict | list | None:
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
         if "catalog_id_pass_shard_" in context:
             id_contexts.append(context)
             return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
@@ -714,7 +720,9 @@ def test_orchestrator_quality_gate_fails_without_root_instance():
         CatalogOrchestratorConfig,
     )
 
-    def mock_llm(prompt: dict, schema_json: str, context: str) -> dict | list | None:
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
         if "catalog_id_pass" in context:
             # Missing root by design; validation will reject and leave sparse ID map
             return {
@@ -749,7 +757,9 @@ def test_orchestrator_sanitizes_root_overfill_nested_children():
         CatalogOrchestratorConfig,
     )
 
-    def mock_llm(prompt: dict, schema_json: str, context: str) -> dict | list | None:
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
         if "catalog_id_pass" in context:
             return {
                 "nodes": [
