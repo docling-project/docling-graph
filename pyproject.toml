@@ -54,6 +54,10 @@ docling-graph = "docling_graph.cli.main:main"
 
 [project.optional-dependencies]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
+delta-resolvers = [
+    "spacy",
+    "rapidfuzz",
+]
 
 [dependency-groups]
 # Development tools (linters, type-checkers) and utilities

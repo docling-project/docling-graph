@@ -46,7 +46,9 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **🪜 Multi-pass Extraction** - EXPERIMENTAL: [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge. Use `extraction_contract="staged"` with many-to-one LLM.
+- **🪜 Multi-pass Extraction** - Experimental: Use `extraction_contract="delta"` or `extraction_contract="staged"`.
+    - [Delta extraction](docs/fundamentals/extraction-process/delta-extraction.md) for long documents: chunk → token-batched LLM calls → normalize → merge → project to template.
+    - [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge.
 
 - **📐 Structured Extraction**: LLM extraction now uses API schema-enforced output by default (`response_format=json_schema` via LiteLLM). Disable with `structured_output=False` (API) or `--no-schema-enforced-llm` (CLI) to fall back to the legacy prompt-schema mode if your LLM provider doesn’t support it.
 

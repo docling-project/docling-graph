@@ -13,6 +13,7 @@ from rich import print as rich_print
 from .constants import (
     API_PROVIDERS,
     BACKENDS,
+    DELTA_RESOLVER_MODES,
     DOCLING_PIPELINES,
     EXPORT_FORMATS,
     EXTRACTION_CONTRACTS,
@@ -96,7 +97,7 @@ class ConfigurationBuilder:
             ),
         ).lower()
 
-    def _build_defaults(self) -> Dict[str, str]:
+    def _build_defaults(self) -> Dict[str, Any]:
         """Build default settings section."""
         rich_print("\n── [bold]Default Settings[/bold] ──")
         processing_mode = self._prompt_option(
@@ -126,6 +127,7 @@ class ConfigurationBuilder:
                 },
             )
         )
+        delta_defaults = self._build_delta_defaults(extraction_contract)
 
         backend = self._prompt_option(
             PromptConfig(
@@ -165,6 +167,78 @@ class ConfigurationBuilder:
             "extraction_contract": extraction_contract,
             "backend": backend,
             "inference": inference,
+            **delta_defaults,
+        }
+
+    def _build_delta_defaults(self, extraction_contract: str) -> Dict[str, Any]:
+        """Collect optional delta-specific defaults when delta contract is selected."""
+        if extraction_contract != "delta":
+            return {}
+
+        rich_print("\n── [bold]Delta Extraction Tuning[/bold] ──")
+        rich_print(
+            f"\n{self.step_counter}. Delta Resolvers"
+            "\n Configure optional post-merge resolver deduplication:"
+        )
+        self.step_counter += 1
+        resolvers_enabled = typer.confirm(
+            "Enable delta resolvers for post-merge dedup?",
+            default=True,
+        )
+        resolvers_mode = "off"
+        if resolvers_enabled:
+            resolvers_mode = cast(
+                str,
+                typer.prompt(
+                    "Select delta resolver mode",
+                    default="fuzzy",
+                    type=click.Choice(DELTA_RESOLVER_MODES, case_sensitive=False),
+                ),
+            ).lower()
+
+        rich_print(
+            f"\n{self.step_counter}. Delta Quality Gates"
+            "\n Tune strictness for merge/projection quality checks:"
+        )
+        self.step_counter += 1
+        customize_quality = typer.confirm(
+            "Customize delta quality thresholds now?",
+            default=True,
+        )
+        quality_defaults: Dict[str, Any] = {}
+        if customize_quality:
+            quality_defaults = self._prompt_delta_quality_defaults()
+
+        return {
+            "delta_resolvers_enabled": resolvers_enabled,
+            "delta_resolvers_mode": resolvers_mode,
+            **quality_defaults,
+        }
+
+    def _prompt_delta_quality_defaults(self) -> Dict[str, Any]:
+        """Prompt for delta quality-related defaults."""
+        parent_lookup_miss = typer.prompt(
+            "Max parent lookup misses before failing quality gate (-1 disables)",
+            default=4,
+            type=int,
+        )
+        adaptive_parent_lookup = typer.confirm(
+            "Enable adaptive parent lookup tolerance?",
+            default=True,
+        )
+        require_relationships = typer.confirm(
+            "Require at least one relationship in projected graph?",
+            default=False,
+        )
+        require_structural_attachments = typer.confirm(
+            "Require structural attachments (avoid root-only outputs)?",
+            default=False,
+        )
+        return {
+            "delta_quality_max_parent_lookup_miss": parent_lookup_miss,
+            "delta_quality_adaptive_parent_lookup": adaptive_parent_lookup,
+            "delta_quality_require_relationships": require_relationships,
+            "delta_quality_require_structural_attachments": require_structural_attachments,
         }
 
     def _build_export_format(self) -> str:

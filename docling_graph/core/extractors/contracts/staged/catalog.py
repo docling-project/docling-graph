@@ -80,6 +80,23 @@ def _schema_hints_for_model(model: type[BaseModel], id_fields: list[str]) -> tup
     return desc, example_hint
 
 
+def _field_aliases(field_name: str, field_info: Any) -> list[str]:
+    """Collect declared alias names for one Pydantic field."""
+    values: list[str] = []
+    alias = getattr(field_info, "alias", None)
+    if isinstance(alias, str) and alias != field_name:
+        values.append(alias)
+    validation_alias = getattr(field_info, "validation_alias", None)
+    choices = getattr(validation_alias, "choices", None)
+    if isinstance(choices, tuple | list):
+        for choice in choices:
+            if isinstance(choice, str) and choice != field_name:
+                values.append(choice)
+    elif isinstance(validation_alias, str) and validation_alias != field_name:
+        values.append(validation_alias)
+    return sorted(set(values))
+
+
 @dataclass
 class NodeSpec:
     """Specification of a node type at a given catalog path."""
@@ -130,11 +147,13 @@ class NodeCatalog:
 
     nodes: list[NodeSpec] = field(default_factory=list)
     edges: list[EdgeSpec] = field(default_factory=list)
+    field_aliases: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "nodes": [n.to_dict() for n in self.nodes],
             "edges": [e.to_dict() for e in self.edges],
+            "field_aliases": dict(self.field_aliases),
         }
 
     def paths(self) -> list[str]:
@@ -152,6 +171,7 @@ def build_node_catalog(template: type[BaseModel]) -> NodeCatalog:
     """
     nodes: list[NodeSpec] = []
     edges: list[EdgeSpec] = []
+    field_aliases: dict[str, str] = {}
 
     def add_node(
         path: str,
@@ -188,6 +208,8 @@ def build_node_catalog(template: type[BaseModel]) -> NodeCatalog:
             add_node("", model, "", "", False)
 
         for field_name, field_info in model.model_fields.items():
+            for alias_name in _field_aliases(field_name, field_info):
+                field_aliases.setdefault(alias_name, field_name)
             segment = f".{field_name}" if path_prefix else field_name
             path = f"{path_prefix}{segment}" if path_prefix else field_name
             extra = field_info.json_schema_extra or {}
@@ -253,7 +275,7 @@ def build_node_catalog(template: type[BaseModel]) -> NodeCatalog:
                     walk(path, target_model, parent_entity_path, from_root=False)
 
     walk("", template, "", from_root=True)
-    return NodeCatalog(nodes=nodes, edges=edges)
+    return NodeCatalog(nodes=nodes, edges=edges, field_aliases=field_aliases)
 
 
 def get_model_for_path(template: type[BaseModel], path: str) -> type[BaseModel] | None:

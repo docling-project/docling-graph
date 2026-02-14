@@ -12,7 +12,7 @@ import json
 import logging
 import re
 from functools import lru_cache
-from typing import Any, Literal, Type
+from typing import Any, Literal, Type, cast
 
 from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
@@ -20,10 +20,8 @@ from rich import print as rich_print
 from ....exceptions import ClientError
 from ....protocols import LLMClientProtocol
 from ..contracts import direct
-from ..contracts.staged.orchestrator import (
-    CatalogOrchestrator,
-    CatalogOrchestratorConfig,
-)
+from ..contracts.delta.backend_ops import run_delta_orchestrator
+from ..contracts.staged.backend_ops import run_staged_orchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +36,7 @@ class LlmBackend:
     def __init__(
         self,
         llm_client: LLMClientProtocol,
-        extraction_contract: Literal["direct", "staged"] = "direct",
+        extraction_contract: Literal["direct", "staged", "delta"] = "direct",
         staged_config: dict[str, Any] | None = None,
         structured_output: bool = True,
         structured_sparse_check: bool = True,
@@ -50,7 +48,7 @@ class LlmBackend:
             llm_client: LLM client instance implementing LLMClientProtocol
         """
         self.client = llm_client
-        self.extraction_contract: Literal["direct", "staged"] = extraction_contract
+        self.extraction_contract: Literal["direct", "staged", "delta"] = extraction_contract
         self._staged_config_raw = staged_config or {}
         self.structured_output = structured_output
         self.structured_sparse_check = structured_sparse_check
@@ -213,11 +211,79 @@ class LlmBackend:
         content = json.dumps(stable, sort_keys=True, default=str)
         return hashlib.blake2b(content.encode(), digest_size=8).hexdigest()
 
-    def _fill_missing_required_fields(self, data: dict | list, errors: list) -> bool:
+    @staticmethod
+    def _resolve_schema_ref(node: dict[str, Any], defs: dict[str, Any]) -> dict[str, Any]:
+        """Resolve $ref in schema node; return resolved dict or node."""
+        ref = node.get("$ref")
+        if isinstance(ref, str) and (ref.startswith(("#/$defs/", "#/definitions/"))):
+            return cast(dict[str, Any], defs.get(ref.split("/")[-1], node))
+        return node
+
+    @staticmethod
+    def _schema_node_properties_or_any_of(
+        node: dict[str, Any], defs: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Return properties from node, or from first anyOf member if node uses anyOf."""
+        props = node.get("properties")
+        if isinstance(props, dict):
+            return props
+        any_of = node.get("anyOf")
+        if isinstance(any_of, list) and any_of:
+            first = LlmBackend._resolve_schema_ref(any_of[0], defs)
+            if isinstance(first, dict):
+                return first.get("properties") or {}
+        return {}
+
+    @staticmethod
+    def _get_field_schema_at_path(
+        template: type[BaseModel], loc: tuple, defs: dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
         """
-        Fill missing required fields (e.g. study_id, experiment_id) with deterministic
-        content-based synthetic IDs so the same logical entity gets the same ID across
-        passes and validation can succeed when the LLM omits identity fields.
+        Resolve JSON schema for the field at the given path (e.g. for enum default).
+        Walks root schema: properties -> key, array -> items, $ref -> $defs.
+        Handles anyOf (e.g. optional nested object) by using first branch for properties.
+        """
+        try:
+            schema = template.model_json_schema()
+        except Exception:
+            return None
+        root_defs = schema.get("$defs") or schema.get("definitions")
+        defs = defs if defs is not None else (root_defs if isinstance(root_defs, dict) else {})
+        node: dict[str, Any] = schema
+        for key in loc:
+            node = LlmBackend._resolve_schema_ref(node, defs)
+            if isinstance(key, int):
+                node = node.get("items") or {}
+            else:
+                props = LlmBackend._schema_node_properties_or_any_of(node, defs)
+                node = props.get(key) or {}
+            if not node:
+                return None
+        node = LlmBackend._resolve_schema_ref(node, defs)
+        return node if isinstance(node, dict) else None
+
+    @staticmethod
+    def _enum_default_from_schema(field_schema: dict[str, Any]) -> Any:
+        """Return a valid enum value from schema: prefer OTHER, else first."""
+        enum_vals = field_schema.get("enum")
+        if not isinstance(enum_vals, list) or not enum_vals:
+            return None
+        for v in enum_vals:
+            if isinstance(v, str) and v.upper() == "OTHER":
+                return v
+        return enum_vals[0]
+
+    def _fill_missing_required_fields(
+        self,
+        data: dict | list,
+        errors: list,
+        template: type[BaseModel] | None = None,
+    ) -> bool:
+        """
+        Fill missing required fields with deterministic or template-derived values so
+        validation can succeed when the LLM omits identity fields. Root-level
+        "document identifier" fields (by naming convention) use template name when
+        template is provided. Enum fields use schema enum default (e.g. OTHER).
         Returns True if any value was set.
         """
         changed = False
@@ -237,20 +303,112 @@ class LlmBackend:
                     continue
             except (KeyError, IndexError, TypeError):
                 continue
-            # Deterministic ID from entity content so same logical entity => same ID
-            fingerprint = self._content_fingerprint(parent, exclude_keys={field_name})
-            if field_name.endswith("_id"):
-                prefix = field_name[:-3].upper()
-                if prefix == "EXPERIMENT":
-                    prefix = "EXP"
-                elif prefix == "PROTOCOL":
-                    prefix = "PROTO"
-                value = f"{prefix}-{fingerprint}"
+            # Root-level "document identifier" field (convention: name contains reference/document): use template name
+            is_root = len(loc) == 1
+            fn_lower = (field_name or "").lower()
+            is_doc_id = ("reference" in fn_lower and "document" in fn_lower) or fn_lower.endswith(
+                "_document"
+            )
+            if template is not None and is_root and is_doc_id:
+                value = getattr(template, "__name__", None) or "Document"
+            elif template is not None:
+                # Enum-aware: use schema enum default (e.g. OTHER) so validation passes
+                field_schema = self._get_field_schema_at_path(template, loc)
+                if field_schema:
+                    enum_default = self._enum_default_from_schema(field_schema)
+                    if enum_default is not None:
+                        value = enum_default
+                    else:
+                        fingerprint = self._content_fingerprint(parent, exclude_keys={field_name})
+                        if field_name.endswith("_id"):
+                            prefix = field_name[:-3].upper()
+                            prefix = prefix[:4] if len(prefix) > 4 else prefix
+                            value = f"{prefix}-{fingerprint}"
+                        else:
+                            value = f"GEN-{field_name.upper()}-{fingerprint[:8]}"
+                else:
+                    fingerprint = self._content_fingerprint(parent, exclude_keys={field_name})
+                    if field_name.endswith("_id"):
+                        prefix = field_name[:-3].upper()
+                        prefix = prefix[:4] if len(prefix) > 4 else prefix
+                        value = f"{prefix}-{fingerprint}"
+                    else:
+                        value = f"GEN-{field_name.upper()}-{fingerprint[:8]}"
             else:
-                value = f"GEN-{field_name.upper()}-{fingerprint[:8]}"
+                # Deterministic ID from entity content so same logical entity => same ID
+                fingerprint = self._content_fingerprint(parent, exclude_keys={field_name})
+                if field_name.endswith("_id"):
+                    prefix = field_name[:-3].upper()
+                    prefix = prefix[:4] if len(prefix) > 4 else prefix
+                    value = f"{prefix}-{fingerprint}"
+                else:
+                    value = f"GEN-{field_name.upper()}-{fingerprint[:8]}"
             self._set_at_path(data, loc, value)
             seen_locs.add(loc)
             changed = True
+        return changed
+
+    def _coerce_string_type_errors(self, data: dict | list, errors: list) -> bool:
+        """
+        Coerce scalar values to string when validation expected string but got int/float/bool.
+        Returns True if any value was coerced (caller should retry validation).
+        """
+        # Pydantic v2: "string_type" = expected string, got other; "int_type" etc. = wrong scalar type
+        coercible_types = ("int_type", "float_type", "bool_type", "string_type")
+        changed = False
+        seen_locs: set[tuple] = set()
+        for err in errors:
+            err_type = err.get("type")
+            if err_type not in coercible_types:
+                continue
+            loc = tuple(err.get("loc", ()))
+            if not loc or loc in seen_locs:
+                continue
+            try:
+                value = self._get_at_path(data, loc)
+            except (KeyError, IndexError, TypeError):
+                continue
+            if not isinstance(value, int | float | bool):
+                continue
+            try:
+                self._set_at_path(data, loc, str(value))
+                seen_locs.add(loc)
+                changed = True
+            except (KeyError, IndexError, TypeError):
+                continue
+        return changed
+
+    def _coerce_list_type_errors(self, data: dict | list, errors: list) -> bool:
+        """
+        Coerce scalar values to single-element list when validation expected list (e.g. list[str])
+        but got string or other scalar (Pydantic v2 type=list_type).
+        Returns True if any value was coerced (caller should retry validation).
+        """
+        changed = False
+        seen_locs: set[tuple] = set()
+        for err in errors:
+            if err.get("type") != "list_type":
+                continue
+            loc = tuple(err.get("loc", ()))
+            if not loc or loc in seen_locs:
+                continue
+            try:
+                value = self._get_at_path(data, loc)
+            except (KeyError, IndexError, TypeError):
+                continue
+            if isinstance(value, list):
+                continue
+            try:
+                # For list[str], split comma-separated string into list when applicable
+                if isinstance(value, str) and "," in value:
+                    list_value = [s.strip() for s in value.split(",") if s.strip()]
+                else:
+                    list_value = [value]
+                self._set_at_path(data, loc, list_value)
+                seen_locs.add(loc)
+                changed = True
+            except (KeyError, IndexError, TypeError):
+                continue
         return changed
 
     def _prune_invalid_fields(self, data: dict | list, errors: list) -> None:
@@ -275,8 +433,10 @@ class LlmBackend:
         Validate parsed JSON against Pydantic template.
 
         Best-effort: on ValidationError, tries (1) QuantityWithUnit coercion,
-        (2) filling missing required ID fields with generated values (e.g. study_id),
-        (3) pruning invalid fields, then re-validates (up to 3 passes).
+        (2) filling missing required fields with generated values,
+        (3) coercing int/float/bool to string where string is expected,
+        (4) coercing scalar to single-element list where list is expected,
+        (5) pruning invalid fields, then re-validates (up to 3 passes).
         """
         data: dict | list = copy.deepcopy(parsed_json)
         max_salvage_passes = 3
@@ -294,17 +454,30 @@ class LlmBackend:
                 if pass_num == 0:
                     self._log_validation_error(context, e, parsed_json)
 
-                # First pass: try QuantityWithUnit coercion
-                if pass_num == 0:
-                    if self._apply_quantity_coercion(data, e.errors()):
-                        continue
+                errors = e.errors()
+                any_fixed = False
 
-                # Fill missing required fields (e.g. study_id, experiment_id) with generated IDs
-                if self._fill_missing_required_fields(data, e.errors()):
+                # First pass: try QuantityWithUnit coercion
+                if pass_num == 0 and self._apply_quantity_coercion(data, errors):
+                    any_fixed = True
+
+                # Fill missing required fields with enum or generated values
+                if self._fill_missing_required_fields(data, errors, template=template):
+                    any_fixed = True
+
+                # Coerce int/float/bool to string where schema expects string
+                if self._coerce_string_type_errors(data, errors):
+                    any_fixed = True
+
+                # Coerce scalar to list where schema expects list (comma-split when string)
+                if self._coerce_list_type_errors(data, errors):
+                    any_fixed = True
+
+                if any_fixed:
                     continue
 
                 # Prune invalid fields and retry
-                self._prune_invalid_fields(data, e.errors())
+                self._prune_invalid_fields(data, errors)
 
         self._log_warning("Validation failed after best-effort salvage")
         return None
@@ -394,6 +567,19 @@ class LlmBackend:
             Parsed JSON (dict or list) or None if call failed
         """
         try:
+            if self.extraction_contract == "delta" and not is_partial:
+                delta_result = self._extract_with_delta_contract(
+                    markdown=markdown,
+                    context=context,
+                    template=template,
+                    trace_data=getattr(self, "trace_data", None),
+                )
+                if delta_result:
+                    return delta_result
+                self._log_warning(
+                    f"Delta extraction produced no JSON for {context}; falling back to direct."
+                )
+
             if self.extraction_contract == "staged" and not is_partial:
                 staged_result = self._extract_with_staged_contract(
                     markdown=markdown,
@@ -578,7 +764,7 @@ class LlmBackend:
             return None
 
     def _get_staged_call_max_tokens(self, context: str) -> int | None:
-        """Select staged max_tokens override by call type."""
+        """Select staged max_tokens override by call type. Delta batch calls use client default (no override)."""
         cfg = self._staged_config_raw or {}
         if "catalog_id_pass" in context:
             v = cfg.get("id_max_tokens")
@@ -722,7 +908,9 @@ class LlmBackend:
             truncated = bool(details.get("truncated")) if isinstance(details, dict) else False
             if truncated:
                 cfg = self._staged_config_raw or {}
-                if bool(cfg.get("retry_on_truncation", True)):
+                # Delta batch: do not override client output limit on retry; skip retry with max_tokens.
+                skip_truncation_retry = context.strip().lower().startswith("delta_batch")
+                if not skip_truncation_retry and bool(cfg.get("retry_on_truncation", True)):
                     retry_max = self._get_staged_call_max_tokens(context)
                     if retry_max is not None:
                         retry_max = max(retry_max, retry_max * 2)
@@ -749,6 +937,84 @@ class LlmBackend:
             self._log_error(f"Error during LLM call for {context}", e)
             return None
 
+    def _extract_with_delta_contract(
+        self,
+        markdown: str,
+        context: str,
+        template: Type[BaseModel] | None = None,
+        trace_data: Any = None,
+    ) -> dict | list | None:
+        """Delta extraction from a single markdown payload (fallback path)."""
+        chunks = [markdown]
+        chunk_metadata = [
+            {
+                "chunk_id": 0,
+                "page_numbers": [0],
+                "token_count": max(1, len(markdown.split())),
+            }
+        ]
+        return self._run_delta_orchestrator(
+            chunks=chunks,
+            chunk_metadata=chunk_metadata,
+            context=context,
+            template=template,
+            trace_data=trace_data,
+        )
+
+    def _run_delta_orchestrator(
+        self,
+        *,
+        chunks: list[str],
+        chunk_metadata: list[dict[str, Any]] | None,
+        context: str,
+        template: Type[BaseModel] | None,
+        trace_data: Any,
+    ) -> dict | list | None:
+        return run_delta_orchestrator(
+            llm_call_fn=self._call_prompt,
+            staged_config_raw=self._staged_config_raw,
+            chunks=chunks,
+            chunk_metadata=chunk_metadata,
+            context=context,
+            template=template,
+            trace_data=trace_data,
+            structured_output=self.structured_output,
+        )
+
+    def extract_from_chunk_batches(
+        self,
+        *,
+        chunks: list[str],
+        chunk_metadata: list[dict[str, Any]] | None,
+        template: Type[BaseModel],
+        context: str = "document",
+    ) -> BaseModel | None:
+        """Run delta extraction from pre-chunked content and validate final model."""
+        schema_dict = self._get_schema_dict(template)
+        parsed_json = self._run_delta_orchestrator(
+            chunks=chunks,
+            chunk_metadata=chunk_metadata,
+            context=context,
+            template=template,
+            trace_data=getattr(self, "trace_data", None),
+        )
+        if not parsed_json:
+            return None
+        if (
+            self.structured_sparse_check
+            and self.extraction_contract != "delta"
+            and self._is_sparse_structured_result(
+                parsed_json,
+                schema_dict,
+                "\n".join(chunks),
+            )
+        ):
+            self._log_warning(
+                f"Delta extraction appears sparse for {context}; falling back to direct extraction."
+            )
+            return None
+        return self._validate_extraction(parsed_json, template, context)
+
     def _extract_with_staged_contract(
         self,
         markdown: str,
@@ -758,27 +1024,16 @@ class LlmBackend:
         trace_data: Any = None,
     ) -> dict | list | None:
         """3-pass catalog extraction: ID discovery, fill nodes, assemble edges."""
-        if template is None:
-            logger.warning("Staged extraction requires a template; skipping.")
-            return None
-        debug_dir = self._staged_config_raw.get("debug_dir") or ""
-        catalog_config = CatalogOrchestratorConfig.from_dict(self._staged_config_raw)
-
-        def _on_trace(trace_dict: dict) -> None:
-            if trace_data is not None:
-                trace_data.emit("staged_trace_emitted", "extraction", trace_dict)
-
-        orchestrator = CatalogOrchestrator(
+        return run_staged_orchestrator(
             llm_call_fn=self._call_prompt,
+            staged_config_raw=self._staged_config_raw,
+            markdown=markdown,
             schema_json=schema_json,
+            context=context,
             template=template,
-            config=catalog_config,
-            debug_dir=debug_dir or None,
+            trace_data=trace_data,
             structured_output=self.structured_output,
-            on_trace=_on_trace if trace_data is not None else None,
         )
-        logger.info("[StagedExtraction] Starting catalog extraction (ID + fill + edges)")
-        return orchestrator.extract(markdown=markdown, context=context)
 
     def _repair_json(self, raw_text: str) -> str:
         """
@@ -867,7 +1122,13 @@ class LlmBackend:
             Extracted and validated Pydantic model instance, or None if failed
         """
         # Log extraction start (one line: direct vs staged)
-        mode = "Staged" if (self.extraction_contract == "staged" and not is_partial) else "Direct"
+        mode = (
+            "Delta"
+            if (self.extraction_contract == "delta" and not is_partial)
+            else (
+                "Staged" if (self.extraction_contract == "staged" and not is_partial) else "Direct"
+            )
+        )
         self._log_info(f"{mode} extraction from {context}", chars=len(markdown))
 
         # Early validation for empty markdown

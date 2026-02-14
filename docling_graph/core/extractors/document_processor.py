@@ -39,7 +39,7 @@ class DocumentProcessor:
             chunker_config (dict): Configuration for DocumentChunker.
                 Example: {
                     "tokenizer_name": "mistralai/Mistral-7B-Instruct-v0.2",
-                    "chunk_max_tokens": 4096,
+                    "chunk_max_tokens": 2048,
                     "merge_peers": True
                 }
                 Or use provider shortcut:
@@ -132,9 +132,32 @@ class DocumentProcessor:
                 cause=e,
             ) from e
 
-        rich_print(
-            f"[blue][DocumentProcessor][/blue] Converted [cyan]{result.document.num_pages()}[/cyan] pages"
-        )
+        # Some formats (e.g., DOCX/MD/HTML) may not expose page metadata in Docling.
+        page_count = 0
+        try:
+            num_pages_fn = getattr(result.document, "num_pages", None)
+            if callable(num_pages_fn):
+                page_count = int(num_pages_fn() or 0)
+        except Exception:
+            page_count = 0
+
+        if page_count <= 0:
+            try:
+                pages = getattr(result.document, "pages", None)
+                if pages is not None:
+                    page_count = len(pages)
+            except Exception:
+                page_count = 0
+
+        if page_count > 0:
+            rich_print(
+                f"[blue][DocumentProcessor][/blue] Converted [cyan]{page_count}[/cyan] pages"
+            )
+        else:
+            rich_print(
+                "[blue][DocumentProcessor][/blue] Converted document "
+                "(page metadata not available for this input format)"
+            )
         return result.document
 
     @overload
@@ -201,30 +224,46 @@ class DocumentProcessor:
                 "Chunker not initialized. Pass chunker_config to __init__() to enable chunking."
             )
 
-        chunks = self.chunker.chunk_document(document)
         raw_chunker = self.chunker.chunker
         if raw_chunker is None:
             raise ValueError("Chunker not initialized.")
 
-        # Extract metadata from chunks
+        # Build chunks and metadata in one pass so re-split chunks get one metadata each
+        chunks = []
         metadata_list = []
-        for i, chunk_obj in enumerate(raw_chunker.chunk(document)):
-            # Get page numbers from chunk
-            page_numbers = list(
+        chunk_id = 0
+        for chunk_obj in raw_chunker.chunk(document):
+            enriched_text = raw_chunker.contextualize(chunk=chunk_obj)
+            enriched_tokens = self.chunker.tokenizer.count_tokens(enriched_text)
+            page_numbers = sorted(
                 {
                     item.prov[0].page_no
                     for item in getattr(chunk_obj.meta, "doc_items", [])
                     if hasattr(item, "prov") and item.prov
                 }
             )
-
-            metadata_list.append(
-                {
-                    "chunk_id": i,
-                    "page_numbers": sorted(page_numbers),
-                    "token_count": len(self.chunker.tokenizer.tokenizer.encode(chunks[i])),
-                }
-            )
+            if enriched_tokens <= self.chunker.chunk_max_tokens:
+                chunks.append(enriched_text)
+                metadata_list.append(
+                    {
+                        "chunk_id": chunk_id,
+                        "page_numbers": page_numbers,
+                        "token_count": enriched_tokens,
+                    }
+                )
+                chunk_id += 1
+            else:
+                sub_chunks = self.chunker.chunk_text_fallback(enriched_text)
+                chunks.extend(sub_chunks)
+                for sub in sub_chunks:
+                    metadata_list.append(
+                        {
+                            "chunk_id": chunk_id,
+                            "page_numbers": page_numbers,
+                            "token_count": self.chunker.tokenizer.count_tokens(sub),
+                        }
+                    )
+                    chunk_id += 1
 
         rich_print(
             f"[blue][DocumentProcessor][/blue] Extracted [cyan]{len(chunks)}[/cyan] chunks with metadata"

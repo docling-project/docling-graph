@@ -384,14 +384,14 @@ class ExtractionStage(PipelineStage):
 
         processing_mode = cast(Literal["one-to-one", "many-to-one"], conf["processing_mode"])
         extraction_contract = cast(
-            Literal["direct", "staged"], conf.get("extraction_contract", "direct")
+            Literal["direct", "staged", "delta"], conf.get("extraction_contract", "direct")
         )
         staged_config = {
             "structured_output": bool(conf.get("structured_output", True)),
             "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
             "max_pass_retries": conf.get("staged_pass_retries", 1),
             "catalog_max_nodes_per_call": conf.get("staged_nodes_fill_cap", 5),
-            "parallel_workers": conf.get("staged_workers", 1),
+            "parallel_workers": conf.get("parallel_workers", 1),
             "id_shard_size": conf.get("staged_id_shard_size", 0),
             "id_identity_only": conf.get("staged_id_identity_only", True),
             "id_compact_prompt": conf.get("staged_id_compact_prompt", True),
@@ -402,6 +402,39 @@ class ExtractionStage(PipelineStage):
             "quality_max_parent_lookup_miss": conf.get("staged_quality_max_parent_lookup_miss", 0),
             "id_max_tokens": conf.get("staged_id_max_tokens"),
             "fill_max_tokens": conf.get("staged_fill_max_tokens"),
+            "llm_batch_token_size": conf.get("llm_batch_token_size", 2048),
+            "delta_normalizer_validate_paths": conf.get("delta_normalizer_validate_paths", True),
+            "delta_normalizer_canonicalize_ids": conf.get(
+                "delta_normalizer_canonicalize_ids", True
+            ),
+            "delta_normalizer_strip_nested_properties": conf.get(
+                "delta_normalizer_strip_nested_properties", True
+            ),
+            "delta_normalizer_attach_provenance": conf.get(
+                "delta_normalizer_attach_provenance", True
+            ),
+            "delta_resolvers_enabled": conf.get("delta_resolvers_enabled", True),
+            "delta_resolvers_mode": conf.get("delta_resolvers_mode", "semantic"),
+            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.9),
+            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.9),
+            "delta_resolver_properties": conf.get("delta_resolver_properties"),
+            "delta_resolver_paths": conf.get("delta_resolver_paths"),
+            "delta_quality_require_root": conf.get(
+                "delta_quality_require_root", conf.get("staged_quality_require_root", True)
+            ),
+            "delta_quality_min_instances": conf.get(
+                "delta_quality_min_instances", conf.get("staged_quality_min_instances", 1)
+            ),
+            "delta_quality_max_parent_lookup_miss": conf.get(
+                "delta_quality_max_parent_lookup_miss",
+                conf.get("staged_quality_max_parent_lookup_miss", 0),
+            ),
+            "delta_quality_adaptive_parent_lookup": conf.get(
+                "delta_quality_adaptive_parent_lookup", True
+            ),
+            "quality_max_unknown_path_drops": conf.get("quality_max_unknown_path_drops", -1),
+            "quality_max_id_mismatch": conf.get("quality_max_id_mismatch", -1),
+            "quality_max_nested_property_drops": conf.get("quality_max_nested_property_drops", -1),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -433,6 +466,8 @@ class ExtractionStage(PipelineStage):
                 docling_config=conf["docling_config"],
                 structured_output=bool(conf.get("structured_output", True)),
                 structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
+                use_chunking=bool(conf.get("use_chunking", True)),
+                chunk_max_tokens=conf.get("chunk_max_tokens"),
             )
         else:
             if context.config.llm_client is not None:
@@ -452,6 +487,8 @@ class ExtractionStage(PipelineStage):
                 docling_config=conf["docling_config"],
                 structured_output=bool(conf.get("structured_output", True)),
                 structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
+                use_chunking=bool(conf.get("use_chunking", True)),
+                chunk_max_tokens=conf.get("chunk_max_tokens"),
             )
 
     @staticmethod
@@ -585,7 +622,7 @@ class ExtractionStage(PipelineStage):
             "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
             "max_pass_retries": conf.get("staged_pass_retries", 1),
             "catalog_max_nodes_per_call": conf.get("staged_nodes_fill_cap", 5),
-            "parallel_workers": conf.get("staged_workers", 1),
+            "parallel_workers": conf.get("parallel_workers", 1),
             "id_shard_size": conf.get("staged_id_shard_size", 0),
             "id_identity_only": conf.get("staged_id_identity_only", True),
             "id_compact_prompt": conf.get("staged_id_compact_prompt", True),
@@ -596,6 +633,27 @@ class ExtractionStage(PipelineStage):
             "quality_max_parent_lookup_miss": conf.get("staged_quality_max_parent_lookup_miss", 0),
             "id_max_tokens": conf.get("staged_id_max_tokens"),
             "fill_max_tokens": conf.get("staged_fill_max_tokens"),
+            "llm_batch_token_size": conf.get("llm_batch_token_size", 2048),
+            "delta_normalizer_validate_paths": conf.get("delta_normalizer_validate_paths", True),
+            "delta_normalizer_canonicalize_ids": conf.get(
+                "delta_normalizer_canonicalize_ids", True
+            ),
+            "delta_normalizer_strip_nested_properties": conf.get(
+                "delta_normalizer_strip_nested_properties", True
+            ),
+            "delta_normalizer_attach_provenance": conf.get(
+                "delta_normalizer_attach_provenance", True
+            ),
+            "delta_resolvers_enabled": conf.get("delta_resolvers_enabled", True),
+            "delta_resolvers_mode": conf.get("delta_resolvers_mode", "semantic"),
+            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.9),
+            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.9),
+            "delta_resolver_properties": conf.get("delta_resolver_properties"),
+            "delta_resolver_paths": conf.get("delta_resolver_paths"),
+            "delta_quality_require_root": conf.get("delta_quality_require_root", True),
+            "quality_max_unknown_path_drops": conf.get("quality_max_unknown_path_drops", -1),
+            "quality_max_id_mismatch": conf.get("quality_max_id_mismatch", -1),
+            "quality_max_nested_property_drops": conf.get("quality_max_nested_property_drops", -1),
         }
         if conf.get("debug"):
             if context.output_manager is not None:

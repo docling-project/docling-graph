@@ -705,19 +705,8 @@ class ResponseHandler:
         max_tokens_str = str(max_tokens) if max_tokens else "unknown"
 
         if recovered:
-            rich_print(f"\n[yellow]Response Truncated[/yellow] (hit max_tokens={max_tokens_str})")
+            rich_print(f"[yellow]Response Truncated[/yellow] (hit max_tokens={max_tokens_str})")
             rich_print("[yellow]Partial data recovered - results may be incomplete[/yellow]")
-            rich_print("[dim]Suggestion: Increase max_tokens or use simpler template[/dim]\n")
         else:
-            rich_print(f"\n[red]Response Truncated[/red] (hit max_tokens={max_tokens_str})")
+            rich_print(f"[red]Response Truncated[/red] (hit max_tokens={max_tokens_str})")
             rich_print("[red]Unable to recover partial data - JSON too incomplete[/red]")
-            rich_print("\n[yellow]Solutions:[/yellow]")
-
-            if max_tokens:
-                suggested = max_tokens * 2
-                rich_print(f"  1. Increase: {client_name}(model='...', max_tokens={suggested})")
-            else:
-                rich_print(f"  1. Increase: {client_name}(model='...', max_tokens=16384)")
-
-            rich_print("  2. Use appropriate template for content type")
-            rich_print("  3. Process complete documents instead of isolated pages\n")

@@ -116,6 +116,10 @@ def _add_event_artifact(step: _StepAccumulator, event: TraceEvent, payload: dict
         artifacts.setdefault("fallbacks", []).append(payload)
     elif event.event_type == "staged_trace_emitted":
         artifacts.setdefault("staged_traces", []).append(payload)
+    elif event.event_type == "delta_trace_emitted":
+        artifacts.setdefault("delta_traces", []).append(payload)
+    elif event.event_type == "delta_failed_then_direct_fallback":
+        artifacts.setdefault("delta_fallbacks", []).append(payload)
     elif event.event_type == "graph_created":
         artifacts["graph"] = payload
     elif event.event_type == "export_written":

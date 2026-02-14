@@ -4,7 +4,7 @@
 # Default settings (can be overridden via CLI flags)
 defaults:
   processing_mode: many-to-one  # one-to-one | many-to-one
-  extraction_contract: direct   # direct | staged
+  extraction_contract: direct   # direct | staged | delta
   backend: llm                  # llm | vlm
   inference: local              # local | remote
   export_format: csv            # csv | cypher
@@ -12,10 +12,37 @@ defaults:
   structured_sparse_check: true # true | false (auto-fallback when structured result looks sparse)
   # Max tokens per chunk when chunking is used (null = use default 512)
   chunk_max_tokens: null
+  # Max total input tokens sent per LLM call in delta extraction
+  llm_batch_token_size: 2048
   # Staged (3-pass) tuning: ID pass → fill (bottom-up) → merge. Preset + optional overrides.
   staged_tuning_preset: standard  # standard | advanced (advanced = larger ID-pass shards, larger fill batches)
   staged_pass_retries: null       # retries per pass when LLM returns invalid JSON; null = use preset
-  staged_workers: null           # parallel workers for fill pass; null = use preset
+  parallel_workers: null         # parallel workers for staged/delta extraction; null = use preset for staged
+  delta_normalizer_validate_paths: true
+  delta_normalizer_canonicalize_ids: true
+  delta_normalizer_strip_nested_properties: true
+  delta_normalizer_attach_provenance: true
+  delta_resolvers_enabled: true
+  delta_resolvers_mode: semantic # off | fuzzy | semantic | chain
+  delta_resolver_fuzzy_threshold: 0.9
+  delta_resolver_semantic_threshold: 0.9
+  delta_resolver_properties: null
+  delta_resolver_paths: null
+  quality_max_unknown_path_drops: -1  # -1 disables this gate
+  quality_max_id_mismatch: -1         # -1 disables this gate
+  quality_max_nested_property_drops: -1  # -1 disables this gate
+  delta_quality_require_root: true
+  delta_quality_min_instances: 1
+  delta_quality_max_parent_lookup_miss: 4
+  delta_quality_adaptive_parent_lookup: true
+  delta_quality_require_relationships: false
+  delta_quality_require_structural_attachments: false
+  delta_quality_min_non_empty_properties: -1
+  delta_quality_min_root_non_empty_fields: -1
+  delta_quality_min_non_empty_by_path: null
+  delta_quality_max_orphan_ratio: -1.0
+  delta_quality_max_canonical_duplicates: -1
+  delta_batch_split_max_retries: 1
   staged_nodes_fill_cap: null    # max nodes per LLM call in fill pass; null = use preset
   staged_id_shard_size: null     # paths per ID-pass call; 0 = single call; null = use preset
   staged_id_identity_only: true  # discover only identity-bearing paths during ID pass

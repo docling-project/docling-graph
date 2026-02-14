@@ -185,7 +185,7 @@ class PipelineOrchestrator:
                             "staged_pass_retries": getattr(
                                 self.config, "staged_pass_retries", None
                             ),
-                            "staged_workers": getattr(self.config, "staged_workers", None),
+                            "parallel_workers": getattr(self.config, "parallel_workers", None),
                             "staged_nodes_fill_cap": getattr(
                                 self.config, "staged_nodes_fill_cap", None
                             ),

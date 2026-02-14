@@ -14,7 +14,8 @@ CONFIG_FILE_NAME: Final[str] = "config.yaml"
 PROCESSING_MODES: Final[list[str]] = ["one-to-one", "many-to-one"]
 
 # Extraction contracts (prompt/execution behavior for LLM backend)
-EXTRACTION_CONTRACTS: Final[list[str]] = ["direct", "staged"]
+EXTRACTION_CONTRACTS: Final[list[str]] = ["direct", "staged", "delta"]
+DELTA_RESOLVER_MODES: Final[list[str]] = ["off", "fuzzy", "semantic", "chain"]
 
 # Backend types (enum for validation)
 BACKENDS: Final[list[str]] = ["llm", "vlm"]

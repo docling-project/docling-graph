@@ -20,9 +20,31 @@ from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTok
 from docling_core.transforms.chunker.tokenizer.openai import OpenAITokenizer
 from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 logger = logging.getLogger(__name__)
+
+# Large tokenizer max length used only for counting/splitting operations.
+# This avoids HF warnings when we inspect oversized text before re-splitting it.
+_TOKENIZER_COUNTING_MAX_LENGTH = 1_000_000
+
+
+def _raise_tokenizer_max_length(
+    hf_tokenizer: PreTrainedTokenizerBase, chunk_max_tokens: int
+) -> None:
+    """Raise the tokenizer's model_max_length so encoding long text for counting doesn't warn.
+
+    We use the tokenizer only for token counting and chunk splitting, not for the model.
+    HybridChunker can produce chunks slightly over chunk_max_tokens; encoding them would
+    otherwise trigger: "Token indices sequence length is longer than the specified
+    maximum sequence length (e.g. 685 > 512)".
+    """
+    current = getattr(hf_tokenizer, "model_max_length", None)
+    if not isinstance(current, int):
+        return
+    new_max = max(chunk_max_tokens, _TOKENIZER_COUNTING_MAX_LENGTH)
+    if current < new_max:
+        hf_tokenizer.model_max_length = new_max
 
 
 class DocumentChunker:
@@ -73,6 +95,7 @@ class DocumentChunker:
                 hf_tokenizer = AutoTokenizer.from_pretrained(
                     "sentence-transformers/all-MiniLM-L6-v2"
                 )
+                _raise_tokenizer_max_length(hf_tokenizer, chunk_max_tokens)
                 self.tokenizer = HuggingFaceTokenizer(
                     tokenizer=hf_tokenizer,
                     max_tokens=chunk_max_tokens,
@@ -80,6 +103,7 @@ class DocumentChunker:
         else:
             # HuggingFace tokenizer
             hf_tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+            _raise_tokenizer_max_length(hf_tokenizer, chunk_max_tokens)
             self.tokenizer = HuggingFaceTokenizer(
                 tokenizer=hf_tokenizer,
                 max_tokens=chunk_max_tokens,
@@ -110,13 +134,17 @@ class DocumentChunker:
         """
         chunks = []
 
-        # Chunk the document using HybridChunker
+        # Chunk the document using HybridChunker (structure-based; may exceed chunk_max_tokens)
         chunk_iter = self.chunker.chunk(dl_doc=document)
 
         for chunk in chunk_iter:
-            # Use contextualized text (includes metadata like headers, section captions)
             enriched_text = self.chunker.contextualize(chunk=chunk)
-            chunks.append(enriched_text)
+            token_count = self.tokenizer.count_tokens(enriched_text)
+            if token_count <= self.chunk_max_tokens:
+                chunks.append(enriched_text)
+            else:
+                # Hard cap: re-split any oversized chunk so we never exceed chunk_max_tokens
+                chunks.extend(self.chunk_text_fallback(enriched_text))
 
         return chunks
 
@@ -144,11 +172,16 @@ class DocumentChunker:
 
         for chunk in chunk_iter:
             enriched_text = self.chunker.contextualize(chunk=chunk)
-            chunks.append(enriched_text)
-
-            # Count tokens for this chunk
-            num_tokens = self.tokenizer.count_tokens(enriched_text)
-            chunk_tokens.append(num_tokens)
+            token_count = self.tokenizer.count_tokens(enriched_text)
+            if token_count <= self.chunk_max_tokens:
+                chunks.append(enriched_text)
+                chunk_tokens.append(token_count)
+            else:
+                # Re-split oversized chunk and count tokens for each sub-chunk
+                sub_chunks = self.chunk_text_fallback(enriched_text)
+                chunks.extend(sub_chunks)
+                for sub in sub_chunks:
+                    chunk_tokens.append(self.tokenizer.count_tokens(sub))
 
         stats = {
             "total_chunks": len(chunks),
@@ -176,12 +209,24 @@ class DocumentChunker:
         if self.tokenizer.count_tokens(text) <= self.chunk_max_tokens:
             return [text]
 
-        # Split on sentence boundaries and newlines
-        segments = [seg for seg in re.split(r"(?<=[.!?])\s+|\n\n|\n", text) if seg]
+        # Split on sentence boundaries and newlines first.
+        segments = [
+            seg.strip() for seg in re.split(r"(?<=[.!?])\s+|\n\n|\n", text) if seg and seg.strip()
+        ]
+        if not segments:
+            return self._split_oversized_by_chars(text)
         chunks: list[str] = []
         current_segments: list[str] = []
 
         for segment in segments:
+            segment_tokens = self.tokenizer.count_tokens(segment)
+            if segment_tokens > self.chunk_max_tokens:
+                if current_segments:
+                    chunks.append(" ".join(current_segments).strip())
+                    current_segments = []
+                chunks.extend(self._split_oversized_segment(segment))
+                continue
+
             candidate_segments = [*current_segments, segment]
             candidate_text = " ".join(candidate_segments).strip()
             if not candidate_text:
@@ -198,7 +243,90 @@ class DocumentChunker:
         if current_segments:
             chunks.append(" ".join(current_segments).strip())
 
-        return chunks
+        # Final safety pass: never return chunks over the hard token cap.
+        safe_chunks: list[str] = []
+        for chunk in chunks:
+            if self.tokenizer.count_tokens(chunk) <= self.chunk_max_tokens:
+                safe_chunks.append(chunk)
+            else:
+                safe_chunks.extend(self._split_oversized_segment(chunk))
+
+        return safe_chunks
+
+    def _split_oversized_segment(self, segment: str) -> list[str]:
+        """Split one oversized segment into <= chunk_max_tokens chunks."""
+        segment = segment.strip()
+        if not segment:
+            return []
+        if self.tokenizer.count_tokens(segment) <= self.chunk_max_tokens:
+            return [segment]
+
+        words = segment.split()
+        if len(words) <= 1:
+            return self._split_oversized_by_chars(segment)
+
+        result: list[str] = []
+        current_words: list[str] = []
+
+        for word in words:
+            if not current_words:
+                if self.tokenizer.count_tokens(word) <= self.chunk_max_tokens:
+                    current_words = [word]
+                else:
+                    result.extend(self._split_oversized_by_chars(word))
+                continue
+
+            candidate = " ".join([*current_words, word]).strip()
+            if self.tokenizer.count_tokens(candidate) <= self.chunk_max_tokens:
+                current_words.append(word)
+                continue
+
+            result.append(" ".join(current_words).strip())
+            if self.tokenizer.count_tokens(word) <= self.chunk_max_tokens:
+                current_words = [word]
+            else:
+                result.extend(self._split_oversized_by_chars(word))
+                current_words = []
+
+        if current_words:
+            result.append(" ".join(current_words).strip())
+
+        return result
+
+    def _split_oversized_by_chars(self, text: str) -> list[str]:
+        """Character-level fallback splitter when token/word boundaries are insufficient."""
+        remaining = (text or "").strip()
+        if not remaining:
+            return []
+
+        parts: list[str] = []
+        while remaining:
+            if self.tokenizer.count_tokens(remaining) <= self.chunk_max_tokens:
+                parts.append(remaining)
+                break
+
+            lo = 1
+            hi = len(remaining)
+            best = 1
+            while lo <= hi:
+                mid = (lo + hi) // 2
+                candidate = remaining[:mid].strip()
+                if not candidate:
+                    lo = mid + 1
+                    continue
+                if self.tokenizer.count_tokens(candidate) <= self.chunk_max_tokens:
+                    best = mid
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+
+            piece = remaining[:best].strip()
+            if not piece:
+                piece = remaining[:1]
+            parts.append(piece)
+            remaining = remaining[len(piece) :].strip()
+
+        return parts
 
     def get_config_summary(self) -> dict:
         """
