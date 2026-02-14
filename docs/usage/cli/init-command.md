@@ -6,6 +6,7 @@
 The `init` command creates a `config.yaml` file in your current directory through an **interactive setup process**.
 
 **Purpose:**
+
 - Generate configuration files
 - Validate dependencies
 - Guide API key setup
@@ -20,41 +21,85 @@ uv run docling-graph init
 ```
 
 This launches an interactive wizard that guides you through:
-1. Backend selection (LLM/VLM)
-2. Inference mode (local/remote)
-3. Provider selection
-4. Model selection
-5. Processing mode
-6. Export format
-7. (If LLM backend) Use custom endpoint (URL and API key via environment variables)
 
-When enabled, the wizard expects the fixed env var names `CUSTOM_LLM_BASE_URL` and `CUSTOM_LLM_API_KEY`.
+1. **Processing mode** (one-to-one / many-to-one)
+2. **Extraction contract** (direct / staged / delta)
+3. **Delta Extraction Tuning** (only when delta is selected): resolvers (enable + mode) and optional quality gate tweaks
+4. **Backend type** (LLM / VLM)
+5. **Inference location** (local / remote; skipped for VLM)
+6. **Docling pipeline** and export options
+7. **Provider and model** selection (by backend/inference)
+8. **Export format**
+9. **Output directory**
+10. (If remote LLM with custom provider) Use custom endpoint (URL and API key via environment variables)
+
+When custom endpoint is enabled, the wizard expects the fixed env var names `CUSTOM_LLM_BASE_URL` and `CUSTOM_LLM_API_KEY`.
 
 ---
 
 ## Interactive Setup
 
-### Step 1: Backend Selection
+### Step 1: Processing Mode
 
 ```
-Choose your backend:
-1. LLM (Language Model) - Best for text-heavy documents
-2. VLM (Vision-Language Model) - Best for forms and structured layouts
-
-Your choice [1-2]:
+1. Processing Mode
+ How should documents be processed?
+  • one-to-one: Creates a separate Pydantic instance for each page
+  • many-to-one: Combines the entire document into a single Pydantic instance
+Select processing mode (one-to-one, many-to-one) [many-to-one]:
 ```
 
-### Step 2: Inference Mode
+### Step 2: Extraction Contract
 
 ```
-Choose inference mode:
-1. Local - Run models on your machine
-2. Remote - Use API providers (requires API key)
-
-Your choice [1-2]:
+2. Extraction Contract
+ How should LLM extraction prompts/execution be orchestrated?
+  • direct: Single-pass best-effort extraction (fastest)
+  • staged: Multi-pass staged extraction for improved small-model quality
+  • delta: Chunk-based graph extraction for long documents (batches → merge → projection)
+Select extraction contract (direct, staged, delta) [direct]:
 ```
 
-### Step 3: Provider Selection
+### Step 3: Delta Extraction Tuning (only when delta is selected)
+
+If you selected **delta**, the wizard shows a **Delta Extraction Tuning** section:
+
+- **Delta Resolvers** — Enable post-merge duplicate resolution and choose mode (`off`, `fuzzy`, `semantic`, `chain`). Resolvers merge near-duplicate entities after the graph merge.
+- **Delta Quality Gates** — Optionally customize:
+- Max parent lookup misses before failing the quality gate
+- Adaptive parent lookup tolerance
+- Require at least one relationship in the projected graph
+- Require structural attachments (avoid root-only outputs)
+
+These values are written into `defaults` in your `config.yaml`. You can override them later in the config file or via the [convert](convert-command.md) command (where applicable). See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for full options.
+
+### Step 4: Backend Type
+
+```
+Backend Type
+ Which AI backend should be used?
+  • llm: Language Model (text-based)
+  • vlm: Vision-Language Model (image-based)
+Select backend type [llm]:
+```
+
+### Step 5: Inference Location (LLM only)
+
+```
+Inference Location
+ How should models be executed?
+  • local: Run on your machine
+  • remote: Use cloud APIs
+Select inference location [remote]:
+```
+
+(VLM backend skips this step and uses local inference.)
+
+### Step 6: Docling Pipeline and Export Options
+
+You choose the Docling pipeline (ocr / vision) and whether to export Docling JSON, markdown, and per-page markdown.
+
+### Step 7: Provider and Model Selection
 
 **For Local LLM:**
 ```
@@ -76,35 +121,25 @@ Choose remote provider:
 Your choice [1-4]:
 ```
 
-### Step 4: Model Selection
+### Step 8: Model Selection
 
 ```
-Available models for Mistral AI:
-1. mistral-small-latest (fast, cost-effective)
-2. mistral-large-latest (most capable)
-
-Your choice [1-2]:
+Select model for <provider> [default]:
 ```
 
-### Step 5: Processing Mode
+### Step 9: Export Format
 
 ```
-Choose processing mode:
-1. many-to-one - Merge all pages into single graph (recommended)
-2. one-to-one - Create separate graph per page
-
-Your choice [1-2]:
+Export Format
+ Output format for results
+  • csv: CSV files (nodes.csv, edges.csv)
+  • cypher: Cypher script for Neo4j
+Select export format [csv]:
 ```
 
-### Step 6: Export Format
+### Step 10: Output Directory
 
-```
-Choose export format:
-1. CSV (for Neo4j import)
-2. Cypher (for direct Neo4j execution)
-
-Your choice [1-2]:
-```
+The wizard then prompts for the output directory (default: `outputs`).
 
 ---
 
@@ -199,6 +234,28 @@ output:
   directory: outputs
 ```
 
+### Example: Delta extraction with resolvers
+
+When you select **delta** and enable resolvers (and optionally customize quality), your `defaults` will include delta options:
+
+```yaml
+defaults:
+  processing_mode: many-to-one
+  extraction_contract: delta
+  delta_resolvers_enabled: true
+  delta_resolvers_mode: semantic
+  delta_quality_max_parent_lookup_miss: 4
+  delta_quality_adaptive_parent_lookup: true
+  delta_quality_require_relationships: false
+  delta_quality_require_structural_attachments: false
+  backend: llm
+  inference: remote
+  export_format: csv
+# ... docling, models, output
+```
+
+You can then run `docling-graph convert ... --extraction-contract delta` and the config will be used. See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) and [convert Command — Delta Extraction Tuning](convert-command.md#delta-extraction-tuning) for details.
+
 ---
 
 ## Dependency Validation
@@ -288,10 +345,11 @@ uv run docling-graph init
 ```
 
 Default configuration uses:
+- Processing: `many-to-one`
+- Extraction contract: `direct`
 - Backend: `llm`
 - Inference: `local`
 - Provider: `vllm`
-- Processing: `many-to-one`
 - Export: `csv`
 
 ---
@@ -305,12 +363,13 @@ Default configuration uses:
 uv run docling-graph init
 
 # Follow prompts:
-# 1. Choose LLM backend
-# 2. Choose remote inference
-# 3. Choose provider (LiteLLM ID)
-# 4. Choose model (LiteLLM identifier)
-# 5. Choose many-to-one processing
-# 6. Choose CSV export
+# 1. Processing mode (e.g. many-to-one)
+# 2. Extraction contract (direct / staged / delta)
+# 3. (If delta) Resolvers and quality tuning
+# 4. Backend (e.g. LLM), inference (e.g. remote)
+# 5. Docling pipeline and export options
+# 6. Provider and model
+# 7. Export format, output directory
 
 # Install dependencies
 uv sync
@@ -330,12 +389,12 @@ uv run docling-graph convert test.pdf \
 uv run docling-graph init
 
 # Follow prompts:
-# 1. Choose LLM backend
-# 2. Choose local inference
-# 3. Choose provider (LiteLLM ID)
-# 4. Choose model (LiteLLM identifier)
-# 5. Choose many-to-one processing
-# 6. Choose CSV export
+# 1. Processing mode (e.g. many-to-one)
+# 2. Extraction contract (e.g. direct)
+# 3. Backend (LLM), inference (local)
+# 4. Docling pipeline and export options
+# 5. Provider and model
+# 6. Export format, output directory
 
 # Install dependencies
 uv sync
@@ -358,10 +417,11 @@ uv run docling-graph convert test.pdf \
 uv run docling-graph init
 
 # Follow prompts:
-# 1. Choose VLM backend
-# 2. Choose local inference (only option for VLM)
-# 3. Choose one-to-one processing
-# 4. Choose CSV export
+# 1. Processing mode (e.g. one-to-one)
+# 2. Extraction contract (e.g. direct)
+# 3. Backend (VLM) — inference is local only
+# 4. Docling pipeline and export options
+# 5. Model, export format, output directory
 
 # Install dependencies
 uv sync

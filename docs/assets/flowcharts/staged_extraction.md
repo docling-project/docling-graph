@@ -18,7 +18,7 @@ sequenceDiagram
   end
   Orch->>Orch: Validate and dedupe skeleton
   Orch->>Fill: Build per-path batches (bottom-up)
-  loop Fill calls (parallel with staged_workers)
+  loop Fill calls (parallel with parallel_workers)
     Fill->>LLM: Fill(path, descriptors, schema, doc)
     LLM->>Fill: Filled objects
   end

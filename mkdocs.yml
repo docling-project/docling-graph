@@ -120,6 +120,7 @@ nav:
       - Document Conversion: fundamentals/extraction-process/document-conversion.md
       - Chunking Strategies: fundamentals/extraction-process/chunking-strategies.md
       - Extraction Backends: fundamentals/extraction-process/extraction-backends.md
+      - Delta Extraction: fundamentals/extraction-process/delta-extraction.md
       - Staged Extraction: fundamentals/extraction-process/staged-extraction.md
       - Model Merging: fundamentals/extraction-process/model-merging.md
       - Batch Processing: fundamentals/extraction-process/batch-processing.md

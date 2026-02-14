@@ -139,7 +139,11 @@ config = PipelineConfig(
 
 ### Extraction contracts (LLM + many-to-one)
 
-For LLM many-to-one extraction you can choose **direct** (default; single-pass then merge) or **staged** (catalog → ID pass → fill pass → merge). Staged is better for complex nested templates. See [Staged Extraction](staged-extraction.md).
+For LLM many-to-one extraction you can choose:
+
+- **direct** (default): Single-pass extraction then programmatic merge.
+- **staged**: Catalog → ID pass → fill pass → merge; better for complex nested templates. See [Staged Extraction](staged-extraction.md).
+- **delta**: Chunk → token-bounded batches → flat graph IR → normalize → merge → projection; for long documents and graph-first extraction. Supports optional resolvers and configurable quality gates. Use `docling-graph init` and select **delta** to configure resolvers and quality interactively. See [Delta Extraction](delta-extraction.md).
 
 ---
 
@@ -226,7 +230,7 @@ from docling_graph.core.extractors import ExtractorFactory
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
-    extraction_contract="direct",  # or "staged" for complex templates
+    extraction_contract="direct",  # or "staged" / "delta" for complex or chunk-based extraction
     llm_client=client,
 )
 models, doc = extractor.extract(source, template)
@@ -329,7 +333,7 @@ Deep dive into LLM and VLM extraction backends.
 - LLM backend (text-based)
 - VLM backend (vision-based)
 - Backend selection
-- Extraction contracts (direct vs staged)
+- Extraction contracts (direct, staged, delta)
 
 ---
 
@@ -338,11 +342,21 @@ Multi-pass extraction for complex nested templates (ID pass → fill pass → me
 
 **Topics:**
 - When to use staged
-- Tuning (presets, workers, fill cap, id shard size)
+- Tuning (presets, parallel_workers, fill cap, id shard size)
 
 ---
 
-### 5. [Model Merging](model-merging.md)
+### 5. [Delta Extraction](delta-extraction.md)
+Chunk-based graph extraction: token-bounded batches → flat graph IR → normalize → merge → projection.
+
+**Topics:**
+- When to use delta
+- Batch planning, IR normalizer, resolvers, quality gate
+- Configuration (llm_batch_token_size, parallel_workers, delta_* options)
+
+---
+
+### 6. [Model Merging](model-merging.md)
 Learn how multiple extractions are consolidated into single models.
 
 **Topics:**
@@ -353,7 +367,7 @@ Learn how multiple extractions are consolidated into single models.
 
 ---
 
-### 6. [Batch Processing](batch-processing.md)
+### 7. [Batch Processing](batch-processing.md)
 Optimize extraction with intelligent batching.
 
 **Topics:**
@@ -364,7 +378,7 @@ Optimize extraction with intelligent batching.
 
 ---
 
-### 7. Pipeline Orchestration
+### 8. Pipeline Orchestration
 Understand how pipeline stages are coordinated through the extraction process.
 
 **Topics:**

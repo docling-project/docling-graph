@@ -12,7 +12,7 @@ from datetime import date
 from enum import Enum
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -78,10 +78,10 @@ class PaymentMethod(str, Enum):
 class Party(BaseModel):
     """
     Party entity representing an organization or person (seller, buyer, etc.).
-    Uniquely identified by name only (tax_id is optional and may be None).
+    Identified primarily by name with tax_id as secondary disambiguator.
     """
 
-    model_config = ConfigDict(graph_id_fields=["name"])
+    model_config = ConfigDict(graph_id_fields=["name"], extra="ignore", populate_by_name=True)
 
     name: str = Field(
         ...,
@@ -186,10 +186,11 @@ class Item(BaseModel):
     At least one of item_code or name must be provided.
     """
 
-    model_config = ConfigDict(graph_id_fields=["item_code"])
+    model_config = ConfigDict(graph_id_fields=["item_code"], extra="ignore", populate_by_name=True)
 
     item_code: str = Field(
         ...,
+        validation_alias=AliasChoices("item_code", "itemCode", "sku", "product_code"),
         description=(
             "Item identifier, SKU, or product code (required for uniqueness). "
             "LOOK FOR: 'Item Code', 'SKU', 'Product Code', 'Article No', 'Référence' in line items. "
@@ -229,12 +230,12 @@ class Tax(BaseModel):
 
     model_config = ConfigDict(is_entity=False)
 
-    tax_type: TaxType = Field(
-        default=TaxType.VAT,
+    tax_type: TaxType | None = Field(
+        None,
         description=(
             "WHAT: Type of tax applied. "
             "EXTRACT: One of the allowed values (VAT, GST, Sales Tax, Other). "
-            "If not explicitly stated, omit this field rather than guessing. "
+            "If not explicitly stated, omit this field (do not guess). "
             "LOOK FOR: 'VAT', 'GST', 'Sales Tax', 'Tax' labels in tax sections. "
             "EXAMPLES: VAT, GST, Sales Tax"
         ),
@@ -292,7 +293,7 @@ class Tax(BaseModel):
 class LineItem(BaseModel):
     """
     Document line item entity representing a billed item.
-    Uniquely identified by line_number only (item_code is optional).
+    Identified by line_number with item_code as secondary discriminator.
     """
 
     model_config = ConfigDict(graph_id_fields=["line_number"])
@@ -420,12 +421,12 @@ class Payment(BaseModel):
 
     model_config = ConfigDict(is_entity=False)
 
-    method: PaymentMethod = Field(
-        default=PaymentMethod.BANK_TRANSFER,
+    method: PaymentMethod | None = Field(
+        None,
         description=(
             "WHAT: Payment method used or accepted. "
             "EXTRACT: One of the allowed values (Bank Transfer, Card, Cash, Direct Debit, Cheque, Other). "
-            "If not explicitly stated, omit this field rather than guessing. "
+            "If not explicitly stated, omit this field (do not guess). "
             "LOOK FOR: 'Payment Method', 'Payment Means', 'Mode de Paiement' labels in payment section. "
             "EXAMPLES: Bank Transfer, Card, Cash, Direct Debit"
         ),
@@ -535,21 +536,23 @@ class DocumentReference(BaseModel):
 
     model_config = ConfigDict(is_entity=False)
 
-    ref_type: str = Field(
-        ...,
+    ref_type: str | None = Field(
+        None,
         description=(
             "Type of referenced document. "
             "LOOK FOR: 'PO', 'Purchase Order', 'Contract', 'Order No', 'Reference' labels. "
+            "EXTRACT: Omit when not in document. "
             "EXAMPLES: 'Purchase Order', 'Contract', 'Previous Invoice', 'Project'"
         ),
         examples=["Purchase Order", "Contract", "Previous Invoice"],
     )
 
-    ref_number: str = Field(
-        ...,
+    ref_number: str | None = Field(
+        None,
         description=(
             "Reference document number. "
             "LOOK FOR: Document numbers after reference type labels. "
+            "EXTRACT: Omit when not in document. "
             "EXAMPLES: 'PO-2024-001', 'CONTRACT-12345', 'INV-2023-999'"
         ),
         examples=["PO-2024-001", "CONTRACT-12345"],
@@ -580,12 +583,15 @@ class BillingDocument(BaseModel):
     Represents the complete billing document with all related information.
     """
 
-    model_config = ConfigDict(graph_id_fields=["document_number"])
+    model_config = ConfigDict(
+        graph_id_fields=["document_number"], extra="ignore", populate_by_name=True
+    )
 
     # --- Core Document Fields ---
 
     document_number: str = Field(
         ...,
+        validation_alias=AliasChoices("document_number", "documentNumber", "invoice_number"),
         description=(
             "Invoice/document number (primary identifier). "
             "LOOK FOR: Large, bold text in header, 'Invoice No', 'Invoice Number', 'Receipt No', "
@@ -596,12 +602,12 @@ class BillingDocument(BaseModel):
         examples=["INV-2024-001", "2024-INV-12345", "REC-001"],
     )
 
-    document_type: DocumentType = Field(
-        default=DocumentType.INVOICE,
+    document_type: DocumentType | None = Field(
+        None,
         description=(
             "WHAT: The type of billing document. "
             "EXTRACT: One of the allowed values (Invoice, Credit Note, Debit Note, Receipt, Other). "
-            "If not explicitly stated, omit this field rather than guessing. "
+            "If not explicitly stated, omit this field (do not guess). "
             "LOOK FOR: Document title/header text ('INVOICE', 'CREDIT NOTE', 'RECEIPT', 'FACTURE'). "
             "EXAMPLES: Invoice, Credit Note, Receipt"
         ),
@@ -736,13 +742,13 @@ class BillingDocument(BaseModel):
 
     # --- Relationships (Edges) ---
 
-    seller: Party = edge(
+    seller: Party | None = edge(
         label="ISSUED_BY",
+        default=None,
         description=(
             "WHAT: The party that issued this document (seller/supplier). "
             "EXTRACT: As an object with identity fields (name, tax_id, address, etc.). "
-            "NEVER return as an array. "
-            "PRESERVE ROLE: 'From:', 'Seller:', 'Supplier:' indicates seller. "
+            "Omit when not present in extracted batch. "
             "LOOK FOR: Company information in header/top section, 'From', 'Seller', 'Supplier' labels. "
             "EXAMPLES: {'name': 'Acme Corp', 'tax_id': 'FR12345678901', 'city': 'Paris'}"
         ),

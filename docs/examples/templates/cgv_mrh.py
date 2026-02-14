@@ -119,8 +119,11 @@ class Montant(BaseModel):
         examples=[1500.0, 380.0, 120000.0],
     )
     devise: str | None = Field(
-        "EUR",
-        description="Devise si précisée, sinon 'EUR' par défaut.",
+        None,
+        description=(
+            "Devise si précisée (ISO 4217, ex. EUR, USD). "
+            "Si absent du document, omettre (ne pas deviner)."
+        ),
         examples=["EUR", "USD"],
     )
     indexe_par: str | None = Field(
@@ -206,8 +209,8 @@ class Bien(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
+    nom: str = Field(
+        ...,
         description=(
             "Nom standardisé du bien (identifiant de déduplication). "
             "Utiliser un libellé cohérent dans tout le document (ex. 'Bâtiment', 'Mobilier')."
@@ -245,18 +248,33 @@ class Bien(BaseModel):
 class Exclusion(BaseModel):
     """
     Clause d'exclusion (commune ou spécifique).
+    Identity uses short exclusion_id for delta-friendly deduplication.
     """
 
-    model_config = ConfigDict(graph_id_fields=["resume"], extra="ignore", populate_by_name=True)
+    model_config = ConfigDict(
+        graph_id_fields=["exclusion_id"], extra="ignore", populate_by_name=True
+    )
 
+    exclusion_id: str = Field(
+        ...,
+        description=(
+            "Short stable identifier for this exclusion (deduplication). "
+            "Use a normalized code or short label as in document (e.g. 'vol-sans-effraction', 'defaut-entretien'). "
+            "Avoid long free text; keep under ~50 chars."
+        ),
+        examples=[
+            "vol-sans-effraction",
+            "defaut-entretien",
+            "guerre",
+            "risque-nucleaire",
+        ],
+    )
     resume: str | None = Field(
         None,
-        description="Résumé court servant d'identifiant (utile pour la déduplication).",
+        description="Résumé court de la clause (affichage, complément).",
         examples=[
             "Exclusion vol sans effraction",
             "Exclusion défaut d'entretien",
-            "Exclusion guerre",
-            "Exclusion risque nucléaire",
         ],
     )
     texte: str | None = Field(
@@ -291,8 +309,8 @@ class Garantie(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
+    nom: str = Field(
+        ...,
         description="Nom de la garantie tel qu'écrit dans le document.",
         examples=[
             "Dégâts des eaux",
@@ -313,7 +331,7 @@ class Garantie(BaseModel):
     biens_couverts: list[Bien] = edge(
         label="COUVREBIEN",
         default_factory=list,
-        validation_alias=AliasChoices("biens_couverts", "bienscouverts", "biens_couverts"),
+        validation_alias=AliasChoices("biens_couverts", "bienscouverts"),
         description=(
             "Quels biens sont couverts par cette garantie. "
             "Règle pratique (anti-informations dispersées) : "
@@ -362,7 +380,7 @@ class Garantie(BaseModel):
             "Ne pas y mettre les exclusions 'communes à toutes les garanties' (Article 7), "
             "qui doivent aller dans AssuranceMRH.exclusions_communes."
         ),
-        examples=[[{"resume": "Exclusion défaut d'entretien"}]],
+        examples=[[{"exclusion_id": "defaut-entretien"}]],
     )
 
     @field_validator("biens_couverts", mode="before")
@@ -373,7 +391,7 @@ class Garantie(BaseModel):
     @field_validator("exclusions_specifiques", mode="before")
     @classmethod
     def filtrer_exclusions_specifiques(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "exclusions_specifiques")
+        return _filtrer_liste(v, "exclusions_specifiques", champs_requis=["exclusion_id"])
 
     @model_validator(mode="after")
     def auto_lier_biens_evidents(self) -> Garantie:
@@ -404,9 +422,9 @@ class Option(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
-        description="Nom de l'option tel qu'écrit dans le document.",
+    nom: str = Field(
+        ...,
+        description="Nom de l'option tel qu'écrit dans le document (identifiant stable).",
         examples=[
             "Dommages électriques",
             "Rééquipement neuf",
@@ -427,7 +445,7 @@ class Option(BaseModel):
     biens_couverts: list[Bien] = edge(
         label="COUVREBIEN",
         default_factory=list,
-        validation_alias=AliasChoices("biens_couverts", "bienscouverts", "biens_couverts"),
+        validation_alias=AliasChoices("biens_couverts", "bienscouverts"),
         description=(
             "Biens couverts par l'option. "
             "Si l'option correspond à un bien explicite (ex. 'Piscine', 'Jardin'), "
@@ -472,9 +490,9 @@ class Offre(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["nom"], extra="ignore", populate_by_name=True)
 
-    nom: str | None = Field(
-        None,
-        description="Nom de la formule tel qu'écrit.",
+    nom: str = Field(
+        ...,
+        description="Nom de la formule tel qu'écrit (identifiant stable pour déduplication).",
         examples=["ESSENTIELLE", "CONFORT", "CONFORT PLUS", "PROPRIÉTAIRE NON OCCUPANT"],
     )
     niveau: int | None = Field(
@@ -548,8 +566,8 @@ class AssuranceMRH(BaseModel):
         graph_id_fields=["reference_document"], extra="ignore", populate_by_name=True
     )
 
-    reference_document: str | None = Field(
-        None,
+    reference_document: str = Field(
+        ...,
         validation_alias=AliasChoices("reference_document", "referencedocument"),
         description="Référence/identifiant du document (couverture, pied de page) si présent.",
         examples=["CGV-MRH-2023", "HABITATION 2023-10"],

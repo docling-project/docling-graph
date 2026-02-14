@@ -137,6 +137,7 @@ config = PipelineConfig(
     model_override="mistral-large-latest",
     processing_mode="many-to-one",
     use_chunking=True,
+    # Use extraction_contract="delta" for chunk-based graph extraction on long docs
 )
 
 # Access results in memory

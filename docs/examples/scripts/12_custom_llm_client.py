@@ -81,7 +81,7 @@ class LiteLLMEndpointClient:
         api_key: str | None = None,
         headers: dict[str, str] | None = None,
         timeout_s: int = 120,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
         temperature: float = 0.1,
     ) -> None:
         self.model = model
@@ -176,7 +176,7 @@ def main() -> None:
         base_url=base_url,
         api_key=api_key,
         timeout_s=180,
-        max_tokens=4096,
+        max_tokens=2048,
         temperature=0.1,
     )
 

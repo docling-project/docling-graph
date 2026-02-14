@@ -27,7 +27,7 @@ config = PipelineConfig(
     backend: Literal["llm", "vlm"] = "llm",
     inference: Literal["local", "remote"] = "local",
     processing_mode: Literal["one-to-one", "many-to-one"] = "many-to-one",
-    extraction_contract: Literal["direct", "staged"] = "direct",
+    extraction_contract: Literal["direct", "staged", "delta"] = "direct",
     docling_config: Literal["ocr", "vision"] = "ocr",
     model_override: str | None = None,
     provider_override: str | None = None,
@@ -71,7 +71,7 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `"direct"` or `"staged"` | `"direct"` | LLM extraction contract (`staged` is optimized for weaker models in many-to-one mode) |
+| `extraction_contract` | `"direct"`, `"staged"`, or `"delta"` | `"direct"` | LLM extraction contract (`staged` is optimized for weaker models in many-to-one mode) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking) |
@@ -84,9 +84,33 @@ config = PipelineConfig(
 |-------|------|---------|-------------|
 | `staged_tuning_preset` | `"standard"` or `"advanced"` | `"standard"` | Preset for staged extraction defaults |
 | `staged_pass_retries` | `int` or `None` | `None` | Retries per staged pass (`None` uses preset) |
-| `staged_workers` | `int` or `None` | `None` | Fill-pass worker count only (`None` uses preset) |
+| `parallel_workers` | `int` or `None` | `None` | Parallel workers for extraction (staged fill pass and delta batch calls; `None` uses preset for staged) |
 | `staged_nodes_fill_cap` | `int` or `None` | `None` | Max node instances per fill-pass call (`None` uses preset) |
 | `staged_id_shard_size` | `int` or `None` | `None` | Max paths per ID-pass call (`0` = no sharding, `None` uses preset) |
+
+#### Delta Configuration
+
+Delta extraction uses the same `parallel_workers` setting (see Staged Tuning above) for parallel batch calls.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `llm_batch_token_size` | `int` | `2048` | Max input tokens per delta batch (new LLM call when exceeded) |
+| `delta_quality_require_root` | `bool` | `True` | Require root instance in merged output |
+| `delta_quality_min_instances` | `int` | `1` | Minimum node count threshold |
+| `delta_quality_max_parent_lookup_miss` | `int` | `4` | Max parent-link misses before quality failure |
+| `delta_quality_adaptive_parent_lookup` | `bool` | `True` | Adaptive miss tolerance when root exists |
+| `delta_quality_require_relationships` | `bool` | `False` | Require at least one attached relationship/list linkage |
+| `delta_quality_require_structural_attachments` | `bool` | `False` | Require structural attachments (avoid root-only outputs) |
+| `delta_normalizer_validate_paths` | `bool` | `True` | Drop unknown/non-catalog paths |
+| `delta_normalizer_canonicalize_ids` | `bool` | `True` | Normalize ID values for deterministic matching |
+| `delta_normalizer_strip_nested_properties` | `bool` | `True` | Drop nested dict properties to keep flat graph payloads |
+| `delta_normalizer_attach_provenance` | `bool` | `True` | Attach batch/chunk provenance to nodes/relationships |
+| `delta_resolvers_enabled` | `bool` | `True` | Enable post-merge resolver pass |
+| `delta_resolvers_mode` | `str` | `"semantic"` | Resolver mode: `off`, `fuzzy`, `semantic`, `chain` |
+| `delta_resolver_fuzzy_threshold` | `float` | `0.9` | Fuzzy merge threshold |
+| `delta_resolver_semantic_threshold` | `float` | `0.92` | Semantic merge threshold |
+| `delta_resolver_properties` | `list[str]` | `[]` | Preferred properties used for resolver matching |
+| `delta_resolver_paths` | `list[str]` | `[]` | Restrict resolver to selected catalog paths |
 
 #### Export Configuration
 
@@ -404,6 +428,8 @@ for name in [
 with open(debug_dir / "staged_trace.json") as f:
     trace = json.load(f)
     print(trace.get("timings_seconds", {}))
+
+# When extraction_contract="delta", debug may include: delta_trace.json, delta_merged_graph.json, delta_merged_output.json
 ```
 
 ### Explicit Control

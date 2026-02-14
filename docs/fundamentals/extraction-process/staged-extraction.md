@@ -62,7 +62,7 @@ Staged behavior is controlled by a **preset** and optional overrides.
 |--------|---------|---------------------------|
 | `staged_tuning_preset` | `"standard"` or `"advanced"` (larger ID shards, larger fill batches) | `"standard"` |
 | `staged_pass_retries` | Retries per staged pass when the LLM returns invalid JSON | preset |
-| `staged_workers` | Parallel workers for the **fill pass only** (ID pass is sequential) | preset |
+| `parallel_workers` | Parallel workers for the fill pass (ID pass is sequential); also used for delta batch parallelism | preset |
 | `staged_nodes_fill_cap` | Max node instances per LLM call in the fill pass | preset |
 | `staged_id_shard_size` | Max catalog paths per ID-pass call; `0` = no sharding or auto-shard when catalog is large | preset |
 | `staged_id_identity_only` | Use only paths with identity fields in the ID pass (smaller prompts, fewer truncations) | `True` |
@@ -87,7 +87,7 @@ config = PipelineConfig(
     extraction_contract="staged",
     staged_tuning_preset="standard",  # or "advanced"
     # Optional overrides:
-    # staged_workers=2,
+    # parallel_workers=2,
     # staged_nodes_fill_cap=10,
     # staged_id_shard_size=0,
     # staged_id_identity_only=True,

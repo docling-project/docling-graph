@@ -6,10 +6,10 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 
 | Path | Description |
 |------|-------------|
-| `docs/examples/scripts/` | Python example scripts (01–12) |
+| `docs/examples/scripts/` | Python example scripts (01–13) |
 | `docs/examples/templates/` | Pydantic templates (e.g. `billing_document.py`, `rheology_research.py`) |
 
-## Example Scripts (01–12)
+## Example Scripts (01–13)
 
 ### Getting Started
 
@@ -31,6 +31,7 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 10. **`10_provider_configs.py`** — OpenAI, Mistral, Gemini, WatsonX
 11. **`11_staged_extraction.py`** — Staged extraction (ID pass → fill pass → merge) for complex templates
 12. **`12_custom_llm_client.py`** — Custom LLM client (bring your own URL) with full pipeline
+13. **`13_delta_extraction.py`** — Delta extraction (chunk → batch → graph IR → merge → projection) for long documents
 
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).
 

@@ -89,7 +89,7 @@ class QuantityWithUnit(BaseModel):
     Deduplicated by content - identical measurements share the same node.
     """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
     name: str | None = Field(
         None,
@@ -246,9 +246,10 @@ class PersonIdentity(BaseModel):
     Deduplicated by content.
     """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
     full_name: str = Field(
+        ...,
         description=(
             "Full name of the person. "
             "LOOK FOR: Author names in header, footnotes. "
@@ -273,23 +274,27 @@ class PersonIdentity(BaseModel):
 class ScholarlyIdentifier(BaseModel):
     """
     Scholarly identifier component (DOI, arXiv, URL).
+    Optional fields for partial extraction when identifiers are absent.
     """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    scheme: str = Field(
+    scheme: str | None = Field(
+        None,
         description=(
             "Type of identifier. "
             "LOOK FOR: 'DOI:', 'arXiv:', 'URL:'. "
+            "EXTRACT: Omit when not in document. "
             "EXAMPLES: 'DOI', 'arXiv', 'URL', 'PMID'"
         ),
         examples=["DOI", "arXiv", "URL"],
     )
 
-    value: str = Field(
+    value: str | None = Field(
+        None,
         description=(
             "The identifier value. "
-            "EXTRACT: The full ID string or URL. "
+            "EXTRACT: Full ID string or URL. Omit when not in document. "
             "EXAMPLES: '10.1016/j.jpowsour.2023.233456', 'https://example.com'"
         ),
         examples=["10.1016/j.jpowsour.2023.233456"],
@@ -431,10 +436,11 @@ class SlurryRheologyStudy(BaseModel):
     study_id: str = Field(
         description=(
             "Unique identifier for this study. "
-            "EXTRACT: Create descriptive ID based on objective/section. "
-            "EXAMPLES: 'STUDY-BINDER-MW', 'STUDY-SOLID-LOADING', 'STUDY-SECTION-3.1'"
+            "EXTRACT: Prefer document-derived IDs: section number (e.g. '3.1'), figure/section label, or table caption. "
+            "If none present, create short descriptive ID from objective (e.g. 'STUDY-BINDER-MW'). "
+            "EXAMPLES: '3.1', 'Section-3', 'STUDY-BINDER-MW', 'STUDY-SECTION-3.1'"
         ),
-        examples=["STUDY-BINDER-MW", "STUDY-SECTION-3.1"],
+        examples=["3.1", "STUDY-BINDER-MW", "STUDY-SECTION-3.1"],
     )
 
     objective: str = Field(
@@ -465,10 +471,11 @@ class SlurryRheologyExperiment(BaseModel):
     experiment_id: str = Field(
         description=(
             "Unique identifier for this experiment. "
-            "EXTRACT: Create ID based on conditions or figure reference. "
-            "EXAMPLES: 'EXP-LFP-PVDF-20VOL', 'EXP-FIG-3A'"
+            "EXTRACT: Prefer figure/table reference from document (e.g. 'Fig-3A', 'Table-2'). "
+            "Else create from conditions (e.g. 'EXP-LFP-PVDF-20VOL'). "
+            "EXAMPLES: 'Fig-3A', 'EXP-LFP-PVDF-20VOL', 'EXP-FIG-3A'"
         ),
-        examples=["EXP-LFP-PVDF-20VOL", "EXP-FIG-3A"],
+        examples=["Fig-3A", "EXP-LFP-PVDF-20VOL", "EXP-FIG-3A"],
     )
 
     description: str | None = Field(
@@ -616,10 +623,11 @@ class SlurryFormulation(BaseModel):
     formulation_id: str = Field(
         description=(
             "Unique identifier for formulation. "
-            "EXTRACT: 'FORM-[description]'. "
-            "EXAMPLES: 'FORM-LFP-90-5-5', 'FORM-TABLE-1'"
+            "EXTRACT: Prefer table/section reference (e.g. 'FORM-TABLE-1', 'Table-1'). "
+            "Else 'FORM-[short description]' (e.g. 'FORM-LFP-90-5-5'). "
+            "EXAMPLES: 'FORM-TABLE-1', 'FORM-LFP-90-5-5'"
         ),
-        examples=["FORM-LFP-90-5-5"],
+        examples=["FORM-TABLE-1", "FORM-LFP-90-5-5"],
     )
 
     description: str | None = Field(
@@ -667,8 +675,13 @@ class PreparationStep(BaseModel):
     model_config = ConfigDict(graph_id_fields=["step_id"])
 
     step_id: str = Field(
-        description="Unique ID: 'STEP-[number]-[type]'. Example: 'STEP-1-DISSOLUTION'.",
-        examples=["STEP-1-DISSOLUTION", "STEP-2-MIXING"],
+        description=(
+            "Unique ID for the step. "
+            "EXTRACT: Prefer step number from document (e.g. '1', 'Step-1'). "
+            "Else 'STEP-[number]-[type]' (e.g. 'STEP-1-DISSOLUTION'). "
+            "EXAMPLES: 'Step-1', 'STEP-1-DISSOLUTION', 'STEP-2-MIXING'"
+        ),
+        examples=["Step-1", "STEP-1-DISSOLUTION", "STEP-2-MIXING"],
     )
 
     step_type: StepType = Field(
@@ -720,8 +733,13 @@ class BatterySlurryBatch(BaseModel):
     model_config = ConfigDict(graph_id_fields=["batch_id"])
 
     batch_id: str = Field(
-        description="Unique ID for the batch. Example: 'BATCH-LFP-001'.",
-        examples=["BATCH-LFP-001"],
+        description=(
+            "Unique ID for the batch. "
+            "EXTRACT: Prefer label from document (e.g. 'Batch 1', 'Sample A'). "
+            "Else 'BATCH-[short label]' (e.g. 'BATCH-LFP-001'). "
+            "EXAMPLES: 'Batch-1', 'BATCH-LFP-001'"
+        ),
+        examples=["Batch-1", "BATCH-LFP-001"],
     )
 
     formulation: SlurryFormulation | None = edge(
@@ -830,7 +848,7 @@ class SweepParameters(BaseModel):
     Component - deduplicated by content.
     """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
     x_axis_quantity: str = Field(
         description=(
@@ -873,8 +891,12 @@ class TestProtocol(BaseModel):
     model_config = ConfigDict(graph_id_fields=["protocol_id"])
 
     protocol_id: str = Field(
-        description="Unique ID: 'PROTOCOL-[type]'.",
-        examples=["PROTOCOL-FLOW-CURVE"],
+        description=(
+            "Unique ID for the protocol. "
+            "EXTRACT: Prefer test name from document; else 'PROTOCOL-[type]'. "
+            "EXAMPLES: 'Flow curve', 'PROTOCOL-FLOW-CURVE'"
+        ),
+        examples=["Flow curve", "PROTOCOL-FLOW-CURVE"],
     )
 
     test_mode: TestMode = Field(
@@ -927,8 +949,13 @@ class RheologyCurve(BaseModel):
     model_config = ConfigDict(graph_id_fields=["curve_id"])
 
     curve_id: str = Field(
-        description="Unique ID: 'CURVE-[type]-[sample]'.",
-        examples=["CURVE-VISCOSITY-SAMPLE-A"],
+        description=(
+            "Unique ID for the curve. "
+            "EXTRACT: Prefer figure/legend label (e.g. 'Fig-2a', 'Sample A'). "
+            "Else 'CURVE-[type]-[sample]'. "
+            "EXAMPLES: 'Fig-2a', 'CURVE-VISCOSITY-SAMPLE-A'"
+        ),
+        examples=["Fig-2a", "CURVE-VISCOSITY-SAMPLE-A"],
     )
 
     x_quantity: str = Field(
@@ -978,7 +1005,7 @@ class DerivedQuantity(BaseModel):
     Component.
     """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
     name: str = Field(
         description="Name of quantity (e.g., Yield stress).",
@@ -1003,7 +1030,7 @@ class ModelFit(BaseModel):
     Component.
     """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
     model_family: str = Field(
         description="Name of model (Herschel-Bulkley, Power law).",
@@ -1036,8 +1063,12 @@ class RheologyDataset(BaseModel):
     model_config = ConfigDict(graph_id_fields=["dataset_id"])
 
     dataset_id: str = Field(
-        description="Unique ID: 'DATASET-[sample]'.",
-        examples=["DATASET-SAMPLE-A"],
+        description=(
+            "Unique ID for the dataset. "
+            "EXTRACT: Prefer sample/figure reference from document; else 'DATASET-[sample]'. "
+            "EXAMPLES: 'Sample-A', 'DATASET-SAMPLE-A'"
+        ),
+        examples=["Sample-A", "DATASET-SAMPLE-A"],
     )
 
     description: str | None = Field(
@@ -1080,8 +1111,12 @@ class RheologyTestRun(BaseModel):
     model_config = ConfigDict(graph_id_fields=["run_id"])
 
     run_id: str = Field(
-        description="Unique ID: 'RUN-[test]-[sample]'.",
-        examples=["RUN-FLOW-SAMPLE-A"],
+        description=(
+            "Unique ID for the test run. "
+            "EXTRACT: Prefer label from document (e.g. 'Run 1', 'Test A'); else 'RUN-[test]-[sample]'. "
+            "EXAMPLES: 'Run-1', 'RUN-FLOW-SAMPLE-A'"
+        ),
+        examples=["Run-1", "RUN-FLOW-SAMPLE-A"],
     )
 
     description: str | None = Field(

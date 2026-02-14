@@ -6,6 +6,7 @@
 The `convert` command transforms documents into knowledge graphs using configurable extraction pipelines.
 
 **Key Features:**
+
 - Multiple backend support (LLM/VLM)
 - Flexible processing modes
 - Configurable chunking
@@ -62,6 +63,7 @@ uv run docling-graph convert README.md \
 Enable debug mode to save all intermediate extraction artifacts for debugging and analysis.
 
 **When to use:**
+
 - Debugging extraction issues
 - Analyzing extraction quality
 - Performance profiling
@@ -91,11 +93,13 @@ See [Debug Mode Documentation](../advanced/trace-data-debugging.md) for details 
 ```
 
 **LLM (Language Model):**
+
 - Best for text-heavy documents
 - Supports chunking and consolidation
 - Works with local and remote providers
 
 **VLM (Vision-Language Model):**
+
 - Best for forms and structured layouts
 - Processes images directly
 - Local inference only
@@ -122,11 +126,13 @@ uv run docling-graph convert form.jpg \
 ```
 
 **Local:**
+
 - Run models on your machine
 - Requires GPU for best performance
 - No API costs
 
 **Remote:**
+
 - Use cloud API providers
 - Requires API key
 - Pay per request
@@ -153,11 +159,13 @@ uv run docling-graph convert document.pdf \
 ```
 
 **many-to-one (recommended):**
+
 - Merge all pages into single graph
 - Better for multi-page documents
 - Enables consolidation
 
 **one-to-one:**
+
 - Create separate graph per page
 - Better for independent pages
 - Faster processing
@@ -186,6 +194,7 @@ uv run docling-graph convert document.pdf \
 ```
 
 **Available providers:**
+
 - **Local:** `vllm`, `ollama`
 - **Remote:** `mistral`, `openai`, `gemini`, `watsonx`
 
@@ -226,11 +235,13 @@ export CUSTOM_LLM_API_KEY="your-api-key"
 ```
 
 **Enable chunking for:**
+
 - Large documents (>5 pages)
 - Documents exceeding context limits
 - Better extraction accuracy
 
 **Disable chunking for:**
+
 - Small documents
 - When full context is needed
 - Faster processing
@@ -257,18 +268,69 @@ These flags apply when `--extraction-contract staged` is used in many-to-one mod
 ```bash
 --staged-tuning {standard|advanced}
 --staged-retries INT
---staged-workers INT
+--parallel-workers INT
 --staged-nodes-fill-cap INT
 --staged-id-shard-size INT
 ```
 
 - `--staged-tuning`: preset defaults (`standard` or `advanced`).
 - `--staged-retries`: retries per staged pass for invalid JSON responses.
-- `--staged-workers`: parallel workers for **fill pass only**.
+- `--parallel-workers`: parallel workers for extraction (staged fill pass and delta batch calls).
 - `--staged-nodes-fill-cap`: max node instances per fill-pass call.
 - `--staged-id-shard-size`: max catalog paths per ID-pass call (`0` disables sharding).
 
 ID pass always runs sequentially across shards for stable skeleton assembly.
+
+### Delta Extraction Tuning
+
+These flags apply when `--extraction-contract delta` is used in many-to-one mode (chunking must be enabled). To configure delta resolvers and quality gates interactively, run `docling-graph init` and choose **delta** as the extraction contract; the wizard will prompt for resolver enable/mode and optional quality tweaks (see [init Command](init-command.md#step-3-delta-extraction-tuning-only-when-delta-is-selected)).
+
+```bash
+--llm-batch-token-size INT
+--parallel-workers INT
+--delta-normalizer-validate-paths / --no-delta-normalizer-validate-paths
+--delta-normalizer-canonicalize-ids / --no-delta-normalizer-canonicalize-ids
+--delta-normalizer-strip-nested-properties / --no-delta-normalizer-strip-nested-properties
+--delta-resolvers-enabled / --no-delta-resolvers-enabled
+--delta-resolvers-mode {off|fuzzy|semantic|chain}
+--delta-resolver-fuzzy-threshold FLOAT
+--delta-resolver-semantic-threshold FLOAT
+```
+
+- `--llm-batch-token-size`: max input tokens per delta batch (default: 2048).
+- `--parallel-workers`: parallel workers for delta batch LLM calls.
+- Delta normalizer flags control path validation, ID canonicalization, and nested property stripping.
+- Resolvers optionally merge near-duplicate entities after merge (`fuzzy`, `semantic`, or `chain`).
+
+Quality gate options (e.g. `delta_quality_max_parent_lookup_miss`, `delta_quality_require_relationships`) are not CLI flags; set them in `config.yaml` under `defaults` or use the init wizard when selecting delta.
+
+See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for full options and quality gate settings.
+
+**Example (basic delta):**
+
+```bash
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --processing-mode many-to-one \
+    --extraction-contract delta \
+    --use-chunking \
+    --llm-batch-token-size 2048 \
+    --parallel-workers 2
+```
+
+**Example (delta with resolvers):**
+
+```bash
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --processing-mode many-to-one \
+    --extraction-contract delta \
+    --use-chunking \
+    --delta-resolvers-enabled \
+    --delta-resolvers-mode fuzzy \
+    --delta-resolver-fuzzy-threshold 0.9 \
+    --parallel-workers 2
+```
 
 ### Structured Output Mode
 
@@ -295,7 +357,7 @@ uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --processing-mode many-to-one \
     --extraction-contract staged \
-    --staged-workers 4 \
+    --parallel-workers 4 \
     --staged-nodes-fill-cap 12 \
     --staged-id-shard-size 2
 ```
@@ -311,11 +373,13 @@ uv run docling-graph convert document.pdf \
 ```
 
 **OCR Pipeline:**
+
 - Traditional OCR approach
 - Most accurate for standard documents
 - Faster processing
 
 **Vision Pipeline:**
+
 - Uses Granite-Docling VLM
 - Better for complex layouts
 - Handles tables and figures better
@@ -344,11 +408,13 @@ uv run docling-graph convert complex_doc.pdf \
 ```
 
 **CSV:**
+
 - For Neo4j import
 - Separate nodes.csv and edges.csv
 - Easy to analyze
 
 **Cypher:**
+
 - Direct Neo4j execution
 - Single .cypher file
 - Ready to import

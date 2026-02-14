@@ -567,7 +567,7 @@ batcher = ChunkBatcher(
 # Or use smaller chunks
 chunker = DocumentChunker(
     provider="mistral",
-    max_tokens=3000  # Smaller chunks (was 4096)
+    max_tokens=3000  # Smaller chunks
 )
 ```
 

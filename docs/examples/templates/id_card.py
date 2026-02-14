@@ -15,21 +15,34 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # --- Edge Helper Function ---
 
 
-def edge(label: str, **kwargs: Any) -> Any:
+def edge(label: str, default: Any = None, **kwargs: Any) -> Any:
     """
     Helper function to create a Pydantic Field with edge metadata.
     The 'edge_label' defines the type of relationship in the graph.
+    Use default=None or default_factory=list for optional/list edges.
     """
-    return Field(..., json_schema_extra={"edge_label": label}, **kwargs)
+    json_schema_extra = dict(kwargs.pop("json_schema_extra", {}) or {})
+    json_schema_extra["edge_label"] = label
+    if "default_factory" in kwargs:
+        default_factory = kwargs.pop("default_factory")
+        return Field(default_factory=default_factory, json_schema_extra=json_schema_extra, **kwargs)
+    if default is not None or "default" in kwargs:
+        return Field(
+            default=kwargs.pop("default", default), json_schema_extra=json_schema_extra, **kwargs
+        )
+    return Field(..., json_schema_extra=json_schema_extra, **kwargs)
 
 
 # --- Reusable Component: Address ---
 
 
 class Address(BaseModel):
-    """Represents a physical address entity."""
+    """
+    Represents a physical address (component).
+    In delta extraction, nested address payloads may be flattened.
+    """
 
-    model_config = ConfigDict(is_entity=False)
+    model_config = ConfigDict(is_entity=False, extra="ignore")
 
     street_address: str | None = Field(
         None,
@@ -66,19 +79,33 @@ class Address(BaseModel):
 class Person(BaseModel):
     """
     A generic model for a person.
-    A person is uniquely identified by their full name and date of birth.
+    Identity uses last_name (required) plus given_names and date_of_birth for stable deduplication.
     """
 
-    model_config = ConfigDict(graph_id_fields=["given_names", "last_name", "date_of_birth"])
+    model_config = ConfigDict(
+        graph_id_fields=["last_name", "given_names", "date_of_birth"],
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     given_names: List[str] | None = Field(
         default=None,
-        description="List of given names (first names usually separated with a comma) of the person, in order",
+        description=(
+            "List of given names (first names), in order. "
+            "LOOK FOR: First name(s) on the document. EXTRACT: As list. "
+            "EXAMPLES: ['Pierre'], ['Pierre', 'Louis'], ['Marie', 'Claire']"
+        ),
         examples=[["Pierre"], ["Pierre", "Louis"], ["Pierre", "Louis", "André"]],
     )
 
-    last_name: str | None = Field(
-        None, description="The person's family name (surname)", examples=["Dupont", "Martin"]
+    last_name: str = Field(
+        ...,
+        description=(
+            "The person's family name (surname). Required for identity. "
+            "LOOK FOR: 'Nom', 'Family name', 'Surname' on the document. "
+            "EXAMPLES: 'Dupont', 'Martin', 'Bernard'"
+        ),
+        examples=["Dupont", "Martin", "Bernard"],
     )
 
     alternate_name: str | None = Field(
@@ -88,11 +115,12 @@ class Person(BaseModel):
     date_of_birth: date | None = Field(
         None,
         description=(
-            "The cardholder's date of birth.",
-            "Look for text like 'Date of birth', 'Date de naiss.', or similar.",
-            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format.",
+            "The cardholder's date of birth. "
+            "LOOK FOR: 'Date of birth', 'Date de naiss.', 'Naissance'. "
+            "EXTRACT: Parse DD MM YYYY or DDMMYYYY and normalize to YYYY-MM-DD. "
+            "EXAMPLES: '1990-05-15', '1985-12-01'"
         ),
-        examples=["1990-05-15"],
+        examples=["1990-05-15", "1985-12-01"],
     )
 
     place_of_birth: str | None = Field(
@@ -105,7 +133,9 @@ class Person(BaseModel):
 
     # --- Edge Definition ---
     lives_at: Address | None = edge(
-        label="LIVES_AT", description="Physical address (e.g., home address)"
+        label="LIVES_AT",
+        default=None,
+        description="Physical address (e.g., home address). Omit when not present in document.",
     )
 
     # --- Validators ---
@@ -151,7 +181,6 @@ class Person(BaseModel):
         return v
 
     def __str__(self) -> str:
-        # Handle given_names which is a list
         first_names = " ".join(self.given_names) if self.given_names else ""
         parts = [first_names, self.last_name]
         return " ".join(p for p in parts if p) or "Unknown"
@@ -166,7 +195,9 @@ class IDCard(BaseModel):
     It is uniquely identified by its document number.
     """
 
-    model_config = ConfigDict(graph_id_fields=["document_number"])
+    model_config = ConfigDict(
+        graph_id_fields=["document_number"], extra="ignore", populate_by_name=True
+    )
 
     document_number: str = Field(
         ...,
@@ -201,7 +232,14 @@ class IDCard(BaseModel):
     )
 
     # --- Edge Definition ---
-    holder: Person = edge(label="BELONGS_TO", description="The person this ID card belongs to")
+    holder: Person | None = edge(
+        label="BELONGS_TO",
+        default=None,
+        description=(
+            "The person this ID card belongs to. "
+            "EXTRACT: When holder info is present. Omit when not in extracted batch."
+        ),
+    )
 
     def __str__(self) -> str:
         return f"{self.issuing_country} {self.document_number}"

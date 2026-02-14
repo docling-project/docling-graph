@@ -200,8 +200,16 @@ When `debug=True`, `trace_data` is populated as a chronological event log (`Even
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `"direct"` or `"staged"` | `"direct"` | LLM extraction contract for many-to-one mode |
+| `extraction_contract` | `"direct"`, `"staged"`, or `"delta"` | `"direct"` | LLM extraction contract for many-to-one mode |
 | `use_chunking` | `bool` | `True` | Enable chunking |
+
+Contract behavior notes:
+
+- `direct`: one-pass structured extraction from full content.
+- `staged`: ID discovery + fill pass + merge assembly.
+- `delta`: chunk/batch graph extraction + normalization + merge + projection.
+- `delta` requires chunking-enabled many-to-one flow.
+- Contract implementations are isolated by folder under `core/extractors/contracts/`.
 
 ### Export
 

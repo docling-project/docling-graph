@@ -49,6 +49,7 @@ run_pipeline(config)
 | `backend` | `Literal["llm", "vlm"]` | `"llm"` | Backend type |
 | `inference` | `Literal["local", "remote"]` | `"local"` | Inference mode |
 | `processing_mode` | `Literal["one-to-one", "many-to-one"]` | `"many-to-one"` | Processing strategy |
+| `extraction_contract` | `Literal["direct", "staged", "delta"]` | `"direct"` | LLM extraction contract: `direct` (single-pass), `staged` (multi-pass ID→fill→merge), `delta` (chunk-based graph IR→merge→projection). See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md). |
 
 ### Docling Settings
 
@@ -92,6 +93,8 @@ run_pipeline(config)  # or config.run()
 |-----------|------|---------|-------------|
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `max_batch_size` | `int` | `1` | Maximum batch size |
+
+For **delta** extraction, additional options (e.g. `llm_batch_token_size`, `parallel_workers`, `delta_resolvers_enabled`, `delta_resolvers_mode`, `delta_quality_max_parent_lookup_miss`) can be set via a config dict or YAML `defaults`; see [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) and [Configuration reference](../../reference/config.md).
 
 ### Debug Settings
 
@@ -268,6 +271,30 @@ config = PipelineConfig(
 
 run_pipeline(config)
 ```
+
+### 📍 Delta extraction (long documents)
+
+```python
+from docling_graph import run_pipeline, PipelineConfig
+
+# Delta: chunk → batches → flat graph IR → merge → projection
+config = PipelineConfig(
+    source="long_document.pdf",
+    template="templates.ScholarlyRheologyPaper",
+    backend="llm",
+    processing_mode="many-to-one",
+    extraction_contract="delta",
+    use_chunking=True,
+    llm_batch_token_size=2048,
+    parallel_workers=2,
+    delta_resolvers_enabled=True,
+    delta_resolvers_mode="semantic",
+)
+
+run_pipeline(config)
+```
+
+See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for all delta options and quality gates.
 
 ### 📍 Local VLM
 

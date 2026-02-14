@@ -103,6 +103,7 @@ context = run_pipeline(config)
 | `backend` | `str` | `"llm"` | Backend type: `"llm"` or `"vlm"` |
 | `inference` | `str` | `"local"` | Inference mode: `"local"` or `"remote"` |
 | `processing_mode` | `str` | `"many-to-one"` | Processing strategy |
+| `extraction_contract` | `str` | `"direct"` | Extraction contract: `"direct"`, `"staged"`, or `"delta"` (see [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md)) |
 | `docling_config` | `str` | `"ocr"` | Docling pipeline: `"ocr"` or `"vision"` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports (None=auto: CLI=True, API=False) |

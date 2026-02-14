@@ -343,8 +343,8 @@ from docling_graph.core.extractors import ExtractorFactory
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
-    extraction_contract="direct",  # or "staged" for multi-pass (LLM + many-to-one only)
-    staged_config=None,            # optional: pass_retries, workers, nodes_fill_cap, id_shard_size
+    extraction_contract="direct",  # or "staged" / "delta" (LLM + many-to-one only)
+    staged_config=None,            # optional: pass_retries, parallel_workers, nodes_fill_cap, id_shard_size, delta_* for delta
     llm_client=client,
     docling_config="ocr",
 )
@@ -356,8 +356,8 @@ extractor = ExtractorFactory.create_extractor(
 |-----------|------|-------------|
 | `processing_mode` | `"one-to-one"` \| `"many-to-one"` | Extraction strategy |
 | `backend_name` | `"llm"` \| `"vlm"` | Backend type |
-| `extraction_contract` | `"direct"` \| `"staged"` | LLM contract; `staged` only applies to many-to-one |
-| `staged_config` | `dict` \| `None` | Optional staged tuning (pass_retries, workers, etc.) |
+| `extraction_contract` | `"direct"` \| `"staged"` \| `"delta"` | LLM contract; `staged` and `delta` only apply to many-to-one |
+| `staged_config` | `dict` \| `None` | Optional staged tuning (pass_retries, parallel_workers, etc.) |
 | `model_name` | `str` \| `None` | Required for VLM |
 | `llm_client` | `LLMClientProtocol` \| `None` | Required for LLM |
 | `docling_config` | `str` | `"ocr"` or `"vision"` |
@@ -401,6 +401,7 @@ chunker = DocumentChunker(
 ## Related APIs
 
 - **[Staged Extraction](../fundamentals/extraction-process/staged-extraction.md)** - Multi-pass extraction
+- **[Delta Extraction](../fundamentals/extraction-process/delta-extraction.md)** - Chunk-based graph extraction
 - **[Extraction Process](../fundamentals/extraction-process/index.md)** - Usage guide
 - **[Model Merging](../fundamentals/extraction-process/model-merging.md)** - Zero data loss
 - **[Protocols](protocols.md)** - Backend protocols
