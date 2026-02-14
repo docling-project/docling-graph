@@ -30,6 +30,7 @@ class TestConstants:
     def test_extraction_contracts_contains_valid_values(self):
         assert "direct" in EXTRACTION_CONTRACTS
         assert "staged" in EXTRACTION_CONTRACTS
+        assert "delta" in EXTRACTION_CONTRACTS
 
     def test_backend_types_contains_valid_values(self):
         assert "llm" in BACKENDS

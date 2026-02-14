@@ -125,6 +125,59 @@ class TestConfigurationBuilder:
         assert result["backend"] == "vlm"
         assert result["inference"] == "local"
 
+    @patch("typer.confirm")
+    @patch("typer.prompt")
+    def test_build_defaults_delta_prompts_resolvers_and_quality(self, mock_prompt, mock_confirm):
+        """Delta contract should capture resolver and quality tuning defaults."""
+        mock_prompt.side_effect = [
+            "many-to-one",  # processing_mode
+            "delta",  # extraction_contract
+            "fuzzy",  # resolver mode
+            6,  # delta_quality_max_parent_lookup_miss
+            "llm",  # backend
+            "remote",  # inference
+        ]
+        mock_confirm.side_effect = [
+            True,  # delta_resolvers_enabled
+            True,  # customize_quality
+            False,  # delta_quality_adaptive_parent_lookup
+            True,  # delta_quality_require_relationships
+            True,  # delta_quality_require_structural_attachments
+        ]
+
+        builder = ConfigurationBuilder()
+        result = builder._build_defaults()
+
+        assert result["extraction_contract"] == "delta"
+        assert result["delta_resolvers_enabled"] is True
+        assert result["delta_resolvers_mode"] == "fuzzy"
+        assert result["delta_quality_max_parent_lookup_miss"] == 6
+        assert result["delta_quality_adaptive_parent_lookup"] is False
+        assert result["delta_quality_require_relationships"] is True
+        assert result["delta_quality_require_structural_attachments"] is True
+
+    @patch("typer.confirm")
+    @patch("typer.prompt")
+    def test_build_defaults_delta_skips_quality_customization(self, mock_prompt, mock_confirm):
+        """Delta contract should keep quality defaults when customization is skipped."""
+        mock_prompt.side_effect = [
+            "many-to-one",  # processing_mode
+            "delta",  # extraction_contract
+            "llm",  # backend
+            "local",  # inference
+        ]
+        mock_confirm.side_effect = [
+            False,  # delta_resolvers_enabled
+            False,  # customize_quality
+        ]
+
+        builder = ConfigurationBuilder()
+        result = builder._build_defaults()
+
+        assert result["delta_resolvers_enabled"] is False
+        assert result["delta_resolvers_mode"] == "off"
+        assert "delta_quality_max_parent_lookup_miss" not in result
+
     @patch("typer.prompt")
     def test_build_export_format_returns_value(self, mock_prompt):
         """Should return selected export format."""

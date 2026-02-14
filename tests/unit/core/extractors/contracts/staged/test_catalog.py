@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from docling_graph.core.extractors.contracts.staged.catalog import (
     NodeCatalog,
@@ -141,6 +141,24 @@ def test_discovery_prompt_explicitly_handles_no_id_paths():
     prompt = get_discovery_prompt("Document text.", catalog)
     assert "ids must be {}" in prompt["system"]
     assert "Every NON-ROOT node must have parent" in prompt["system"]
+
+
+def test_catalog_collects_field_aliases() -> None:
+    class Person(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["name"])
+        name: str
+
+    class AliasRoot(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["document_number"])
+        document_number: str
+        line_items: list[Person] = Field(
+            default_factory=list,
+            validation_alias=AliasChoices("lineItems", "line_items"),
+        )
+
+    catalog = build_node_catalog(AliasRoot)
+    assert "lineItems" in catalog.field_aliases
+    assert catalog.field_aliases["lineItems"] == "line_items"
 
 
 def test_validate_id_pass_skeleton_response_success():

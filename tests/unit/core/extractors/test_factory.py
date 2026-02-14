@@ -92,6 +92,54 @@ def test_staged_contract_falls_back_to_direct_for_one_to_one(mock_strategy, mock
     mock_strategy.assert_called_once()
 
 
+@patch("docling_graph.core.extractors.factory.LlmBackend")
+@patch("docling_graph.core.extractors.factory.ManyToOneStrategy")
+def test_delta_contract_passed_for_many_to_one(mock_strategy, mock_backend):
+    """Delta contract is passed through for many-to-one (chunk-based graph extraction)."""
+    mock_llm_client = MagicMock()
+
+    ExtractorFactory.create_extractor(
+        processing_mode="many-to-one",
+        backend_name="llm",
+        extraction_contract="delta",
+        llm_client=mock_llm_client,
+        docling_config="ocr",
+    )
+
+    mock_backend.assert_called_once_with(
+        llm_client=mock_llm_client,
+        extraction_contract="delta",
+        staged_config=None,
+        structured_output=True,
+        structured_sparse_check=True,
+    )
+    mock_strategy.assert_called_once()
+
+
+@patch("docling_graph.core.extractors.factory.LlmBackend")
+@patch("docling_graph.core.extractors.factory.OneToOneStrategy")
+def test_delta_contract_falls_back_to_direct_for_one_to_one(mock_strategy, mock_backend):
+    """Delta contract applies only to many-to-one; one-to-one falls back to direct."""
+    mock_llm_client = MagicMock()
+
+    ExtractorFactory.create_extractor(
+        processing_mode="one-to-one",
+        backend_name="llm",
+        extraction_contract="delta",
+        llm_client=mock_llm_client,
+        docling_config="ocr",
+    )
+
+    mock_backend.assert_called_once_with(
+        llm_client=mock_llm_client,
+        extraction_contract="direct",
+        staged_config=None,
+        structured_output=True,
+        structured_sparse_check=True,
+    )
+    mock_strategy.assert_called_once()
+
+
 def test_create_vlm_without_model_name():
     """Test that VLM without model_name raises error."""
     with pytest.raises(ValueError, match="VLM requires model_name"):

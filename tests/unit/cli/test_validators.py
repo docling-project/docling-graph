@@ -177,6 +177,10 @@ class TestValidateExtractionContract:
         result = validate_extraction_contract("staged")
         assert result == "staged"
 
+    def test_validate_extraction_contract_delta(self):
+        result = validate_extraction_contract("delta")
+        assert result == "delta"
+
     def test_validate_extraction_contract_case_insensitive(self):
         result = validate_extraction_contract("STAGED")
         assert result == "staged"

@@ -62,6 +62,7 @@ def test_chunk_document(mock_hybrid_chunker_class, mock_hf_tokenizer_class, mock
     mock_auto_tokenizer.from_pretrained.return_value = mock_tokenizer_instance
 
     mock_wrapper = MagicMock()
+    mock_wrapper.count_tokens.return_value = 100  # under limit so no re-split
     mock_hf_tokenizer_class.return_value = mock_wrapper
 
     # Mock the chunker instance
@@ -94,6 +95,7 @@ def test_chunk_document_with_stats(
     mock_auto_tokenizer.from_pretrained.return_value = mock_tokenizer_instance
 
     mock_wrapper = MagicMock()
+    # count_tokens called once per chunk in the under-limit path
     mock_wrapper.count_tokens.side_effect = [150, 250]
     mock_hf_tokenizer_class.return_value = mock_wrapper
 
@@ -141,3 +143,29 @@ def test_get_config_summary(
     assert summary["tokenizer_name"] == "test-model"
     assert summary["chunk_max_tokens"] == 1234
     assert summary["merge_peers"] is True
+
+
+@patch("docling_graph.core.extractors.document_chunker.AutoTokenizer")
+@patch("docling_graph.core.extractors.document_chunker.HuggingFaceTokenizer")
+@patch("docling_graph.core.extractors.document_chunker.HybridChunker")
+def test_chunk_text_fallback_hard_splits_long_segment(
+    mock_hybrid_chunker_class, mock_hf_tokenizer_class, mock_auto_tokenizer
+):
+    """Fallback splitter must hard-split long segments even without sentence boundaries."""
+    mock_tokenizer_instance = MagicMock()
+    mock_tokenizer_instance.model_max_length = 512
+    mock_auto_tokenizer.from_pretrained.return_value = mock_tokenizer_instance
+
+    mock_wrapper = MagicMock()
+    mock_wrapper.count_tokens.side_effect = lambda text: len((text or "").split())
+    mock_hf_tokenizer_class.return_value = mock_wrapper
+
+    mock_hybrid_chunker_class.return_value = MagicMock()
+    chunker = DocumentChunker(chunk_max_tokens=3)
+
+    text = "alpha beta gamma delta epsilon zeta eta theta"
+    chunks = chunker.chunk_text_fallback(text)
+
+    assert len(chunks) >= 3
+    assert all(mock_wrapper.count_tokens(chunk) <= 3 for chunk in chunks)
+    assert " ".join(chunks).replace("  ", " ").strip() == text

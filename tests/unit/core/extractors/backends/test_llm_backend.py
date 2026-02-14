@@ -266,23 +266,39 @@ class TestExtractFromMarkdown:
         assert mock_llm_client.get_json_response.call_count == 1
         assert backend.last_call_diagnostics["fallback_used"] is False
 
-    @patch("docling_graph.core.extractors.backends.llm_backend.CatalogOrchestrator")
-    def test_staged_contract_uses_catalog_flow(self, mock_orchestrator_cls, mock_llm_client):
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator")
+    def test_staged_contract_uses_catalog_flow(self, mock_run_staged, mock_llm_client):
         """Staged contract uses CatalogOrchestrator (3-pass node catalog)."""
         backend = LlmBackend(
             llm_client=mock_llm_client,
             extraction_contract="staged",
             staged_config={"catalog_max_nodes_per_call": 5},
         )
-        orchestrator = mock_orchestrator_cls.return_value
-        orchestrator.extract.return_value = {"name": "Alice", "age": 21}
+        mock_run_staged.return_value = {"name": "Alice", "age": 21}
 
         result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
 
         assert result is not None
         assert result.name == "Alice"
         assert result.age == 21
-        orchestrator.extract.assert_called_once()
+        mock_run_staged.assert_called_once()
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_delta_orchestrator")
+    def test_delta_contract_uses_delta_orchestrator(self, mock_run_delta, mock_llm_client):
+        """Delta contract routes extraction through DeltaOrchestrator."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="delta",
+            staged_config={"llm_batch_token_size": 4096},
+        )
+        mock_run_delta.return_value = {"name": "Alice", "age": 21}
+
+        result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
+
+        assert result is not None
+        assert result.name == "Alice"
+        assert result.age == 21
+        mock_run_delta.assert_called_once()
 
     @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
     def test_staged_contract_partial_extraction_falls_back_to_direct(
@@ -377,9 +393,9 @@ class TestFillMissingRequiredFieldsStableSyntheticIds:
         llm_backend._fill_missing_required_fields(data1, errors1)
         id0_a = data1["studies"][0]["study_id"]
         id1_a = data1["studies"][1]["study_id"]
-        # Same content => same fingerprint => same synthetic ID
+        # Same content => same fingerprint => same synthetic ID (prefix shortened generically from field name)
         assert id0_a == id1_a
-        assert id0_a.startswith("STUDY-")
+        assert id0_a.startswith("STUD-")
 
     def test_fill_missing_study_id_different_content_different_id(self, llm_backend):
         """Filling missing study_id for entities with different content yields different IDs."""
@@ -395,8 +411,56 @@ class TestFillMissingRequiredFieldsStableSyntheticIds:
         ]
         llm_backend._fill_missing_required_fields(data, errors)
         assert data["studies"][0]["study_id"] != data["studies"][1]["study_id"]
-        assert data["studies"][0]["study_id"].startswith("STUDY-")
-        assert data["studies"][1]["study_id"].startswith("STUDY-")
+        assert data["studies"][0]["study_id"].startswith("STUD-")
+        assert data["studies"][1]["study_id"].startswith("STUD-")
+
+
+class TestCoerceStringTypeErrors:
+    """Test that int/float/bool in string fields are coerced so validation can pass."""
+
+    def test_validate_extraction_coerces_study_id_int_to_string(self, llm_backend):
+        """When delta projects study_id as int (e.g. 3), coercion pass converts to '3' and validation passes."""
+        from pydantic import BaseModel, Field
+
+        class Study(BaseModel):
+            study_id: str = Field(description="ID")
+            objective: str | None = None
+
+        class Root(BaseModel):
+            studies: list[Study] = Field(default_factory=list)
+
+        data = {"studies": [{"study_id": 3, "objective": "Analyze flow curves"}]}
+        result = llm_backend._validate_extraction(data, Root, context="test")
+        assert result is not None
+        assert len(result.studies) == 1
+        assert result.studies[0].study_id == "3"
+        assert result.studies[0].objective == "Analyze flow curves"
+
+
+class TestCoerceListTypeErrors:
+    """Test that scalar in list field is coerced to single-element list so validation can pass."""
+
+    def test_validate_extraction_coerces_statut_occupation_string_to_list(self, llm_backend):
+        """When delta projects statut_occupation as string (e.g. list[str] field), coercion wraps in list."""
+        from pydantic import BaseModel, Field
+
+        class Offre(BaseModel):
+            nom: str = Field(description="Name")
+            statut_occupation: list[str] = Field(default_factory=list, description="Status")
+
+        class Root(BaseModel):
+            offres: list[Offre] = Field(default_factory=list)
+
+        data = {
+            "offres": [
+                {"nom": "PNO", "statut_occupation": "Propriétaire Non Occupant"},
+            ]
+        }
+        result = llm_backend._validate_extraction(data, Root, context="test")
+        assert result is not None
+        assert len(result.offres) == 1
+        assert result.offres[0].nom == "PNO"
+        assert result.offres[0].statut_occupation == ["Propriétaire Non Occupant"]
 
 
 class TestRheologyQuantityWithUnitRelaxedInput:

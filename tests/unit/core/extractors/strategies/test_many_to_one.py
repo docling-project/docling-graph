@@ -108,6 +108,48 @@ class TestInitialization:
 
         assert strategy.doc_processor is not None
 
+    def test_delta_initializes_chunker_with_default_tokens(self, mock_llm_backend, patch_deps):
+        """Delta mode should always pass non-empty chunker_config."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        ManyToOneStrategy(
+            backend=mock_llm_backend,
+            extraction_contract="delta",
+            use_chunking=True,
+            chunk_max_tokens=None,
+        )
+
+        kwargs = mock_dp.call_args.kwargs
+        assert kwargs["chunker_config"] == {"chunk_max_tokens": 512}
+
+    def test_delta_initializes_chunker_with_custom_tokens(self, mock_llm_backend, patch_deps):
+        """Delta mode should propagate configured chunk_max_tokens."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        ManyToOneStrategy(
+            backend=mock_llm_backend,
+            extraction_contract="delta",
+            use_chunking=True,
+            chunk_max_tokens=1024,
+        )
+
+        kwargs = mock_dp.call_args.kwargs
+        assert kwargs["chunker_config"] == {"chunk_max_tokens": 1024}
+
+    def test_delta_requires_chunking_enabled(self, mock_llm_backend, patch_deps):
+        """Delta mode should reject disabled chunking."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        with pytest.raises(ValueError, match="requires use_chunking=True"):
+            ManyToOneStrategy(
+                backend=mock_llm_backend,
+                extraction_contract="delta",
+                use_chunking=False,
+            )
+
 
 class TestVLMExtraction:
     """Test VLM backend extraction."""
@@ -180,3 +222,59 @@ class TestDirectExtraction:
         results, _ = strategy.extract("test.pdf", MockTemplate)
 
         assert len(results) == 0
+
+    def test_delta_falls_back_to_direct_when_no_model(self, mock_llm_backend, patch_deps):
+        """Delta mode should retry once with direct extraction when delta returns no model."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_doc_processor = mock_dp.return_value
+        mock_doc_processor.extract_full_markdown.return_value = "invoice markdown"
+        mock_doc_processor.extract_chunks_with_metadata.return_value = (
+            ["chunk1"],
+            [{"chunk_id": 0, "token_count": 15, "page_numbers": [1]}],
+        )
+
+        mock_llm_backend.extraction_contract = "delta"
+        mock_llm_backend.extract_from_chunk_batches = Mock(return_value=None)
+        mock_llm_backend.extract_from_markdown = Mock(
+            return_value=MockTemplate(name="fallback", value=123)
+        )
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="delta")
+        results, _ = strategy.extract("test.pdf", MockTemplate)
+
+        assert len(results) == 1
+        assert results[0].name == "fallback"
+        mock_llm_backend.extract_from_chunk_batches.assert_called_once()
+        mock_llm_backend.extract_from_markdown.assert_called_once()
+
+    def test_delta_fallback_emits_trace_event(self, mock_llm_backend, patch_deps):
+        """Delta fallback should emit explicit trace diagnostics."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_doc_processor = mock_dp.return_value
+        mock_doc_processor.extract_full_markdown.return_value = "invoice markdown"
+        mock_doc_processor.extract_chunks_with_metadata.return_value = (
+            ["chunk1"],
+            [{"chunk_id": 0, "token_count": 15, "page_numbers": [1]}],
+        )
+
+        mock_llm_backend.extraction_contract = "delta"
+        mock_llm_backend.extract_from_chunk_batches = Mock(return_value=None)
+        mock_llm_backend.extract_from_markdown = Mock(
+            return_value=MockTemplate(name="fallback", value=123)
+        )
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="delta")
+        strategy.trace_data = MagicMock()
+        strategy.trace_data.latest_payload.return_value = {
+            "quality_gate": {"ok": False, "reasons": ["missing_root_instance"]},
+            "merge_stats": {"parent_lookup_miss": 2},
+            "normalizer_stats": {"unknown_path_dropped": 1},
+        }
+
+        results, _ = strategy.extract("test.pdf", MockTemplate)
+
+        assert len(results) == 1
+        emit_calls = strategy.trace_data.emit.call_args_list
+        assert any(call.args[0] == "delta_failed_then_direct_fallback" for call in emit_calls)
