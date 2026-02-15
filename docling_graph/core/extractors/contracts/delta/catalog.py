@@ -149,6 +149,20 @@ def _identity_example_values_from_field(field_info: Any, id_fields: list[str]) -
     return list(dict.fromkeys(collected))[:12]
 
 
+def _identity_example_values_from_model(model: type[BaseModel]) -> list[str]:
+    """Collect identity example values from the target model's graph_id_fields (scalar examples)."""
+    id_fields = _get_id_fields(model)
+    if not id_fields:
+        return []
+    collected: list[str] = []
+    for field_name in id_fields:
+        field_info = model.model_fields.get(field_name)
+        if field_info is None:
+            continue
+        collected.extend(_collect_scalar_examples(field_info))
+    return list(dict.fromkeys(collected))[:12]
+
+
 def _identity_examples_from_field(field_info: Any, id_fields: list[str]) -> str:
     """Extract identity-field values from Field examples when they are list-of-dict (any list-entity field)."""
     unique = _identity_example_values_from_field(field_info, id_fields)[:6]
@@ -257,6 +271,9 @@ def build_delta_node_catalog(template: type[BaseModel]) -> DeltaNodeCatalog:
                     if id_fields_for_hint
                     else []
                 )
+                if is_entity_child and id_fields_for_hint:
+                    child_vals = _identity_example_values_from_model(target_model)
+                    identity_vals = list(dict.fromkeys([*identity_vals, *child_vals]))[:12]
                 if origin is list:
                     list_path = f"{path}[]"
                     add_node(

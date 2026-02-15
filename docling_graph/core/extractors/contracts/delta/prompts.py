@@ -50,7 +50,11 @@ def get_delta_batch_prompt(
         "14. For list-entity paths that have identity examples in the catalog (e.g. paths ending with []): "
         "emit nodes ONLY when this batch clearly contains the corresponding document structure (e.g. guarantee table, "
         "formula names). If this batch contains only a sommaire, section headings, or article titles, emit ZERO nodes "
-        "for that path."
+        "for that path.\n"
+        "15. For each list path, put only the fields that belong to that path's schema; use the child path for nested "
+        "entities (e.g. use path studies[] only for study fields like study_id and objective; use path "
+        "studies[].experiments[] for individual experiments with experiment_id and description). Do not put child-entity "
+        "fields or nested content on the parent path."
     )
 
     user_prompt = (

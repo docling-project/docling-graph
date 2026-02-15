@@ -28,6 +28,7 @@ defaults:
   delta_resolver_semantic_threshold: 0.8
   delta_resolver_properties: null
   delta_resolver_paths: null
+  delta_resolver_allow_merge_different_ids: false  # if true, allow merging nodes with different ids when content is similar
   quality_max_unknown_path_drops: -1  # -1 disables this gate
   quality_max_id_mismatch: -1         # -1 disables this gate
   quality_max_nested_property_drops: -1  # -1 disables this gate

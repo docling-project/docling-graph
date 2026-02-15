@@ -211,6 +211,10 @@ class PipelineConfig(BaseModel):
     delta_resolver_paths: list[str] | None = Field(
         default=None, description="Optional path allowlist for resolver matching."
     )
+    delta_resolver_allow_merge_different_ids: bool = Field(
+        default=False,
+        description="If True, allow resolver to merge nodes with different non-empty ids (content similarity decides). If False, do not merge when both have distinct identity strings.",
+    )
     quality_max_unknown_path_drops: int = Field(
         default=-1,
         description="Maximum allowed unknown-path drops before delta quality gate fails (-1 disables).",
@@ -396,6 +400,7 @@ class PipelineConfig(BaseModel):
             "delta_resolver_semantic_threshold": self.delta_resolver_semantic_threshold,
             "delta_resolver_properties": self.delta_resolver_properties,
             "delta_resolver_paths": self.delta_resolver_paths,
+            "delta_resolver_allow_merge_different_ids": self.delta_resolver_allow_merge_different_ids,
             "quality_max_unknown_path_drops": self.quality_max_unknown_path_drops,
             "quality_max_id_mismatch": self.quality_max_id_mismatch,
             "quality_max_nested_property_drops": self.quality_max_nested_property_drops,
@@ -473,6 +478,7 @@ class PipelineConfig(BaseModel):
                 "delta_resolver_semantic_threshold": default_config.delta_resolver_semantic_threshold,
                 "delta_resolver_properties": default_config.delta_resolver_properties,
                 "delta_resolver_paths": default_config.delta_resolver_paths,
+                "delta_resolver_allow_merge_different_ids": default_config.delta_resolver_allow_merge_different_ids,
                 "quality_max_unknown_path_drops": default_config.quality_max_unknown_path_drops,
                 "quality_max_id_mismatch": default_config.quality_max_id_mismatch,
                 "quality_max_nested_property_drops": default_config.quality_max_nested_property_drops,

@@ -111,7 +111,7 @@ Select fields that:
 2. **Are stable** (don't change frequently)
 3. **Are likely to be present** in extracted data
 
-**Staged extraction:** When using `extraction_contract="staged"`, only paths with non-empty `graph_id_fields` are sent to the ID pass by default. Entities without `graph_id_fields` are skipped in identity-only mode. The root model must have `graph_id_fields` so at least one root instance can be discovered (required by the quality gate). Prefer required, short, extractable ID fields and add schema examples for better ID-pass prompts. See [Schema design for staged extraction](staged-extraction-schema.md).
+**Staged and delta extraction:** When using `extraction_contract="staged"` or `"delta"`, the catalog collects **identity examples** from (1) the parent field's list-of-dict examples and (2) the child model's identity fields' scalar `examples`. Provide identity examples either on the parent field (e.g. `studies = Field(examples=[{"study_id": "3.1", ...}])`) or on the entity's ID fields (e.g. `study_id = Field(examples=["3.1", "STUDY-BINDER-MW"])`) so the LLM sees valid-ID formats. Prefer required, short, document-derived ID fields. See [Schema design for staged extraction](staged-extraction-schema.md).
 
 #### Examples
 

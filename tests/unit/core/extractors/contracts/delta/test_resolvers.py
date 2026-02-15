@@ -35,7 +35,8 @@ def test_fuzzy_resolver_merges_similar_nodes() -> None:
     assert stats["merged_count"] == 1
 
 
-def test_resolver_does_not_merge_conflicting_ids() -> None:
+def test_resolver_does_not_merge_different_ids_by_default() -> None:
+    """Resolver does not merge when both nodes have non-empty distinct ids (default strict behavior)."""
     policy = {
         "entity[]": DedupPolicy(
             path="entity[]",
@@ -48,10 +49,14 @@ def test_resolver_does_not_merge_conflicting_ids() -> None:
     }
     graph = {
         "nodes": [
-            {"path": "entity[]", "ids": {"name": "Neo4j"}, "properties": {"name": "Neo4j"}},
             {
                 "path": "entity[]",
-                "ids": {"name": "TigerGraph"},
+                "ids": {"name": "STUDY-BINDER-MW"},
+                "properties": {"name": "Neo4j"},
+            },
+            {
+                "path": "entity[]",
+                "ids": {"name": "3"},
                 "properties": {"name": "Neo4j"},
             },
         ],
@@ -61,6 +66,77 @@ def test_resolver_does_not_merge_conflicting_ids() -> None:
         graph,
         dedup_policy=policy,
         config=DeltaResolverConfig(enabled=True, mode="fuzzy", fuzzy_threshold=0.6),
+    )
+    assert len(out["nodes"]) == 2
+    assert stats["merged_count"] == 0
+
+
+def test_resolver_merges_same_content_different_ids_when_allowed() -> None:
+    """With allow_merge_different_ids=True, resolver merges same content even when ids differ; id_remap keeps primary's ids."""
+    policy = {
+        "entity[]": DedupPolicy(
+            path="entity[]",
+            node_type="Entity",
+            identity_fields=("name",),
+            fallback_text_fields=("name",),
+            allowed_match_fields=("name",),
+            is_entity=True,
+        )
+    }
+    graph = {
+        "nodes": [
+            {
+                "path": "entity[]",
+                "ids": {"name": "STUDY-BINDER-MW"},
+                "properties": {"name": "Neo4j"},
+            },
+            {
+                "path": "entity[]",
+                "ids": {"name": "3"},
+                "properties": {"name": "Neo4j"},
+            },
+        ],
+        "relationships": [],
+    }
+    out, stats = resolve_post_merge_graph(
+        graph,
+        dedup_policy=policy,
+        config=DeltaResolverConfig(
+            enabled=True, mode="fuzzy", fuzzy_threshold=0.6, allow_merge_different_ids=True
+        ),
+    )
+    assert len(out["nodes"]) == 1
+    assert stats["merged_count"] == 1
+    assert out["nodes"][0]["ids"]["name"] == "STUDY-BINDER-MW"
+
+
+def test_resolver_does_not_merge_different_content() -> None:
+    """Resolver does not merge when content similarity is below threshold."""
+    policy = {
+        "entity[]": DedupPolicy(
+            path="entity[]",
+            node_type="Entity",
+            identity_fields=("name",),
+            fallback_text_fields=("name",),
+            allowed_match_fields=("name",),
+            is_entity=True,
+        )
+    }
+    graph = {
+        "nodes": [
+            {"path": "entity[]", "ids": {"name": "A"}, "properties": {"name": "Neo4j"}},
+            {
+                "path": "entity[]",
+                "ids": {"name": "B"},
+                "properties": {"name": "TigerGraph"},
+            },
+        ],
+        "relationships": [],
+    }
+    out, stats = resolve_post_merge_graph(
+        graph,
+        dedup_policy=policy,
+        config=DeltaResolverConfig(enabled=True, mode="fuzzy", fuzzy_threshold=0.95),
     )
     assert len(out["nodes"]) == 2
     assert stats["merged_count"] == 0

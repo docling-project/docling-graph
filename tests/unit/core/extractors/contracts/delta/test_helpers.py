@@ -402,6 +402,30 @@ def test_catalog_populates_identity_example_values_for_list_entity() -> None:
     assert "CONFORT PLUS" in vals
 
 
+def test_catalog_populates_identity_example_values_from_child_model_scalar_examples() -> None:
+    """Catalog should set identity_example_values from child model's ID field scalar examples."""
+
+    class Study(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["study_id"])
+        study_id: str = Field(
+            ...,
+            examples=["3.1", "STUDY-BINDER-MW", "STUDY-SECTION-3.1"],
+        )
+        objective: str = ""
+
+    class Doc(BaseModel):
+        studies: list[Study] = Field(default_factory=list, description="Studies")
+
+    catalog = build_delta_node_catalog(Doc)
+    studies_spec = next((n for n in catalog.nodes if n.path == "studies[]"), None)
+    assert studies_spec is not None
+    vals = getattr(studies_spec, "identity_example_values", None)
+    assert vals is not None
+    assert "3.1" in vals
+    assert "STUDY-BINDER-MW" in vals
+    assert "STUDY-SECTION-3.1" in vals
+
+
 def test_filter_entity_nodes_by_identity_allows_allowlist_value() -> None:
     """Nodes whose identity is in the schema allowlist are kept."""
 

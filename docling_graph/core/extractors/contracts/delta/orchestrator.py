@@ -126,6 +126,9 @@ class DeltaOrchestratorConfig:
                 semantic_threshold=float(conf.get("delta_resolver_semantic_threshold", 0.8) or 0.8),
                 properties=list(conf.get("delta_resolver_properties", []) or []),
                 paths=list(conf.get("delta_resolver_paths", []) or []),
+                allow_merge_different_ids=bool(
+                    conf.get("delta_resolver_allow_merge_different_ids", False)
+                ),
             ),
         )
 

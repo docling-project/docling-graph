@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from .catalog import DeltaNodeCatalog
-from .helpers import DedupPolicy
+from .helpers import LOCAL_ID_FIELD_HINTS, DedupPolicy
 
 
 @dataclass
@@ -40,6 +40,9 @@ def _normalize_ids(
     for key in identity_fields:
         value = ids_raw.get(key)
         if value is None:
+            stats["id_missing_required"] += 1
+            continue
+        if isinstance(value, list | dict):
             stats["id_missing_required"] += 1
             continue
         txt = _canonicalize_text(value) if canonicalize else str(value)
@@ -466,10 +469,9 @@ def _infer_ids_from_index(
 ) -> tuple[dict[str, Any], bool]:
     """Infer missing identity field from indexed raw path when possible.
 
-    This primarily repairs parent linkage for patterns such as:
-    - child path: document.line_items.3.item
-    - canonical parent path: line_items[]
-    - inferred parent ids: {"line_number": "3"}
+    Only infers for positional identity fields (e.g. line_number, index, position,
+    item_number). Semantic IDs (e.g. study_id, experiment_id, nom) are not inferred
+    from path index so the LLM is encouraged to emit document-derived IDs.
     """
     ids = dict(ids_raw) if isinstance(ids_raw, dict) else {}
     if not identity_fields:
@@ -487,6 +489,8 @@ def _infer_ids_from_index(
 
     for field_name in identity_fields:
         if ids.get(field_name) in (None, ""):
+            if field_name not in LOCAL_ID_FIELD_HINTS:
+                return ids, False
             ids[field_name] = str(inferred_index)
             return ids, True
     return ids, False

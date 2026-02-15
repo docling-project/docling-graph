@@ -22,6 +22,9 @@ class DeltaResolverConfig:
     semantic_threshold: float = 0.8
     properties: list[str] | None = None
     paths: list[str] | None = None
+    allow_merge_different_ids: bool = (
+        False  # If False, do not merge when both have non-empty distinct ids
+    )
 
 
 def _is_empty(value: Any) -> bool:
@@ -104,8 +107,20 @@ def _merge_nodes(primary: dict[str, Any], duplicate: dict[str, Any]) -> None:
 
 
 def _can_merge_with_ids(
-    path: str, left: dict[str, Any], right: dict[str, Any], policy: DedupPolicy | None
+    path: str,
+    left: dict[str, Any],
+    right: dict[str, Any],
+    policy: DedupPolicy | None,
+    config: DeltaResolverConfig | None = None,
 ) -> bool:
+    """Decide whether resolver may consider merging this pair based on ids.
+
+    When allow_merge_different_ids is True, always allow (content similarity decides).
+    When False, do not merge when both nodes have non-empty, distinct identity strings,
+    to avoid collapsing e.g. different experiment_id nodes (Fig-4 vs Fig-5).
+    """
+    if config is not None and getattr(config, "allow_merge_different_ids", False):
+        return True
     left_ids = left.get("ids") if isinstance(left.get("ids"), dict) else {}
     right_ids = right.get("ids") if isinstance(right.get("ids"), dict) else {}
     if not left_ids or not right_ids:
@@ -257,7 +272,7 @@ def resolve_post_merge_graph(
                 continue
 
             policy = dedup_policy.get(path)
-            if not _can_merge_with_ids(path, left, right, policy):
+            if not _can_merge_with_ids(path, left, right, policy, config):
                 continue
             if not _parents_equivalent(left.get("parent"), right.get("parent")):
                 continue

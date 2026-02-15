@@ -52,6 +52,7 @@ Delta uses a **catalog** derived from your Pydantic template (same idea as stage
 - **Paths** — Root `""`, then nested paths like `line_items[]`, `line_items[].item`. The LLM must use only these catalog paths.
 - **Identity** — Entities with `graph_id_fields` get stable keys for dedup and parent linkage; list items often use a field like `line_number` or `index`.
 - **Flat properties** — Node and relationship properties must be flat (scalars or lists of scalars). Nested objects are stripped by the normalizer.
+- **Root required fields** — Required root-level fields (e.g. `reference_document`, `title`) should be documented in the template so the LLM can fill them; the catalog hints the root path to include required root-level fields when present in the document.
 
 For identity and linkage best practices, see [Schema design for staged extraction](../schema-definition/staged-extraction-schema.md) (same concepts apply to delta).
 

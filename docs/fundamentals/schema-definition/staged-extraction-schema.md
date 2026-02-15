@@ -9,6 +9,11 @@ This guide defines schema constraints for multi-pass extraction (staged and delt
 - Identity examples are mandatory for robust ID discovery prompts.
 - Avoid long free-text identifiers.
 
+**Identity examples** for list-entities can be provided in either (or both) of these ways; the catalog collects from both:
+- **Parent field**: list-of-dict examples on the field that contains the list (e.g. `studies = Field(examples=[{"study_id": "3.1", "objective": "..."}])`).
+- **Child model's identity fields**: scalar `examples` on the entity's `graph_id_fields` (e.g. `study_id = Field(examples=["3.1", "STUDY-BINDER-MW"])`). These are included in the catalog so the LLM sees concrete valid-ID examples.
+Prefer short, **document-derived** ID examples (section numbers, figure/table labels, named items). Do **not** use section or chapter titles as entity identities.
+
 ## Parent linkage requirements
 
 - Child paths must have resolvable parent paths.

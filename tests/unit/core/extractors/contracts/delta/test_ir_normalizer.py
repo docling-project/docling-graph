@@ -148,6 +148,51 @@ def test_normalizer_infers_parent_ids_from_indexed_child_path() -> None:
     assert stats["parent_id_inferred"] >= 1
 
 
+def test_normalizer_does_not_infer_semantic_id_from_indexed_path() -> None:
+    """Index-based ID inference applies only to positional fields (line_number, index, etc.), not study_id."""
+
+    class Study(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["study_id"])
+        study_id: str = Field(...)
+        objective: str = ""
+
+    class Doc(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["document_number"])
+        document_number: str = ""
+        studies: list[Study] = Field(default_factory=list)
+
+    catalog = build_delta_node_catalog(Doc)
+    policy = build_dedup_policy(catalog)
+    normalized, stats = normalize_delta_ir_batch_results(
+        batch_results=[
+            {
+                "nodes": [
+                    {
+                        "path": "document",
+                        "ids": {"document_number": "D1"},
+                        "properties": {"document_number": "D1"},
+                    },
+                    {
+                        "path": "document.studies.2",
+                        "ids": {},
+                        "parent": {"path": "document", "ids": {"document_number": "D1"}},
+                        "properties": {"objective": "Effect of binder MW"},
+                    },
+                ],
+                "relationships": [],
+            }
+        ],
+        batch_plan=[[(0, "chunk", 10)]],
+        chunk_metadata=None,
+        catalog=catalog,
+        dedup_policy=policy,
+        config=DeltaIrNormalizerConfig(),
+    )
+    studies_node = next(n for n in normalized[0]["nodes"] if n["path"] == "studies[]")
+    assert studies_node["ids"] == {}
+    assert stats.get("node_id_inferred", 0) == 0
+
+
 def test_normalizer_repairs_alias_path_segments() -> None:
     class AliasDoc(BaseModel):
         model_config = ConfigDict(graph_id_fields=["document_number"])

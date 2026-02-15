@@ -46,6 +46,7 @@ def build_delta_semantic_guide(template: type[BaseModel], schema_dict: dict[str,
 
 def build_catalog_prompt_block(catalog: DeltaNodeCatalog) -> str:
     """Format path-level extraction hints for delta prompts."""
+    catalog_paths = set(catalog.paths())
 
     lines: list[str] = []
     for spec in catalog.nodes:
@@ -69,8 +70,21 @@ def build_catalog_prompt_block(catalog: DeltaNodeCatalog) -> str:
             and "chapter" not in example_hint.lower()
         ):
             line += " Use only identity values from the document (e.g. from tables or named items); do not use section or chapter titles."
-        if getattr(spec, "identity_example_values", None):
+        identity_example_values = getattr(spec, "identity_example_values", None)
+        if identity_example_values:
+            id_label = ", ".join(spec.id_fields) if spec.id_fields else "id"
+            examples_str = ", ".join(str(v) for v in identity_example_values[:6])
+            line += f" Valid {id_label}: only values from the document (e.g. {examples_str}). Do not use section or chapter titles."
             line += " Emit only when this batch contains the table/structure that defines these identities; otherwise omit."
+        if spec.path.endswith("[]") and spec.kind == "entity":
+            has_child_list = any(
+                p != spec.path and p.startswith(spec.path + ".") and "[]" in p
+                for p in catalog_paths
+            )
+            if has_child_list:
+                line += " Put only this path's fields; use the child list path for nested entities."
+        if spec.path == "" and spec.kind == "entity":
+            line += " Include all required root-level fields from the schema (e.g. reference_document, title) when present in the document."
         lines.append(line)
     return "\n".join(lines)
 
@@ -126,6 +140,17 @@ def project_graph_to_template_root(
             for key, value in ids.items():
                 if key not in filled and value is not None:
                     filled[key] = value
+        if spec is not None and getattr(spec, "id_fields", None):
+            for key in spec.id_fields:
+                if key not in filled:
+                    continue
+                val = filled[key]
+                if isinstance(val, list | dict):
+                    filled[key] = ""
+                elif isinstance(val, int | float | bool):
+                    filled[key] = str(val)
+                elif not isinstance(val, str):
+                    filled[key] = str(val) if val is not None else ""
         path_filled.setdefault(path, []).append(filled)
 
     merge_stats: dict[str, int | list[Any]] = {}
