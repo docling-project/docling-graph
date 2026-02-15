@@ -23,6 +23,8 @@ Set `extraction_contract="delta"` in your config or use `--extraction-contract d
 
 Delta extraction runs these steps:
 
+--8<-- "docs/assets/flowcharts/delta_extraction.md"
+
 1. **Chunking** — Done outside delta (document processor or strategy). Produces chunks and optional chunk metadata (e.g. token counts, page numbers).
 
 2. **Batch planning** — Chunks are packed into token-bounded batches (`llm_batch_token_size`). Each batch is sent in one LLM call.
@@ -35,9 +37,11 @@ Delta extraction runs these steps:
 
 6. **Resolvers** (optional) — If `delta_resolvers_enabled` is true, a post-merge pass can merge near-duplicate nodes by fuzzy or semantic similarity (`delta_resolvers_mode`: `fuzzy`, `semantic`, or `chain`).
 
-7. **Projection** — The merged graph is projected back into a template-shaped root dict by attaching filled nodes to parents via (path, ids) and building lists/scalars per catalog.
+7. **Identity filter** (optional) — If `delta_identity_filter_enabled` is true, entity nodes whose identity looks like a section/chapter title are dropped. With `delta_identity_filter_strict` true, only identities in the schema allowlist are kept.
 
-8. **Quality gate** — Checks (e.g. root instance present, minimum instances, parent lookup misses) determine pass/fail. On fail, the pipeline can return `None` and emit a trace with reasons; optionally the strategy may fall back to direct extraction.
+8. **Projection** — The merged graph is projected into a template-shaped root dict: nodes are attached to parents via (path, ids). When a parent is missing (e.g. dropped by the identity filter), a **best-effort** attachment to the first available parent of the same path is attempted so more nodes stay in the tree.
+
+9. **Quality gate** — The gate uses **attached node count** (nodes that made it into the root tree), not raw graph size. If `attached_node_count` is below `delta_quality_min_instances` (default 20) or parent lookup misses exceed the allowed tolerance, the gate fails. On fail, delta returns `None` and the many-to-one strategy **falls back to direct extraction** (full-document, single LLM call), which usually yields a richer graph for sparse delta runs.
 
 ---
 
@@ -69,21 +73,24 @@ All options can be set in Python via `PipelineConfig` or a config dict passed to
 
 ### Quality gate
 
-These control whether the merged result passes the quality gate. If the gate fails, delta can return `None` (and the strategy may fall back to direct extraction).
+The gate uses **attached node count** (nodes successfully attached into the root tree during projection). If the gate fails, delta returns `None` and the strategy **falls back to direct extraction**.
 
 | Python (config dict) | Default | Description |
 |----------------------|---------|-------------|
 | `delta_quality_require_root` | `True` | Require at least one root instance (`path=""`). |
-| `delta_quality_min_instances` | `1` | Minimum total node count. |
+| `delta_quality_min_instances` | `20` | Minimum attached nodes; below this, gate fails and direct extraction is used. |
 | `delta_quality_max_parent_lookup_miss` | `4` | Max allowed parent lookup misses before fail. |
-| `delta_quality_adaptive_parent_lookup` | `True` | When root exists, allow a higher effective miss tolerance. |
+| `delta_quality_adaptive_parent_lookup` | `True` | When root exists, allow higher effective miss tolerance (e.g. ~25% of instances, cap 150). |
 | `delta_quality_require_relationships` | `False` | Require at least one relationship in the graph. |
-| `delta_quality_require_structural_attachments` | `False` | Require list/scalar attachments to parents. |
-| `quality_max_unknown_path_drops` | `-1` | Max unknown-path drops before fail; `-1` disables. |
-| `quality_max_id_mismatch` | `-1` | Max ID key mismatches before fail; `-1` disables. |
-| `quality_max_nested_property_drops` | `-1` | Max nested property drops before fail; `-1` disables. |
 
-Quality gate options are not exposed as CLI flags; set them in a config file (e.g. `config_template.yaml` or your `defaults`) or in a config dict in Python.
+### Identity filter
+
+| Python (config dict) | Default | Description |
+|----------------------|---------|-------------|
+| `delta_identity_filter_enabled` | `True` | Drop entity nodes whose identity looks like a section/chapter title. |
+| `delta_identity_filter_strict` | `False` | If true, drop any entity whose identity is not in the schema allowlist (for paths with `identity_example_values`). If false, only section-title heuristic is applied. |
+
+Other gate options (e.g. `delta_quality_require_structural_attachments`, `quality_max_unknown_path_drops`, `quality_max_id_mismatch`, `quality_max_nested_property_drops`) are documented in the config reference. Quality gate and identity filter options are not CLI flags; set them in a config file or config dict.
 
 ### IR normalizer
 

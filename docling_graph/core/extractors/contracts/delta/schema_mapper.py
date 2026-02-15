@@ -62,6 +62,15 @@ def build_catalog_prompt_block(catalog: DeltaNodeCatalog) -> str:
             line += f" :: {desc}"
         if example_hint:
             line += f"{example_hint}"
+        if (
+            spec.kind == "entity"
+            and spec.id_fields
+            and "section" not in example_hint.lower()
+            and "chapter" not in example_hint.lower()
+        ):
+            line += " Use only identity values from the document (e.g. from tables or named items); do not use section or chapter titles."
+        if getattr(spec, "identity_example_values", None):
+            line += " Emit only when this batch contains the table/structure that defines these identities; otherwise omit."
         lines.append(line)
     return "\n".join(lines)
 
@@ -98,8 +107,22 @@ def project_graph_to_template_root(
         properties: dict[str, Any] = raw_properties if isinstance(raw_properties, dict) else {}
         filled = dict(properties)
         spec = spec_by_path.get(path)
-        # Keep entity identity visible in projected payload even when model emitted ids only.
+        # Prefer ids over properties for identity fields so correct ids (e.g. offer name)
+        # are not overwritten by wrong properties (e.g. guarantee block in nom).
         if spec is not None and spec.kind == "entity" and ids:
+            id_fields = getattr(spec, "id_fields", None) or ()
+            for key in id_fields:
+                if key not in ids:
+                    continue
+                value = ids[key]
+                if value is None:
+                    continue
+                if isinstance(value, str) and value.strip():
+                    filled[key] = value.strip()
+                elif isinstance(value, int | float | bool):
+                    filled[key] = value
+                else:
+                    filled[key] = value
             for key, value in ids.items():
                 if key not in filled and value is not None:
                     filled[key] = value

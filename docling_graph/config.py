@@ -159,7 +159,7 @@ class PipelineConfig(BaseModel):
         description="Max tokens per chunk when chunking is used (default: 512).",
     )
     llm_batch_token_size: int = Field(
-        default=2048,
+        default=1024,
         description="Max total input tokens per LLM batch in delta extraction.",
     )
     debug: bool = Field(
@@ -199,10 +199,10 @@ class PipelineConfig(BaseModel):
         default="semantic", description="Resolver mode for delta post-merge dedup."
     )
     delta_resolver_fuzzy_threshold: float = Field(
-        default=0.9, description="Similarity threshold for fuzzy post-merge dedup."
+        default=0.8, description="Similarity threshold for fuzzy post-merge dedup."
     )
     delta_resolver_semantic_threshold: float = Field(
-        default=0.9, description="Similarity threshold for semantic post-merge dedup."
+        default=0.8, description="Similarity threshold for semantic post-merge dedup."
     )
     delta_resolver_properties: list[str] | None = Field(
         default=None,
@@ -227,7 +227,8 @@ class PipelineConfig(BaseModel):
         default=True, description="Require root instance in delta quality gate."
     )
     delta_quality_min_instances: int = Field(
-        default=1, description="Minimum graph instances required by delta quality gate."
+        default=20,
+        description="Minimum attached nodes required by delta quality gate; below this, fall back to direct extraction.",
     )
     delta_quality_max_parent_lookup_miss: int = Field(
         default=4,
@@ -273,6 +274,14 @@ class PipelineConfig(BaseModel):
     delta_batch_split_max_retries: int = Field(
         default=1,
         description="Maximum split-retry rounds for failed delta batches.",
+    )
+    delta_identity_filter_enabled: bool = Field(
+        default=True,
+        description="Drop entity nodes whose identity value is not in schema allowlist or looks like a section title.",
+    )
+    delta_identity_filter_strict: bool = Field(
+        default=False,
+        description="If True, drop any entity node whose identity is not in allowlist; if False, also drop when section-title heuristic matches.",
     )
     staged_nodes_fill_cap: int | None = Field(
         default=None, description="Max nodes per LLM call in fill pass (None = use preset)."
@@ -400,6 +409,8 @@ class PipelineConfig(BaseModel):
             "delta_quality_max_orphan_ratio": self.delta_quality_max_orphan_ratio,
             "delta_quality_max_canonical_duplicates": self.delta_quality_max_canonical_duplicates,
             "delta_batch_split_max_retries": self.delta_batch_split_max_retries,
+            "delta_identity_filter_enabled": self.delta_identity_filter_enabled,
+            "delta_identity_filter_strict": self.delta_identity_filter_strict,
             "staged_nodes_fill_cap": effective_nodes_fill_cap,
             "staged_id_shard_size": effective_id_shard_size,
             "staged_id_identity_only": self.staged_id_identity_only,
@@ -475,6 +486,8 @@ class PipelineConfig(BaseModel):
                 "delta_quality_max_orphan_ratio": default_config.delta_quality_max_orphan_ratio,
                 "delta_quality_max_canonical_duplicates": default_config.delta_quality_max_canonical_duplicates,
                 "delta_batch_split_max_retries": default_config.delta_batch_split_max_retries,
+                "delta_identity_filter_enabled": default_config.delta_identity_filter_enabled,
+                "delta_identity_filter_strict": default_config.delta_identity_filter_strict,
                 "staged_nodes_fill_cap": default_config.staged_nodes_fill_cap,
                 "staged_id_shard_size": default_config.staged_id_shard_size,
                 "staged_id_identity_only": default_config.staged_id_identity_only,

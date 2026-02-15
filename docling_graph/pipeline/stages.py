@@ -402,7 +402,7 @@ class ExtractionStage(PipelineStage):
             "quality_max_parent_lookup_miss": conf.get("staged_quality_max_parent_lookup_miss", 0),
             "id_max_tokens": conf.get("staged_id_max_tokens"),
             "fill_max_tokens": conf.get("staged_fill_max_tokens"),
-            "llm_batch_token_size": conf.get("llm_batch_token_size", 2048),
+            "llm_batch_token_size": conf.get("llm_batch_token_size", 1024),
             "delta_normalizer_validate_paths": conf.get("delta_normalizer_validate_paths", True),
             "delta_normalizer_canonicalize_ids": conf.get(
                 "delta_normalizer_canonicalize_ids", True
@@ -415,19 +415,14 @@ class ExtractionStage(PipelineStage):
             ),
             "delta_resolvers_enabled": conf.get("delta_resolvers_enabled", True),
             "delta_resolvers_mode": conf.get("delta_resolvers_mode", "semantic"),
-            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.9),
-            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.9),
+            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.8),
+            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.8),
             "delta_resolver_properties": conf.get("delta_resolver_properties"),
             "delta_resolver_paths": conf.get("delta_resolver_paths"),
-            "delta_quality_require_root": conf.get(
-                "delta_quality_require_root", conf.get("staged_quality_require_root", True)
-            ),
-            "delta_quality_min_instances": conf.get(
-                "delta_quality_min_instances", conf.get("staged_quality_min_instances", 1)
-            ),
+            "delta_quality_require_root": conf.get("delta_quality_require_root", True),
+            "delta_quality_min_instances": conf.get("delta_quality_min_instances", 20),
             "delta_quality_max_parent_lookup_miss": conf.get(
-                "delta_quality_max_parent_lookup_miss",
-                conf.get("staged_quality_max_parent_lookup_miss", 0),
+                "delta_quality_max_parent_lookup_miss", 4
             ),
             "delta_quality_adaptive_parent_lookup": conf.get(
                 "delta_quality_adaptive_parent_lookup", True
@@ -633,7 +628,7 @@ class ExtractionStage(PipelineStage):
             "quality_max_parent_lookup_miss": conf.get("staged_quality_max_parent_lookup_miss", 0),
             "id_max_tokens": conf.get("staged_id_max_tokens"),
             "fill_max_tokens": conf.get("staged_fill_max_tokens"),
-            "llm_batch_token_size": conf.get("llm_batch_token_size", 2048),
+            "llm_batch_token_size": conf.get("llm_batch_token_size", 1024),
             "delta_normalizer_validate_paths": conf.get("delta_normalizer_validate_paths", True),
             "delta_normalizer_canonicalize_ids": conf.get(
                 "delta_normalizer_canonicalize_ids", True
@@ -646,8 +641,8 @@ class ExtractionStage(PipelineStage):
             ),
             "delta_resolvers_enabled": conf.get("delta_resolvers_enabled", True),
             "delta_resolvers_mode": conf.get("delta_resolvers_mode", "semantic"),
-            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.9),
-            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.9),
+            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.8),
+            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.8),
             "delta_resolver_properties": conf.get("delta_resolver_properties"),
             "delta_resolver_paths": conf.get("delta_resolver_paths"),
             "delta_quality_require_root": conf.get("delta_quality_require_root", True),

@@ -348,10 +348,75 @@ class LlmBackend:
             changed = True
         return changed
 
+    # Keys that indicate a dict is a guarantee/condition block (structural content),
+    # not a simple label. Do not use such dicts' nom/name for string coercion
+    # (avoids "Vol" as offer name). Excludes "description" so simple description+nom
+    # still coerces; "conditions"/"texte" etc. mark full blocks.
+    _COMPLEX_DICT_HINTS: frozenset[str] = frozenset(
+        ("conditions", "texte", "exclusions_specifiques", "biens_couverts")
+    )
+
+    @staticmethod
+    def _looks_like_complex_block(d: dict) -> bool:
+        """True if dict looks like a guarantee/condition block, not a simple label."""
+        if not isinstance(d, dict) or len(d) <= 1:
+            return False
+        hints = LlmBackend._COMPLEX_DICT_HINTS
+        return bool(hints & set(d))
+
+    @classmethod
+    def _extract_string_from_list_or_dict(cls, value: Any) -> str | None:
+        """
+        Extract a single string from a list or dict when schema expected string.
+        Domain-agnostic: uses common identity-like keys and first string element.
+        Skips dicts that look like guarantee/condition blocks (description, conditions, etc.)
+        so their inner nom is not used for a parent field (e.g. offer name).
+        """
+        if value is None:
+            return None
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        if isinstance(value, int | float | bool):
+            return str(value)
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, str) and item.strip():
+                    return item.strip()
+                if isinstance(item, dict):
+                    if cls._looks_like_complex_block(item):
+                        continue
+                    for key in ("nom", "name", "title", "id", "label"):
+                        if key in item and item[key] is not None:
+                            s = item[key]
+                            if isinstance(s, str) and s.strip():
+                                return s.strip()
+                            if isinstance(s, int | float | bool):
+                                return str(s)
+                    for v in item.values():
+                        if isinstance(v, str) and v.strip():
+                            return v.strip()
+            return None
+        if isinstance(value, dict):
+            if cls._looks_like_complex_block(value):
+                return None
+            for key in ("nom", "name", "title", "id", "label"):
+                if key in value and value[key] is not None:
+                    s = value[key]
+                    if isinstance(s, str) and s.strip():
+                        return s.strip()
+                    if isinstance(s, int | float | bool):
+                        return str(s)
+            for v in value.values():
+                if isinstance(v, str) and v.strip():
+                    return v.strip()
+            return None
+        return None
+
     def _coerce_string_type_errors(self, data: dict | list, errors: list) -> bool:
         """
-        Coerce scalar values to string when validation expected string but got int/float/bool.
+        Coerce values to string when validation expected string but got int/float/bool/list/dict.
         Returns True if any value was coerced (caller should retry validation).
+        Preserves list items by extracting a string from list/dict instead of pruning.
         """
         # Pydantic v2: "string_type" = expected string, got other; "int_type" etc. = wrong scalar type
         coercible_types = ("int_type", "float_type", "bool_type", "string_type")
@@ -368,10 +433,17 @@ class LlmBackend:
                 value = self._get_at_path(data, loc)
             except (KeyError, IndexError, TypeError):
                 continue
-            if not isinstance(value, int | float | bool):
+            if value is None:
+                continue
+            coerced: str | None = None
+            if isinstance(value, int | float | bool):
+                coerced = str(value)
+            elif isinstance(value, list | dict):
+                coerced = self._extract_string_from_list_or_dict(value)
+            if coerced is None:
                 continue
             try:
-                self._set_at_path(data, loc, str(value))
+                self._set_at_path(data, loc, coerced)
                 seen_locs.add(loc)
                 changed = True
             except (KeyError, IndexError, TypeError):

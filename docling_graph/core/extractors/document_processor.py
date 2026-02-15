@@ -39,7 +39,7 @@ class DocumentProcessor:
             chunker_config (dict): Configuration for DocumentChunker.
                 Example: {
                     "tokenizer_name": "mistralai/Mistral-7B-Instruct-v0.2",
-                    "chunk_max_tokens": 2048,
+                    "chunk_max_tokens": 1024,
                     "merge_peers": True
                 }
                 Or use provider shortcut:

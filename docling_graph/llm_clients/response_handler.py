@@ -338,9 +338,18 @@ class ResponseHandler:
             rich_print(f"[yellow]Warning:[/yellow] {client_name} returned non-dict JSON, wrapping")
             return {"result": parsed}
 
-        # Warn about empty responses
-        if not parsed or not any(parsed.values()):
+        # Warn about empty responses, but not for valid delta-shaped empty batches
+        # (nodes/relationships both lists, possibly empty - common when a chunk has no entities)
+        if not parsed:
             rich_print(f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON")
+        else:
+            is_delta_shape = isinstance(parsed.get("nodes"), list) and isinstance(
+                parsed.get("relationships"), list
+            )
+            if not is_delta_shape and not any(parsed.values()):
+                rich_print(
+                    f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON"
+                )
 
         return parsed
 

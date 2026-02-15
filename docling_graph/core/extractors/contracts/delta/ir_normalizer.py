@@ -53,6 +53,30 @@ def _normalize_ids(
     return out, stats
 
 
+def _backfill_missing_identity_ids(
+    *,
+    ids_raw: Any,
+    identity_fields: tuple[str, ...],
+    remapped_properties: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    if not isinstance(ids_raw, dict):
+        ids_raw = {}
+    if not identity_fields:
+        return dict(ids_raw), 0
+
+    repaired = 0
+    out = dict(ids_raw)
+    for key in identity_fields:
+        current = out.get(key)
+        if _is_non_empty(current):
+            continue
+        candidate = remapped_properties.get(key)
+        if _is_non_empty(candidate):
+            out[key] = candidate
+            repaired += 1
+    return out, repaired
+
+
 def _strip_nested_props(properties_raw: Any) -> tuple[dict[str, Any], int]:
     if not isinstance(properties_raw, dict):
         return {}, 0
@@ -265,8 +289,10 @@ def _remap_properties_to_catalog_fields(
     for key, value in raw_props.items():
         key_txt = str(key)
         candidate_key = field_aliases.get(key_txt, key_txt)
-        mapped = candidate_key if candidate_key in allowed_fields else _best_field_match(
-            candidate_key, allowed_fields
+        mapped = (
+            candidate_key
+            if candidate_key in allowed_fields
+            else _best_field_match(candidate_key, allowed_fields)
         )
         if mapped is None:
             mapped = _best_field_match(key_txt, allowed_fields)
@@ -366,7 +392,11 @@ def _canonicalize_path(
         candidate = ".".join(normalized_parts)
 
     # Normalize list-like terminal segments if catalog expects [] form.
-    if candidate not in allowed_paths and "[]" not in candidate and f"{candidate}[]" in allowed_paths:
+    if (
+        candidate not in allowed_paths
+        and "[]" not in candidate
+        and f"{candidate}[]" in allowed_paths
+    ):
         candidate = f"{candidate}[]"
 
     # Normalize missing [] markers on intermediate list segments by following
@@ -419,9 +449,7 @@ def _extract_index_for_list_segment(path_raw: str, list_segment: str) -> str | N
     if not path_raw or not list_segment:
         return None
 
-    pattern = re.compile(
-        rf"(?:^|\.|]){re.escape(list_segment)}(?:\[(\d+)\]|\.([0-9]+))(?=\.|$)"
-    )
+    pattern = re.compile(rf"(?:^|\.|]){re.escape(list_segment)}(?:\[(\d+)\]|\.([0-9]+))(?=\.|$)")
     matches = list(pattern.finditer(path_raw))
     if not matches:
         return None
@@ -485,6 +513,7 @@ def normalize_delta_ir_batch_results(  # noqa: C901
         "path_alias_repaired": 0,
         "id_key_mismatch": 0,
         "id_missing_required": 0,
+        "id_backfilled_from_properties": 0,
         "node_id_inferred": 0,
         "parent_id_inferred": 0,
         "nested_property_dropped": 0,
@@ -548,7 +577,9 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                     for key, value in scalar_candidates.items():
                         if not _is_non_empty(value):
                             continue
-                        mapped = key if key in allowed_fields else _best_field_match(key, allowed_fields)
+                        mapped = (
+                            key if key in allowed_fields else _best_field_match(key, allowed_fields)
+                        )
                         if mapped and mapped not in path_salvaged:
                             path_salvaged[mapped] = value
                             stats["salvaged_properties"] += 1
@@ -563,6 +594,13 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                     examples.append(path_raw)
                 continue
             policy = dedup_policy.get(path)
+            allowed_fields = property_fields_by_path.get(path, set())
+            remapped_props, repaired_fields = _remap_properties_to_catalog_fields(
+                raw_props=raw_node.get("properties"),
+                allowed_fields=allowed_fields,
+                field_aliases=field_aliases,
+            )
+            stats["property_field_repaired"] += repaired_fields
             ids_raw, node_id_inferred = _infer_ids_from_index(
                 path_raw=path_raw,
                 canonical_path=path,
@@ -571,6 +609,13 @@ def normalize_delta_ir_batch_results(  # noqa: C901
             )
             if node_id_inferred:
                 stats["node_id_inferred"] += 1
+            if policy is not None and len(policy.identity_fields) == 1:
+                ids_raw, backfilled_count = _backfill_missing_identity_ids(
+                    ids_raw=ids_raw,
+                    identity_fields=policy.identity_fields,
+                    remapped_properties=remapped_props,
+                )
+                stats["id_backfilled_from_properties"] += backfilled_count
             ids, id_stats = _normalize_ids(
                 ids_raw,
                 identity_fields=policy.identity_fields if policy else (),
@@ -623,11 +668,7 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                     ids_raw=parent.get("ids"),
                     identity_fields=parent_policy.identity_fields if parent_policy else (),
                 )
-                if (
-                    not parent_id_inferred
-                    and parent_path_for_inference != path_raw
-                    and path_raw
-                ):
+                if not parent_id_inferred and parent_path_for_inference != path_raw and path_raw:
                     parent_ids_raw, parent_id_inferred = _infer_ids_from_index(
                         path_raw=path_raw,
                         canonical_path=parent["path"],
@@ -652,13 +693,6 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                         )
                 parent["ids"] = parent_ids
 
-            allowed_fields = property_fields_by_path.get(path, set())
-            remapped_props, repaired_fields = _remap_properties_to_catalog_fields(
-                raw_props=raw_node.get("properties"),
-                allowed_fields=allowed_fields,
-                field_aliases=field_aliases,
-            )
-            stats["property_field_repaired"] += repaired_fields
             if config.strip_nested_properties:
                 clean_props, dropped = _strip_nested_props(raw_node.get("properties"))
                 stats["nested_property_dropped"] += dropped
@@ -749,8 +783,12 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                 identity_fields=target_policy.identity_fields if target_policy else (),
                 canonicalize=config.canonicalize_ids,
             )
-            stats["id_key_mismatch"] += source_stats["id_key_mismatch"] + target_stats["id_key_mismatch"]
-            stats["id_missing_required"] += source_stats["id_missing_required"] + target_stats["id_missing_required"]
+            stats["id_key_mismatch"] += (
+                source_stats["id_key_mismatch"] + target_stats["id_key_mismatch"]
+            )
+            stats["id_missing_required"] += (
+                source_stats["id_missing_required"] + target_stats["id_missing_required"]
+            )
 
             if config.strip_nested_properties:
                 clean_rel_props, dropped_rel = _strip_nested_props(raw_rel.get("properties"))

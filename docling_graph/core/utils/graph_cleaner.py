@@ -342,8 +342,12 @@ def validate_graph_structure(graph: nx.DiGraph, raise_on_error: bool = True) -> 
     if graph.number_of_nodes() == 0:
         issues.append("Graph has no nodes")
 
-    if graph.number_of_edges() == 0:
-        issues.append("Graph has no edges")
+    # Allow zero edges (e.g. degenerate extraction after best-effort salvage leaves only root)
+    if graph.number_of_edges() == 0 and graph.number_of_nodes() > 0:
+        logger.warning(
+            "Graph has no edges (%s node(s) only). This can happen when extraction was salvaged and list entities were dropped.",
+            graph.number_of_nodes(),
+        )
 
     # Report
     if issues:

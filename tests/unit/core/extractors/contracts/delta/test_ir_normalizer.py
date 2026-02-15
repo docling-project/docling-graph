@@ -320,7 +320,9 @@ def test_normalizer_repairs_missing_list_markers_on_intermediate_segments() -> N
 
 def test_normalizer_salvages_unknown_paths_and_repairs_properties_from_catalog() -> None:
     class MetaBlock(BaseModel):
-        ref_code: str | None = Field(default=None, validation_alias=AliasChoices("ref_code", "refCode"))
+        ref_code: str | None = Field(
+            default=None, validation_alias=AliasChoices("ref_code", "refCode")
+        )
 
     class GenericDoc(BaseModel):
         model_config = ConfigDict(graph_id_fields=["document_number"])
@@ -364,3 +366,42 @@ def test_normalizer_salvages_unknown_paths_and_repairs_properties_from_catalog()
     assert meta_node["properties"]["ref_code"] in {"R-77", "R-88"}
     assert stats["unknown_path_salvaged"] >= 2
     assert stats["salvaged_properties"] >= 2
+
+
+def test_normalizer_backfills_single_identity_id_from_properties() -> None:
+    class Offer(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["nom"])
+        nom: str
+        label: str | None = None
+
+    class OfferDoc(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["reference_document"])
+        reference_document: str
+        offres: list[Offer] = Field(default_factory=list)
+
+    catalog = build_delta_node_catalog(OfferDoc)
+    policy = build_dedup_policy(catalog)
+    normalized, stats = normalize_delta_ir_batch_results(
+        batch_results=[
+            {
+                "nodes": [
+                    {"path": "", "ids": {"reference_document": "DOC-9"}, "properties": {}},
+                    {
+                        "path": "offres[]",
+                        "ids": {},
+                        "parent": {"path": "", "ids": {"reference_document": "DOC-9"}},
+                        "properties": {"nom": "PNO", "label": "Owner non-occupant"},
+                    },
+                ],
+                "relationships": [],
+            }
+        ],
+        batch_plan=[[(0, "chunk", 10)]],
+        chunk_metadata=[{"page_numbers": [1], "token_count": 10}],
+        catalog=catalog,
+        dedup_policy=policy,
+        config=DeltaIrNormalizerConfig(),
+    )
+    offer_node = next(n for n in normalized[0]["nodes"] if n["path"] == "offres[]")
+    assert offer_node["ids"]["nom"] == "PNO"
+    assert stats["id_backfilled_from_properties"] >= 1

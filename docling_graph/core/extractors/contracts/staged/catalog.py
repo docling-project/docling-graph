@@ -427,10 +427,9 @@ def get_discovery_prompt(
             "Every NON-ROOT node must have parent as an object {path, ids} (never null). "
             "ids keys must match id_fields for the path. "
             "If a path has no id_fields, ids must be {} (empty object). "
-            "Use exact nested path strings like offres[].garanties_optionnelles[]. "
+            "Use exact nested path strings from the catalog (list paths end with []). "
             "Return valid minified JSON only.\n"
-            'Example: {"nodes": [{"path": "", "ids": {"reference_document": "CGV-2024"}, "parent": null}, '
-            '{"path": "offres[]", "ids": {"nom": "CONFORT"}, "parent": {"path": "", "ids": {"reference_document": "CGV-2024"}}}]}'
+            f"Example: {_build_id_pass_example_from_catalog(catalog)}"
         )
     if no_id_paths:
         system_prompt += (
@@ -454,6 +453,30 @@ def get_discovery_prompt(
         '"parent": null or {"path": "...", "ids": {"id_field": "value"}}}, ...]}.'
     )
     return {"system": system_prompt, "user": user_prompt}
+
+
+def _build_id_pass_example_from_catalog(catalog: NodeCatalog) -> str:
+    """Build a minimal, domain-agnostic example JSON snippet from catalog (root + one child)."""
+    root_spec = next((s for s in catalog.nodes if s.path == ""), None)
+    root_ids: dict[str, str] = {}
+    if root_spec and root_spec.id_fields:
+        root_ids = dict.fromkeys(root_spec.id_fields, "value")
+    root_node = {"path": "", "ids": root_ids, "parent": None}
+    child_spec = next(
+        (s for s in catalog.nodes if s.path != "" and s.parent_path == "" and s.id_fields),
+        None,
+    )
+    if child_spec is None:
+        nodes = [root_node]
+    else:
+        child_ids: dict[str, str] = dict.fromkeys(child_spec.id_fields, "value")
+        child_node: dict[str, Any] = {
+            "path": child_spec.path,
+            "ids": child_ids,
+            "parent": {"path": "", "ids": root_ids},
+        }
+        nodes = [root_node, child_node]
+    return json.dumps({"nodes": nodes}, separators=(",", ":"))
 
 
 def _get_spec_by_path(catalog: NodeCatalog) -> dict[str, NodeSpec]:

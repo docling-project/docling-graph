@@ -16,6 +16,7 @@ from .catalog import build_delta_node_catalog
 from .helpers import (
     build_dedup_policy,
     chunk_batches_by_token_limit,
+    filter_entity_nodes_by_identity,
     merge_delta_graphs,
     per_path_counts,
 )
@@ -35,7 +36,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DeltaOrchestratorConfig:
     max_pass_retries: int = 1
-    llm_batch_token_size: int = 2048
+    llm_batch_token_size: int = 1024
     parallel_workers: int = 1
     quality_require_root: bool = True
     quality_min_instances: int = 1
@@ -48,6 +49,8 @@ class DeltaOrchestratorConfig:
     quality_min_non_empty_properties: int = -1
     quality_min_root_non_empty_fields: int = -1
     quality_min_non_empty_by_path: dict[str, int] = field(default_factory=dict)
+    identity_filter_enabled: bool = True
+    identity_filter_strict: bool = False
     ir_normalizer: DeltaIrNormalizerConfig = field(default_factory=DeltaIrNormalizerConfig)
     resolvers: DeltaResolverConfig = field(default_factory=DeltaResolverConfig)
 
@@ -59,16 +62,24 @@ class DeltaOrchestratorConfig:
             resolver_mode = "off"
         return cls(
             max_pass_retries=int(conf.get("max_pass_retries", 1) or 1),
-            llm_batch_token_size=int(conf.get("llm_batch_token_size", 2048) or 2048),
+            llm_batch_token_size=int(conf.get("llm_batch_token_size", 1024) or 1024),
             parallel_workers=max(1, int(conf.get("parallel_workers", 1) or 1)),
-            quality_require_root=bool(conf.get("delta_quality_require_root", conf.get("quality_require_root", True))),
-            quality_min_instances=int(conf.get("delta_quality_min_instances", conf.get("quality_min_instances", 1)) or 1),
-            quality_max_parent_lookup_miss=int(conf.get("delta_quality_max_parent_lookup_miss", conf.get("quality_max_parent_lookup_miss", 4)) or 0),
-            quality_adaptive_parent_lookup=bool(conf.get("delta_quality_adaptive_parent_lookup", True)),
+            quality_require_root=bool(conf.get("delta_quality_require_root", True)),
+            quality_min_instances=max(0, int(conf.get("delta_quality_min_instances", 20) or 20)),
+            quality_max_parent_lookup_miss=max(
+                0, int(conf.get("delta_quality_max_parent_lookup_miss", 4) or 0)
+            ),
+            quality_adaptive_parent_lookup=bool(
+                conf.get("delta_quality_adaptive_parent_lookup", True)
+            ),
             quality_max_unknown_path_drops=int(conf.get("quality_max_unknown_path_drops", -1)),
             quality_max_id_mismatch=int(conf.get("quality_max_id_mismatch", -1)),
-            quality_max_nested_property_drops=int(conf.get("quality_max_nested_property_drops", -1)),
-            quality_require_relationships=bool(conf.get("delta_quality_require_relationships", False)),
+            quality_max_nested_property_drops=int(
+                conf.get("quality_max_nested_property_drops", -1)
+            ),
+            quality_require_relationships=bool(
+                conf.get("delta_quality_require_relationships", False)
+            ),
             quality_min_non_empty_properties=int(
                 conf.get("delta_quality_min_non_empty_properties", -1)
             ),
@@ -79,17 +90,21 @@ class DeltaOrchestratorConfig:
                 str(k): int(v)
                 for k, v in dict(conf.get("delta_quality_min_non_empty_by_path", {}) or {}).items()
             },
+            identity_filter_enabled=bool(conf.get("delta_identity_filter_enabled", True)),
+            identity_filter_strict=bool(conf.get("delta_identity_filter_strict", False)),
             ir_normalizer=DeltaIrNormalizerConfig(
                 validate_paths=bool(conf.get("delta_normalizer_validate_paths", True)),
                 canonicalize_ids=bool(conf.get("delta_normalizer_canonicalize_ids", True)),
-                strip_nested_properties=bool(conf.get("delta_normalizer_strip_nested_properties", True)),
+                strip_nested_properties=bool(
+                    conf.get("delta_normalizer_strip_nested_properties", True)
+                ),
                 attach_provenance=bool(conf.get("delta_normalizer_attach_provenance", True)),
             ),
             resolvers=DeltaResolverConfig(
                 enabled=bool(conf.get("delta_resolvers_enabled", True)),
                 mode=resolver_mode,
-                fuzzy_threshold=float(conf.get("delta_resolver_fuzzy_threshold", 0.9) or 0.9),
-                semantic_threshold=float(conf.get("delta_resolver_semantic_threshold", 0.9) or 0.9),
+                fuzzy_threshold=float(conf.get("delta_resolver_fuzzy_threshold", 0.8) or 0.8),
+                semantic_threshold=float(conf.get("delta_resolver_semantic_threshold", 0.8) or 0.8),
                 properties=list(conf.get("delta_resolver_properties", []) or []),
                 paths=list(conf.get("delta_resolver_paths", []) or []),
             ),
@@ -152,7 +167,9 @@ class DeltaOrchestrator:
                 feedback = "\n".join(f"- {err}" for err in errors[:15])
                 call_prompt = {
                     "system": prompt["system"],
-                    "user": prompt["user"] + "\n\n=== FIX ===\nPrevious output had validation issues.\n" + feedback,
+                    "user": prompt["user"]
+                    + "\n\n=== FIX ===\nPrevious output had validation issues.\n"
+                    + feedback,
                 }
             parsed = self._llm(
                 prompt=call_prompt,
@@ -176,7 +193,10 @@ class DeltaOrchestrator:
                     errors.append(f"{loc}: {err.get('msg', 'invalid value')}")
         elapsed = time.time() - start
         if self._debug_dir:
-            self._write_debug_json(f"delta_batch_{batch_index}_failed.json", {"prompt": prompt, "last_output": last_parsed, "errors": errors})
+            self._write_debug_json(
+                f"delta_batch_{batch_index}_failed.json",
+                {"prompt": prompt, "last_output": last_parsed, "errors": errors},
+            )
         return batch_index, None, errors, elapsed
 
     def _quality_gate(
@@ -189,32 +209,50 @@ class DeltaOrchestrator:
     ) -> tuple[bool, list[str]]:
         reasons: list[str] = []
         total_instances = sum(path_counts.values())
+        attached_node_count = int(merge_stats.get("attached_node_count", 0) or 0)
         allowed_parent_lookup_miss = max(0, self._config.quality_max_parent_lookup_miss)
         if self._config.quality_adaptive_parent_lookup and path_counts.get("", 0) > 0:
-            # Scale tolerance with document size: allow up to ~25% of instances as parent misses.
             adaptive_cap = min(150, max(8, total_instances // 4))
             allowed_parent_lookup_miss = max(allowed_parent_lookup_miss, adaptive_cap)
         if self._config.quality_require_root and path_counts.get("", 0) <= 0:
             reasons.append("missing_root_instance")
-        if total_instances < max(0, self._config.quality_min_instances):
+        if attached_node_count < max(0, self._config.quality_min_instances):
             reasons.append("insufficient_instances")
         if merge_stats.get("parent_lookup_miss", 0) > allowed_parent_lookup_miss:
             reasons.append("parent_lookup_miss")
-        if self._config.quality_max_unknown_path_drops >= 0 and normalizer_stats.get("unknown_path_dropped", 0) > self._config.quality_max_unknown_path_drops:
+        if (
+            self._config.quality_max_unknown_path_drops >= 0
+            and normalizer_stats.get("unknown_path_dropped", 0)
+            > self._config.quality_max_unknown_path_drops
+        ):
             reasons.append("unknown_path_dropped")
-        if self._config.quality_max_id_mismatch >= 0 and normalizer_stats.get("id_key_mismatch", 0) > self._config.quality_max_id_mismatch:
+        if (
+            self._config.quality_max_id_mismatch >= 0
+            and normalizer_stats.get("id_key_mismatch", 0) > self._config.quality_max_id_mismatch
+        ):
             reasons.append("id_key_mismatch")
-        if self._config.quality_max_nested_property_drops >= 0 and normalizer_stats.get("nested_property_dropped", 0) > self._config.quality_max_nested_property_drops:
+        if (
+            self._config.quality_max_nested_property_drops >= 0
+            and normalizer_stats.get("nested_property_dropped", 0)
+            > self._config.quality_max_nested_property_drops
+        ):
             reasons.append("nested_property_dropped")
-        if self._config.quality_require_relationships and merge_stats.get("attached_list_items", 0) <= 0:
+        if (
+            self._config.quality_require_relationships
+            and merge_stats.get("attached_list_items", 0) <= 0
+        ):
             reasons.append("missing_relationship_attachments")
-        if self._config.quality_min_non_empty_properties >= 0 and int(
-            property_sparsity.get("total_non_empty_properties", 0)
-        ) < self._config.quality_min_non_empty_properties:
+        if (
+            self._config.quality_min_non_empty_properties >= 0
+            and int(property_sparsity.get("total_non_empty_properties", 0))
+            < self._config.quality_min_non_empty_properties
+        ):
             reasons.append("insufficient_non_empty_properties")
-        if self._config.quality_min_root_non_empty_fields >= 0 and int(
-            property_sparsity.get("root_non_empty_fields", 0)
-        ) < self._config.quality_min_root_non_empty_fields:
+        if (
+            self._config.quality_min_root_non_empty_fields >= 0
+            and int(property_sparsity.get("root_non_empty_fields", 0))
+            < self._config.quality_min_root_non_empty_fields
+        ):
             reasons.append("insufficient_root_fields")
         per_path_non_empty = property_sparsity.get("non_empty_properties_by_path", {})
         if isinstance(per_path_non_empty, dict):
@@ -281,13 +319,17 @@ class DeltaOrchestrator:
         if chunk_metadata:
             for idx, chunk in enumerate(chunks):
                 if idx < len(chunk_metadata) and isinstance(chunk_metadata[idx], dict):
-                    token_counts.append(int(chunk_metadata[idx].get("token_count", max(1, len(chunk.split())))))
+                    token_counts.append(
+                        int(chunk_metadata[idx].get("token_count", max(1, len(chunk.split()))))
+                    )
                 else:
                     token_counts.append(max(1, len(chunk.split())))
         else:
             token_counts = [max(1, len(chunk.split())) for chunk in chunks]
 
-        batch_plan = chunk_batches_by_token_limit(chunks, token_counts, max_batch_tokens=self._config.llm_batch_token_size)
+        batch_plan = chunk_batches_by_token_limit(
+            chunks, token_counts, max_batch_tokens=self._config.llm_batch_token_size
+        )
         schema_dict = self._template.model_json_schema()
         semantic_guide = build_delta_semantic_guide(self._template, schema_dict)
         catalog_block = build_catalog_prompt_block(self._catalog)
@@ -345,7 +387,16 @@ class DeltaOrchestrator:
             config=self._config.ir_normalizer,
         )
         merged_graph = merge_delta_graphs(normalized_batch_results, dedup_policy=dedup_policy)
-        merged_graph, resolver_stats = resolve_post_merge_graph(merged_graph, dedup_policy=dedup_policy, config=self._config.resolvers)
+        merged_graph, resolver_stats = resolve_post_merge_graph(
+            merged_graph, dedup_policy=dedup_policy, config=self._config.resolvers
+        )
+        merged_graph, identity_filter_stats = filter_entity_nodes_by_identity(
+            merged_graph,
+            self._catalog,
+            dedup_policy,
+            enabled=self._config.identity_filter_enabled,
+            strict=self._config.identity_filter_strict,
+        )
         merged_root, merge_stats = project_graph_to_template_root(merged_graph, self._template)
         path_counts = per_path_counts(merged_graph.get("nodes", []))
         property_sparsity = self._compute_property_sparsity(
@@ -353,7 +404,11 @@ class DeltaOrchestrator:
         )
         merge_counters = {k: v for k, v in merge_stats.items() if isinstance(v, int)}
         quality_ok, quality_reasons = self._quality_gate(
-            merged_root, path_counts, merge_counters, normalizer_stats, property_sparsity
+            merged_root,
+            path_counts,
+            merge_counters,
+            normalizer_stats,
+            property_sparsity,
         )
 
         trace = {
@@ -368,6 +423,7 @@ class DeltaOrchestrator:
             "path_counts": path_counts,
             "normalizer_stats": normalizer_stats,
             "merge_stats": merge_stats,
+            "identity_filter": identity_filter_stats,
             "resolver": resolver_stats,
             "quality_gate": {"ok": quality_ok, "reasons": quality_reasons},
             "diagnostics": {"property_sparsity": property_sparsity},

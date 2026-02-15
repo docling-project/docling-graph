@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
@@ -12,6 +13,29 @@ from typing import Any, Iterable, Sequence
 from .catalog import DeltaNodeCatalog
 
 logger = logging.getLogger(__name__)
+
+# Default patterns that suggest a value is a section/chapter title rather than an entity identity.
+DEFAULT_SECTION_TITLE_PATTERNS: tuple[str, ...] = (
+    "article",
+    "section",
+    "traitement",
+    "réclamations",
+    "sanctions",
+    "prescription",
+    "commerciale",
+    "internationales",
+    "sommaire",
+    "objet de votre contrat",
+    "où s'exercent",
+    "garanties",
+    # French CGV-style section headings (normalized/casefolded)
+    "exclusions communes",
+    "vie de votre contrat",
+    "fin de votre contrat",
+    "votre cotisation",
+    "vos sinistres",
+    "option dépannage",  # section title, not an offre name
+)
 
 # LLMs sometimes echo the batch context into node properties; strip those values before projection.
 _BATCH_ECHO_PATTERN = re.compile(
@@ -98,6 +122,7 @@ def build_dedup_policy(catalog: DeltaNodeCatalog) -> dict[str, DedupPolicy]:
         )
     return policy
 
+
 def chunk_batches_by_token_limit(
     chunks: Sequence[str],
     token_counts: Sequence[int],
@@ -147,6 +172,51 @@ def _normalize_list(values: list[Any]) -> list[Any]:
     return out
 
 
+def _canonicalize_identity_text(value: str) -> str:
+    text = " ".join(value.strip().split()).casefold()
+    normalized = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in normalized if not unicodedata.combining(ch))
+
+
+def _acronym_of_words_from_canonical(canonical_text: str) -> str:
+    return "".join(word[0] for word in canonical_text.split() if word)
+
+
+def canonicalize_identity_string(value: str) -> str:
+    return _canonicalize_identity_text(value)
+
+
+def same_identity_string(a: str, b: str) -> bool:
+    ca = _canonicalize_identity_text(a)
+    cb = _canonicalize_identity_text(b)
+    if ca == cb:
+        return True
+    if len(ca) <= 8 and ca == _acronym_of_words_from_canonical(cb):
+        return True
+    if len(cb) <= 8 and cb == _acronym_of_words_from_canonical(ca):
+        return True
+    return False
+
+
+def _canonicalize_identity_value(field_name: str, value: Any) -> str:
+    if value is None:
+        return ""
+    if not isinstance(value, str):
+        return str(value)
+
+    canonical_text = _canonicalize_identity_text(value)
+    if not canonical_text:
+        return ""
+
+    # Keep this generic and schema-agnostic: for long name/title-like fields,
+    # collapse multi-word identities to initials so full form and acronym align.
+    if field_name in LONGER_STRING_FIELDS:
+        acronym = _acronym_of_words_from_canonical(canonical_text)
+        if " " in canonical_text and 2 <= len(acronym) <= 8:
+            return acronym
+    return canonical_text
+
+
 def flatten_node_properties(properties: dict[str, Any]) -> dict[str, Any]:
     """Ensure node properties remain Neo4j-safe flat values."""
 
@@ -176,7 +246,10 @@ def node_identity_key(
     if isinstance(parent, dict):
         parent_ids = parent.get("ids") if isinstance(parent.get("ids"), dict) else {}
         if parent_ids:
-            parent_ctx = f"{parent.get('path', '')}|{tuple(sorted((str(k), str(v)) for k, v in parent_ids.items()))}"
+            parent_ctx = (
+                f"{parent.get('path', '')}|"
+                f"{tuple(sorted((str(k), _canonicalize_identity_value(str(k), v)) for k, v in parent_ids.items()))}"
+            )
         parent_inst = parent.get("__instance_key")
         if not parent_ctx and isinstance(parent_inst, str) and parent_inst:
             parent_ctx = f"{parent.get('path', '')}|inst:{parent_inst}"
@@ -186,12 +259,21 @@ def node_identity_key(
             for field_name in policy.identity_fields:
                 val = ids.get(field_name)
                 if val is not None:
-                    ordered.append((str(field_name), str(val)))
+                    ordered.append(
+                        (str(field_name), _canonicalize_identity_value(str(field_name), val))
+                    )
             if ordered:
-                if parent_ctx and any(field_name in LOCAL_ID_FIELD_HINTS for field_name, _ in ordered):
+                if parent_ctx and (
+                    path.endswith("[]")
+                    or any(field_name in LOCAL_ID_FIELD_HINTS for field_name, _ in ordered)
+                ):
                     ordered.append(("__parent_ctx__", parent_ctx))
                 return (path, tuple(ordered))
-        norm_ids = tuple(sorted((str(k), str(v)) for k, v in ids.items()))
+        norm_ids = tuple(
+            sorted((str(k), _canonicalize_identity_value(str(k), v)) for k, v in ids.items())
+        )
+        if parent_ctx and path.endswith("[]"):
+            return (path, (*norm_ids, ("__parent_ctx__", parent_ctx)))
         return (path, norm_ids)
 
     props = node.get("properties") or {}
@@ -202,7 +284,7 @@ def node_identity_key(
         for candidate in candidates:
             val = props.get(candidate)
             if val is not None:
-                fallback_key = f"{candidate}:{str(val).strip().lower()}"
+                fallback_key = f"{candidate}:{_canonicalize_identity_value(str(candidate), val)}"
                 if parent_ctx:
                     fallback_key = f"{fallback_key}|{parent_ctx}"
                 return (path, fallback_key)
@@ -258,7 +340,9 @@ def merge_delta_graphs(
                 for prop_key, prop_val in (node.get("properties") or {}).items():
                     if _is_empty(prop_val):
                         continue
-                    provenance[prop_key] = [node.get("provenance", node.get("__delta_node_uid", "unknown"))]
+                    provenance[prop_key] = [
+                        node.get("provenance", node.get("__delta_node_uid", "unknown"))
+                    ]
                 if provenance:
                     node["__property_provenance"] = provenance
                 node_by_key[key] = node
@@ -321,7 +405,9 @@ def merge_delta_graphs(
                 ids=target_ids_raw,
                 dedup_policy=dedup_policy,
             )
-            props_key = json.dumps(flatten_node_properties(rel.get("properties") or {}), sort_keys=True)
+            props_key = json.dumps(
+                flatten_node_properties(rel.get("properties") or {}), sort_keys=True
+            )
             dedup_key = (edge_label, source_key, target_key, props_key)
             if dedup_key in relationships:
                 merge_stats["relationship_dedup_replaced"] += 1
@@ -350,6 +436,157 @@ def sanitize_batch_echo_from_graph(graph: dict[str, Any]) -> None:
             for key, value in list(container.items()):
                 if isinstance(value, str) and _BATCH_ECHO_PATTERN.match(value.strip()):
                     container[key] = ""
+
+
+def _normalize_identity_for_allowlist(value: str) -> str:
+    """Normalize string for allowlist comparison (strip, casefold, NFKD)."""
+    if not value or not isinstance(value, str):
+        return ""
+    text = " ".join(value.strip().split()).casefold()
+    normalized = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in normalized if not unicodedata.combining(ch))
+
+
+def _coerce_identity_to_str(raw_value: Any) -> str:
+    """Extract a single string from identity field when LLM returns list/dict."""
+    if raw_value is None:
+        return ""
+    if isinstance(raw_value, str):
+        return raw_value.strip()
+    if isinstance(raw_value, list):
+        for item in raw_value:
+            if isinstance(item, str) and item.strip():
+                return item.strip()
+            if isinstance(item, dict) and item:
+                s = _coerce_identity_to_str(item.get("nom") or next(iter(item.values()), None))
+                if s:
+                    return s
+        return ""
+    if isinstance(raw_value, dict):
+        return _coerce_identity_to_str(raw_value.get("nom") or next(iter(raw_value.values()), None))
+    return str(raw_value).strip() if raw_value else ""
+
+
+def _looks_like_section_title(
+    value: str,
+    patterns: Sequence[str] = DEFAULT_SECTION_TITLE_PATTERNS,
+    min_caps_length: int = 25,
+) -> bool:
+    """Return True if value looks like a section/chapter title (heuristic)."""
+    if not value or not isinstance(value, str):
+        return False
+    stripped = value.strip()
+    if len(stripped) >= min_caps_length and stripped.isupper():
+        return True
+    normalized = _normalize_identity_for_allowlist(stripped)
+    for pat in patterns:
+        if pat in normalized:
+            return True
+    return False
+
+
+def filter_entity_nodes_by_identity(
+    merged_graph: dict[str, Any],
+    catalog: DeltaNodeCatalog,
+    dedup_policy: dict[str, DedupPolicy] | None,
+    *,
+    enabled: bool = True,
+    strict: bool = False,
+    section_title_patterns: Sequence[str] = (),
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """
+    Remove entity nodes whose identity value is not in the schema allowlist or
+    looks like a section title. Optionally remove relationships whose endpoint was removed.
+    """
+    stats: dict[str, Any] = {
+        "identity_filter_dropped": 0,
+        "identity_filter_dropped_by_path": defaultdict(int),
+    }
+    if not enabled:
+        return merged_graph, stats
+
+    spec_by_path = {spec.path: spec for spec in catalog.nodes}
+    patterns = section_title_patterns or DEFAULT_SECTION_TITLE_PATTERNS
+    nodes = list(merged_graph.get("nodes", []))
+    kept_nodes: list[dict[str, Any]] = []
+    removed_keys: set[Any] = set()
+
+    for node in nodes:
+        if not isinstance(node, dict):
+            kept_nodes.append(node)
+            continue
+        path = str(node.get("path") or "")
+        spec = spec_by_path.get(path)
+        identity_values = getattr(spec, "identity_example_values", None) if spec else None
+        if not identity_values or not spec or not spec.id_fields:
+            kept_nodes.append(node)
+            continue
+
+        raw_ids = node.get("ids")
+        ids: dict[str, Any] = raw_ids if isinstance(raw_ids, dict) else {}
+        raw_props = node.get("properties")
+        props: dict[str, Any] = raw_props if isinstance(raw_props, dict) else {}
+        primary_field = spec.id_fields[0] if spec.id_fields else None
+        if not primary_field:
+            kept_nodes.append(node)
+            continue
+        raw_value = ids.get(primary_field) or props.get(primary_field)
+        value = _coerce_identity_to_str(raw_value)
+
+        allowlist_normalized = {_normalize_identity_for_allowlist(v) for v in identity_values if v}
+        value_norm = _normalize_identity_for_allowlist(value)
+
+        if value_norm in allowlist_normalized:
+            kept_nodes.append(node)
+            continue
+        if not value:
+            kept_nodes.append(node)
+            continue
+
+        # Strict mode (config): drop if not in allowlist. Otherwise only drop section-title heuristic.
+        if strict:
+            removed_keys.add(node_identity_key(node, dedup_policy=dedup_policy))
+            stats["identity_filter_dropped"] += 1
+            stats["identity_filter_dropped_by_path"][path] += 1
+            continue
+        if _looks_like_section_title(value, patterns=patterns):
+            removed_keys.add(node_identity_key(node, dedup_policy=dedup_policy))
+            stats["identity_filter_dropped"] += 1
+            stats["identity_filter_dropped_by_path"][path] += 1
+            continue
+        kept_nodes.append(node)
+
+    result = dict(merged_graph)
+    result["nodes"] = kept_nodes
+
+    if removed_keys and result.get("relationships"):
+        rels = result["relationships"]
+        kept_rels: list[dict[str, Any]] = []
+        for rel in rels:
+            if not isinstance(rel, dict):
+                kept_rels.append(rel)
+                continue
+            src_ids_raw = rel.get("source_ids")
+            src_ids: dict[str, Any] = src_ids_raw if isinstance(src_ids_raw, dict) else {}
+            tgt_ids_raw = rel.get("target_ids")
+            tgt_ids: dict[str, Any] = tgt_ids_raw if isinstance(tgt_ids_raw, dict) else {}
+            src_key = _relationship_endpoint_key(
+                path=str(rel.get("source_path") or ""),
+                ids=src_ids,
+                dedup_policy=dedup_policy,
+            )
+            tgt_key = _relationship_endpoint_key(
+                path=str(rel.get("target_path") or ""),
+                ids=tgt_ids,
+                dedup_policy=dedup_policy,
+            )
+            if src_key in removed_keys or tgt_key in removed_keys:
+                continue
+            kept_rels.append(rel)
+        result["relationships"] = kept_rels
+
+    stats["identity_filter_dropped_by_path"] = dict(stats["identity_filter_dropped_by_path"])
+    return result, stats
 
 
 def per_path_counts(nodes: Sequence[dict[str, Any]]) -> dict[str, int]:

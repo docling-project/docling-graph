@@ -161,3 +161,40 @@ def test_resolver_remaps_relationship_endpoints_after_merge() -> None:
     assert len(out["nodes"]) == 1
     assert out["relationships"][0]["source_ids"] == {"name": "Neo4j"}
     assert stats["merge_tiers"]["resolver_fuzzy"] == 1
+
+
+def test_resolver_merges_root_children_even_when_root_parent_ids_differ() -> None:
+    policy = {
+        "offres[]": DedupPolicy(
+            path="offres[]",
+            node_type="Offre",
+            identity_fields=("nom",),
+            fallback_text_fields=("nom",),
+            allowed_match_fields=("nom", "title"),
+            is_entity=True,
+        )
+    }
+    graph = {
+        "nodes": [
+            {
+                "path": "offres[]",
+                "ids": {"nom": "PNO"},
+                "parent": {"path": "", "ids": {"reference_document": "A"}},
+                "properties": {"title": "Formula"},
+            },
+            {
+                "path": "offres[]",
+                "ids": {"nom": "Propriétaire Non Occupant"},
+                "parent": {"path": "", "ids": {"reference_document": "B"}},
+                "properties": {"title": "Formula"},
+            },
+        ],
+        "relationships": [],
+    }
+    out, stats = resolve_post_merge_graph(
+        graph,
+        dedup_policy=policy,
+        config=DeltaResolverConfig(enabled=True, mode="chain", fuzzy_threshold=0.9),
+    )
+    assert len(out["nodes"]) == 1
+    assert stats["merge_tiers"]["resolver_identity"] == 1

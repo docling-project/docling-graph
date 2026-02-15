@@ -43,7 +43,14 @@ def get_delta_batch_prompt(
         "   Example date: '18 May 2024' -> '2024-05-18'\n"
         "11. Return valid JSON only (no markdown).\n"
         "12. Do not copy batch metadata (e.g. batch numbers or 'Delta extraction batch' text) into any "
-        "node property; extract only from the BATCH DOCUMENT content below."
+        "node property; extract only from the BATCH DOCUMENT content below.\n"
+        "13. Use TEMPLATE PATH CATALOG descriptions and SEMANTIC FIELD GUIDANCE to decide what qualifies as "
+        "an instance for each path. Do not treat generic section headings or layout labels as entity instances "
+        "unless the schema guidance explicitly describes them as such.\n"
+        "14. For list-entity paths that have identity examples in the catalog (e.g. paths ending with []): "
+        "emit nodes ONLY when this batch clearly contains the corresponding document structure (e.g. guarantee table, "
+        "formula names). If this batch contains only a sommaire, section headings, or article titles, emit ZERO nodes "
+        "for that path."
     )
 
     user_prompt = (
@@ -60,6 +67,8 @@ def get_delta_batch_prompt(
         "Important: Use each catalog line's ids=[...] as the required identity contract for that path. "
         'Identity values must be strings (e.g. line_number: "1" not 1). '
         'Parent must be an object: {"path": "<catalog path>", "ids": {}} or null for root.\n'
+        "Important: Use schema-derived descriptions/examples in the catalog/guidance to decide entity "
+        "membership for each path; when uncertain, omit instead of classifying from heading style alone.\n"
         'Example good root scalar placement: node path="" with properties.<root_field>=<scalar_value> '
         '(NOT a node path "<root_field>").\n'
         'Example good list-entity placement: node path="<list_entity_path>" with ids.<id_field>="..." and '

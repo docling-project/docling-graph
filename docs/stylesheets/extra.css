@@ -44,6 +44,14 @@
   stroke-dasharray: 5 !important;
 }
 
+/* Center Mermaid diagrams */
+.mermaid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+
 /* -------------------------------------------------------------------------- */
 /* Custom MkDocs Styles                              */
 /* -------------------------------------------------------------------------- */

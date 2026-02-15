@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import logging
-import unicodedata
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from typing import Any, Literal
 
-from .helpers import DedupPolicy, node_identity_key
+from .helpers import DedupPolicy, node_identity_key, same_identity_string
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +18,8 @@ class DeltaResolverConfig:
 
     enabled: bool = False
     mode: str = "off"  # off | fuzzy | semantic | chain
-    fuzzy_threshold: float = 0.9
-    semantic_threshold: float = 0.9
+    fuzzy_threshold: float = 0.8
+    semantic_threshold: float = 0.8
     properties: list[str] | None = None
     paths: list[str] | None = None
 
@@ -33,33 +32,15 @@ def _node_key(node: dict[str, Any], dedup_policy: dict[str, DedupPolicy]) -> Any
     return node_identity_key(node, dedup_policy=dedup_policy)
 
 
-def _relationship_endpoint_key(path: str, ids: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
-    return (str(path or ""), tuple(sorted((str(k), str(v)) for k, v in ids.items())))
-
-
-def _canonicalize_string(value: str) -> str:
-    text = " ".join(value.strip().split()).casefold()
-    normalized = unicodedata.normalize("NFKD", text)
-    return "".join(ch for ch in normalized if not unicodedata.combining(ch))
-
-
-def _acronym_of_words(s: str) -> str:
-    """First letter of each word (after canonicalization), for abbreviation matching."""
-    canon = _canonicalize_string(s)
-    return "".join(w[0] for w in canon.split() if w)
-
-
-def _same_identity_string(a: str, b: str) -> bool:
-    """True if a and b are the same identity: exact canonical match or one is acronym of the other."""
-    ca, cb = _canonicalize_string(a), _canonicalize_string(b)
-    if ca == cb:
-        return True
-    # Allow short string to match acronym of longer (e.g. acronym vs full form)
-    if len(ca) <= 8 and ca == _acronym_of_words(b):
-        return True
-    if len(cb) <= 8 and cb == _acronym_of_words(a):
-        return True
-    return False
+def _relationship_endpoint_key(
+    path: str,
+    ids: dict[str, Any],
+    dedup_policy: dict[str, DedupPolicy],
+) -> Any:
+    return node_identity_key(
+        {"path": str(path or ""), "ids": ids, "properties": {}},
+        dedup_policy=dedup_policy,
+    )
 
 
 def _concat_text(node: dict[str, Any], fields: list[str]) -> str:
@@ -122,19 +103,25 @@ def _merge_nodes(primary: dict[str, Any], duplicate: dict[str, Any]) -> None:
         primary["parent"] = duplicate["parent"]
 
 
-def _can_merge_with_ids(path: str, left: dict[str, Any], right: dict[str, Any], policy: DedupPolicy | None) -> bool:
+def _can_merge_with_ids(
+    path: str, left: dict[str, Any], right: dict[str, Any], policy: DedupPolicy | None
+) -> bool:
     left_ids = left.get("ids") if isinstance(left.get("ids"), dict) else {}
     right_ids = right.get("ids") if isinstance(right.get("ids"), dict) else {}
     if not left_ids or not right_ids:
         return True
-    fields = policy.identity_fields if policy is not None else tuple(sorted(set(left_ids) | set(right_ids)))
+    fields = (
+        policy.identity_fields
+        if policy is not None
+        else tuple(sorted(set(left_ids) | set(right_ids)))
+    )
     for field in fields:
         lval = left_ids.get(field)
         rval = right_ids.get(field)
         if lval is None or rval is None:
             continue
         if isinstance(lval, str) and isinstance(rval, str):
-            if not _same_identity_string(lval, rval):
+            if not same_identity_string(lval, rval):
                 return False
             continue
         if str(lval) != str(rval):
@@ -171,7 +158,7 @@ def _compute_merge_decision(
                 if left_ids.get(f) is not None and right_ids.get(f) is not None
             ]
             if common and all(
-                _same_identity_string(str(left_ids[f]), str(right_ids[f])) for f in common
+                same_identity_string(str(left_ids[f]), str(right_ids[f])) for f in common
             ):
                 return True, 1.0, "identity", None
 
@@ -194,22 +181,37 @@ def _compute_merge_decision(
 
 def _apply_id_remap(
     relationships: list[dict[str, Any]],
-    id_remap: dict[tuple[str, tuple[tuple[str, str], ...]], dict[str, str]],
+    id_remap: dict[Any, dict[str, str]],
+    dedup_policy: dict[str, DedupPolicy],
 ) -> None:
     """Mutate relationships in place, replacing source/target_ids using id_remap."""
     for rel in relationships:
         source_path = str(rel.get("source_path") or "")
         _src_ids = rel.get("source_ids")
         source_ids: dict[str, Any] = _src_ids if isinstance(_src_ids, dict) else {}
-        source_key = _relationship_endpoint_key(source_path, source_ids)
+        source_key = _relationship_endpoint_key(source_path, source_ids, dedup_policy)
         if source_key in id_remap:
             rel["source_ids"] = dict(id_remap[source_key])
         target_path = str(rel.get("target_path") or "")
         _tgt_ids = rel.get("target_ids")
         target_ids: dict[str, Any] = _tgt_ids if isinstance(_tgt_ids, dict) else {}
-        target_key = _relationship_endpoint_key(target_path, target_ids)
+        target_key = _relationship_endpoint_key(target_path, target_ids, dedup_policy)
         if target_key in id_remap:
             rel["target_ids"] = dict(id_remap[target_key])
+
+
+def _is_root_parent(parent: Any) -> bool:
+    if parent is None:
+        return True
+    if not isinstance(parent, dict):
+        return False
+    return str(parent.get("path") or "") == ""
+
+
+def _parents_equivalent(left_parent: Any, right_parent: Any) -> bool:
+    if left_parent == right_parent:
+        return True
+    return _is_root_parent(left_parent) and _is_root_parent(right_parent)
 
 
 def resolve_post_merge_graph(
@@ -225,14 +227,20 @@ def resolve_post_merge_graph(
         return merged_graph, {"enabled": False, "mode": mode, "actions": [], "skipped_reasons": []}
 
     nodes = [dict(node) for node in (merged_graph.get("nodes") or []) if isinstance(node, dict)]
-    relationships = [dict(rel) for rel in (merged_graph.get("relationships") or []) if isinstance(rel, dict)]
+    relationships = [
+        dict(rel) for rel in (merged_graph.get("relationships") or []) if isinstance(rel, dict)
+    ]
 
     allowed_paths = set(config.paths or [])
     actions: list[dict[str, Any]] = []
     skipped_reasons: list[str] = []
     removed_indexes: set[int] = set()
-    id_remap: dict[tuple[str, tuple[tuple[str, str], ...]], dict[str, str]] = {}
-    merge_tiers: dict[str, int] = {"resolver_fuzzy": 0, "resolver_semantic": 0, "resolver_identity": 0}
+    id_remap: dict[Any, dict[str, str]] = {}
+    merge_tiers: dict[str, int] = {
+        "resolver_fuzzy": 0,
+        "resolver_semantic": 0,
+        "resolver_identity": 0,
+    }
 
     for i, left in enumerate(nodes):
         if i in removed_indexes:
@@ -251,10 +259,12 @@ def resolve_post_merge_graph(
             policy = dedup_policy.get(path)
             if not _can_merge_with_ids(path, left, right, policy):
                 continue
-            if left.get("parent") != right.get("parent"):
+            if not _parents_equivalent(left.get("parent"), right.get("parent")):
                 continue
 
             fields = list(config.properties or [])
+            if not fields and policy is not None:
+                fields = list(policy.identity_fields or ())
             if not fields and policy is not None:
                 fields = list(policy.allowed_match_fields)
             if not fields:
@@ -275,7 +285,7 @@ def resolve_post_merge_graph(
             left_ids = left.get("ids") if isinstance(left.get("ids"), dict) else {}
             right_ids = right.get("ids") if isinstance(right.get("ids"), dict) else {}
             if left_ids and right_ids:
-                id_remap[_relationship_endpoint_key(path, right_ids)] = {
+                id_remap[_relationship_endpoint_key(path, right_ids, dedup_policy)] = {
                     str(k): str(v) for k, v in left_ids.items()
                 }
             if resolver_kind == "fuzzy":
@@ -295,7 +305,7 @@ def resolve_post_merge_graph(
             )
 
     if id_remap:
-        _apply_id_remap(relationships, id_remap)
+        _apply_id_remap(relationships, id_remap, dedup_policy)
 
     kept_nodes = [node for idx, node in enumerate(nodes) if idx not in removed_indexes]
     resolver_stats = {

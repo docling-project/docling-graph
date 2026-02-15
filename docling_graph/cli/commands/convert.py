@@ -104,7 +104,7 @@ def convert_command(
         int | None,
         typer.Option(
             "--llm-batch-token-size",
-            help="Delta: max total chunk tokens per batch (chunks are batched until this limit). Does not set LLM output limit (default: 2048).",
+            help="Delta: max total chunk tokens per batch (chunks are batched until this limit). Does not set LLM output limit (default: 1024).",
         ),
     ] = None,
     staged_tuning_preset: Annotated[
@@ -293,7 +293,7 @@ def convert_command(
     final_llm_batch_token_size = (
         llm_batch_token_size
         if llm_batch_token_size is not None
-        else defaults.get("llm_batch_token_size", 2048)
+        else defaults.get("llm_batch_token_size", 1024)
     )
     final_staged_tuning_preset = (
         staged_tuning_preset
@@ -343,12 +343,12 @@ def convert_command(
     final_delta_resolver_fuzzy_threshold = (
         delta_resolver_fuzzy_threshold
         if delta_resolver_fuzzy_threshold is not None
-        else float(defaults.get("delta_resolver_fuzzy_threshold", 0.9))
+        else float(defaults.get("delta_resolver_fuzzy_threshold", 0.8))
     )
     final_delta_resolver_semantic_threshold = (
         delta_resolver_semantic_threshold
         if delta_resolver_semantic_threshold is not None
-        else float(defaults.get("delta_resolver_semantic_threshold", 0.9))
+        else float(defaults.get("delta_resolver_semantic_threshold", 0.8))
     )
     final_delta_resolver_properties = defaults.get("delta_resolver_properties")
     final_delta_resolver_paths = defaults.get("delta_resolver_paths")
@@ -443,7 +443,6 @@ def convert_command(
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
     if final_chunk_max_tokens is not None:
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
-    rich_print(f"  • LLM Batch Tokens: [yellow]{final_llm_batch_token_size}[/yellow]")
     if extraction_contract_val == "delta":
         rich_print("[yellow][DeltaTuning][/yellow]")
         rich_print(
@@ -455,6 +454,7 @@ def convert_command(
         rich_print(
             f"  • Resolvers: [cyan]enabled={final_delta_resolvers_enabled}, mode={final_delta_resolvers_mode}[/cyan]"
         )
+        rich_print(f"  • LLM Batch Tokens: [yellow]{final_llm_batch_token_size}[/yellow]")
     if extraction_contract_val == "staged":
         from docling_graph.config import get_effective_staged_tuning
 

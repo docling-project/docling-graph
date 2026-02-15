@@ -180,7 +180,9 @@ def test_cgv_artifact_replay_reduces_canonical_duplicates_and_orphans() -> None:
     )
     try:
         merged_root, _merge_stats = project_graph_to_template_root(merged, AssuranceMRH)
-    except Exception as exc:  # pragma: no cover - artifact payloads can be structurally inconsistent
+    except (
+        Exception
+    ) as exc:  # pragma: no cover - artifact payloads can be structurally inconsistent
         pytest.skip(f"Artifact replay is structurally inconsistent for projection: {exc}")
 
     duplicates = 0
@@ -200,7 +202,11 @@ def test_cgv_artifact_replay_reduces_canonical_duplicates_and_orphans() -> None:
 
     prior_trace = _read_json(trace_path)
     prior_orphans = int(prior_trace.get("merge_stats", {}).get("orphan_attached", 0))
-    orphan_count = len(merged_root.get("__orphans__", [])) if isinstance(merged_root.get("__orphans__"), list) else 0
+    orphan_count = (
+        len(merged_root.get("__orphans__", []))
+        if isinstance(merged_root.get("__orphans__"), list)
+        else 0
+    )
 
     assert duplicates == 0
     assert orphan_count <= prior_orphans

@@ -99,3 +99,12 @@ def test_validate_graph_structure_empty_node():
 
     with pytest.raises(ValueError, match="Empty node: B"):
         validate_graph_structure(g, raise_on_error=True)
+
+
+def test_validate_graph_structure_allows_single_node_no_edges():
+    """Single-node graph with no edges is allowed (e.g. degenerate extraction after salvage)."""
+    g = nx.DiGraph()
+    g.add_node("root", id="root", label="Document", __class__="AssuranceMRH")
+    assert validate_graph_structure(g, raise_on_error=True) is True
+    assert g.number_of_nodes() == 1
+    assert g.number_of_edges() == 0

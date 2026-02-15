@@ -436,6 +436,31 @@ class TestCoerceStringTypeErrors:
         assert result.studies[0].study_id == "3"
         assert result.studies[0].objective == "Analyze flow curves"
 
+    def test_validate_extraction_coerces_string_field_from_list_or_dict(self, llm_backend):
+        """When a string field (e.g. name) is list/dict (LLM misuse), coerce to string and keep list items."""
+        from pydantic import BaseModel, Field
+
+        class Item(BaseModel):
+            name: str = Field(description="Identity")
+
+        class Root(BaseModel):
+            items: list[Item] = Field(default_factory=list)
+
+        # First item: name is list of dicts (common LLM mistake); second: name is dict with nom key
+        data = {
+            "items": [
+                {"name": [{"description": "Long text", "nom": "First"}]},
+                {"name": {"nom": "Second", "extra": 1}},
+                {"name": "Third"},
+            ]
+        }
+        result = llm_backend._validate_extraction(data, Root, context="test")
+        assert result is not None
+        assert len(result.items) == 3
+        assert result.items[0].name == "First"
+        assert result.items[1].name == "Second"
+        assert result.items[2].name == "Third"
+
 
 class TestCoerceListTypeErrors:
     """Test that scalar in list field is coerced to single-element list so validation can pass."""

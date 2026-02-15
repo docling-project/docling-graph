@@ -37,7 +37,7 @@ def test_quality_gate_adaptive_parent_lookup_tolerance() -> None:
     ok, reasons = orchestrator._quality_gate(
         merged_root={"document_number": "INV-1"},
         path_counts={"": 1, "children[]": 5},
-        merge_stats={"parent_lookup_miss": 2},
+        merge_stats={"parent_lookup_miss": 2, "attached_node_count": 6},
         normalizer_stats={},
         property_sparsity={},
     )
@@ -59,7 +59,7 @@ def test_quality_gate_strict_parent_lookup_without_adaptive_mode() -> None:
     ok, reasons = orchestrator._quality_gate(
         merged_root={"document_number": "INV-1"},
         path_counts={"": 1, "children[]": 2},
-        merge_stats={"parent_lookup_miss": 1},
+        merge_stats={"parent_lookup_miss": 1, "attached_node_count": 2},
         normalizer_stats={},
         property_sparsity={},
     )
@@ -112,6 +112,7 @@ def test_quality_gate_requires_structural_attachments_when_enabled() -> None:
             "attached_scalar_items": 0,
             "parent_lookup_miss": 1,
             "missing_parent_descriptor": 0,
+            "attached_node_count": 2,
         },
         normalizer_stats={},
         property_sparsity={},
@@ -133,7 +134,11 @@ def test_quality_gate_requires_relationships_when_enabled() -> None:
     ok, reasons = orchestrator._quality_gate(
         merged_root={"document_number": "INV-1"},
         path_counts={"": 1},
-        merge_stats={"attached_list_items": 1, "attached_scalar_items": 0},
+        merge_stats={
+            "attached_list_items": 1,
+            "attached_scalar_items": 0,
+            "attached_node_count": 2,
+        },
         normalizer_stats={},
         property_sparsity={},
         relationship_count=0,
@@ -149,7 +154,11 @@ def test_trace_includes_diagnostic_samples() -> None:
         return {
             "nodes": [
                 {"path": "document", "ids": {}, "properties": {"document_number": "INV-1"}},
-                {"path": "Root/children/0", "ids": {"name": "Alice"}, "properties": {"name": "Alice"}},
+                {
+                    "path": "Root/children/0",
+                    "ids": {"name": "Alice"},
+                    "properties": {"name": "Alice"},
+                },
             ],
             "relationships": [],
         }
@@ -186,7 +195,12 @@ def test_quality_gate_rejects_sparse_outputs_when_thresholds_enabled() -> None:
     ok, reasons = orchestrator._quality_gate(
         merged_root={"document_number": "INV-1"},
         path_counts={"": 1},
-        merge_stats={"parent_lookup_miss": 0, "attached_list_items": 0, "attached_scalar_items": 0},
+        merge_stats={
+            "parent_lookup_miss": 0,
+            "attached_list_items": 0,
+            "attached_scalar_items": 0,
+            "attached_node_count": 1,
+        },
         normalizer_stats={},
         property_sparsity={
             "total_non_empty_properties": 1,
@@ -213,7 +227,12 @@ def test_quality_gate_rejects_when_path_coverage_below_threshold() -> None:
     ok, reasons = orchestrator._quality_gate(
         merged_root={"document_number": "INV-1"},
         path_counts={"": 1, "children[]": 1},
-        merge_stats={"parent_lookup_miss": 0, "attached_list_items": 0, "attached_scalar_items": 0},
+        merge_stats={
+            "parent_lookup_miss": 0,
+            "attached_list_items": 0,
+            "attached_scalar_items": 0,
+            "attached_node_count": 2,
+        },
         normalizer_stats={},
         property_sparsity={
             "total_non_empty_properties": 3,
@@ -240,7 +259,12 @@ def test_quality_gate_rejects_orphan_ratio_and_duplicate_canonical_ids() -> None
     ok, reasons = orchestrator._quality_gate(
         merged_root={"document_number": "INV-1"},
         path_counts={"": 1, "children[]": 2},
-        merge_stats={"parent_lookup_miss": 0, "attached_list_items": 1, "attached_scalar_items": 0},
+        merge_stats={
+            "parent_lookup_miss": 0,
+            "attached_list_items": 1,
+            "attached_scalar_items": 0,
+            "attached_node_count": 2,
+        },
         normalizer_stats={},
         property_sparsity={
             "total_non_empty_properties": 3,
@@ -268,7 +292,11 @@ def test_extract_retries_failed_batch_by_splitting() -> None:
             return []
         return {
             "nodes": [
-                {"path": "", "ids": {"document_number": "INV-1"}, "properties": {"document_number": "INV-1"}}
+                {
+                    "path": "",
+                    "ids": {"document_number": "INV-1"},
+                    "properties": {"document_number": "INV-1"},
+                }
             ],
             "relationships": [],
         }
@@ -285,7 +313,10 @@ def test_extract_retries_failed_batch_by_splitting() -> None:
     )
     output = orchestrator.extract(
         chunks=["chunk-alpha", "chunk-beta"],
-        chunk_metadata=[{"token_count": 5, "page_numbers": [1]}, {"token_count": 5, "page_numbers": [2]}],
+        chunk_metadata=[
+            {"token_count": 5, "page_numbers": [1]},
+            {"token_count": 5, "page_numbers": [2]},
+        ],
         context="split-retry-test",
     )
     assert output is not None

@@ -32,6 +32,72 @@ class Invoice(BaseModel):
     line_items: list[LineItem] = Field(default_factory=list)
 
 
+class SubItem(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["name"])
+    name: str
+
+
+class ItemWithSubitems(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["name"])
+    name: str
+    subitems: list[SubItem] = Field(default_factory=list)
+
+
+class RootWithItems(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["doc_id"])
+    doc_id: str
+    items: list[ItemWithSubitems] = Field(default_factory=list)
+
+
+def test_projection_attaches_same_list_item_identity_under_different_parents_to_each_parent() -> (
+    None
+):
+    """List-item nodes with same path+ids but different parents appear under each parent after projection."""
+    merged_graph = {
+        "nodes": [
+            {
+                "path": "",
+                "ids": {"doc_id": "D1"},
+                "properties": {"doc_id": "D1"},
+            },
+            {
+                "path": "items[]",
+                "ids": {"name": "P1"},
+                "parent": {"path": "", "ids": {}},
+                "properties": {"name": "P1"},
+            },
+            {
+                "path": "items[]",
+                "ids": {"name": "P2"},
+                "parent": {"path": "", "ids": {}},
+                "properties": {"name": "P2"},
+            },
+            {
+                "path": "items[].subitems[]",
+                "ids": {"name": "A"},
+                "parent": {"path": "items[]", "ids": {"name": "P1"}},
+                "properties": {"name": "A"},
+            },
+            {
+                "path": "items[].subitems[]",
+                "ids": {"name": "A"},
+                "parent": {"path": "items[]", "ids": {"name": "P2"}},
+                "properties": {"name": "A"},
+            },
+        ],
+        "relationships": [],
+    }
+    merged_root, merge_stats = project_graph_to_template_root(merged_graph, RootWithItems)
+    assert merge_stats.get("parent_lookup_miss", 0) == 0
+    assert len(merged_root["items"]) == 2
+    assert merged_root["items"][0]["name"] == "P1"
+    assert merged_root["items"][1]["name"] == "P2"
+    assert len(merged_root["items"][0]["subitems"]) == 1
+    assert len(merged_root["items"][1]["subitems"]) == 1
+    assert merged_root["items"][0]["subitems"][0]["name"] == "A"
+    assert merged_root["items"][1]["subitems"][0]["name"] == "A"
+
+
 def test_projection_links_children_without_parent_lookup_miss_after_inference() -> None:
     catalog = build_delta_node_catalog(Invoice)
     policy = build_dedup_policy(catalog)

@@ -18,6 +18,7 @@ from .helpers import (
     DedupPolicy,
     build_dedup_policy,
     chunk_batches_by_token_limit,
+    filter_entity_nodes_by_identity,
     merge_delta_graphs,
     per_path_counts,
     sanitize_batch_echo_from_graph,
@@ -40,7 +41,7 @@ class DeltaOrchestratorConfig:
     """Config for delta extraction orchestration."""
 
     max_pass_retries: int = 1
-    llm_batch_token_size: int = 2048
+    llm_batch_token_size: int = 1024
     parallel_workers: int = 1
     quality_require_root: bool = True
     quality_min_instances: int = 1
@@ -59,6 +60,8 @@ class DeltaOrchestratorConfig:
     quality_max_orphan_ratio: float = -1.0
     quality_max_canonical_duplicates: int = -1
     batch_split_max_retries: int = 1
+    identity_filter_enabled: bool = True
+    identity_filter_strict: bool = False
     ir_normalizer: DeltaIrNormalizerConfig = field(default_factory=DeltaIrNormalizerConfig)
     resolvers: DeltaResolverConfig = field(default_factory=DeltaResolverConfig)
 
@@ -70,20 +73,12 @@ class DeltaOrchestratorConfig:
             resolver_mode = "off"
         return cls(
             max_pass_retries=int(conf.get("max_pass_retries", 1) or 1),
-            llm_batch_token_size=int(conf.get("llm_batch_token_size", 2048) or 2048),
+            llm_batch_token_size=int(conf.get("llm_batch_token_size", 1024) or 1024),
             parallel_workers=max(1, int(conf.get("parallel_workers", 1) or 1)),
-            quality_require_root=bool(
-                conf.get("delta_quality_require_root", conf.get("quality_require_root", True))
-            ),
-            quality_min_instances=int(
-                conf.get("delta_quality_min_instances", conf.get("quality_min_instances", 1)) or 1
-            ),
-            quality_max_parent_lookup_miss=int(
-                conf.get(
-                    "delta_quality_max_parent_lookup_miss",
-                    conf.get("quality_max_parent_lookup_miss", 4),
-                )
-                or 0
+            quality_require_root=bool(conf.get("delta_quality_require_root", True)),
+            quality_min_instances=max(0, int(conf.get("delta_quality_min_instances", 20) or 20)),
+            quality_max_parent_lookup_miss=max(
+                0, int(conf.get("delta_quality_max_parent_lookup_miss", 4) or 0)
             ),
             quality_adaptive_parent_lookup=bool(
                 conf.get("delta_quality_adaptive_parent_lookup", True)
@@ -93,7 +88,9 @@ class DeltaOrchestratorConfig:
             quality_max_nested_property_drops=int(
                 conf.get("quality_max_nested_property_drops", -1)
             ),
-            quality_require_relationships=bool(conf.get("delta_quality_require_relationships", False)),
+            quality_require_relationships=bool(
+                conf.get("delta_quality_require_relationships", False)
+            ),
             quality_require_structural_attachments=bool(
                 conf.get("delta_quality_require_structural_attachments", False)
             ),
@@ -112,6 +109,8 @@ class DeltaOrchestratorConfig:
                 conf.get("delta_quality_max_canonical_duplicates", -1)
             ),
             batch_split_max_retries=max(0, int(conf.get("delta_batch_split_max_retries", 1) or 0)),
+            identity_filter_enabled=bool(conf.get("delta_identity_filter_enabled", True)),
+            identity_filter_strict=bool(conf.get("delta_identity_filter_strict", False)),
             ir_normalizer=DeltaIrNormalizerConfig(
                 validate_paths=bool(conf.get("delta_normalizer_validate_paths", True)),
                 canonicalize_ids=bool(conf.get("delta_normalizer_canonicalize_ids", True)),
@@ -123,10 +122,8 @@ class DeltaOrchestratorConfig:
             resolvers=DeltaResolverConfig(
                 enabled=bool(conf.get("delta_resolvers_enabled", True)),
                 mode=resolver_mode,
-                fuzzy_threshold=float(conf.get("delta_resolver_fuzzy_threshold", 0.9) or 0.9),
-                semantic_threshold=float(
-                    conf.get("delta_resolver_semantic_threshold", 0.9) or 0.9
-                ),
+                fuzzy_threshold=float(conf.get("delta_resolver_fuzzy_threshold", 0.8) or 0.8),
+                semantic_threshold=float(conf.get("delta_resolver_semantic_threshold", 0.8) or 0.8),
                 properties=list(conf.get("delta_resolver_properties", []) or []),
                 paths=list(conf.get("delta_resolver_paths", []) or []),
             ),
@@ -261,50 +258,63 @@ class DeltaOrchestrator:
     ) -> tuple[bool, list[str]]:
         reasons: list[str] = []
         total_instances = sum(path_counts.values())
+        attached_node_count = int(merge_stats.get("attached_node_count", 0) or 0)
         allowed_parent_lookup_miss = max(0, self._config.quality_max_parent_lookup_miss)
         if self._config.quality_adaptive_parent_lookup and path_counts.get("", 0) > 0:
-            # Scale tolerance with document size: allow up to ~25% of instances as parent misses,
-            # with a floor of 8 and cap of 150 so large docs (e.g. 260+ nodes) still pass.
             adaptive_cap = min(150, max(8, total_instances // 4))
             allowed_parent_lookup_miss = max(allowed_parent_lookup_miss, adaptive_cap)
         if self._config.quality_require_root and path_counts.get("", 0) <= 0:
             reasons.append("missing_root_instance")
-        if total_instances < max(0, self._config.quality_min_instances):
+        if attached_node_count < max(0, self._config.quality_min_instances):
             reasons.append("insufficient_instances")
         if merge_stats.get("parent_lookup_miss", 0) > allowed_parent_lookup_miss:
             reasons.append("parent_lookup_miss")
-        if self._config.quality_max_unknown_path_drops >= 0 and normalizer_stats.get(
-            "unknown_path_dropped", 0
-        ) > self._config.quality_max_unknown_path_drops:
+        if (
+            self._config.quality_max_unknown_path_drops >= 0
+            and normalizer_stats.get("unknown_path_dropped", 0)
+            > self._config.quality_max_unknown_path_drops
+        ):
             reasons.append("unknown_path_dropped")
-        if self._config.quality_max_id_mismatch >= 0 and normalizer_stats.get(
-            "id_key_mismatch", 0
-        ) > self._config.quality_max_id_mismatch:
+        if (
+            self._config.quality_max_id_mismatch >= 0
+            and normalizer_stats.get("id_key_mismatch", 0) > self._config.quality_max_id_mismatch
+        ):
             reasons.append("id_key_mismatch")
-        if self._config.quality_max_nested_property_drops >= 0 and normalizer_stats.get(
-            "nested_property_dropped", 0
-        ) > self._config.quality_max_nested_property_drops:
+        if (
+            self._config.quality_max_nested_property_drops >= 0
+            and normalizer_stats.get("nested_property_dropped", 0)
+            > self._config.quality_max_nested_property_drops
+        ):
             reasons.append("nested_property_dropped")
-        if self._config.quality_require_relationships and merge_stats.get("attached_list_items", 0) <= 0:
+        if (
+            self._config.quality_require_relationships
+            and merge_stats.get("attached_list_items", 0) <= 0
+        ):
             reasons.append("missing_relationship_attachments")
         if self._config.quality_require_structural_attachments:
             attached_total = merge_stats.get("attached_list_items", 0) + merge_stats.get(
                 "attached_scalar_items", 0
             )
-            expected_attachments = attached_total + merge_stats.get("parent_lookup_miss", 0) + merge_stats.get(
-                "missing_parent_descriptor", 0
+            expected_attachments = (
+                attached_total
+                + merge_stats.get("parent_lookup_miss", 0)
+                + merge_stats.get("missing_parent_descriptor", 0)
             )
             if expected_attachments > 0 and attached_total <= 0:
                 reasons.append("missing_structural_attachments")
         if self._config.quality_require_relationships and relationship_count <= 0:
             reasons.append("missing_relationships")
-        if self._config.quality_min_non_empty_properties >= 0 and int(
-            property_sparsity.get("total_non_empty_properties", 0)
-        ) < self._config.quality_min_non_empty_properties:
+        if (
+            self._config.quality_min_non_empty_properties >= 0
+            and int(property_sparsity.get("total_non_empty_properties", 0))
+            < self._config.quality_min_non_empty_properties
+        ):
             reasons.append("insufficient_non_empty_properties")
-        if self._config.quality_min_root_non_empty_fields >= 0 and int(
-            property_sparsity.get("root_non_empty_fields", 0)
-        ) < self._config.quality_min_root_non_empty_fields:
+        if (
+            self._config.quality_min_root_non_empty_fields >= 0
+            and int(property_sparsity.get("root_non_empty_fields", 0))
+            < self._config.quality_min_root_non_empty_fields
+        ):
             reasons.append("insufficient_root_fields")
         per_path_non_empty = property_sparsity.get("non_empty_properties_by_path", {})
         if isinstance(per_path_non_empty, dict):
@@ -313,7 +323,10 @@ class DeltaOrchestrator:
                     continue
                 if int(per_path_non_empty.get(path, 0)) < int(minimum):
                     reasons.append(f"insufficient_path_fields:{path}")
-        if self._config.quality_max_orphan_ratio >= 0 and orphan_ratio > self._config.quality_max_orphan_ratio:
+        if (
+            self._config.quality_max_orphan_ratio >= 0
+            and orphan_ratio > self._config.quality_max_orphan_ratio
+        ):
             reasons.append("orphan_ratio_exceeded")
         if (
             self._config.quality_max_canonical_duplicates >= 0
@@ -376,7 +389,9 @@ class DeltaOrchestrator:
             return "".join(ch for ch in normalized if not unicodedata.combining(ch))
         return str(value)
 
-    def _compute_orphan_diagnostics(self, merged_root: dict[str, Any], path_counts: dict[str, int]) -> dict[str, Any]:
+    def _compute_orphan_diagnostics(
+        self, merged_root: dict[str, Any], path_counts: dict[str, int]
+    ) -> dict[str, Any]:
         orphan_items = merged_root.get("__orphans__", [])
         if not isinstance(orphan_items, list):
             return {"orphan_count": 0, "orphan_ratio": 0.0, "orphans_by_parent_path": {}}
@@ -409,7 +424,9 @@ class DeltaOrchestrator:
                 continue
             raw_ids = node.get("ids")
             ids: dict[str, Any] = raw_ids if isinstance(raw_ids, dict) else {}
-            key = tuple(self._canonicalize_value(ids.get(field)) for field in policy.identity_fields)
+            key = tuple(
+                self._canonicalize_value(ids.get(field)) for field in policy.identity_fields
+            )
             if not key or all(part == "" for part in key):
                 continue
             per_path.setdefault(path, {})
@@ -504,10 +521,7 @@ class DeltaOrchestrator:
                     failed_batches.append((batch_idx, batch, errors))
 
         split_round = 0
-        while (
-            failed_batches
-            and split_round < self._config.batch_split_max_retries
-        ):
+        while failed_batches and split_round < self._config.batch_split_max_retries:
             next_failed_batches: list[tuple[int, list[tuple[int, str, int]], list[str]]] = []
             for parent_idx, failed_batch, failed_errors in failed_batches:
                 if len(failed_batch) <= 1:
@@ -563,12 +577,21 @@ class DeltaOrchestrator:
         merged_graph = merge_delta_graphs(normalized_batch_results, dedup_policy=dedup_policy)
         sanitize_batch_echo_from_graph(merged_graph)
         merge_core_stats = (
-            merged_graph.get("__merge_stats", {}) if isinstance(merged_graph.get("__merge_stats"), dict) else {}
+            merged_graph.get("__merge_stats", {})
+            if isinstance(merged_graph.get("__merge_stats"), dict)
+            else {}
         )
         merged_graph, resolver_stats = resolve_post_merge_graph(
             merged_graph,
             dedup_policy=dedup_policy,
             config=self._config.resolvers,
+        )
+        merged_graph, identity_filter_stats = filter_entity_nodes_by_identity(
+            merged_graph,
+            self._catalog,
+            dedup_policy,
+            enabled=self._config.identity_filter_enabled,
+            strict=self._config.identity_filter_strict,
         )
         merged_root, merge_stats = project_graph_to_template_root(merged_graph, self._template)
         path_counts = per_path_counts(merged_graph.get("nodes", []))
@@ -633,6 +656,7 @@ class DeltaOrchestrator:
             },
             "merge_stats": merge_stats,
             "merge_core_stats": merge_core_stats,
+            "identity_filter": identity_filter_stats,
             "resolver": resolver_stats,
             "quality_gate": {"ok": quality_ok, "reasons": quality_reasons},
             "diagnostics": {
@@ -667,7 +691,6 @@ class DeltaOrchestrator:
             self._write_debug_json("delta_trace.json", trace)
             self._write_debug_json("delta_merged_graph.json", merged_graph)
             self._write_debug_json("delta_merged_output.json", merged_root)
-
 
         if self._on_trace is not None:
             self._on_trace(trace)

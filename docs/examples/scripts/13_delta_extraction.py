@@ -99,7 +99,9 @@ def main() -> None:
             parallel_workers=1,
         )
 
-        console.print("\n[yellow]⚙️  Processing (delta: chunk → batch → merge → project)...[/yellow]")
+        console.print(
+            "\n[yellow]⚙️  Processing (delta: chunk → batch → merge → project)...[/yellow]"
+        )
         console.print("  • Chunk document and plan token-bounded batches")
         console.print("  • Per-batch LLM: extract flat graph (nodes + relationships)")
         console.print("  • IR normalize → merge by identity → project to template")
@@ -116,7 +118,9 @@ def main() -> None:
 
         console.print("\n[bold]💡 Delta vs direct vs staged:[/bold]")
         console.print("  • Direct: single pass per chunk, then programmatic merge")
-        console.print("  • Delta: token-bounded batches → graph IR → normalize → merge → projection")
+        console.print(
+            "  • Delta: token-bounded batches → graph IR → normalize → merge → projection"
+        )
         console.print("  • Staged: ID pass → fill pass → merge (no chunk batching)")
         console.print("  • Use delta for long documents when you want batched graph extraction")
 

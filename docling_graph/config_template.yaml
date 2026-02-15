@@ -13,7 +13,7 @@ defaults:
   # Max tokens per chunk when chunking is used (null = use default 512)
   chunk_max_tokens: null
   # Max total input tokens sent per LLM call in delta extraction
-  llm_batch_token_size: 2048
+  llm_batch_token_size: 1024
   # Staged (3-pass) tuning: ID pass → fill (bottom-up) → merge. Preset + optional overrides.
   staged_tuning_preset: standard  # standard | advanced (advanced = larger ID-pass shards, larger fill batches)
   staged_pass_retries: null       # retries per pass when LLM returns invalid JSON; null = use preset
@@ -24,15 +24,15 @@ defaults:
   delta_normalizer_attach_provenance: true
   delta_resolvers_enabled: true
   delta_resolvers_mode: semantic # off | fuzzy | semantic | chain
-  delta_resolver_fuzzy_threshold: 0.9
-  delta_resolver_semantic_threshold: 0.9
+  delta_resolver_fuzzy_threshold: 0.8
+  delta_resolver_semantic_threshold: 0.8
   delta_resolver_properties: null
   delta_resolver_paths: null
   quality_max_unknown_path_drops: -1  # -1 disables this gate
   quality_max_id_mismatch: -1         # -1 disables this gate
   quality_max_nested_property_drops: -1  # -1 disables this gate
   delta_quality_require_root: true
-  delta_quality_min_instances: 1
+  delta_quality_min_instances: 20  # below this, delta fails gate and direct extraction is used
   delta_quality_max_parent_lookup_miss: 4
   delta_quality_adaptive_parent_lookup: true
   delta_quality_require_relationships: false

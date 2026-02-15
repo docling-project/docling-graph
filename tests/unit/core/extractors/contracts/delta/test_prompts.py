@@ -15,6 +15,11 @@ def test_prompt_mentions_cross_batch_identifier_stability() -> None:
     assert "CHF 3360.00' -> 3360.00" in prompt["system"]
     assert "ONLY put identity fields in ids" in prompt["system"]
     assert "Do not create synthetic pseudo-path nodes" in prompt["system"]
+    assert (
+        "Do not treat generic section headings or layout labels as entity instances"
+        in prompt["system"]
+    )
     assert "Example good root scalar placement" in prompt["user"]
+    assert "when uncertain, omit instead of classifying from heading style alone" in prompt["user"]
     assert "<root_field>" in prompt["user"]
     assert "total_amount" not in prompt["user"]
