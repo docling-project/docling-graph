@@ -7,6 +7,7 @@ with robust parsing helpers for amounts, currencies, and mixed list inputs.
 
 from __future__ import annotations
 
+import ast
 import logging
 import re
 from typing import Any
@@ -507,6 +508,25 @@ class Offre(BaseModel):
         description="Profil d'occupation (ex. 'locataire', 'propriétaire occupant', 'propriétaire non occupant').",
         examples=[["locataire"], ["propriétaire occupant"], ["propriétaire non occupant"]],
     )
+
+    @field_validator("statut_occupation", mode="before")
+    @classmethod
+    def normaliser_statut_occupation(cls, v: Any) -> Any:
+        """Accept string list literals from LLM (e.g. \"['locataire']\") and coerce to list[str]."""
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if s.startswith("[") and s.endswith("]"):
+                try:
+                    parsed = ast.literal_eval(s)
+                    if isinstance(parsed, list):
+                        return [str(x) for x in parsed]
+                except (ValueError, SyntaxError):
+                    pass
+            if v:
+                return [v]
+        return v if v is not None else []
 
     garanties_incluses: list[Garantie] = edge(
         label="INCLUTGARANTIE",
