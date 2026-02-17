@@ -409,6 +409,39 @@ def fix_scalar_id_fields_holding_lists(
                 obj[id_field] = id_placeholder
 
 
+def _resolve_orphan_parent_ids(
+    parent_ids: dict[str, Any],
+    parent_spec: DeltaNodeSpec,
+    catalog: DeltaNodeCatalog,
+) -> dict[str, Any]:
+    """
+    Resolve orphan parent_ids to a dict keyed by canonical id_fields.
+    Uses catalog.field_aliases (alias -> canonical) so casing/alias from extraction still match.
+    """
+    resolved: dict[str, Any] = {}
+    id_fields_set = set(parent_spec.id_fields or ())
+    aliases = getattr(catalog, "field_aliases", None) or {}
+    for raw_key, value in parent_ids.items():
+        canonical = aliases.get(raw_key, raw_key)
+        if canonical in id_fields_set:
+            resolved[canonical] = value
+    return resolved
+
+
+def _candidate_matches_parent_ids(
+    candidate: dict[str, Any],
+    resolved_parent_ids: dict[str, Any],
+    parent_spec: DeltaNodeSpec,
+) -> bool:
+    """True if candidate's id-field values match resolved_parent_ids (canonicalized at comparison time)."""
+    for id_field in parent_spec.id_fields or ():
+        c_val = _canonicalize_id_value(candidate.get(id_field))
+        p_val = _canonicalize_id_value(resolved_parent_ids.get(id_field))
+        if c_val != p_val:
+            return False
+    return True
+
+
 def reattach_orphans(
     merged_root: dict[str, Any],
     catalog: DeltaNodeCatalog,
@@ -416,7 +449,8 @@ def reattach_orphans(
     orphan_field_name: str = "__orphans__",
 ) -> dict[str, Any]:
     """
-    Try to reattach orphan nodes to the tree when there is exactly one parent candidate.
+    Reattach orphan nodes to the tree when there is exactly one parent candidate,
+    or when parent_ids match exactly one parent among many (by canonical id comparison).
     Mutates merged_root and returns it.
     """
     orphans = merged_root.get(orphan_field_name)
@@ -425,6 +459,8 @@ def reattach_orphans(
     path_to_objs = _collect_objects_by_path(merged_root, catalog, skip_keys={orphan_field_name})
     spec_by_path = {spec.path: spec for spec in catalog.nodes}
     still_orphans: list[dict[str, Any]] = []
+    reattached_by_id = 0
+    reattached_by_single = 0
     for item in orphans:
         if not isinstance(item, dict):
             still_orphans.append(item)
@@ -441,10 +477,28 @@ def reattach_orphans(
             still_orphans.append(item)
             continue
         candidates = path_to_objs.get(parent_path, [])
-        if len(candidates) != 1:
+        parent_obj: dict[str, Any] | None = None
+        parent_ids_raw = item.get("parent_ids")
+        parent_spec = spec_by_path.get(parent_path)
+        had_usable_parent_ids = False
+        if parent_ids_raw and isinstance(parent_ids_raw, dict) and parent_spec and parent_spec.id_fields:
+            resolved = _resolve_orphan_parent_ids(parent_ids_raw, parent_spec, catalog)
+            if resolved:
+                had_usable_parent_ids = True
+                matching = [
+                    c for c in candidates
+                    if isinstance(c, dict) and _candidate_matches_parent_ids(c, resolved, parent_spec)
+                ]
+                if len(matching) == 1:
+                    parent_obj = matching[0]
+                    reattached_by_id += 1
+        if parent_obj is None and not had_usable_parent_ids and len(candidates) == 1:
+            parent_obj = candidates[0] if isinstance(candidates[0], dict) else None
+            if parent_obj is not None:
+                reattached_by_single += 1
+        if parent_obj is None:
             still_orphans.append(item)
             continue
-        parent_obj = candidates[0]
         if spec.is_list:
             existing = parent_obj.get(field_name)
             if not isinstance(existing, list):
@@ -453,6 +507,12 @@ def reattach_orphans(
         else:
             parent_obj[field_name] = data
     merged_root[orphan_field_name] = still_orphans
+    if reattached_by_id or reattached_by_single:
+        logger.debug(
+            "[DeltaProjection] reattach_orphans: reattached_by_id=%s reattached_by_single=%s",
+            reattached_by_id,
+            reattached_by_single,
+        )
     return merged_root
 
 
@@ -700,9 +760,14 @@ def merge_delta_filled_into_root(  # noqa: C901
                         {"path": path, "parent_path": parent_path, "parent_ids": dict(parent_ids)}
                     )
                 if salvage_orphans:
-                    root.setdefault(orphan_field_name, []).append(
-                        {"path": path, "parent_path": parent_path, "data": obj}
-                    )
+                    orphan_record: dict[str, Any] = {
+                        "path": path,
+                        "parent_path": parent_path,
+                        "data": obj,
+                    }
+                    if parent_ids:
+                        orphan_record["parent_ids"] = dict(parent_ids)
+                    root.setdefault(orphan_field_name, []).append(orphan_record)
                     merge_counters["orphan_attached"] += 1
                 else:
                     merge_counters["orphan_dropped"] += 1

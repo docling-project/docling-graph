@@ -47,6 +47,8 @@ _EXTRACTION_INSTRUCTIONS = (
     "8. Keep identifiers consistent across references (same entity => same identifier value).\n"
     "9. If the schema expects an object, do not output a scalar. For quantity/measurement "
     "objects, output an object with numeric_value and unit (if known), or text_value.\n"
+    "10. When the schema has value or quantity fields, also extract numeric values from "
+    "tables, figure captions, and result sections.\n"
 )
 
 

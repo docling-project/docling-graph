@@ -322,9 +322,9 @@ class ScholarlyRheologyPaper(BaseModel):
     authors: List[PersonIdentity] = Field(
         default_factory=list,
         description=(
-            "List of paper authors. "
-            "LOOK FOR: Names listed immediately below the title. "
-            "EXTRACT: Each name as a separate object. "
+            "List ALL paper authors. "
+            "LOOK FOR: Every name on the title/author line (comma-separated or on the same line). "
+            "EXTRACT: One object per author; do not stop after the first name. "
             "EXAMPLES: [{'full_name': 'John Doe'}, {'full_name': 'Jane Smith'}]"
         ),
     )
@@ -592,6 +592,7 @@ class SlurryComponent(BaseModel):
             "Numeric amount. "
             "LOOK FOR: Numbers in composition tables. "
             "EXTRACT: Number only. "
+            "If the text gives alternatives (e.g. '5 or 10 wt%'), create separate formulation/component entries for each variant or extract a range; do not omit. "
             "EXAMPLES: 85.0, 10.0"
         ),
         examples=[85.0, 10.0],
@@ -611,11 +612,14 @@ class SlurryComponent(BaseModel):
     particle_size: QuantityWithUnit | None = Field(
         None,
         description=(
-            "Particle size info (D50, etc.). "
-            "LOOK FOR: 'D50', 'particle size'. "
-            "EXTRACT: As quantity. "
-            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}"
+            "Particle size info (D50, median, mean diameter, etc.). "
+            "LOOK FOR: 'D50', 'particle size', 'median of X nm', 'mean particle size of X', "
+            "'particle size of X', 'diameter'. "
+            "EXTRACT: As quantity (numeric_value + unit) or text_value. "
+            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}, "
+            "'median of 130 nm' -> numeric_value 0.13, unit 'µm', or text_value 'median 130 nm'"
         ),
+        examples=[{"name": "D50", "numeric_value": 0.13, "unit": "µm"}],
     )
 
     molecular_weight: QuantityWithUnit | None = Field(
@@ -675,7 +679,10 @@ class SlurryFormulation(BaseModel):
     components: List[SlurryComponent] = edge(
         label="HAS_COMPONENT",
         default_factory=list,
-        description="List of ingredients in this formulation.",
+        description=(
+            "List of ingredients in this formulation. "
+            "Include a component for every distinct material mentioned (e.g. solvent, binder, active material, conductive additive)."
+        ),
     )
 
     target_solid_loading: QuantityWithUnit | None = Field(
@@ -721,6 +728,7 @@ class PreparationStep(BaseModel):
     )
 
     step_type: StepType = Field(
+        StepType.OTHER,
         description="Type of step (Mixing, Rest, etc.).",
         examples=["Mixing", "Rest"],
     )
@@ -757,6 +765,8 @@ class PreparationStep(BaseModel):
     @field_validator("step_type", mode="before")
     @classmethod
     def normalize_step(cls, v: Any) -> Any:
+        if v is None:
+            return StepType.OTHER
         return _normalize_enum(StepType, v)
 
 
@@ -1075,7 +1085,11 @@ class DerivedQuantity(BaseModel):
 
     value: QuantityWithUnit | None = Field(
         None,
-        description="The calculated value.",
+        description=(
+            "The calculated value. "
+            "LOOK FOR: Values in tables, figure captions, and result sections. "
+            "EXTRACT: Numeric value and unit (e.g. 198 Pa)."
+        ),
     )
 
     method: str | None = Field(
