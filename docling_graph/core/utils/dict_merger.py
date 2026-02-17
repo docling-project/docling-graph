@@ -4,7 +4,9 @@ Utility functions for document extraction.
 
 import copy
 import logging
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Set
+
+from .description_merger import merge_descriptions
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,13 @@ _MERGE_SIMILARITY_THRESHOLD = 0.5
 
 
 def merge_pydantic_models(
-    models: List[Any], template_class: type, context_tag: str | None = None
+    models: List[Any],
+    template_class: type,
+    context_tag: str | None = None,
+    description_merge_fields: Set[str] | None = None,
+    description_merge_max_length: int = 4096,
+    description_merge_summarizer: Callable[[str, List[str]], str] | None = None,
+    description_merge_summarizer_min_length: int = 0,
 ) -> Any:
     """
     Merge multiple Pydantic model instances into a single model.
@@ -21,6 +29,12 @@ def merge_pydantic_models(
     Args:
         models: List of Pydantic model instances to merge
         template_class: The Pydantic model class to use for the result
+        context_tag: Optional context for logging
+        description_merge_fields: If set, keys in this set are merged with
+            sentence-level dedup instead of overwrite (e.g. {"description", "summary"}).
+        description_merge_max_length: Max length when merging description fields.
+        description_merge_summarizer: Optional callable to summarize long merged descriptions.
+        description_merge_summarizer_min_length: Use summarizer when combined length >= this (0 = off).
 
     Returns:
         A single merged Pydantic model instance
@@ -40,7 +54,15 @@ def merge_pydantic_models(
 
     # Merge remaining models
     for d in dicts[1:]:
-        deep_merge_dicts(merged, d, context_tag=context_tag)
+        deep_merge_dicts(
+            merged,
+            d,
+            context_tag=context_tag,
+            description_merge_fields=description_merge_fields,
+            description_merge_max_length=description_merge_max_length,
+            description_merge_summarizer=description_merge_summarizer,
+            description_merge_summarizer_min_length=description_merge_summarizer_min_length,
+        )
 
     # Convert back to Pydantic model
     try:
@@ -59,12 +81,18 @@ def deep_merge_dicts(
     override_roots: set[str] | None = None,
     parent_path: str = "",
     merge_similarity_fallback: bool = False,
+    description_merge_fields: Set[str] | None = None,
+    description_merge_max_length: int = 4096,
+    description_merge_summarizer: Callable[[str, List[str]], str] | None = None,
+    description_merge_summarizer_min_length: int = 0,
 ) -> Dict[str, Any]:
     """
     Recursively merge dicts with smart list deduplication.
 
     For lists of dicts (entities), uses path-based identity_fields_map
     (e.g. "studies", "studies.experiments") for content-based deduplication.
+    When description_merge_fields is set, scalar string values for those keys
+    are merged with sentence-level dedup instead of overwritten.
     """
     for key, source_value in source.items():
         if override_roots and key in override_roots and source_value not in (None, "", [], {}):
@@ -91,6 +119,10 @@ def deep_merge_dicts(
                     override_roots=override_roots,
                     parent_path=child_path,
                     merge_similarity_fallback=merge_similarity_fallback,
+                    description_merge_fields=description_merge_fields,
+                    description_merge_max_length=description_merge_max_length,
+                    description_merge_summarizer=description_merge_summarizer,
+                    description_merge_summarizer_min_length=description_merge_summarizer_min_length,
                 )
 
             # Both lists: smart merge with path-based identity
@@ -105,6 +137,10 @@ def deep_merge_dicts(
                         parent_path=list_path,
                         identity_fields_map=identity_fields_map,
                         merge_similarity_fallback=merge_similarity_fallback,
+                        description_merge_fields=description_merge_fields,
+                        description_merge_max_length=description_merge_max_length,
+                        description_merge_summarizer=description_merge_summarizer,
+                        description_merge_summarizer_min_length=description_merge_summarizer_min_length,
                     )
                 else:
                     # Simple list: concatenate and deduplicate
@@ -112,9 +148,23 @@ def deep_merge_dicts(
                         if item not in target_value:
                             target_value.append(item)
 
-            # Overwrite
+            # Scalar: merge description-like fields or overwrite
             else:
-                target[key] = copy.deepcopy(source_value)
+                if (
+                    description_merge_fields
+                    and key in description_merge_fields
+                    and isinstance(target_value, str)
+                    and isinstance(source_value, str)
+                ):
+                    target[key] = merge_descriptions(
+                        target_value,
+                        source_value,
+                        max_length=description_merge_max_length,
+                        summarizer=description_merge_summarizer,
+                        summarizer_min_total_length=description_merge_summarizer_min_length,
+                    )
+                else:
+                    target[key] = copy.deepcopy(source_value)
 
     return target
 
@@ -153,6 +203,10 @@ def _merge_entity_lists(
     parent_path: str = "",
     identity_fields_map: dict[str, list[str]] | None = None,
     merge_similarity_fallback: bool = False,
+    description_merge_fields: Set[str] | None = None,
+    description_merge_max_length: int = 4096,
+    description_merge_summarizer: Callable[[str, List[str]], str] | None = None,
+    description_merge_summarizer_min_length: int = 0,
 ) -> List[Dict]:
     """
     Merge two lists of entity dicts, avoiding duplicates.
@@ -204,6 +258,10 @@ def _merge_entity_lists(
                 identity_fields_map=identity_fields_map,
                 parent_path=parent_path,
                 merge_similarity_fallback=merge_similarity_fallback,
+                description_merge_fields=description_merge_fields,
+                description_merge_max_length=description_merge_max_length,
+                description_merge_summarizer=description_merge_summarizer,
+                description_merge_summarizer_min_length=description_merge_summarizer_min_length,
             )
         elif source_id:
             merged.append(source_entity)
@@ -218,6 +276,10 @@ def _merge_entity_lists(
                     identity_fields_map=identity_fields_map,
                     parent_path=parent_path,
                     merge_similarity_fallback=merge_similarity_fallback,
+                    description_merge_fields=description_merge_fields,
+                    description_merge_max_length=description_merge_max_length,
+                    description_merge_summarizer=description_merge_summarizer,
+                    description_merge_summarizer_min_length=description_merge_summarizer_min_length,
                 )
             elif merge_similarity_fallback:
                 src_fp = _child_fingerprints(source_entity)
@@ -244,6 +306,10 @@ def _merge_entity_lists(
                         identity_fields_map=identity_fields_map,
                         parent_path=parent_path,
                         merge_similarity_fallback=merge_similarity_fallback,
+                        description_merge_fields=description_merge_fields,
+                        description_merge_max_length=description_merge_max_length,
+                        description_merge_summarizer=description_merge_summarizer,
+                        description_merge_summarizer_min_length=description_merge_summarizer_min_length,
                     )
                 else:
                     merged.append(source_entity)

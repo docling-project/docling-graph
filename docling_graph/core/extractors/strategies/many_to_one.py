@@ -133,7 +133,12 @@ class ManyToOneStrategy(BaseExtractor):
                 return models, None
 
             logger.info(f"Merging {len(models)} page models...")
-            merged_model = merge_pydantic_models(models, template)
+            merged_model = merge_pydantic_models(
+                models,
+                template,
+                description_merge_fields={"description", "summary"},
+                description_merge_max_length=4096,
+            )
 
             if merged_model:
                 logger.info("Successfully merged VLM page models")

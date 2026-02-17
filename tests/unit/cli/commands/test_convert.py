@@ -155,3 +155,37 @@ def test_structured_sparse_check_can_be_disabled(mock_load_config, mock_run_pipe
             pass
     cfg = mock_run_pipeline.call_args[0][0]
     assert cfg.structured_sparse_check is False
+
+
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_gleaning_enabled_and_max_passes_passed_to_config(mock_load_config, mock_run_pipeline):
+    """--gleaning-enabled and --gleaning-max-passes are passed to PipelineConfig."""
+    mock_load_config.return_value = {
+        "defaults": {
+            "backend": "llm",
+            "inference": "remote",
+            "processing_mode": "many-to-one",
+            "extraction_contract": "delta",
+            "export_format": "csv",
+        },
+        "docling": {"pipeline": "ocr"},
+        "models": {"llm": {"remote": {"provider": "openai", "model": "gpt-4o"}}},
+        "llm_overrides": {},
+    }
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        mock_detector.detect.return_value = MagicMock(value="file")
+        try:
+            convert_command(
+                source="doc.pdf",
+                template="templates.Foo",
+                gleaning_enabled=True,
+                gleaning_max_passes=2,
+                output_dir=Path("out"),
+            )
+        except typer.Exit:
+            pass
+    mock_run_pipeline.assert_called_once()
+    cfg = mock_run_pipeline.call_args[0][0]
+    assert cfg.gleaning_enabled is True
+    assert cfg.gleaning_max_passes == 2

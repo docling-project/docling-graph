@@ -261,3 +261,36 @@ def test_similarity_below_threshold_does_not_merge():
     )
     # No overlap in children => low Jaccard => should not merge
     assert len(result) == 2
+
+
+def test_description_merge_fields_merge_instead_of_overwrite():
+    """When description_merge_fields is set, string values are merged with sentence dedup."""
+    from docling_graph.core.utils.dict_merger import deep_merge_dicts
+
+    target = {"description": "First sentence. Second sentence."}
+    source = {"description": "Second sentence. Third sentence."}
+    deep_merge_dicts(
+        target,
+        source,
+        description_merge_fields={"description"},
+        description_merge_max_length=500,
+    )
+    assert "First sentence" in target["description"]
+    assert "Second sentence" in target["description"]
+    assert "Third sentence" in target["description"]
+
+
+def test_description_merge_fields_other_keys_overwritten():
+    """Keys not in description_merge_fields are still overwritten."""
+    from docling_graph.core.utils.dict_merger import deep_merge_dicts
+
+    target = {"title": "Old", "description": "Desc A."}
+    source = {"title": "New", "description": "Desc B."}
+    deep_merge_dicts(
+        target,
+        source,
+        description_merge_fields={"description"},
+        description_merge_max_length=500,
+    )
+    assert target["title"] == "New"
+    assert "Desc A" in target["description"] and "Desc B" in target["description"]

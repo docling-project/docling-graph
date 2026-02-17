@@ -112,6 +112,15 @@ Delta extraction uses the same `parallel_workers` setting (see Staged Tuning abo
 | `delta_resolver_properties` | `list[str]` | `[]` | Preferred properties used for resolver matching |
 | `delta_resolver_paths` | `list[str]` | `[]` | Restrict resolver to selected catalog paths |
 
+#### Gleaning (direct and delta)
+
+Optional second-pass extraction to improve recall. Applies to **direct** and **delta** contracts only (not staged).
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `gleaning_enabled` | `bool` | `False` | Run one extra extraction pass ("what did you miss?") and merge additional entities/relations. |
+| `gleaning_max_passes` | `int` | `1` | Max number of gleaning passes when `gleaning_enabled` is True. |
+
 #### Export Configuration
 
 | Field | Type | Default | Description |

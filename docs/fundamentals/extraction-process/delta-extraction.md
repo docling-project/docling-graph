@@ -115,6 +115,15 @@ Optional pass to merge near-duplicate entities after the graph merge.
 | `delta_resolver_properties` | *(config only)* | `None` | List of property names used for matching; default uses catalog fallback fields. |
 | `delta_resolver_paths` | *(config only)* | `None` | Restrict resolver to these catalog paths; empty means all. |
 
+### Gleaning (direct and delta)
+
+Optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **delta** contracts only (not staged). Disabled by default.
+
+| Python (`PipelineConfig` / config dict) | CLI flag | Default | Description |
+|----------------------------------------|----------|---------|-------------|
+| `gleaning_enabled` | `--gleaning-enabled` / `--no-gleaning-enabled` | `False` | Run one extra extraction pass and merge additional entities/relations. |
+| `gleaning_max_passes` | `--gleaning-max-passes` | `1` | Max number of gleaning passes when gleaning is enabled. |
+
 ---
 
 ## Usage
@@ -152,6 +161,9 @@ config = PipelineConfig(
     delta_resolvers_mode="semantic",
     delta_resolver_fuzzy_threshold=0.9,
     delta_resolver_semantic_threshold=0.92,
+    # Gleaning (optional second-pass recall; also applies to direct)
+    gleaning_enabled=False,
+    gleaning_max_passes=1,
 )
 context = run_pipeline(config)
 ```

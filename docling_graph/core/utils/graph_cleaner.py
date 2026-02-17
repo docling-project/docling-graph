@@ -62,6 +62,37 @@ def is_meaningful_value(value: Any) -> bool:
     return True
 
 
+def drop_self_edges(graph: nx.DiGraph) -> int:
+    """
+    Remove edges where source equals target (self-loops).
+
+    Modifies the graph in-place. Returns the number of edges removed.
+    """
+    to_remove = [(u, v) for u, v in graph.edges() if u == v]
+    for u, v in to_remove:
+        graph.remove_edge(u, v)
+    return len(to_remove)
+
+
+def cap_edge_keywords(
+    graph: nx.DiGraph,
+    edge_attr: str = "keywords",
+    max_keywords: int = 5,
+) -> int:
+    """
+    Truncate list-like edge attribute (e.g. keywords) to at most max_keywords.
+
+    Modifies edge data in-place. Returns the number of edges whose attribute was truncated.
+    """
+    capped = 0
+    for _u, _v, data in graph.edges(data=True):
+        val = data.get(edge_attr)
+        if isinstance(val, (list, tuple)) and len(val) > max_keywords:
+            data[edge_attr] = list(val)[:max_keywords]
+            capped += 1
+    return capped
+
+
 class GraphCleaner:
     """
     Post-processing cleanup for graphs built from merged batch extractions.
@@ -104,11 +135,17 @@ class GraphCleaner:
         # Step 2: Deduplicate semantically identical nodes
         merged_nodes = self._deduplicate_nodes(graph)
 
+        # Step 2.5: Remove self-edges (source == target)
+        removed_self = drop_self_edges(graph)
+
         # Step 3: Remove orphaned edges (edges to non-existent nodes)
         removed_edges = self._remove_orphaned_edges(graph)
 
         # Step 4: Remove duplicate edges
         removed_duplicates = self._remove_duplicate_edges(graph)
+
+        # Step 5: Cap edge keywords per edge
+        capped_keywords = cap_edge_keywords(graph, edge_attr="keywords", max_keywords=5)
 
         final_nodes = graph.number_of_nodes()
         final_edges = graph.number_of_edges()
@@ -118,8 +155,10 @@ class GraphCleaner:
                 f"[green][GraphCleaner][/green] Cleanup complete:\n"
                 f"  • Removed {removed_phantoms} phantom nodes\n"
                 f"  • Merged {merged_nodes} duplicate nodes\n"
+                f"  • Removed {removed_self} self-edges\n"
                 f"  • Removed {removed_edges} orphaned edges\n"
                 f"  • Removed {removed_duplicates} duplicate edges\n"
+                f"  • Capped keywords on {capped_keywords} edges\n"
                 f"  • Result: {final_nodes} nodes (-{initial_nodes - final_nodes}), "
                 f"{final_edges} edges (-{initial_edges - final_edges})"
             )

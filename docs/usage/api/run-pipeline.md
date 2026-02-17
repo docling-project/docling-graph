@@ -106,6 +106,8 @@ context = run_pipeline(config)
 | `extraction_contract` | `str` | `"direct"` | Extraction contract: `"direct"`, `"staged"`, or `"delta"` (see [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md)) |
 | `docling_config` | `str` | `"ocr"` | Docling pipeline: `"ocr"` or `"vision"` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
+| `gleaning_enabled` | `bool` | `False` | Run optional second-pass extraction to improve recall (direct and delta only). |
+| `gleaning_max_passes` | `int` | `1` | Max gleaning passes when gleaning is enabled. |
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports (None=auto: CLI=True, API=False) |
 | `export_format` | `str` | `"csv"` | Export format: `"csv"` or `"cypher"` |
 | `model_override` | `str` | `None` | Override model name |

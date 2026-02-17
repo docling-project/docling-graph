@@ -3,6 +3,8 @@ import pytest
 
 from docling_graph.core.utils.graph_cleaner import (
     GraphCleaner,
+    cap_edge_keywords,
+    drop_self_edges,
     validate_graph_structure,
 )
 
@@ -108,3 +110,30 @@ def test_validate_graph_structure_allows_single_node_no_edges():
     assert validate_graph_structure(g, raise_on_error=True) is True
     assert g.number_of_nodes() == 1
     assert g.number_of_edges() == 0
+
+
+def test_drop_self_edges():
+    """Self-edges (source == target) are removed."""
+    g = nx.DiGraph()
+    g.add_node("A")
+    g.add_node("B")
+    g.add_edge("A", "B", label="X")
+    g.add_edge("A", "A", label="self")
+    g.add_edge("B", "B", label="self2")
+    removed = drop_self_edges(g)
+    assert removed == 2
+    assert not g.has_edge("A", "A")
+    assert not g.has_edge("B", "B")
+    assert g.has_edge("A", "B")
+    assert g.number_of_edges() == 1
+
+
+def test_cap_edge_keywords():
+    """Edge keywords list is truncated to max_keywords."""
+    g = nx.DiGraph()
+    g.add_node("A")
+    g.add_node("B")
+    g.add_edge("A", "B", keywords=["a", "b", "c", "d", "e", "f"], label="X")
+    capped = cap_edge_keywords(g, edge_attr="keywords", max_keywords=5)
+    assert capped == 1
+    assert g.edges[("A", "B")]["keywords"] == ["a", "b", "c", "d", "e"]

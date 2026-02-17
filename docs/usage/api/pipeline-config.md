@@ -93,6 +93,8 @@ run_pipeline(config)  # or config.run()
 |-----------|------|---------|-------------|
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `max_batch_size` | `int` | `1` | Maximum batch size |
+| `gleaning_enabled` | `bool` | `False` | Run optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **delta** contracts only (not staged). See [Gleaning](../../fundamentals/extraction-process/delta-extraction.md#gleaning-direct-and-delta). |
+| `gleaning_max_passes` | `int` | `1` | Max number of gleaning passes when `gleaning_enabled` is True (1 = one extra pass). |
 
 For **delta** extraction, additional options (e.g. `llm_batch_token_size`, `parallel_workers`, `delta_resolvers_enabled`, `delta_resolvers_mode`, `delta_quality_max_parent_lookup_miss`) can be set via a config dict or YAML `defaults`; see [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) and [Configuration reference](../../reference/config.md).
 
@@ -289,12 +291,14 @@ config = PipelineConfig(
     parallel_workers=2,
     delta_resolvers_enabled=True,
     delta_resolvers_mode="semantic",
+    gleaning_enabled=False,  # Set True for optional second-pass recall boost
+    gleaning_max_passes=1,
 )
 
 run_pipeline(config)
 ```
 
-See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for all delta options and quality gates.
+See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for all delta options, quality gates, and [Gleaning](../../fundamentals/extraction-process/delta-extraction.md#gleaning-direct-and-delta) (direct and delta).
 
 ### 📍 Local VLM
 

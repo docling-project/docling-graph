@@ -576,13 +576,21 @@ def get_id_pass_shards_v2(
     return shards
 
 
+# Identity fields that hold entity names and should be normalized for dedup
+_NAME_IDENTITY_FIELDS: frozenset[str] = frozenset({"name", "title", "nom"})
+
+
 def merge_and_dedupe_flat_nodes(
     list_of_flat_nodes: list[list[dict[str, Any]]], catalog: NodeCatalog
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Merge shard results and dedupe by (path, ids tuple). Returns (flat_nodes, per_path_counts)."""
+    from docling_graph.core.utils.description_merger import merge_descriptions
+    from docling_graph.core.utils.entity_name_normalizer import normalize_entity_name
+
     spec_by_path = _get_spec_by_path(catalog)
     seen: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
     merged: list[dict[str, Any]] = []
+    key_to_index: dict = {}
     path_ordinals: dict[str, int] = {}
     for shard_idx, flat in enumerate(list_of_flat_nodes):
         # Re-key no-id instances per shard to avoid cross-shard collisions and keep parent refs coherent.
@@ -634,10 +642,33 @@ def merge_and_dedupe_flat_nodes(
                 # so keep all instances.
                 merged.append(node)
                 continue
-            key = (path, tuple(sorted(ids.items())))
+            # Normalize name-like identity fields so "John Doe" and "john doe" dedupe
+            normalized_ids = dict(ids)
+            for f in spec.id_fields:
+                if f in _NAME_IDENTITY_FIELDS and isinstance(normalized_ids.get(f), str):
+                    normalized_ids[f] = normalize_entity_name(normalized_ids[f])
+            key = (path, tuple(sorted(normalized_ids.items())))
             if key not in seen:
                 seen.add(key)
                 merged.append(node)
+                key_to_index[key] = len(merged) - 1
+            else:
+                # Merge descriptions into the existing node
+                existing_idx = key_to_index[key]
+                existing_node = merged[existing_idx]
+                for desc_field in ("description", "summary"):
+                    existing_val = existing_node.get(desc_field)
+                    new_val = node.get(desc_field)
+                    if isinstance(existing_val, str) and isinstance(new_val, str) and new_val:
+                        merged[existing_idx] = dict(existing_node)
+                        merged[existing_idx][desc_field] = merge_descriptions(
+                            existing_val, new_val, max_length=4096
+                        )
+                        existing_node = merged[existing_idx]
+                    elif isinstance(new_val, str) and new_val and not existing_val:
+                        merged[existing_idx] = dict(existing_node)
+                        merged[existing_idx][desc_field] = new_val
+                        existing_node = merged[existing_idx]
     per_path_counts = {spec.path: 0 for spec in catalog.nodes}
     for node in merged:
         p = node.get("path", "")

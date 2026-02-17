@@ -430,6 +430,8 @@ class ExtractionStage(PipelineStage):
             "quality_max_unknown_path_drops": conf.get("quality_max_unknown_path_drops", -1),
             "quality_max_id_mismatch": conf.get("quality_max_id_mismatch", -1),
             "quality_max_nested_property_drops": conf.get("quality_max_nested_property_drops", -1),
+            "gleaning_enabled": conf.get("gleaning_enabled", False),
+            "gleaning_max_passes": conf.get("gleaning_max_passes", 1),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -649,6 +651,8 @@ class ExtractionStage(PipelineStage):
             "quality_max_unknown_path_drops": conf.get("quality_max_unknown_path_drops", -1),
             "quality_max_id_mismatch": conf.get("quality_max_id_mismatch", -1),
             "quality_max_nested_property_drops": conf.get("quality_max_nested_property_drops", -1),
+            "gleaning_enabled": conf.get("gleaning_enabled", False),
+            "gleaning_max_passes": conf.get("gleaning_max_passes", 1),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
