@@ -7,6 +7,7 @@ Optional LLM summarizer: when total length exceeds a threshold, a callable can
 produce one concise summary; fallback to sentence-dedup + truncate on failure.
 Used by dict_merger, delta merge_delta_graphs, and staged merge.
 """
+
 from __future__ import annotations
 
 import logging

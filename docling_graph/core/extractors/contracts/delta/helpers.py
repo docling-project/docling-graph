@@ -449,7 +449,7 @@ def merge_delta_graphs(
         props = rel.get("properties")
         if isinstance(props, dict):
             kw = props.get("keywords")
-            if isinstance(kw, (list, tuple)) and len(kw) > 5:
+            if isinstance(kw, list | tuple) and len(kw) > 5:
                 props["keywords"] = list(kw)[:5]
                 merge_stats["relationship_keywords_capped"] += 1
 

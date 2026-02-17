@@ -97,8 +97,8 @@ Delta extraction uses the same `parallel_workers` setting (see Staged Tuning abo
 | `llm_batch_token_size` | `int` | `2048` | Max input tokens per delta batch (new LLM call when exceeded) |
 | `delta_quality_require_root` | `bool` | `True` | Require root instance in merged output |
 | `delta_quality_min_instances` | `int` | `1` | Minimum node count threshold |
-| `delta_quality_max_parent_lookup_miss` | `int` | `4` | Max parent-link misses before quality failure |
-| `delta_quality_adaptive_parent_lookup` | `bool` | `True` | Adaptive miss tolerance when root exists |
+| `delta_quality_max_parent_lookup_miss` | `int` | `4` | Max parent-link misses before quality failure; `-1` disables this check |
+| `delta_quality_adaptive_parent_lookup` | `bool` | `True` | Adaptive miss tolerance when root exists (e.g. up to half of instances, cap 300) |
 | `delta_quality_require_relationships` | `bool` | `False` | Require at least one attached relationship/list linkage |
 | `delta_quality_require_structural_attachments` | `bool` | `False` | Require structural attachments (avoid root-only outputs) |
 | `delta_normalizer_validate_paths` | `bool` | `True` | Drop unknown/non-catalog paths |

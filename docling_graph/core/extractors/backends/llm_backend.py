@@ -861,6 +861,7 @@ class LlmBackend:
                 and self._staged_config_raw.get("gleaning_enabled")
                 and int(self._staged_config_raw.get("gleaning_max_passes", 1) or 1) >= 1
             ):
+
                 def _gleaning_llm_call(prompt_dict: dict) -> dict | list | None:
                     return self.client.get_json_response(
                         prompt=prompt_dict,
@@ -869,6 +870,7 @@ class LlmBackend:
                         response_top_level="object",
                         response_schema_name="direct_extraction",
                     )
+
                 gleaned = run_gleaning_pass_direct(
                     markdown=markdown,
                     existing_result=parsed_json,
@@ -893,8 +895,9 @@ class LlmBackend:
         gen = getattr(self.client, "_generation", None)
         if gen is not None and getattr(gen, "max_tokens", None) is not None:
             return int(gen.max_tokens)
-        if getattr(self.client, "max_tokens", None) is not None:
-            return int(self.client.max_tokens)
+        max_tok = getattr(self.client, "max_tokens", None)
+        if max_tok is not None:
+            return int(max_tok)
         return None
 
     def _retry_max_tokens_for_truncation(self, context_max: int | None = None) -> int | None:
@@ -1055,7 +1058,11 @@ class LlmBackend:
             truncated = bool(details.get("truncated")) if isinstance(details, dict) else False
             if truncated and self._retry_on_truncation:
                 context_max = self._get_staged_call_max_tokens(context)
-                if context_max is None and isinstance(details, dict) and isinstance(details.get("max_tokens"), int):
+                if (
+                    context_max is None
+                    and isinstance(details, dict)
+                    and isinstance(details.get("max_tokens"), int)
+                ):
                     context_max = int(details["max_tokens"])
                 retry_max = self._retry_max_tokens_for_truncation(context_max)
                 if retry_max is not None:

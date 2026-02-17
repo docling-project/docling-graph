@@ -106,7 +106,7 @@ def merge_gleaned_direct(
     deep_merge_dicts(
         merged,
         extra,
-        description_merge_fields=description_merge_fields,
+        description_merge_fields=set(description_merge_fields),
         description_merge_max_length=description_merge_max_length,
     )
     return merged
@@ -125,7 +125,7 @@ def build_already_found_summary_delta(
     lines: list[str] = []
     nodes = merged_graph.get("nodes") or []
     rels = merged_graph.get("relationships") or []
-    for i, n in enumerate(nodes[:max_nodes]):
+    for _i, n in enumerate(nodes[:max_nodes]):
         if not isinstance(n, dict):
             continue
         path = n.get("path", "")
@@ -135,7 +135,7 @@ def build_already_found_summary_delta(
         desc = (props.get("description") or props.get("summary") or "")[:200]
         lines.append(f"- Node path={path} ids={ids_str} description={desc!r}...")
     lines.append("")
-    for i, r in enumerate(rels[:max_rels]):
+    for _i, r in enumerate(rels[:max_rels]):
         if not isinstance(r, dict):
             continue
         src = r.get("source_key") or r.get("source_id") or ""

@@ -80,8 +80,8 @@ The gate uses **attached node count** (nodes successfully attached into the root
 |----------------------|---------|-------------|
 | `delta_quality_require_root` | `True` | Require at least one root instance (`path=""`). |
 | `delta_quality_min_instances` | `20` | Minimum attached nodes; below this, gate fails and direct extraction is used. |
-| `delta_quality_max_parent_lookup_miss` | `4` | Max allowed parent lookup misses before fail. |
-| `delta_quality_adaptive_parent_lookup` | `True` | When root exists, allow higher effective miss tolerance (e.g. ~25% of instances, cap 150). |
+| `delta_quality_max_parent_lookup_miss` | `4` | Max allowed parent lookup misses before fail. Use `-1` to disable this check (e.g. for deep or id-sparse schemas). |
+| `delta_quality_adaptive_parent_lookup` | `True` | When root exists, allow higher effective miss tolerance (e.g. up to half of instances, cap 300). |
 | `delta_quality_require_relationships` | `False` | Require at least one relationship in the graph. |
 
 ### Identity filter

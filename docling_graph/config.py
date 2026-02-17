@@ -237,8 +237,8 @@ class PipelineConfig(BaseModel):
     delta_quality_max_parent_lookup_miss: int = Field(
         default=4,
         description=(
-            "Maximum allowed parent lookup misses before delta quality gate fails "
-            "(higher default for weak local models)."
+            "Maximum allowed parent lookup misses before delta quality gate fails. "
+            "Use -1 to disable this check (e.g. for deep or id-sparse schemas)."
         ),
     )
     delta_quality_adaptive_parent_lookup: bool = Field(
