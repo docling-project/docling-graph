@@ -112,9 +112,6 @@ class VlmBackend:
                                 rich_print(
                                     f"  - [bold magenta]{loc}[/bold magenta]: [red]{error['msg']}[/red]"
                                 )
-                            rich_print(
-                                f"\n[yellow]Extracted Data (raw):[/yellow]\n{page.extracted_data}\n"
-                            )
                             continue
 
             if extracted_objects:

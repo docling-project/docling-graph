@@ -107,6 +107,10 @@ class LlmBackend:
                 formatted += f" ([cyan]{value}[/cyan] {key})"
         rich_print(formatted)
 
+    def _log_extraction(self, message: str, prefix: str) -> None:
+        """Log extraction-phase message with contract-specific prefix (e.g. DirectExtraction)."""
+        rich_print(f"[blue][{prefix}][/blue] {message}")
+
     def _log_success(self, message: str) -> None:
         """Log success message."""
         rich_print(f"[blue][LlmBackend][/blue] {message}")
@@ -125,14 +129,19 @@ class LlmBackend:
     def _log_validation_error(
         self, context: str, error: ValidationError, raw_data: dict | list
     ) -> None:
-        """Log detailed validation error information."""
+        """Log detailed validation error information. Raw data is stored in trace_data when present."""
         rich_print(f"[blue][LlmBackend][/blue] [yellow]Validation Error for {context}:[/yellow]")
         rich_print("  The data extracted by the LLM does not match your Pydantic template.")
         rich_print("[red]Details:[/red]")
         for err in error.errors():
             loc = " -> ".join(map(str, err["loc"]))
             rich_print(f"  - [bold magenta]{loc}[/bold magenta]: [red]{err['msg']}[/red]")
-        rich_print(f"\n[yellow]Extracted Data (raw):[/yellow]\n{raw_data}\n")
+        if self.trace_data is not None:
+            self.trace_data.emit(
+                "validation_error_raw_data",
+                "extraction",
+                {"context": context, "raw_data": raw_data},
+            )
 
     @staticmethod
     def _is_quantity_with_unit_error(err: dict) -> bool:
@@ -1140,6 +1149,11 @@ class LlmBackend:
         context: str = "document",
     ) -> BaseModel | None:
         """Run delta extraction from pre-chunked content and validate final model."""
+        self._log_extraction(
+            f"Running delta extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
+            "DeltaExtraction",
+        )
+        self._log_extraction("Calling LLM (batch mode)...", "DeltaExtraction")
         schema_dict = self._get_schema_dict(template)
         parsed_json = self._run_delta_orchestrator(
             chunks=chunks,
@@ -1271,7 +1285,7 @@ class LlmBackend:
         Returns:
             Extracted and validated Pydantic model instance, or None if failed
         """
-        # Log extraction start (one line: direct vs staged)
+        # Log extraction start with contract-specific prefix
         mode = (
             "Delta"
             if (self.extraction_contract == "delta" and not is_partial)
@@ -1279,7 +1293,10 @@ class LlmBackend:
                 "Staged" if (self.extraction_contract == "staged" and not is_partial) else "Direct"
             )
         )
-        self._log_info(f"{mode} extraction from {context}", chars=len(markdown))
+        prefix = f"{mode}Extraction"
+        self._log_extraction(
+            f"{mode} extraction from {context} ([cyan]{len(markdown)}[/cyan] chars)", prefix
+        )
 
         # Early validation for empty markdown
         if not markdown or len(markdown.strip()) == 0:
@@ -1289,6 +1306,8 @@ class LlmBackend:
         # Get cached schema JSON
         schema_json = self._get_schema_json(template)
         schema_dict = self._get_schema_dict(template)
+
+        self._log_extraction("Calling LLM...", prefix)
 
         # Call LLM
         parsed_json = self._call_llm_for_extraction(

@@ -481,13 +481,20 @@ def reattach_orphans(
         parent_ids_raw = item.get("parent_ids")
         parent_spec = spec_by_path.get(parent_path)
         had_usable_parent_ids = False
-        if parent_ids_raw and isinstance(parent_ids_raw, dict) and parent_spec and parent_spec.id_fields:
+        if (
+            parent_ids_raw
+            and isinstance(parent_ids_raw, dict)
+            and parent_spec
+            and parent_spec.id_fields
+        ):
             resolved = _resolve_orphan_parent_ids(parent_ids_raw, parent_spec, catalog)
             if resolved:
                 had_usable_parent_ids = True
                 matching = [
-                    c for c in candidates
-                    if isinstance(c, dict) and _candidate_matches_parent_ids(c, resolved, parent_spec)
+                    c
+                    for c in candidates
+                    if isinstance(c, dict)
+                    and _candidate_matches_parent_ids(c, resolved, parent_spec)
                 ]
                 if len(matching) == 1:
                     parent_obj = matching[0]
