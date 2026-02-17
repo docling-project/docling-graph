@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from docling_graph.core.extractors.contracts.delta.catalog import build_delta_node_catalog
 from docling_graph.core.extractors.contracts.delta.helpers import (
     build_dedup_policy,
+    chunk_batches_by_token_limit,
     ensure_root_node,
     filter_entity_nodes_by_identity,
     flatten_node_properties,
@@ -352,6 +353,65 @@ def test_merge_delta_graphs_dedups_relationships_with_canonicalized_endpoint_ids
         dedup_policy=policy,
     )
     assert len(merged["relationships"]) == 1
+
+
+def test_chunk_batches_by_token_limit_fallback_when_token_counts_shorter_than_chunks() -> None:
+    """When token_counts has fewer elements than chunks, missing indices use max(1, len(chunk.split()))."""
+    chunks = ["one", "two words", "three word chunk"]
+    token_counts = [1, 2]  # shorter than chunks
+    batches = chunk_batches_by_token_limit(chunks, token_counts, max_batch_tokens=10)
+    assert len(batches) >= 1
+    all_chunks = [chunk for batch in batches for _, chunk, _ in batch]
+    assert all_chunks == chunks
+
+
+def test_chunk_batches_by_token_limit_raises_when_max_zero() -> None:
+    """chunk_batches_by_token_limit raises ValueError when max_batch_tokens <= 0."""
+    import pytest
+
+    with pytest.raises(ValueError, match="max_batch_tokens must be > 0"):
+        chunk_batches_by_token_limit(["a"], [1], max_batch_tokens=0)
+
+
+def test_filter_entity_nodes_by_identity_removes_relationships_to_dropped_nodes() -> None:
+    """When a node is dropped as section title, relationships referencing it are removed."""
+
+    class Offer(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["nom"])
+        nom: str
+
+    class Doc(BaseModel):
+        offres: list[Offer] = Field(
+            default_factory=list,
+            examples=[[{"nom": "ESSENTIELLE"}, {"nom": "CONFORT"}]],
+        )
+
+    catalog = build_delta_node_catalog(Doc)
+    policy = build_dedup_policy(catalog)
+    # Node 1 kept, Node 2 dropped (section-title-like). Rel from 1 to 2 should be removed.
+    graph = {
+        "nodes": [
+            {"path": "offres[]", "ids": {"nom": "ESSENTIELLE"}, "properties": {}},
+            {
+                "path": "offres[]",
+                "ids": {"nom": "LA PRESCRIPTION ET LE TRAITEMENT DES RÉCLAMATIONS"},
+                "properties": {},
+            },
+        ],
+        "relationships": [
+            {
+                "source_path": "offres[]",
+                "source_ids": {"nom": "ESSENTIELLE"},
+                "target_path": "offres[]",
+                "target_ids": {"nom": "LA PRESCRIPTION ET LE TRAITEMENT DES RÉCLAMATIONS"},
+                "label": "REL",
+            },
+        ],
+    }
+    out, stats = filter_entity_nodes_by_identity(graph, catalog, policy, enabled=True, strict=False)
+    assert len(out["nodes"]) == 1
+    assert stats["identity_filter_dropped"] == 1
+    assert len(out["relationships"]) == 0
 
 
 def test_sanitize_batch_echo_from_graph_clears_echoed_batch_labels() -> None:

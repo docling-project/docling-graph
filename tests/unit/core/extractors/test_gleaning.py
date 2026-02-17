@@ -51,6 +51,31 @@ def test_run_gleaning_pass_direct_returns_dict_when_llm_returns_dict():
     assert out == {"extra": "value"}
 
 
+def test_get_gleaning_prompt_direct_truncates_large_existing():
+    """When existing_result serializes to > 8000 chars, prompt truncates with hint."""
+    large = {"key": "x" * 9000}
+    prompt = get_gleaning_prompt_direct(
+        markdown="Doc",
+        existing_result=large,
+        schema_json="{}",
+    )
+    assert "... (truncated)" in prompt["user"]
+
+
+def test_merge_gleaned_direct_custom_merge_options():
+    """merge_gleaned_direct accepts custom description_merge_fields and description_merge_max_length."""
+    existing = {"title": "A", "summary": "First."}
+    extra = {"summary": "Second."}
+    merged = merge_gleaned_direct(
+        existing,
+        extra,
+        description_merge_fields=frozenset({"summary"}),
+        description_merge_max_length=100,
+    )
+    assert merged["title"] == "A"
+    assert "First." in merged["summary"] and "Second." in merged["summary"]
+
+
 def test_build_already_found_summary_delta():
     graph = {
         "nodes": [
@@ -64,3 +89,31 @@ def test_build_already_found_summary_delta():
     assert "path=p" in summary
     assert "X" in summary
     assert "a" in summary and "b" in summary
+
+
+def test_build_already_found_summary_delta_uses_source_id_target_id_and_edge_label():
+    """Summary includes rels that use source_id/target_id and edge_label keys."""
+    graph = {
+        "nodes": [{"path": "items[]", "ids": {"id": "1"}, "properties": {}}],
+        "relationships": [
+            {
+                "source_id": "src-1",
+                "target_id": "tgt-2",
+                "edge_label": "LINKS",
+            },
+        ],
+    }
+    summary = build_already_found_summary_delta(graph, max_nodes=5, max_rels=5)
+    assert "src-1" in summary and "tgt-2" in summary
+    assert "LINKS" in summary
+
+
+def test_build_already_found_summary_delta_skips_non_dict_node():
+    """Non-dict entries in nodes are skipped."""
+    graph = {
+        "nodes": ["not a dict", {"path": "p", "ids": {}, "properties": {}}],
+        "relationships": [],
+    }
+    summary = build_already_found_summary_delta(graph)
+    assert "path=p" in summary
+    assert "not a dict" not in summary

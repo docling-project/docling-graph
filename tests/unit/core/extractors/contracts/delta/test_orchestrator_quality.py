@@ -1,3 +1,5 @@
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -325,3 +327,39 @@ def test_extract_retries_failed_batch_by_splitting() -> None:
     assert diagnostics["split_batch_sizes"] == [[1, 1]]
     # With global_context, the second sub-batch prompt may still contain the first chunk, so mock can fail it (split_failures 1).
     assert diagnostics["split_failures"] in (0, 1)
+
+
+def test_extract_writes_debug_json_when_debug_dir_set() -> None:
+    """When debug_dir is set, extract() writes delta_trace.json, delta_merged_graph.json, delta_merged_output.json."""
+
+    def llm_ok(**kwargs: Any) -> dict[str, Any]:
+        return {
+            "nodes": [
+                {
+                    "path": "",
+                    "ids": {"document_number": "D1"},
+                    "properties": {"document_number": "D1"},
+                }
+            ],
+            "relationships": [],
+        }
+
+    with tempfile.TemporaryDirectory() as tmp:
+        orchestrator = DeltaOrchestrator(
+            llm_call_fn=llm_ok,
+            template=Root,
+            config=DeltaOrchestratorConfig(
+                quality_require_root=True,
+                quality_min_instances=1,
+            ),
+            debug_dir=tmp,
+        )
+        result = orchestrator.extract(
+            chunks=["chunk"],
+            chunk_metadata=None,
+            context="debug-test",
+        )
+        assert result is not None
+        assert (Path(tmp) / "delta_trace.json").exists()
+        assert (Path(tmp) / "delta_merged_graph.json").exists()
+        assert (Path(tmp) / "delta_merged_output.json").exists()

@@ -19,12 +19,17 @@ from docling_graph.core.extractors.contracts.staged.catalog import (
     get_id_pass_shards,
     get_id_pass_shards_v2,
     get_identity_paths,
+    get_model_for_path,
     merge_and_dedupe_flat_nodes,
     validate_id_pass_skeleton_response,
     write_catalog_artifact,
     write_id_pass_artifact,
 )
-from tests.fixtures.sample_templates.test_template import SampleCompany, SampleInvoice
+from tests.fixtures.sample_templates.test_template import (
+    SampleCompany,
+    SampleInvoice,
+    SamplePerson,
+)
 
 
 def test_build_node_catalog_simple_invoice():
@@ -141,6 +146,31 @@ def test_discovery_prompt_explicitly_handles_no_id_paths():
     prompt = get_discovery_prompt("Document text.", catalog)
     assert "ids must be {}" in prompt["system"]
     assert "Every NON-ROOT node must have parent" in prompt["system"]
+
+
+def test_catalog_with_edge_label_populates_edges():
+    """When template has json_schema_extra edge_label on list or scalar, catalog.edges is populated."""
+
+    class Address(BaseModel):
+        street: str = ""
+        model_config = ConfigDict(is_entity=False)
+
+    class Employee(BaseModel):
+        email: str
+        addresses: list[Address] = Field(
+            default_factory=list, json_schema_extra={"edge_label": "HAS_ADDRESS"}
+        )
+        model_config = ConfigDict(graph_id_fields=["email"])
+
+    class Company(BaseModel):
+        company_name: str
+        employees: list[Employee] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["company_name"])
+
+    catalog = build_node_catalog(Company)
+    assert len(catalog.edges) >= 1
+    edge_labels = [e.edge_label for e in catalog.edges]
+    assert "HAS_ADDRESS" in edge_labels
 
 
 def test_catalog_collects_field_aliases() -> None:
@@ -321,6 +351,27 @@ def test_get_allowed_paths_for_primary_paths_includes_parents():
     assert "employees[]" in allowed
     assert "" in allowed
     assert len(allowed) >= 2
+
+
+def test_get_model_for_path_returns_model_for_root_and_list_paths():
+    """get_model_for_path returns the Pydantic model for a catalog path."""
+    catalog = build_node_catalog(SampleCompany)
+    assert catalog.paths()  # ensure we have paths
+    root_model = get_model_for_path(SampleCompany, "")
+    assert root_model is SampleCompany
+    emp_model = get_model_for_path(SampleCompany, "employees[]")
+    assert emp_model is SamplePerson
+    missing = get_model_for_path(SampleCompany, "nonexistent_path")
+    assert missing is None
+
+
+def test_build_discovery_schema_with_empty_allowed_paths():
+    """build_discovery_schema with empty allowed_paths produces valid schema with empty path enum."""
+    catalog = build_node_catalog(SampleInvoice)
+    schema_str = build_discovery_schema(catalog, allowed_paths=[])
+    data = json.loads(schema_str)
+    path_enum = data["$defs"]["node_instance"]["properties"]["path"].get("enum")
+    assert path_enum == []
 
 
 def test_build_discovery_schema_restricts_paths():

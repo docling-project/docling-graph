@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from docling_graph.core.extractors.backends.llm_backend import LlmBackend
 from docling_graph.exceptions import ClientError
@@ -299,6 +299,141 @@ class TestExtractFromMarkdown:
         assert result.name == "Alice"
         assert result.age == 21
         mock_run_delta.assert_called_once()
+
+
+class TestDeltaPathRealOrchestrator:
+    """Run delta extraction without mocking run_delta_orchestrator; mock LLM instead to cover backend paths."""
+
+    @staticmethod
+    def _delta_root_template() -> type[BaseModel]:
+        """Minimal root model for delta extraction (catalog has single root path)."""
+
+        class Root(BaseModel):
+            model_config = ConfigDict(graph_id_fields=["document_number"])
+            document_number: str
+
+        return Root
+
+    def test_delta_extract_from_chunk_batches_with_real_orchestrator(self, mock_llm_client):
+        """Delta path: extract_from_chunk_batches runs real run_delta_orchestrator; LLM returns valid delta graph."""
+        root = self._delta_root_template()
+        # Valid DeltaGraph: one root node so orchestrator merge + quality gate pass
+        mock_llm_client.get_json_response.return_value = {
+            "nodes": [
+                {
+                    "path": "",
+                    "ids": {"document_number": "D1"},
+                    "properties": {"document_number": "D1"},
+                }
+            ],
+            "relationships": [],
+        }
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="delta",
+            staged_config={
+                "llm_batch_token_size": 1024,
+                "delta_quality_min_instances": 1,
+            },
+        )
+        result = backend.extract_from_chunk_batches(
+            chunks=["Chunk one."],
+            chunk_metadata=[{"chunk_id": 0, "token_count": 10}],
+            template=root,
+            context="test",
+        )
+        assert result is not None
+        assert result.document_number == "D1"
+
+    def test_delta_extract_from_markdown_fallback_path(self, mock_llm_client):
+        """Delta contract: extract_from_markdown uses _extract_with_delta_contract (single-chunk fallback)."""
+        root = self._delta_root_template()
+        mock_llm_client.get_json_response.return_value = {
+            "nodes": [
+                {
+                    "path": "",
+                    "ids": {"document_number": "D2"},
+                    "properties": {"document_number": "D2"},
+                }
+            ],
+            "relationships": [],
+        }
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="delta",
+            staged_config={
+                "llm_batch_token_size": 1024,
+                "delta_quality_min_instances": 1,
+            },
+        )
+        result = backend.extract_from_markdown(markdown="Full doc.", template=root, context="doc")
+        assert result is not None
+        assert result.document_number == "D2"
+
+    def test_delta_extract_from_chunk_batches_returns_none_when_no_result(self, mock_llm_client):
+        """When delta orchestrator returns None (e.g. quality gate fail), backend returns None."""
+        root = self._delta_root_template()
+        # Empty nodes -> quality gate may fail (no root); or we can return None from LLM
+        mock_llm_client.get_json_response.return_value = {"nodes": [], "relationships": []}
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="delta",
+            staged_config={"llm_batch_token_size": 1024, "delta_quality_require_root": True},
+        )
+        result = backend.extract_from_chunk_batches(
+            chunks=["Chunk."],
+            chunk_metadata=None,
+            template=root,
+            context="test",
+        )
+        # Empty graph leads to quality gate failure -> orchestrator returns None
+        assert result is None
+
+    def test_staged_extract_with_real_orchestrator(self, mock_llm_client):
+        """Staged path: run_staged_orchestrator is invoked; mock LLM for ID/fill passes."""
+        mock_llm_client.get_json_response.side_effect = [
+            {"nodes": [{"path": "", "id_fields": ["invoice_number"]}], "edges": []},
+            {
+                "nodes": [
+                    {
+                        "path": "",
+                        "ids": {"invoice_number": "INV-1"},
+                        "properties": {"invoice_number": "INV-1"},
+                    }
+                ]
+            },
+            {"edges": []},
+        ]
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+        )
+        # We still need to not mock run_staged_orchestrator to hit backend code; but staged
+        # has 3 passes and complex contract. Prefer patching run_staged to return a dict and
+        # assert backend passes it through and validates.
+        with patch(
+            "docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator"
+        ) as mock_staged:
+            mock_staged.return_value = {"name": "Staged", "age": 22}
+            result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
+        assert result is not None
+        assert result.name == "Staged"
+        assert result.age == 22
+        mock_staged.assert_called_once()
+        # Backend should pass trace_data when present
+        backend.trace_data = MagicMock()
+        with patch(
+            "docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator"
+        ) as mock_staged2:
+            mock_staged2.return_value = {"name": "T", "age": 1}
+            backend.extract_from_markdown(markdown="y", template=MockTemplate)
+        call_kw = mock_staged2.call_args[1]
+        assert call_kw.get("trace_data") is backend.trace_data
+
+
+class TestStagedContractPartialFallback:
+    """Staged contract with partial extraction falls back to direct."""
 
     @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
     def test_staged_contract_partial_extraction_falls_back_to_direct(

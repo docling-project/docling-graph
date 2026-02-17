@@ -103,3 +103,37 @@ def test_merge_summarizer_failure_fallback():
         summarizer_min_total_length=100,
     )
     assert "A." in result
+
+
+def test_merge_summarizer_returns_empty_string_uses_sentence_dedup_fallback():
+    """When summarizer returns empty string, merge falls back to sentence-dedup path."""
+
+    def summarizer(_e: str, _n: list) -> str:
+        return ""
+
+    result = merge_descriptions(
+        "First sentence. " * 50,
+        "Second sentence. " * 50,
+        max_length=5000,
+        summarizer=summarizer,
+        summarizer_min_total_length=100,
+    )
+    assert "First sentence" in result
+    assert "Second sentence" in result
+
+
+def test_merge_summarizer_returns_non_string_uses_sentence_dedup_fallback():
+    """When summarizer returns non-string (e.g. None), merge falls back to sentence-dedup."""
+
+    def summarizer(_e: str, _n: list) -> None:
+        return None
+
+    result = merge_descriptions(
+        "Alpha. " * 50,
+        "Beta. " * 50,
+        max_length=5000,
+        summarizer=summarizer,
+        summarizer_min_total_length=100,
+    )
+    assert "Alpha" in result
+    assert "Beta" in result

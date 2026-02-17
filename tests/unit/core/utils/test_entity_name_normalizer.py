@@ -54,3 +54,26 @@ def test_the_strips_to_empty():
     # "The " with trailing space strips to empty; single word "The" stays THE
     assert normalize_entity_name("The ") == ""
     assert normalize_entity_name("The  ") == ""
+
+
+def test_non_string_input_returns_empty():
+    """Non-string input (e.g. int) returns empty string."""
+    assert normalize_entity_name(123) == ""
+    assert normalize_entity_name(0) == ""
+
+
+def test_single_word_article_returns_empty():
+    """Single-word articles 'The', 'A', 'An' (and lowercase) normalize to empty."""
+    assert normalize_entity_name("The") == ""
+    assert normalize_entity_name("the") == ""
+    assert normalize_entity_name("A") == ""
+    assert normalize_entity_name("a") == ""
+    assert normalize_entity_name("An") == ""
+    assert normalize_entity_name("an") == ""
+
+
+def test_unicode_possessive_right_single_quote():
+    """Unicode right single quote (\\u2019) possessive is stripped like ASCII apostrophe."""
+    # \u2019 is the Unicode right single quotation mark (e.g. from smart quotes)
+    assert normalize_entity_name("Company\u2019s") == "COMPANY"
+    assert normalize_entity_name("John\u2019s Report") == "JOHN_REPORT"

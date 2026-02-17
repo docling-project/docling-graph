@@ -195,3 +195,29 @@ def test_reattach_defensive_key_handling_alias_maps_to_canonical() -> None:
     assert len(merged_root["boxes"][0]["widgets"]) == 1
     assert merged_root["boxes"][0]["widgets"][0]["name"] == "W1"
     assert len(merged_root["boxes"][1]["widgets"]) == 0
+
+
+def test_reattach_parent_ids_with_extra_alias_key_not_in_id_fields() -> None:
+    """When parent_ids has a key that is an alias but canonical not in parent id_fields, it is skipped."""
+    catalog = build_delta_node_catalog(RootWithBoxes)
+    # Alias "box_id" -> "box_id", and a spurious alias "other" -> "other" (not in id_fields)
+    alias_catalog = DeltaNodeCatalog(
+        nodes=catalog.nodes,
+        field_aliases={"Box_ID": "box_id", "other": "other"},
+    )
+    merged_root = {
+        "doc_id": "D1",
+        "boxes": [{"box_id": "B1", "widgets": []}],
+        "__orphans__": [
+            {
+                "path": "boxes[].widgets[]",
+                "parent_path": "boxes[]",
+                "parent_ids": {"Box_ID": "B1", "other": "ignored"},
+                "data": {"name": "W2"},
+            },
+        ],
+    }
+    reattach_orphans(merged_root, alias_catalog)
+    assert len(merged_root["__orphans__"]) == 0
+    assert len(merged_root["boxes"][0]["widgets"]) == 1
+    assert merged_root["boxes"][0]["widgets"][0]["name"] == "W2"
