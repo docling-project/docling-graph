@@ -23,6 +23,7 @@ from ....protocols import LLMClientProtocol
 from ..contracts import direct
 from ..contracts.delta.backend_ops import run_delta_orchestrator
 from ..contracts.staged.backend_ops import run_staged_orchestrator
+from ..gleaning import merge_gleaned_direct, run_gleaning_pass_direct
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,12 @@ class LlmBackend:
         self.structured_sparse_check = structured_sparse_check
         self.trace_data: Any = None  # Set by strategy when config.debug is True
         self.last_call_diagnostics: dict[str, Any] = {}
+        self._retry_on_truncation = bool(self._staged_config_raw.get("retry_on_truncation", True))
+        self._truncation_retry_multiplier = max(
+            1.0,
+            float(self._staged_config_raw.get("truncation_retry_max_tokens_multiplier", 2.0)),
+        )
+        self._truncation_retry_cap = 32768
 
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
@@ -845,11 +852,63 @@ class LlmBackend:
                 for passthrough_key in ("provider", "model"):
                     if passthrough_key in client_diag:
                         self.last_call_diagnostics[passthrough_key] = client_diag[passthrough_key]
+
+            # Optional gleaning pass (direct only, full-doc)
+            if (
+                not is_partial
+                and template is not None
+                and isinstance(parsed_json, dict)
+                and self._staged_config_raw.get("gleaning_enabled")
+                and int(self._staged_config_raw.get("gleaning_max_passes", 1) or 1) >= 1
+            ):
+                def _gleaning_llm_call(prompt_dict: dict) -> dict | list | None:
+                    return self.client.get_json_response(
+                        prompt=prompt_dict,
+                        schema_json=schema_json,
+                        structured_output=self.structured_output,
+                        response_top_level="object",
+                        response_schema_name="direct_extraction",
+                    )
+                gleaned = run_gleaning_pass_direct(
+                    markdown=markdown,
+                    existing_result=parsed_json,
+                    schema_json=schema_json,
+                    llm_call_fn=_gleaning_llm_call,
+                )
+                if isinstance(gleaned, dict) and gleaned:
+                    parsed_json = merge_gleaned_direct(
+                        parsed_json,
+                        gleaned,
+                        description_merge_fields=frozenset({"description", "summary"}),
+                        description_merge_max_length=4096,
+                    )
             return parsed_json
 
         except Exception as e:
             self._log_error(f"Error during LLM call for {context}", e)
             return None
+
+    def _get_client_max_tokens(self) -> int | None:
+        """Get current max_tokens from client (for retry calculation)."""
+        gen = getattr(self.client, "_generation", None)
+        if gen is not None and getattr(gen, "max_tokens", None) is not None:
+            return int(gen.max_tokens)
+        if getattr(self.client, "max_tokens", None) is not None:
+            return int(self.client.max_tokens)
+        return None
+
+    def _retry_max_tokens_for_truncation(self, context_max: int | None = None) -> int | None:
+        """Compute max_tokens for one retry after truncation (current * multiplier, cap 32k)."""
+        if not self._retry_on_truncation:
+            return None
+        current = context_max or self._get_client_max_tokens()
+        if current is None:
+            return None
+        retry_max = min(
+            int(current * self._truncation_retry_multiplier),
+            self._truncation_retry_cap,
+        )
+        return retry_max if retry_max > current else None
 
     def _get_staged_call_max_tokens(self, context: str) -> int | None:
         """Select staged max_tokens override by call type. Delta batch calls use client default (no override)."""
@@ -994,34 +1053,27 @@ class LlmBackend:
         except Exception as e:
             details = getattr(e, "details", {}) if isinstance(e, ClientError) else {}
             truncated = bool(details.get("truncated")) if isinstance(details, dict) else False
-            if truncated:
-                cfg = self._staged_config_raw or {}
-                # Delta batch: do not override client output limit on retry; skip retry with max_tokens.
-                skip_truncation_retry = context.strip().lower().startswith("delta_batch")
-                if not skip_truncation_retry and bool(cfg.get("retry_on_truncation", True)):
-                    retry_max = self._get_staged_call_max_tokens(context)
-                    if retry_max is not None:
-                        retry_max = max(retry_max, retry_max * 2)
-                    elif isinstance(details, dict) and isinstance(details.get("max_tokens"), int):
-                        retry_max = int(details["max_tokens"]) * 2
-                    else:
-                        retry_max = None
-                    if retry_max is not None:
-                        try:
-                            self._log_warning(
-                                f"Retrying truncated staged call for {context} with max_tokens={retry_max}"
-                            )
-                            parsed_json = self._call_with_optional_max_tokens(
-                                prompt=prompt,
-                                schema_json=schema_json,
-                                max_tokens=retry_max,
-                                response_top_level=response_top_level,
-                                response_schema_name=response_schema_name,
-                            )
-                            if parsed_json:
-                                return parsed_json
-                        except Exception as retry_e:
-                            self._log_error(f"Retry after truncation failed for {context}", retry_e)
+            if truncated and self._retry_on_truncation:
+                context_max = self._get_staged_call_max_tokens(context)
+                if context_max is None and isinstance(details, dict) and isinstance(details.get("max_tokens"), int):
+                    context_max = int(details["max_tokens"])
+                retry_max = self._retry_max_tokens_for_truncation(context_max)
+                if retry_max is not None:
+                    try:
+                        self._log_warning(
+                            f"Retrying truncated call for {context} with max_tokens={retry_max}"
+                        )
+                        parsed_json = self._call_with_optional_max_tokens(
+                            prompt=prompt,
+                            schema_json=schema_json,
+                            max_tokens=retry_max,
+                            response_top_level=response_top_level,
+                            response_schema_name=response_schema_name,
+                        )
+                        if parsed_json:
+                            return parsed_json
+                    except Exception as retry_e:
+                        self._log_error(f"Retry after truncation failed for {context}", retry_e)
             self._log_error(f"Error during LLM call for {context}", e)
             return None
 

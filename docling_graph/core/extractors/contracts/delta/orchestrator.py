@@ -26,6 +26,7 @@ from .helpers import (
 )
 from .ir_normalizer import DeltaIrNormalizerConfig, normalize_delta_ir_batch_results
 from .models import DeltaGraph
+from ...gleaning import build_already_found_summary_delta
 from .prompts import format_batch_markdown, get_delta_batch_prompt
 from .resolvers import DeltaResolverConfig, resolve_post_merge_graph
 from .schema_mapper import (
@@ -63,6 +64,8 @@ class DeltaOrchestratorConfig:
     batch_split_max_retries: int = 1
     identity_filter_enabled: bool = True
     identity_filter_strict: bool = False
+    gleaning_enabled: bool = False
+    gleaning_max_passes: int = 1
     ir_normalizer: DeltaIrNormalizerConfig = field(default_factory=DeltaIrNormalizerConfig)
     resolvers: DeltaResolverConfig = field(default_factory=DeltaResolverConfig)
 
@@ -112,6 +115,8 @@ class DeltaOrchestratorConfig:
             batch_split_max_retries=max(0, int(conf.get("delta_batch_split_max_retries", 1) or 0)),
             identity_filter_enabled=bool(conf.get("delta_identity_filter_enabled", True)),
             identity_filter_strict=bool(conf.get("delta_identity_filter_strict", False)),
+            gleaning_enabled=bool(conf.get("gleaning_enabled", False)),
+            gleaning_max_passes=max(0, int(conf.get("gleaning_max_passes", 1) or 1)),
             ir_normalizer=DeltaIrNormalizerConfig(
                 validate_paths=bool(conf.get("delta_normalizer_validate_paths", True)),
                 canonicalize_ids=bool(conf.get("delta_normalizer_canonicalize_ids", True)),
@@ -177,6 +182,7 @@ class DeltaOrchestrator:
         semantic_guide: str,
         catalog_block: str,
         global_context: str | None = None,
+        already_found: str | None = None,
     ) -> tuple[int, dict[str, Any] | None, list[str], float]:
         batch_markdown = format_batch_markdown([chunk for _, chunk, _ in batch])
         delta_schema_json = json.dumps(DeltaGraph.model_json_schema(), indent=2)
@@ -190,6 +196,7 @@ class DeltaOrchestrator:
             batch_index=batch_index,
             total_batches=total_batches,
             global_context=global_context,
+            already_found=already_found,
         )
 
         last_parsed: dict | list | None = None
@@ -595,6 +602,43 @@ class DeltaOrchestrator:
         )
         merged_graph = merge_delta_graphs(normalized_batch_results, dedup_policy=dedup_policy)
         sanitize_batch_echo_from_graph(merged_graph)
+
+        # Optional gleaning pass: run batches again with "already found" in prompt, merge extra results
+        if (
+            self._config.gleaning_enabled
+            and self._config.gleaning_max_passes >= 1
+        ):
+            already_found = build_already_found_summary_delta(merged_graph)
+            gleaning_results: list[dict[str, Any]] = []
+            gleaning_batch_plan: list[list[tuple[int, str, int]]] = []
+            for i, batch in enumerate(batch_plan):
+                _batch_idx, graph_dict, _errors, _elapsed = self._run_one_batch(
+                    batch_index=i,
+                    total_batches=len(batch_plan),
+                    batch=batch,
+                    semantic_guide=semantic_guide,
+                    catalog_block=catalog_block,
+                    global_context=global_context,
+                    already_found=already_found,
+                )
+                if graph_dict is not None:
+                    gleaning_results.append(graph_dict)
+                    gleaning_batch_plan.append(batch)
+            if gleaning_results:
+                normalized_gleaning, _ = normalize_delta_ir_batch_results(
+                    batch_results=gleaning_results,
+                    batch_plan=gleaning_batch_plan,
+                    chunk_metadata=chunk_metadata,
+                    catalog=self._catalog,
+                    dedup_policy=dedup_policy,
+                    config=self._config.ir_normalizer,
+                )
+                merged_graph = merge_delta_graphs(
+                    [merged_graph] + normalized_gleaning,
+                    dedup_policy=dedup_policy,
+                )
+                sanitize_batch_echo_from_graph(merged_graph)
+
         merge_core_stats = (
             merged_graph.get("__merge_stats", {})
             if isinstance(merged_graph.get("__merge_stats"), dict)

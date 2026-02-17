@@ -8,7 +8,9 @@ import re
 import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Iterable, Sequence
+from typing import Any, Callable, Iterable, Sequence
+
+from docling_graph.core.utils.description_merger import merge_descriptions
 
 from .catalog import DeltaNodeCatalog
 
@@ -70,6 +72,10 @@ DEFAULT_FALLBACK_TEXT_FIELDS: tuple[str, ...] = (
 
 LOCAL_ID_FIELD_HINTS: tuple[str, ...] = ("line_number", "index", "position", "item_number")
 LONGER_STRING_FIELDS: tuple[str, ...] = ("name", "title", "nom")
+
+# Property keys that are merged with sentence-level dedup instead of overwrite
+DEFAULT_DESCRIPTION_MERGE_FIELDS: frozenset[str] = frozenset({"description", "summary"})
+DEFAULT_DESCRIPTION_MERGE_MAX_LENGTH: int = 4096
 
 
 def _is_empty(value: Any) -> bool:
@@ -311,8 +317,14 @@ def _relationship_endpoint_key(
 def merge_delta_graphs(
     graph_dicts: Iterable[dict[str, Any]],
     dedup_policy: dict[str, DedupPolicy] | None = None,
+    description_merge_fields: frozenset[str] | None = None,
+    description_merge_max_length: int = DEFAULT_DESCRIPTION_MERGE_MAX_LENGTH,
+    description_merge_summarizer: Callable[[str, list[str]], str] | None = None,
+    description_merge_summarizer_min_length: int = 0,
 ) -> dict[str, Any]:
     """Merge graph batches with node and relationship deduplication."""
+    if description_merge_fields is None:
+        description_merge_fields = DEFAULT_DESCRIPTION_MERGE_FIELDS
 
     node_by_key: dict[Any, dict[str, Any]] = {}
     relationships: dict[tuple[str, Any, Any, str], dict[str, Any]] = {}
@@ -323,6 +335,8 @@ def merge_delta_graphs(
         "property_conflicts": 0,
         "relationship_inputs": 0,
         "relationship_dedup_replaced": 0,
+        "relationship_self_skipped": 0,
+        "relationship_keywords_capped": 0,
     }
 
     for graph in graph_dicts:
@@ -356,11 +370,25 @@ def merge_delta_graphs(
                         if not _is_empty(prop_val):
                             merge_stats["property_updates"] += 1
                         continue
-                    chosen, had_conflict = _preferred_property_value(
-                        prop_key=prop_key,
-                        existing_value=previous,
-                        incoming_value=prop_val,
-                    )
+                    if (
+                        prop_key in description_merge_fields
+                        and isinstance(previous, str)
+                        and isinstance(prop_val, str)
+                    ):
+                        chosen = merge_descriptions(
+                            previous,
+                            prop_val,
+                            max_length=description_merge_max_length,
+                            summarizer=description_merge_summarizer,
+                            summarizer_min_total_length=description_merge_summarizer_min_length,
+                        )
+                        had_conflict = chosen != previous
+                    else:
+                        chosen, had_conflict = _preferred_property_value(
+                            prop_key=prop_key,
+                            existing_value=previous,
+                            incoming_value=prop_val,
+                        )
                     if had_conflict:
                         merge_stats["property_conflicts"] += 1
                     if chosen != previous:
@@ -405,6 +433,9 @@ def merge_delta_graphs(
                 ids=target_ids_raw,
                 dedup_policy=dedup_policy,
             )
+            if source_key == target_key:
+                merge_stats["relationship_self_skipped"] += 1
+                continue
             props_key = json.dumps(
                 flatten_node_properties(rel.get("properties") or {}), sort_keys=True
             )
@@ -412,6 +443,15 @@ def merge_delta_graphs(
             if dedup_key in relationships:
                 merge_stats["relationship_dedup_replaced"] += 1
             relationships[dedup_key] = rel
+
+    # Cap keywords per relationship at 5
+    for rel in relationships.values():
+        props = rel.get("properties")
+        if isinstance(props, dict):
+            kw = props.get("keywords")
+            if isinstance(kw, (list, tuple)) and len(kw) > 5:
+                props["keywords"] = list(kw)[:5]
+                merge_stats["relationship_keywords_capped"] += 1
 
     return {
         "nodes": list(node_by_key.values()),

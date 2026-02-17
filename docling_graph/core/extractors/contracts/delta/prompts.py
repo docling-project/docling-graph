@@ -13,6 +13,7 @@ def get_delta_batch_prompt(
     batch_index: int,
     total_batches: int,
     global_context: str | None = None,
+    already_found: str | None = None,
 ) -> dict[str, str]:
     """Build system/user prompts for one delta batch extraction."""
 
@@ -37,6 +38,13 @@ def get_delta_batch_prompt(
     )
 
     user_prompt = f"[Batch {batch_index + 1}/{total_batches} — for context only; do not put this into any field.]\n\n"
+    if already_found:
+        user_prompt += (
+            "=== ALREADY EXTRACTED (from other batches; do not duplicate) ===\n"
+            f"{already_found}\n"
+            "=== END ALREADY EXTRACTED ===\n\n"
+            "Extract any ADDITIONAL nodes/relationships from this batch not already covered above.\n\n"
+        )
     if global_context:
         user_prompt += (
             "=== DOCUMENT CONTEXT (use for stable identity values across batches) ===\n"

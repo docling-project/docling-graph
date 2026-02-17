@@ -264,6 +264,20 @@ def convert_command(
             help="Minimum attached nodes for delta quality gate; below this, fallback to direct. Default 20; use a lower value (e.g. 5) for small documents.",
         ),
     ] = None,
+    gleaning_enabled: Annotated[
+        bool,
+        typer.Option(
+            "--gleaning-enabled/--no-gleaning-enabled",
+            help="Run optional second-pass extraction to improve recall (direct and delta). Default: disabled.",
+        ),
+    ] = False,
+    gleaning_max_passes: Annotated[
+        int | None,
+        typer.Option(
+            "--gleaning-max-passes",
+            help="Max gleaning passes when gleaning is enabled (default: 1).",
+        ),
+    ] = None,
 ) -> None:
     """Convert a document to a knowledge graph."""
     logger.debug("Starting convert command")
@@ -389,6 +403,12 @@ def convert_command(
         if structured_sparse_check is not None
         else bool(defaults.get("structured_sparse_check", True))
     )
+    final_gleaning_enabled = gleaning_enabled or bool(defaults.get("gleaning_enabled", False))
+    final_gleaning_max_passes = (
+        gleaning_max_passes
+        if gleaning_max_passes is not None
+        else int(defaults.get("gleaning_max_passes", 1) or 1)
+    )
 
     # Docling export settings - use config file as fallback
     docling_export_settings = docling_cfg.get("export", {})
@@ -453,6 +473,10 @@ def convert_command(
     rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
+    if extraction_contract_val in ("direct", "delta"):
+        rich_print(
+            f"  • Gleaning: [cyan]enabled={final_gleaning_enabled}, max_passes={final_gleaning_max_passes}[/cyan]"
+        )
     if final_chunk_max_tokens is not None:
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
     if extraction_contract_val == "delta":
@@ -537,6 +561,8 @@ def convert_command(
         quality_max_id_mismatch=final_quality_max_id_mismatch,
         quality_max_nested_property_drops=final_quality_max_nested_property_drops,
         delta_quality_min_instances=final_delta_quality_min_instances,
+        gleaning_enabled=final_gleaning_enabled,
+        gleaning_max_passes=final_gleaning_max_passes,
         staged_nodes_fill_cap=final_staged_nodes_fill_cap,
         staged_id_shard_size=final_staged_id_shard_size,
         export_format=export_format_val,

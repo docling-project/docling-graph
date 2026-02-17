@@ -287,6 +287,14 @@ class PipelineConfig(BaseModel):
         default=False,
         description="If True, drop any entity node whose identity is not in allowlist; if False, also drop when section-title heuristic matches.",
     )
+    gleaning_enabled: bool = Field(
+        default=False,
+        description="Run optional second-pass extraction (what did you miss?) for direct and delta contracts.",
+    )
+    gleaning_max_passes: int = Field(
+        default=1,
+        description="Max gleaning passes (1 = one extra pass). Used when gleaning_enabled is True.",
+    )
     staged_nodes_fill_cap: int | None = Field(
         default=None, description="Max nodes per LLM call in fill pass (None = use preset)."
     )
@@ -455,6 +463,8 @@ class PipelineConfig(BaseModel):
             "delta_batch_split_max_retries": self.delta_batch_split_max_retries,
             "delta_identity_filter_enabled": self.delta_identity_filter_enabled,
             "delta_identity_filter_strict": self.delta_identity_filter_strict,
+            "gleaning_enabled": self.gleaning_enabled,
+            "gleaning_max_passes": self.gleaning_max_passes,
             "staged_nodes_fill_cap": effective_nodes_fill_cap,
             "staged_id_shard_size": effective_id_shard_size,
             "staged_id_identity_only": self.staged_id_identity_only,
