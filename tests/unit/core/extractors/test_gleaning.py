@@ -43,6 +43,19 @@ def test_run_gleaning_pass_direct_returns_none_on_failure():
     assert out is None
 
 
+def test_run_gleaning_pass_direct_logs_warning_on_exception(caplog):
+    """Exception in llm_call_fn triggers except block and logger.warning (lines 86-88)."""
+
+    def fail(_) -> NoReturn:
+        raise RuntimeError("gleaning error")
+
+    with caplog.at_level("WARNING"):
+        out = run_gleaning_pass_direct("doc", {}, "{}", fail)
+    assert out is None
+    assert "Gleaning pass failed" in caplog.text
+    assert "gleaning error" in caplog.text
+
+
 def test_run_gleaning_pass_direct_returns_dict_when_llm_returns_dict():
     def ok(_: object) -> dict:
         return {"extra": "value"}
@@ -116,4 +129,19 @@ def test_build_already_found_summary_delta_skips_non_dict_node():
     }
     summary = build_already_found_summary_delta(graph)
     assert "path=p" in summary
+    assert "not a dict" not in summary
+
+
+def test_build_already_found_summary_delta_skips_non_dict_relationship():
+    """Non-dict entries in relationships are skipped (if not isinstance(r, dict): continue)."""
+    graph = {
+        "nodes": [{"path": "p", "ids": {}, "properties": {}}],
+        "relationships": [
+            {"source_key": "a", "target_key": "b", "label": "L"},
+            "not a dict",
+            None,
+        ],
+    }
+    summary = build_already_found_summary_delta(graph, max_rels=10)
+    assert "a" in summary and "b" in summary and "L" in summary
     assert "not a dict" not in summary

@@ -114,6 +114,13 @@ def test_flatten_node_properties_drops_nested_values() -> None:
     assert flattened["tags"] == ["graph"]
 
 
+def test_flatten_node_properties_normalize_list_skips_dict_values() -> None:
+    """_normalize_list skips dict items (elif isinstance(value, dict): continue)."""
+    props = {"key": [{"nested": 1}, "ok"]}
+    flattened = flatten_node_properties(props)
+    assert flattened["key"] == ["ok"]
+
+
 def test_merge_delta_graphs_keeps_list_items_with_same_ids_under_different_parents_separate() -> (
     None
 ):
@@ -363,6 +370,19 @@ def test_chunk_batches_by_token_limit_fallback_when_token_counts_shorter_than_ch
     assert len(batches) >= 1
     all_chunks = [chunk for batch in batches for _, chunk, _ in batch]
     assert all_chunks == chunks
+
+
+def test_chunk_batches_by_token_limit_uses_token_counts_when_same_length() -> None:
+    """When token_counts has same length as chunks, token_counts[idx] is used (not fallback)."""
+    chunks = ["short", "medium length", "very long chunk here"]
+    token_counts = [1, 2, 4]
+    batches = chunk_batches_by_token_limit(chunks, token_counts, max_batch_tokens=5)
+    assert len(batches) >= 1
+    all_chunks = [chunk for batch in batches for _, chunk, _ in batch]
+    assert all_chunks == chunks
+    # First batch should use token_counts: 1+2=3 <= 5, +4 would be 7 > 5 so new batch
+    assert len(batches[0]) == 2
+    assert batches[0][0][2] == 1 and batches[0][1][2] == 2
 
 
 def test_chunk_batches_by_token_limit_raises_when_max_zero() -> None:
@@ -680,6 +700,70 @@ def test_filter_entity_nodes_by_identity_coerces_list_nom_to_string_for_allowlis
     # Neither "ESSENTIELLE" nor "Other" looks like a section title, so both nodes are kept.
     assert len(out["nodes"]) == 2
     assert stats["identity_filter_dropped"] == 0
+
+
+def test_filter_entity_nodes_by_identity_coerces_list_with_dict_item_via_nom() -> None:
+    """When primary identity is a list containing a dict, _coerce_identity_to_str extracts from dict (nom or first value)."""
+
+    class Offer(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["nom"])
+        nom: str
+
+    class Doc(BaseModel):
+        offres: list[Offer] = Field(default_factory=list)
+
+    catalog = build_delta_node_catalog(Doc)
+    policy = build_dedup_policy(catalog)
+    graph = {
+        "nodes": [
+            {"path": "offres[]", "ids": {"nom": [{"nom": "ExtractedName"}]}, "properties": {}},
+        ],
+        "relationships": [],
+    }
+    out, stats = filter_entity_nodes_by_identity(graph, catalog, policy, enabled=True, strict=False)
+    assert len(out["nodes"]) == 1
+    assert stats["identity_filter_dropped"] == 0
+
+
+def test_filter_entity_nodes_by_identity_keeps_non_dict_relationships_when_dropping_nodes() -> None:
+    """When relationships list contains non-dict entries (e.g. None), they are kept in kept_rels."""
+
+    class Offer(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["nom"])
+        nom: str
+
+    class Doc(BaseModel):
+        offres: list[Offer] = Field(default_factory=list)
+
+    catalog = build_delta_node_catalog(Doc)
+    policy = build_dedup_policy(catalog)
+    graph = {
+        "nodes": [
+            {"path": "offres[]", "ids": {"nom": "ESSENTIELLE"}, "properties": {}},
+            {
+                "path": "offres[]",
+                "ids": {"nom": "SECTION TITLE WITH ENOUGH CAPS TO TRIGGER DROP"},
+                "properties": {},
+            },
+        ],
+        "relationships": [
+            {
+                "source_path": "offres[]",
+                "source_ids": {"nom": "ESSENTIELLE"},
+                "target_path": "offres[]",
+                "target_ids": {"nom": "SECTION TITLE WITH ENOUGH CAPS TO TRIGGER DROP"},
+                "properties": {},
+            },
+            None,
+            "not a dict",
+        ],
+    }
+    out, stats = filter_entity_nodes_by_identity(graph, catalog, policy, enabled=True, strict=False)
+    assert stats["identity_filter_dropped"] == 1
+    # Valid dict rel references dropped node so removed; non-dict entries are kept
+    assert len(out["relationships"]) == 2
+    assert None in out["relationships"]
+    assert "not a dict" in out["relationships"]
 
 
 def test_ensure_root_node_adds_root_when_missing_but_has_root_children() -> None:

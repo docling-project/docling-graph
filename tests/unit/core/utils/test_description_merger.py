@@ -105,6 +105,33 @@ def test_merge_summarizer_failure_fallback():
     assert "A." in result
 
 
+def test_merge_summarizer_failure_logs_warning(caplog):
+    """When summarizer raises, except block runs and logger.warning is emitted (line 99)."""
+
+    def summarizer(_e, _n) -> NoReturn:
+        raise RuntimeError("summarizer error")
+
+    with caplog.at_level("WARNING"):
+        result = merge_descriptions(
+            "X. " * 200,
+            "Y. " * 200,
+            max_length=5000,
+            summarizer=summarizer,
+            summarizer_min_total_length=100,
+        )
+    assert "X." in result
+    assert "Description summarizer failed" in caplog.text
+    assert "summarizer error" in caplog.text
+
+
+def test_merge_sentence_dedup_mix_duplicate_and_new():
+    """Sentence loop: one sentence already in existing, one new (s not in existing true and false)."""
+    existing = "A. B."
+    new = "B. C."
+    result = merge_descriptions(existing, new, max_length=1000)
+    assert "A." in result and "B." in result and "C." in result
+
+
 def test_merge_summarizer_returns_empty_string_uses_sentence_dedup_fallback():
     """When summarizer returns empty string, merge falls back to sentence-dedup path."""
 

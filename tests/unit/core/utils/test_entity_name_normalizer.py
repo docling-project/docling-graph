@@ -77,3 +77,14 @@ def test_unicode_possessive_right_single_quote():
     # \u2019 is the Unicode right single quotation mark (e.g. from smart quotes)
     assert normalize_entity_name("Company\u2019s") == "COMPANY"
     assert normalize_entity_name("John\u2019s Report") == "JOHN_REPORT"
+
+
+def test_prefix_strip_then_multiple_words():
+    """Prefix strip (trimmed[len(prefix):].strip() and break) then multiple words normalized."""
+    assert normalize_entity_name("A New Hope") == "NEW_HOPE"
+    assert normalize_entity_name("The Alpha Beta") == "ALPHA_BETA"
+
+
+def test_unicode_possessive_word_appended():
+    """Unicode possessive branch (word[-2:] == \\u2019s) strips suffix then words.append(word) (line 40)."""
+    assert normalize_entity_name("Test\u2019s") == "TEST"

@@ -124,3 +124,9 @@ def test_runtime_extract_returns_none_when_no_batch_results() -> None:
         context="test",
     )
     assert result is None
+
+
+def test_runtime_config_from_dict_int_allow_negative_non_none() -> None:
+    """_int_allow_negative with non-None value executes return int(val)."""
+    conf = DeltaOrchestratorConfig.from_dict({"delta_quality_max_parent_lookup_miss": -1})
+    assert conf.quality_max_parent_lookup_miss == -1

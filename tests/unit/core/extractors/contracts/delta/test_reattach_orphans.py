@@ -221,3 +221,28 @@ def test_reattach_parent_ids_with_extra_alias_key_not_in_id_fields() -> None:
     assert len(merged_root["__orphans__"]) == 0
     assert len(merged_root["boxes"][0]["widgets"]) == 1
     assert merged_root["boxes"][0]["widgets"][0]["name"] == "W2"
+
+
+def test_reattach_non_dict_orphan_entry_stays_in_orphans() -> None:
+    """Non-dict entries in __orphans__ are left in still_orphans (defensive branch)."""
+    catalog = build_delta_node_catalog(RootWithBoxes)
+    merged_root = {
+        "doc_id": "D1",
+        "boxes": [{"box_id": "B1", "widgets": []}],
+        "__orphans__": [
+            None,
+            "not a dict",
+            {
+                "path": "boxes[].widgets[]",
+                "parent_path": "boxes[]",
+                "parent_ids": {"box_id": "B1"},
+                "data": {"name": "W1"},
+            },
+        ],
+    }
+    reattach_orphans(merged_root, catalog)
+    assert len(merged_root["__orphans__"]) == 2
+    assert None in merged_root["__orphans__"]
+    assert "not a dict" in merged_root["__orphans__"]
+    assert len(merged_root["boxes"][0]["widgets"]) == 1
+    assert merged_root["boxes"][0]["widgets"][0]["name"] == "W1"

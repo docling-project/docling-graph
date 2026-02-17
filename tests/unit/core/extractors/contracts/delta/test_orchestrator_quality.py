@@ -47,6 +47,28 @@ def test_quality_gate_adaptive_parent_lookup_tolerance() -> None:
     assert "parent_lookup_miss" not in reasons
 
 
+def test_compute_property_sparsity_skips_node_with_non_dict_properties() -> None:
+    """_compute_property_sparsity skips nodes whose properties are not a dict (branch 385-386)."""
+    orchestrator = DeltaOrchestrator(
+        llm_call_fn=_dummy_llm,
+        template=Root,
+        config=DeltaOrchestratorConfig(),
+    )
+    merged_graph = {
+        "nodes": [
+            {"path": "children[]", "properties": None},
+            {"path": "children[]", "properties": ["not", "a", "dict"]},
+            {"path": "children[]", "properties": {"name": "OK"}},
+        ],
+    }
+    merged_root = {}
+    sparsity = orchestrator._compute_property_sparsity(
+        merged_graph=merged_graph, merged_root=merged_root
+    )
+    assert sparsity["total_non_empty_properties"] >= 1
+    assert "children[]" in sparsity.get("non_empty_properties_by_path", {})
+
+
 def test_quality_gate_strict_parent_lookup_without_adaptive_mode() -> None:
     orchestrator = DeltaOrchestrator(
         llm_call_fn=_dummy_llm,

@@ -871,3 +871,127 @@ class TestStagedPromptRetries:
         second = mock_llm_client.get_json_response.call_args_list[1].kwargs
         assert first["structured_output"] is True
         assert second["structured_output"] is False
+
+    def test_call_prompt_client_error_fallback_emits_trace_data_when_set(self, mock_llm_client):
+        """When ClientError is raised and trace_data is set, emit structured_output_fallback_triggered."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+            structured_output=True,
+        )
+        backend.trace_data = MagicMock()
+        mock_llm_client.get_json_response.side_effect = [
+            ClientError("schema unsupported"),
+            {"id": "x"},
+        ]
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            '{"type":"object"}',
+            "doc fill_call_0",
+        )
+        assert out == {"id": "x"}
+        backend.trace_data.emit.assert_called_once()
+        call_args = backend.trace_data.emit.call_args[0]
+        assert call_args[0] == "structured_output_fallback_triggered"
+
+    def test_call_prompt_returns_none_when_client_returns_none(self, mock_llm_client):
+        """When get_json_response returns None, _call_prompt returns None (No valid JSON path)."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+        )
+        mock_llm_client.get_json_response.return_value = None
+        out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc")
+        assert out is None
+
+    def test_call_prompt_merges_client_last_call_diagnostics(self, mock_llm_client):
+        """When client has last_call_diagnostics, merge and passthrough provider/model run."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+        )
+        mock_llm_client.get_json_response.return_value = {"k": "v"}
+        mock_llm_client.last_call_diagnostics = {
+            "structured_attempted": True,
+            "provider": "openai",
+            "model": "gpt-4",
+        }
+        out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc")
+        assert out == {"k": "v"}
+        assert backend.last_call_diagnostics.get("provider") == "openai"
+        assert backend.last_call_diagnostics.get("model") == "gpt-4"
+
+    def test_call_prompt_truncation_retry_fails_logs_error(self, mock_llm_client):
+        """When truncation retry raises, _log_error path is exercised."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={"retry_on_truncation": True, "id_max_tokens": 256},
+        )
+        trunc = ClientError(
+            "truncated",
+            details={"truncated": True, "max_tokens": 256},
+        )
+        mock_llm_client.get_json_response.side_effect = [trunc, RuntimeError("retry failed")]
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"}, "{}", "doc catalog_id_pass_shard_0"
+        )
+        assert out is None
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_delta_orchestrator")
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_delta_contract_fallback_to_direct_when_delta_returns_none(
+        self, mock_get_prompt, mock_run_delta, mock_llm_client
+    ):
+        """When extraction_contract=delta and run_delta_orchestrator returns None, fall back to direct."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="delta",
+            staged_config={"delta_quality_min_instances": 1},
+        )
+        mock_run_delta.return_value = None
+        mock_get_prompt.return_value = {"system": "s", "user": "u"}
+        mock_llm_client.get_json_response.return_value = {"name": "Fallback", "age": 22}
+        result = backend.extract_from_markdown(markdown="doc", template=MockTemplate, context="doc")
+        assert result is not None
+        assert result.name == "Fallback"
+        mock_run_delta.assert_called_once()
+        mock_get_prompt.assert_called_once()
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator")
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_staged_contract_fallback_to_direct_when_staged_returns_none(
+        self, mock_get_prompt, mock_run_staged, mock_llm_client
+    ):
+        """When extraction_contract=staged and run_staged_orchestrator returns None, fall back to direct."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+        )
+        mock_run_staged.return_value = None
+        mock_get_prompt.return_value = {"system": "s", "user": "u"}
+        mock_llm_client.get_json_response.return_value = {"name": "StagedFallback", "age": 33}
+        result = backend.extract_from_markdown(markdown="doc", template=MockTemplate, context="doc")
+        assert result is not None
+        assert result.name == "StagedFallback"
+        mock_run_staged.assert_called_once()
+        mock_get_prompt.assert_called_once()
+
+    def test_generate_returns_empty_response_on_exception(self, mock_llm_client):
+        """When client.get_json_response raises in generate(), return EmptyResponse with text '{}'."""
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.get_json_response.side_effect = RuntimeError("network error")
+        response = backend.generate(system_prompt="s", user_prompt="u")
+        assert response.text == "{}"
+
+    def test_cleanup_handles_client_cleanup_exception(self, mock_llm_client):
+        """When client.cleanup() raises, backend catches and does not propagate (exception path covered)."""
+        mock_llm_client.cleanup = MagicMock(side_effect=RuntimeError("cleanup failed"))
+        backend = LlmBackend(llm_client=mock_llm_client)
+        backend.cleanup()
+        mock_llm_client.cleanup.assert_called_once()
+        # Exception was caught so no crash; del self.client is not reached when cleanup raises

@@ -173,6 +173,27 @@ def test_catalog_with_edge_label_populates_edges():
     assert "HAS_ADDRESS" in edge_labels
 
 
+def test_catalog_scalar_component_with_edge_label_adds_edge():
+    """Scalar (non-list) component field with edge_label hits the scalar edge branch in build_node_catalog."""
+
+    class Location(BaseModel):
+        model_config = ConfigDict(is_entity=False)
+        city: str = ""
+
+    class Company(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["company_name"])
+        company_name: str = ""
+        headquarters: Location | None = Field(
+            default=None,
+            json_schema_extra={"edge_label": "HEADQUARTERS_AT"},
+        )
+
+    catalog = build_node_catalog(Company)
+    edge_labels = [e.edge_label for e in catalog.edges]
+    assert "HEADQUARTERS_AT" in edge_labels
+    assert any(e.target_path == "headquarters" for e in catalog.edges)
+
+
 def test_catalog_collects_field_aliases() -> None:
     class Person(BaseModel):
         model_config = ConfigDict(graph_id_fields=["name"])
