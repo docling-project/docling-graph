@@ -9,8 +9,24 @@ jobs:
     name: Check DCO Sign-off
     runs-on: ubuntu-latest
     steps:
-      - name: Check for DCO sign-off
-        uses: tim-actions/dco@v1.1.0
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          # Require all commits to be signed off
-          require-for-all-commits: true
+          fetch-depth: 0
+
+      - name: Check for DCO sign-off
+        run: |
+          # Require all commits in the PR to be signed off
+          unsigned=$(git log --no-merges origin/${{ github.base_ref }}..HEAD --pretty=format:'%H %s' | while read hash subject; do
+            if ! git log -1 --pretty=format:'%B' "$hash" | grep -q '^Signed-off-by:'; then
+              echo "$hash"
+            fi
+          done)
+          if [ -n "$unsigned" ]; then
+            echo "The following commits are missing a DCO sign-off (Signed-off-by: Name <email> in the commit message):"
+            echo "$unsigned" | while read hash; do
+              echo "  - $hash: $(git log -1 --pretty=format:'%s' "$hash")"
+            done
+            exit 1
+          fi
+          echo "All commits have a valid DCO sign-off."
