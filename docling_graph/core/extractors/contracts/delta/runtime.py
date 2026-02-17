@@ -34,6 +34,13 @@ from .schema_mapper import (
 logger = logging.getLogger(__name__)
 
 
+def _int_allow_negative(val: Any, default: int) -> int:
+    """Parse int from config, preserving negative values (e.g. -1 to disable a gate)."""
+    if val is None:
+        return default
+    return int(val)
+
+
 @dataclass
 class DeltaOrchestratorConfig:
     max_pass_retries: int = 1
@@ -67,8 +74,8 @@ class DeltaOrchestratorConfig:
             parallel_workers=max(1, int(conf.get("parallel_workers", 1) or 1)),
             quality_require_root=bool(conf.get("delta_quality_require_root", True)),
             quality_min_instances=max(0, int(conf.get("delta_quality_min_instances", 20) or 20)),
-            quality_max_parent_lookup_miss=max(
-                0, int(conf.get("delta_quality_max_parent_lookup_miss", 4) or 0)
+            quality_max_parent_lookup_miss=_int_allow_negative(
+                conf.get("delta_quality_max_parent_lookup_miss", 4), default=4
             ),
             quality_adaptive_parent_lookup=bool(
                 conf.get("delta_quality_adaptive_parent_lookup", True)
@@ -218,13 +225,16 @@ class DeltaOrchestrator:
         attached_node_count = int(merge_stats.get("attached_node_count", 0) or 0)
         allowed_parent_lookup_miss = max(0, self._config.quality_max_parent_lookup_miss)
         if self._config.quality_adaptive_parent_lookup and path_counts.get("", 0) > 0:
-            adaptive_cap = min(200, max(8, total_instances // 3))
+            adaptive_cap = min(300, max(8, total_instances // 2))
             allowed_parent_lookup_miss = max(allowed_parent_lookup_miss, adaptive_cap)
         if self._config.quality_require_root and path_counts.get("", 0) <= 0:
             reasons.append("missing_root_instance")
         if attached_node_count < max(0, self._config.quality_min_instances):
             reasons.append("insufficient_instances")
-        if merge_stats.get("parent_lookup_miss", 0) > allowed_parent_lookup_miss:
+        if (
+            self._config.quality_max_parent_lookup_miss >= 0
+            and merge_stats.get("parent_lookup_miss", 0) > allowed_parent_lookup_miss
+        ):
             reasons.append("parent_lookup_miss")
         if (
             self._config.quality_max_unknown_path_drops >= 0

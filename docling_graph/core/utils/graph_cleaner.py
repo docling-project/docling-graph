@@ -87,7 +87,7 @@ def cap_edge_keywords(
     capped = 0
     for _u, _v, data in graph.edges(data=True):
         val = data.get(edge_attr)
-        if isinstance(val, (list, tuple)) and len(val) > max_keywords:
+        if isinstance(val, list | tuple) and len(val) > max_keywords:
             data[edge_attr] = list(val)[:max_keywords]
             capped += 1
     return capped

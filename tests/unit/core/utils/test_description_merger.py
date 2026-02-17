@@ -1,5 +1,7 @@
 """Unit tests for description merger."""
 
+from typing import NoReturn
+
 import pytest
 
 from docling_graph.core.utils.description_merger import (
@@ -90,7 +92,7 @@ def test_merge_summarizer_below_threshold_uses_sentence_dedup():
 
 
 def test_merge_summarizer_failure_fallback():
-    def summarizer(_e, _n):
+    def summarizer(_e, _n) -> NoReturn:
         raise ValueError("mock failure")
 
     result = merge_descriptions(

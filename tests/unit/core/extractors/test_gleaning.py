@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import pytest
 
 from docling_graph.core.extractors.gleaning import (
@@ -34,15 +36,17 @@ def test_merge_gleaned_direct():
 
 
 def test_run_gleaning_pass_direct_returns_none_on_failure():
-    def fail(_):
+    def fail(_) -> NoReturn:
         raise ValueError("mock fail")
+
     out = run_gleaning_pass_direct("doc", {"x": 1}, "{}", fail)
     assert out is None
 
 
 def test_run_gleaning_pass_direct_returns_dict_when_llm_returns_dict():
-    def ok(_):
+    def ok(_: object) -> dict:
         return {"extra": "value"}
+
     out = run_gleaning_pass_direct("doc", {"x": 1}, "{}", ok)
     assert out == {"extra": "value"}
 
