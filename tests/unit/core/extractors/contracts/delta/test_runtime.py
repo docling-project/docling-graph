@@ -74,6 +74,7 @@ def test_runtime_quality_gate_adaptive_parent_lookup() -> None:
 
 def test_runtime_extract_returns_merged_root_when_llm_returns_valid_graph() -> None:
     """DeltaOrchestrator.extract from runtime returns merged root when LLM returns valid delta."""
+
     def llm_return_one_root(**kwargs: Any) -> dict[str, Any]:
         return {
             "nodes": [
@@ -105,6 +106,7 @@ def test_runtime_extract_returns_merged_root_when_llm_returns_valid_graph() -> N
 
 def test_runtime_extract_returns_none_when_no_batch_results() -> None:
     """DeltaOrchestrator.extract from runtime returns None when LLM returns non-dict (no batches)."""
+
     def llm_return_non_dict(**kwargs: Any) -> list:
         return []  # Not a dict -> batch result not added
 
