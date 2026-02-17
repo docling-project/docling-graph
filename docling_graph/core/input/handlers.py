@@ -201,7 +201,7 @@ class URLInputHandler(InputHandler):
         self.max_size_bytes = max_size_mb * 1024 * 1024
         # Set User-Agent header to avoid 403 errors from sites like Wikimedia
         self.headers = {
-            "User-Agent": f"docling-graph/{__version__} (https://github.com/ayoub-ibm/docling-graph)"
+            "User-Agent": f"docling-graph/{__version__} (https://github.com/docling-project/docling-graph)"
         }
 
     def load(self, source: str) -> Path:

@@ -354,8 +354,8 @@ docling-graph/
 ### Resources
 
 - **[GitHub Issues](https://github.com/DS4SD/docling-graph/issues)** - Report bugs, request features
-- **[GitHub Discussions](https://github.com/IBM/docling-graph/discussions)** - Ask questions
-- **[GitHub Repository](https://github.com/IBM/docling-graph)** - Source code and issues
+- **[GitHub Discussions](https://github.com/docling-project/docling-graph/discussions)** - Ask questions
+- **[GitHub Repository](https://github.com/docling-project/docling-graph)** - Source code and issues
 
 ### Communication
 

@@ -170,8 +170,8 @@ See individual example pages for complete templates.
 ### Support
 
 - **Documentation:** [https://ibm.github.io/docling-graph](https://ibm.github.io/docling-graph)
-- **GitHub Issues:** [https://github.com/IBM/docling-graph/issues](https://github.com/IBM/docling-graph/issues)
-- **Discussions:** [https://github.com/IBM/docling-graph/discussions](https://github.com/IBM/docling-graph/discussions)
+- **GitHub Issues:** [https://github.com/docling-project/docling-graph/issues](https://github.com/docling-project/docling-graph/issues)
+- **Discussions:** [https://github.com/docling-project/docling-graph/discussions](https://github.com/docling-project/docling-graph/discussions)
 
 ---
 

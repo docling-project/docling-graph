@@ -44,10 +44,10 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/ayoub-ibm/docling-graph"
-repository = "https://github.com/ayoub-ibm/docling-graph"
-issues = "https://github.com/ayoub-ibm/docling-graph/issues"
-changelog = "https://github.com/ayoub-ibm/docling-graph/blob/main/CHANGELOG.md"
+homepage = "https://github.com/docling-project/docling-graph"
+repository = "https://github.com/docling-project/docling-graph"
+issues = "https://github.com/docling-project/docling-graph/issues"
+changelog = "https://github.com/docling-project/docling-graph/blob/main/CHANGELOG.md"
 
 [project.scripts]
 docling-graph = "docling_graph.cli.main:main"

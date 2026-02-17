@@ -1,5 +1,5 @@
 <p align="center"><br>
-  <a href="https://github.com/IBM/docling-graph">
+  <a href="https://github.com/docling-project/docling-graph">
     <img loading="lazy" alt="Docling Graph" src="docs/assets/logo.png" width="280"/>
   </a>
 </p>
@@ -11,7 +11,7 @@
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![License MIT](https://img.shields.io/github/license/IBM/docling-graph)](https://opensource.org/licenses/MIT)
+[![License MIT](https://img.shields.io/github/license/docling-project/docling-graph)](https://opensource.org/licenses/MIT)
 [![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
 [![Docling](https://img.shields.io/badge/Docling-VLM-red)](https://github.com/docling-project/docling)
 [![NetworkX](https://img.shields.io/badge/NetworkX-3.0+-red)](https://networkx.org/)
@@ -77,7 +77,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ```bash
 # Clone the repository
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 
 # Install with uv
@@ -223,7 +223,7 @@ We welcome contributions! Please see:
 
 ```bash
 # Clone and setup
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 
 # Install with dev dependencies

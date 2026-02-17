@@ -28,7 +28,7 @@ pip install uv
 #### Step 2: Clone Repository
 
 ```bash
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 ```
 
@@ -113,7 +113,7 @@ For users who want to get started quickly without GPU:
 
 ```bash
 # Install
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 uv sync
 
@@ -134,7 +134,7 @@ For users with GPU who want local inference:
 
 ```bash
 # Install
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 uv sync
 
@@ -155,7 +155,7 @@ For users who want all local capabilities:
 
 ```bash
 # Install
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 uv sync
 
@@ -176,7 +176,7 @@ For maximum flexibility:
 
 ```bash
 # Install
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 uv sync
 
@@ -403,7 +403,7 @@ For contributors:
 
 ```bash
 # Clone repository
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 
 # Install with dev dependencies

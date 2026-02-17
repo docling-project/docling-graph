@@ -80,13 +80,13 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 ## Resources
 
 ### Documentation
-- **[GitHub Repository](https://github.com/IBM/docling-graph)** - Source code and issues
+- **[GitHub Repository](https://github.com/docling-project/docling-graph)** - Source code and issues
 - **[PyPI Package](https://pypi.org/project/docling-graph/)** - Install via pip/uv
-- **[Contributing Guidelines](https://github.com/IBM/docling-graph/blob/main/.github/CONTRIBUTING.md)** - How to contribute
+- **[Contributing Guidelines](https://github.com/docling-project/docling-graph/blob/main/.github/CONTRIBUTING.md)** - How to contribute
 
 ### Community
-- **[GitHub Issues](https://github.com/IBM/docling-graph/issues)** - Report bugs and request features
-- **[GitHub Discussions](https://github.com/IBM/docling-graph/discussions)** - Ask questions and share ideas
+- **[GitHub Issues](https://github.com/docling-project/docling-graph/issues)** - Report bugs and request features
+- **[GitHub Discussions](https://github.com/docling-project/docling-graph/discussions)** - Ask questions and share ideas
 
 ### Related Projects
 - **[Docling](https://github.com/docling-project/docling)** - Document processing engine

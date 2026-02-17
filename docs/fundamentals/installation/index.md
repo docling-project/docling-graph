@@ -19,7 +19,7 @@ For basic VLM functionality:
 
 ```bash
 # Clone repository
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 
 # Install core dependencies
@@ -39,7 +39,7 @@ LiteLLM is included by default; no extra installs are required for LLM providers
 
 ```bash
 # Clone repository
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 
 # Install dependencies
@@ -173,7 +173,7 @@ For contributing to the project:
 
 ```bash
 # Clone repository
-git clone https://github.com/IBM/docling-graph
+git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 
 # Install with development dependencies

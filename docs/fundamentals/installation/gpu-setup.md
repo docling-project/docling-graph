@@ -387,7 +387,7 @@ If you don't have a local GPU, consider cloud options:
 
 ```python
 # In Colab notebook
-!git clone https://github.com/IBM/docling-graph
+!git clone https://github.com/docling-project/docling-graph
 %cd docling-graph
 !pip install -e .[all]
 

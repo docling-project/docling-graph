@@ -3,8 +3,8 @@ site_description: Convert documents into knowledge graphs using Docling
 site_author: IBM Research
 site_url: https://ibm.github.io/docling-graph
 
-repo_name: IBM/docling-graph
-repo_url: https://github.com/IBM/docling-graph
+repo_name: docling-project/docling-graph
+repo_url: https://github.com/docling-project/docling-graph
 edit_uri: edit/main/docs/
 
 theme:
@@ -190,7 +190,7 @@ extra_css:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/IBM/docling-graph
+      link: https://github.com/docling-project/docling-graph
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/docling-graph/
   version:
