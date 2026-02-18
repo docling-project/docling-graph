@@ -64,14 +64,15 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           REMOTE: https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
         run: |
+          RELEASED_TAG=$(git describe --exact-match --tags HEAD 2>/dev/null) || true
           git fetch "$REMOTE" main
           if ! git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null; then
             git reset --hard HEAD
             git rebase FETCH_HEAD
-            TAG=$(git describe --exact-match --tags HEAD 2>/dev/null) && git tag -f "$TAG"
+            [ -n "$RELEASED_TAG" ] && git tag -f "$RELEASED_TAG"
           fi
           git push "$REMOTE" HEAD:main --follow-tags
-          TAG=$(git describe --exact-match --tags HEAD 2>/dev/null) && echo "released_tag=${TAG}" >> "$GITHUB_OUTPUT"
+          [ -z "$RELEASED_TAG" ] || echo "released_tag=$RELEASED_TAG" >> "$GITHUB_OUTPUT"
       - name: Create GitHub Release with changelog
         if: steps.push.outputs.released_tag != ''
         env:
