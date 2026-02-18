@@ -120,7 +120,15 @@ def test_run_staged_orchestrator_passes_id_max_tokens_and_fill_max_tokens():
         if "catalog_id_pass" in context_arg:
             return {"nodes": [{"path": "", "ids": {"invoice_number": "I1"}, "parent": None}]}
         if "fill_call_" in context_arg:
-            return [{"invoice_number": "I1", "date": "", "total_amount": 0, "vendor_name": "", "items": []}]
+            return [
+                {
+                    "invoice_number": "I1",
+                    "date": "",
+                    "total_amount": 0,
+                    "vendor_name": "",
+                    "items": [],
+                }
+            ]
         return None
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -162,7 +170,15 @@ def test_run_staged_orchestrator_trace_emit_called_when_trace_data_provided():
         if "catalog_id_pass" in context_arg:
             return {"nodes": [{"path": "", "ids": {"invoice_number": "T1"}, "parent": None}]}
         if "fill_call_" in context_arg:
-            return [{"invoice_number": "T1", "date": "", "total_amount": 0, "vendor_name": "", "items": []}]
+            return [
+                {
+                    "invoice_number": "T1",
+                    "date": "",
+                    "total_amount": 0,
+                    "vendor_name": "",
+                    "items": [],
+                }
+            ]
         return None
 
     result = run_staged_orchestrator(
@@ -233,6 +249,7 @@ def test_run_staged_orchestrator_structured_fallback_after_diagnostics():
 
 def test_run_staged_orchestrator_debug_dir_used():
     """debug_dir from config is passed to orchestrator and artifacts are written."""
+
     def mock_llm(
         prompt: Any,
         schema_json_arg: Any,
@@ -242,7 +259,15 @@ def test_run_staged_orchestrator_debug_dir_used():
         if "catalog_id_pass" in context_arg:
             return {"nodes": [{"path": "", "ids": {"invoice_number": "D1"}, "parent": None}]}
         if "fill_call_" in context_arg:
-            return [{"invoice_number": "D1", "date": "", "total_amount": 0, "vendor_name": "", "items": []}]
+            return [
+                {
+                    "invoice_number": "D1",
+                    "date": "",
+                    "total_amount": 0,
+                    "vendor_name": "",
+                    "items": [],
+                }
+            ]
         return None
 
     with tempfile.TemporaryDirectory() as tmp:
