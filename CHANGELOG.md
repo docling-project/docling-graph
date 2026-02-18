@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.3 (2026-02-18)
+
+### Bug Fixes
+
+- **ci**: Preserve release tag across rebase in semantic-release
+  ([`84b4e51`](https://github.com/docling-project/docling-graph/commit/84b4e512feddfe2f0af85a6d1ceb10b90ab94aee))
+
+
 ## v1.4.2 (2026-02-18)
 
 ### Bug Fixes

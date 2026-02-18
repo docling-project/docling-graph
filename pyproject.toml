@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docling_graph"
-version = "1.4.2"
+version = "1.4.3"
 description = "A tool to convert documents into knowledge graphs using Docling."
 
 license = { text = "MIT License" }
