@@ -1,81 +1,111 @@
 name: Semantic Release
 
-# Automated releases for minor and patch versions only
-# - feat: commits → minor version bump (1.0.0 → 1.1.0)
-# - fix: commits → patch version bump (1.0.0 → 1.0.1)
-# - BREAKING CHANGE: commits → minor version bump (capped, not major)
+# Run on push to main or manually via "Run workflow" (workflow_dispatch).
+# - Pre-release check computes the next version and shows changelog; no push.
+# - Release job runs only when there is a new version and uses a GitHub App token to push.
 #
-# Major releases (1.x.x → 2.0.0) require manual Git tags:
-#   git tag -a v2.0.0 -m "Major release: [description]"
-#   git push origin v2.0.0
+# Minor/patch: feat → minor, fix/perf/refactor → patch.
+# Major (1.x → 2.0): create tag manually: git tag -a v2.0.0 -m "..." && git push origin v2.0.0
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
+  id-token: write
 
 jobs:
+  pre-release-check:
+    name: Pre-release check
+    runs-on: ubuntu-latest
+    outputs:
+      TARGET_TAG_V: ${{ steps.version_check.outputs.TRGT_VERSION }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install dependencies
+        run: uv sync --dev
+      - name: Check version of potential release
+        id: version_check
+        run: |
+          NEXT=$(uv run semantic-release version --print 2>/dev/null || true)
+          LAST=$(uv run semantic-release version --print-last-released 2>/dev/null || true)
+          if [ -n "$NEXT" ] && [ "$NEXT" != "$LAST" ]; then
+            echo "TRGT_VERSION=${NEXT}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Next version: ${NEXT:-none}, Last released: ${LAST:-none}"
+      - name: Check notes of potential release
+        if: steps.version_check.outputs.TRGT_VERSION != ''
+        run: uv run semantic-release changelog --unreleased
+
   release:
-    name: Semantic Release
+    name: Release
+    needs: pre-release-check
+    if: needs.pre-release-check.outputs.TARGET_TAG_V != ''
+    environment: auto-release
     runs-on: ubuntu-latest
     concurrency: release
-    
     steps:
+      - name: Create GitHub App token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.CI_APP_ID }}
+          private-key: ${{ secrets.CI_PRIVATE_KEY }}
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
-      
+          token: ${{ steps.app-token.outputs.token }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
-      
+          python-version: "3.12"
       - name: Install uv
         uses: astral-sh/setup-uv@v7
-      
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
       - name: Install dependencies
-        run: |
-          uv sync --dev
-      
+        run: uv sync --dev
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      
       - name: Python Semantic Release
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          # Use --no-push so we can add DCO sign-off and push in one step.
-          # Pushing from the workflow requires the repo to allow the release
-          # actor to bypass branch protection (see README or repo rules).
-          uv run semantic-release version --skip-build --no-push
-
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: uv run semantic-release version --skip-build --no-push
       - name: Add DCO sign-off to release commit
-        if: success()
         run: |
-          # If semantic-release created a release commit, add Signed-off-by so
-          # the commit satisfies DCO when pushed to a protected main.
           if git log -1 --pretty=format:%s | grep -q '^chore(release):'; then
             TAG=$(git describe --exact-match --tags HEAD)
             git commit --amend --no-edit -s
-            git tag -f "$TAG"  # move tag to amended commit
+            git tag -f "$TAG"
           fi
-
       - name: Push changes
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          REMOTE: https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
         run: |
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main --follow-tags
-      
+          git fetch "$REMOTE" main
+          if ! git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null; then
+            git rebase FETCH_HEAD
+            TAG=$(git describe --exact-match --tags HEAD 2>/dev/null) && git tag -f "$TAG"
+          fi
+          git push "$REMOTE" HEAD:main --follow-tags
       - name: Summary
         run: |
           echo "## Semantic Release Summary" >> $GITHUB_STEP_SUMMARY
@@ -87,13 +117,4 @@ jobs:
             echo "The release workflow will now be triggered by the new tag." >> $GITHUB_STEP_SUMMARY
           else
             echo "- No release created" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "No conventional commits found that warrant a release." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Commit types that trigger releases:**" >> $GITHUB_STEP_SUMMARY
-            echo "- \`feat:\` - New feature (minor version bump)" >> $GITHUB_STEP_SUMMARY
-            echo "- \`refactor:\` - Code refactoring (minor version bump)" >> $GITHUB_STEP_SUMMARY
-            echo "- \`fix:\` - Bug fix (patch version bump)" >> $GITHUB_STEP_SUMMARY
-            echo "- \`perf:\` - Performance improvement (patch version bump)" >> $GITHUB_STEP_SUMMARY
-            echo "- \`BREAKING CHANGE:\` - Breaking change (major version bump)" >> $GITHUB_STEP_SUMMARY
           fi

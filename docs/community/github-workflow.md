@@ -364,6 +364,16 @@ GitHub Actions automatically:
 4. Creates GitHub release
 5. Updates documentation
 
+### Semantic Release (CD workflow)
+
+Releases are driven by the **Semantic Release** workflow (push to `main` or **Actions → Run workflow**). It uses a **GitHub App** so the release job can push to protected `main`.
+
+**Maintainer setup:**
+
+1. **GitHub App** – Create or reuse an app with repo contents permission. In the repo (or org): set **variable** `CI_APP_ID` and **secret** `CI_PRIVATE_KEY` (app private key PEM). In branch protection for `main`, allow that app to bypass “Require a pull request”.
+2. **Environment** – Ensure the **auto-release** environment exists (**Settings → Environments**). You can add protection or required reviewers there.
+3. **Manual-only** – To run releases only from the UI, remove the `push: branches: [main]` trigger from `.github/workflows/semantic-release.yml`.
+
 ---
 
 ## Best Practices
