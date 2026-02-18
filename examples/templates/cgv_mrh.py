@@ -186,10 +186,15 @@ class Condition(BaseModel):
 
     texte: str | None = Field(
         None,
-        description="Condition au plus proche du texte du document (éviter de paraphraser).",
+        description=(
+            "Condition au plus proche du texte du document (éviter de paraphraser). "
+            "For numbered security levels or bullet lists (e.g. 'Niveau 1: 2 serrures', 'Niveau 2: volets ou persiennes'), "
+            "create one Condition per item with texte summarizing that item."
+        ),
         examples=[
             "En cas d'absence de plus de 24h, utiliser tous les moyens de fermeture et de protection.",
             "Faire procéder au ramonage des conduits avant chaque hiver.",
+            "Niveau 2 : deux serrures ou un système multipoints.",
         ],
     )
     jours_inoccupation_max: int | None = Field(
@@ -325,7 +330,9 @@ class Garantie(BaseModel):
         None,
         description=(
             "Description (corps du texte de la garantie). "
-            "Éviter de recopier le tableau; privilégier les paragraphes 'Nous garantissons…'."
+            "Éviter de recopier le tableau; privilégier les paragraphes 'Nous garantissons…'. "
+            "Stop the description before any 'Exclusions' or 'EXCLUSIONS SPÉCIFIQUES' section; "
+            "do not put exclusion bullets into description—put them in exclusions_specifiques."
         ),
     )
 
@@ -365,8 +372,16 @@ class Garantie(BaseModel):
     conditions: list[Condition] = edge(
         label="ACONDITION",
         default_factory=list,
-        description="Conditions / mesures de sécurité / obligations liées à cette garantie.",
-        examples=[[{"texte": "Faire procéder au ramonage avant chaque hiver."}]],
+        description=(
+            "Conditions / mesures de sécurité / obligations liées à cette garantie. "
+            "For numbered security levels or bullet lists, create one Condition per item with texte summarizing that item."
+        ),
+        examples=[
+            [
+                {"texte": "Faire procéder au ramonage avant chaque hiver."},
+                {"texte": "Niveau 2 : deux serrures ou un système multipoints."},
+            ]
+        ],
     )
 
     exclusions_specifiques: list[Exclusion] = edge(
@@ -378,10 +393,21 @@ class Garantie(BaseModel):
         description=(
             "Exclusions spécifiques à cette garantie (typiquement sous un bloc 'EXCLUSIONS SPÉCIFIQUES' "
             "dans la section de la garantie). "
+            "LOOK FOR: Section headers such as 'EXCLUSIONS SPÉCIFIQUES', 'Exclusions spécifiques', or equivalent. "
+            "Create one Exclusion object per bullet point or numbered item under that header. "
+            "Use exclusion_id as a short normalized label (e.g. from the first words of the bullet). "
             "Ne pas y mettre les exclusions 'communes à toutes les garanties' (Article 7), "
             "qui doivent aller dans AssuranceMRH.exclusions_communes."
         ),
-        examples=[[{"exclusion_id": "defaut-entretien"}]],
+        examples=[
+            [
+                {"exclusion_id": "defaut-entretien"},
+                {
+                    "exclusion_id": "vol-sans-effraction",
+                    "texte": "Sont exclus les vols sans effraction.",
+                },
+            ]
+        ],
     )
 
     @field_validator("biens_couverts", mode="before")
@@ -459,7 +485,12 @@ class Option(BaseModel):
         label="ETENDGARANTIE",
         default_factory=list,
         validation_alias=AliasChoices("etend_garanties", "etendgaranties"),
-        description="Si indiqué, liste des garanties que l'option étend/active.",
+        description=(
+            "When the document states which guarantee(s) the option extends or activates "
+            "(e.g. in the option text or in the guarantee table), list those guarantees here by their nom. "
+            "Do not leave empty when the text or table indicates that this option applies to a specific guarantee "
+            "(e.g. 'Dommages électriques' extends 'Incendie')."
+        ),
         examples=[[{"nom": "Incendie et événements assimilés"}]],
     )
 
@@ -587,7 +618,7 @@ class AssuranceMRH(BaseModel):
     )
 
     reference_document: str = Field(
-        ...,
+        "",
         validation_alias=AliasChoices("reference_document", "referencedocument"),
         description="Référence/identifiant du document (couverture, pied de page) si présent.",
         examples=["CGV-MRH-2023", "HABITATION 2023-10"],

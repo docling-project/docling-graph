@@ -322,9 +322,9 @@ class ScholarlyRheologyPaper(BaseModel):
     authors: List[PersonIdentity] = Field(
         default_factory=list,
         description=(
-            "List of paper authors. "
-            "LOOK FOR: Names listed immediately below the title. "
-            "EXTRACT: Each name as a separate object. "
+            "List ALL paper authors. "
+            "LOOK FOR: Every name on the title/author line (comma-separated or on the same line). "
+            "EXTRACT: One object per author; do not stop after the first name. "
             "EXAMPLES: [{'full_name': 'John Doe'}, {'full_name': 'Jane Smith'}]"
         ),
     )
@@ -390,6 +390,21 @@ class ScholarlyRheologyPaper(BaseModel):
         ),
     )
 
+    @model_validator(mode="after")
+    def deduplicate_authors_by_name(self) -> Self:
+        """Keep first occurrence of each author per full_name (removes duplicates from chunked extraction)."""
+        if not self.authors:
+            return self
+        seen: set[str] = set()
+        unique: list[PersonIdentity] = []
+        for a in self.authors:
+            key = (getattr(a, "full_name", None) or "").strip().lower()
+            if key not in seen:
+                seen.add(key)
+                unique.append(a)
+        object.__setattr__(self, "authors", unique)
+        return self
+
     @field_validator("publication_date", mode="before")
     @classmethod
     def parse_date(cls, v: Any) -> Any:
@@ -435,15 +450,22 @@ class SlurryRheologyStudy(BaseModel):
 
     study_id: str = Field(
         description=(
-            "Unique identifier for this study. "
-            "EXTRACT: Prefer document-derived IDs: section number (e.g. '3.1'), figure/section label, or table caption. "
-            "If none present, create short descriptive ID from objective (e.g. 'STUDY-BINDER-MW'). "
-            "EXAMPLES: '3.1', 'Section-3', 'STUDY-BINDER-MW', 'STUDY-SECTION-3.1'"
+            "Short, stable, human-readable identifier for this study. "
+            "EXTRACT: Prefer descriptive IDs from the study's objective or content (e.g. 'STUDY-TEMPERATURE-DEPENDENCE', 'Phenomenological fitting'), "
+            "or document-derived labels that are meaningful on their own (e.g. section number '3.1', or 'FIG-4' when the study is clearly about that figure). "
+            "Avoid using only a section letter or Roman numeral (e.g. 'C', 'V', 'VI') as the study_id; prefer a descriptive label or combine with topic (e.g. 'IV-A-Temperature-dependence'). "
+            "EXAMPLES: 'STUDY-BINDER-MW', 'STUDY-TEMPERATURE-DEPENDENCE', 'Phenomenological fitting', 'FIG-4'"
         ),
-        examples=["3.1", "STUDY-BINDER-MW", "STUDY-SECTION-3.1"],
+        examples=[
+            "STUDY-BINDER-MW",
+            "STUDY-TEMPERATURE-DEPENDENCE",
+            "Phenomenological fitting",
+            "FIG-4",
+        ],
     )
 
-    objective: str = Field(
+    objective: str | None = Field(
+        None,
         description=(
             "Goal of this specific study. "
             "LOOK FOR: 'We investigate...', 'The objective is...'. "
@@ -570,6 +592,7 @@ class SlurryComponent(BaseModel):
             "Numeric amount. "
             "LOOK FOR: Numbers in composition tables. "
             "EXTRACT: Number only. "
+            "If the text gives alternatives (e.g. '5 or 10 wt%'), create separate formulation/component entries for each variant or extract a range; do not omit. "
             "EXAMPLES: 85.0, 10.0"
         ),
         examples=[85.0, 10.0],
@@ -589,11 +612,14 @@ class SlurryComponent(BaseModel):
     particle_size: QuantityWithUnit | None = Field(
         None,
         description=(
-            "Particle size info (D50, etc.). "
-            "LOOK FOR: 'D50', 'particle size'. "
-            "EXTRACT: As quantity. "
-            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}"
+            "Particle size info (D50, median, mean diameter, etc.). "
+            "LOOK FOR: 'D50', 'particle size', 'median of X nm', 'mean particle size of X', "
+            "'particle size of X', 'diameter'. "
+            "EXTRACT: As quantity (numeric_value + unit) or text_value. "
+            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}, "
+            "'median of 130 nm' -> numeric_value 0.13, unit 'µm', or text_value 'median 130 nm'"
         ),
+        examples=[{"name": "D50", "numeric_value": 0.13, "unit": "µm"}],
     )
 
     molecular_weight: QuantityWithUnit | None = Field(
@@ -610,6 +636,20 @@ class SlurryComponent(BaseModel):
     @classmethod
     def normalize_role(cls, v: Any) -> Any:
         return _normalize_enum(ComponentRole, v)
+
+    @model_validator(mode="after")
+    def clear_amount_if_property_unit(self) -> Self:
+        """Clear amount_value/amount_unit when unit indicates a property (temp, viscosity), not a quantity."""
+        unit = self.amount_unit
+        if not unit or not isinstance(unit, str):
+            return self
+        normalized = re.sub(r"[\s·]", "", unit.lower())
+        forbidden_substrings = ("°c", "k", "pa.s", "pas", "mpa.s", "mpas")
+        is_pressure_pa = normalized == "pa" or (len(normalized) > 2 and normalized.endswith("pa"))
+        if any(f in normalized for f in forbidden_substrings) or is_pressure_pa:
+            object.__setattr__(self, "amount_value", None)
+            object.__setattr__(self, "amount_unit", None)
+        return self
 
 
 class SlurryFormulation(BaseModel):
@@ -639,7 +679,10 @@ class SlurryFormulation(BaseModel):
     components: List[SlurryComponent] = edge(
         label="HAS_COMPONENT",
         default_factory=list,
-        description="List of ingredients in this formulation.",
+        description=(
+            "List of ingredients in this formulation. "
+            "Include a component for every distinct material mentioned (e.g. solvent, binder, active material, conductive additive)."
+        ),
     )
 
     target_solid_loading: QuantityWithUnit | None = Field(
@@ -685,6 +728,7 @@ class PreparationStep(BaseModel):
     )
 
     step_type: StepType = Field(
+        StepType.OTHER,
         description="Type of step (Mixing, Rest, etc.).",
         examples=["Mixing", "Rest"],
     )
@@ -721,6 +765,8 @@ class PreparationStep(BaseModel):
     @field_validator("step_type", mode="before")
     @classmethod
     def normalize_step(cls, v: Any) -> Any:
+        if v is None:
+            return StepType.OTHER
         return _normalize_enum(StepType, v)
 
 
@@ -794,7 +840,8 @@ class RheometerSetup(BaseModel):
 
     model_config = ConfigDict(graph_id_fields=["instrument_model", "geometry_type"])
 
-    instrument_vendor: str = Field(
+    instrument_vendor: str | None = Field(
+        None,
         description="Manufacturer (e.g., TA Instruments).",
         examples=["TA Instruments", "Anton Paar"],
     )
@@ -805,7 +852,10 @@ class RheometerSetup(BaseModel):
     )
 
     geometry_type: GeometryType = Field(
-        description="Geometry used.",
+        description=(
+            "Geometry used. Map 'parallel plate', 'parallel disk', or 'plate-plate' to 'Plate-Plate'. "
+            "Do not use Other when the text matches a known type."
+        ),
         examples=["Plate-Plate", "Cone-Plate"],
     )
 
@@ -839,6 +889,8 @@ class RheometerSetup(BaseModel):
     @field_validator("geometry_type", mode="before")
     @classmethod
     def normalize_geo(cls, v: Any) -> Any:
+        if isinstance(v, str) and "parallel" in v.lower() and "plate" in v.lower():
+            return GeometryType.PLATE_PLATE
         return _normalize_enum(GeometryType, v)
 
 
@@ -899,29 +951,39 @@ class TestProtocol(BaseModel):
         examples=["Flow curve", "PROTOCOL-FLOW-CURVE"],
     )
 
-    test_mode: TestMode = Field(
+    test_mode: TestMode | None = Field(
+        None,
         description="Test mode (Flow curve, Sweep).",
         examples=["Steady Shear Flow Curve"],
     )
 
     temperature_setpoint: QuantityWithUnit | None = Field(
         None,
-        description="Test temperature.",
+        description="Test temperature. Look in Methods for temperature values.",
     )
 
     equilibration_time: QuantityWithUnit | None = Field(
         None,
-        description="Wait time before test starts.",
+        description=(
+            "Wait time before test starts. "
+            "Look in Methods for 'equilibration', 'equilibrat'; extract values even if mid-paragraph."
+        ),
     )
 
     pre_shear_rate: QuantityWithUnit | None = Field(
         None,
-        description="Conditioning shear rate applied before test.",
+        description=(
+            "Conditioning shear rate applied before test. "
+            "Look in Methods for 'pre-shear', 'shear rate'; extract values even if mid-paragraph."
+        ),
     )
 
     pre_shear_duration: QuantityWithUnit | None = Field(
         None,
-        description="Duration of pre-shear.",
+        description=(
+            "Duration of pre-shear. "
+            "Look in Methods for 'pre-sheared for', 'duration'; extract values even if mid-paragraph."
+        ),
     )
 
     sweep_parameters: SweepParameters | None = Field(
@@ -953,18 +1015,27 @@ class RheologyCurve(BaseModel):
             "Unique ID for the curve. "
             "EXTRACT: Prefer figure/legend label (e.g. 'Fig-2a', 'Sample A'). "
             "Else 'CURVE-[type]-[sample]'. "
+            "Look in figure captions and data tables for curve identifiers. "
             "EXAMPLES: 'Fig-2a', 'CURVE-VISCOSITY-SAMPLE-A'"
         ),
         examples=["Fig-2a", "CURVE-VISCOSITY-SAMPLE-A"],
     )
 
-    x_quantity: str = Field(
-        description="X-axis label (e.g., Shear rate).",
+    x_quantity: str | None = Field(
+        None,
+        description=(
+            "X-axis label (e.g., Shear rate). "
+            "Look in figure captions and axis labels for the quantity name."
+        ),
         examples=["Shear rate", "Frequency"],
     )
 
-    y_quantity: str = Field(
-        description="Y-axis label (e.g., Viscosity).",
+    y_quantity: str | None = Field(
+        None,
+        description=(
+            "Y-axis label (e.g., Viscosity). "
+            "Look in figure captions and axis labels for the quantity name."
+        ),
         examples=["Viscosity", "Storage modulus"],
     )
 
@@ -1014,7 +1085,11 @@ class DerivedQuantity(BaseModel):
 
     value: QuantityWithUnit | None = Field(
         None,
-        description="The calculated value.",
+        description=(
+            "The calculated value. "
+            "LOOK FOR: Values in tables, figure captions, and result sections. "
+            "EXTRACT: Numeric value and unit (e.g. 198 Pa)."
+        ),
     )
 
     method: str | None = Field(
