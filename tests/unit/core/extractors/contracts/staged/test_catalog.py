@@ -123,6 +123,22 @@ def test_catalog_includes_schema_descriptions_and_examples():
     assert "code" in root.example_hint and ("A1" in root.example_hint or "B2" in root.example_hint)
 
 
+def test_discovery_prompt_includes_list_path_shared_child_rule():
+    """Prompt must tell model to output one node per (parent, child) pair so shared children appear under each parent."""
+    catalog = build_node_catalog(SampleCompany)
+    prompt = get_discovery_prompt("Document text.", catalog)
+    # System: list-path rule (same child under multiple parents → output once per parent)
+    assert (
+        "one node per" in prompt["system"]
+        and "parent" in prompt["system"]
+        and "child" in prompt["system"]
+    )
+    assert "same child" in prompt["system"] or "once per parent" in prompt["system"]
+    # User: explicit instruction for shared children
+    assert "nested list paths" in prompt["user"] and "one node per parent" in prompt["user"]
+    assert "same path and ids" in prompt["user"] or "once per parent" in prompt["user"]
+
+
 def test_discovery_prompt_explicitly_handles_no_id_paths():
     """Prompt should explicitly state ids={} for paths without id_fields."""
 
@@ -478,6 +494,23 @@ def test_merge_and_dedupe_flat_nodes():
     assert per_path_counts.get("employees[]", 0) == 2
 
 
+def test_merge_and_dedupe_collapses_id_variants_run1_run_1():
+    """Identifier variants (run_1, run1, Run-1) collapse to one node via canonicalize_identity_for_dedup."""
+
+    class Run(BaseModel):
+        run_id: str = ""
+        model_config = ConfigDict(graph_id_fields=["run_id"])
+
+    catalog = build_node_catalog(Run)
+    list1 = [{"path": "", "ids": {"run_id": "run1"}, "parent": None}]
+    list2 = [{"path": "", "ids": {"run_id": "run_1"}, "parent": None}]
+    merged, per_path_counts = merge_and_dedupe_flat_nodes([list1, list2], catalog)
+    assert len(merged) == 1
+    assert per_path_counts.get("", 0) == 1
+    # First occurrence wins; node keeps one of the raw ids
+    assert merged[0]["ids"]["run_id"] in ("run1", "run_1")
+
+
 def test_merge_and_dedupe_keeps_multiple_component_instances_without_id_fields():
     """Component paths with empty id_fields keep all instances (no collapse by empty ids)."""
 
@@ -534,6 +567,113 @@ def test_merge_and_dedupe_keeps_multiple_component_instances_without_id_fields()
     keys = [n.get("__instance_key") for n in address_nodes]
     assert all(isinstance(k, str) and k for k in keys)
     assert len(set(keys)) == 2
+
+
+def test_merge_and_dedupe_flat_nodes_list_under_list_keeps_one_per_parent_child():
+    """For list-under-list paths, same (path, ids) under different parents yields one descriptor per (parent, child)."""
+    from docling_graph.core.extractors.contracts.staged.catalog import (
+        _is_list_under_list,
+        build_node_catalog,
+    )
+
+    class Item(BaseModel):
+        id: str = ""
+        model_config = ConfigDict(graph_id_fields=["id"])
+
+    class Section(BaseModel):
+        name: str = ""
+        items: list[Item] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["name"])
+
+    class RootWithSections(BaseModel):
+        ref: str = ""
+        sections: list[Section] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["ref"])
+
+    catalog = build_node_catalog(RootWithSections)
+    grandchild_spec = next(
+        s for s in catalog.nodes if s.path != "" and s.parent_path != "" and s.path.endswith("[]")
+    )
+    assert _is_list_under_list(grandchild_spec.path, grandchild_spec), (
+        "sections[].items[] is list-under-list"
+    )
+    # Same child (id="x") under two parents (sections A and B) — must keep both descriptors
+    flat = [
+        {"path": "", "ids": {"ref": "R"}, "parent": None},
+        {"path": "sections[]", "ids": {"name": "A"}, "parent": {"path": "", "ids": {"ref": "R"}}},
+        {"path": "sections[]", "ids": {"name": "B"}, "parent": {"path": "", "ids": {"ref": "R"}}},
+        {
+            "path": "sections[].items[]",
+            "ids": {"id": "x"},
+            "parent": {"path": "sections[]", "ids": {"name": "A"}},
+        },
+        {
+            "path": "sections[].items[]",
+            "ids": {"id": "x"},
+            "parent": {"path": "sections[]", "ids": {"name": "B"}},
+        },
+    ]
+    merged, per_path_counts = merge_and_dedupe_flat_nodes([flat], catalog)
+    assert per_path_counts.get("sections[].items[]", 0) == 2
+    items = [n for n in merged if n.get("path") == "sections[].items[]"]
+    assert len(items) == 2
+    parent_id_vals = []
+    for n in items:
+        pid = (n.get("parent") or {}).get("ids")
+        parent_id_vals.append(tuple(pid.values()) if isinstance(pid, dict) else ())
+    assert ("A",) in parent_id_vals and ("B",) in parent_id_vals
+
+
+def test_staged_list_under_list_dedup_then_merge_produces_shared_child():
+    """ID-pass-style flat list with same child under two parents → dedup keeps both → merge attaches under each parent."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import merge_filled_into_root
+
+    class Item(BaseModel):
+        id: str = ""
+        model_config = ConfigDict(graph_id_fields=["id"])
+
+    class Section(BaseModel):
+        name: str = ""
+        items: list[Item] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["name"])
+
+    class RootWithSections(BaseModel):
+        ref: str = ""
+        sections: list[Section] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["ref"])
+
+    catalog = build_node_catalog(RootWithSections)
+    flat = [
+        {"path": "", "ids": {"ref": "R"}, "parent": None},
+        {"path": "sections[]", "ids": {"name": "A"}, "parent": {"path": "", "ids": {"ref": "R"}}},
+        {"path": "sections[]", "ids": {"name": "B"}, "parent": {"path": "", "ids": {"ref": "R"}}},
+        {
+            "path": "sections[].items[]",
+            "ids": {"id": "x"},
+            "parent": {"path": "sections[]", "ids": {"name": "A"}},
+        },
+        {
+            "path": "sections[].items[]",
+            "ids": {"id": "x"},
+            "parent": {"path": "sections[]", "ids": {"name": "B"}},
+        },
+    ]
+    merged_flat, _ = merge_and_dedupe_flat_nodes([flat], catalog)
+    path_to_descriptors = flat_nodes_to_path_lists(merged_flat)
+    path_filled = {
+        "": [{"ref": "R"}],
+        "sections[]": [{"name": "A"}, {"name": "B"}],
+        "sections[].items[]": [{"id": "x"}, {"id": "x"}],
+    }
+    merged = merge_filled_into_root(path_filled, path_to_descriptors, catalog)
+    assert merged.get("sections") is not None
+    assert len(merged["sections"]) == 2
+    assert (
+        len(merged["sections"][0]["items"]) == 1 and merged["sections"][0]["items"][0]["id"] == "x"
+    )
+    assert (
+        len(merged["sections"][1]["items"]) == 1 and merged["sections"][1]["items"][0]["id"] == "x"
+    )
 
 
 def test_write_id_pass_artifact():
@@ -598,6 +738,94 @@ def test_catalog_orchestrator_end_to_end():
     assert len(call_log) >= 2
     assert any("catalog_id_pass" in c[0] for c in call_log)
     assert any("fill_" in c[0] for c in call_log)
+
+
+def test_catalog_orchestrator_list_under_list_fill_reuse():
+    """With list-under-list, same child under two parents: fill is called once per unique (path, ids), then expanded."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import (
+        CatalogOrchestrator,
+        CatalogOrchestratorConfig,
+    )
+
+    class Item(BaseModel):
+        id: str = ""
+        model_config = ConfigDict(graph_id_fields=["id"])
+
+    class Section(BaseModel):
+        name: str = ""
+        items: list[Item] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["name"])
+
+    class RootWithSections(BaseModel):
+        ref: str = ""
+        sections: list[Section] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["ref"])
+
+    fill_call_count = 0
+
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
+        nonlocal fill_call_count
+        if "catalog_id_pass" in context:
+            return {
+                "nodes": [
+                    {"path": "", "ids": {"ref": "R"}, "parent": None},
+                    {
+                        "path": "sections[]",
+                        "ids": {"name": "A"},
+                        "parent": {"path": "", "ids": {"ref": "R"}},
+                    },
+                    {
+                        "path": "sections[]",
+                        "ids": {"name": "B"},
+                        "parent": {"path": "", "ids": {"ref": "R"}},
+                    },
+                    {
+                        "path": "sections[].items[]",
+                        "ids": {"id": "x"},
+                        "parent": {"path": "sections[]", "ids": {"name": "A"}},
+                    },
+                    {
+                        "path": "sections[].items[]",
+                        "ids": {"id": "x"},
+                        "parent": {"path": "sections[]", "ids": {"name": "B"}},
+                    },
+                ]
+            }
+        if "fill_" in context:
+            fill_call_count += 1
+            # Fill order is deepest first: sections[].items[], then sections[], then root
+            if "id" in schema_json and "name" not in schema_json and "ref" not in schema_json:
+                return [{"id": "x"}]
+            if "sections" in schema_json or "name" in schema_json:
+                return [{"name": "A"}, {"name": "B"}]
+            return [{"ref": "R"}]
+        return None
+
+    with tempfile.TemporaryDirectory() as tmp:
+        config = CatalogOrchestratorConfig(max_nodes_per_call=5, parallel_workers=1)
+        schema_json = '{"type":"object","properties":{"ref":{},"sections":{}}}'
+        orch = CatalogOrchestrator(
+            llm_call_fn=mock_llm,
+            schema_json=schema_json,
+            template=RootWithSections,
+            config=config,
+            debug_dir=tmp,
+        )
+        result = orch.extract(
+            markdown="Doc with sections A and B, each with item x.", context="test"
+        )
+    assert result is not None
+    assert result.get("ref") == "R"
+    assert result.get("sections") is not None
+    assert len(result["sections"]) == 2
+    assert len(result["sections"][0].get("items", [])) == 1
+    assert result["sections"][0]["items"][0].get("id") == "x"
+    assert len(result["sections"][1].get("items", [])) == 1
+    assert result["sections"][1]["items"][0].get("id") == "x"
+    # One fill call for root, one for sections (2 items), one for items (1 unique, expanded to 2)
+    assert fill_call_count == 3
 
 
 def test_merge_filled_into_root_nested_by_parent_id():
@@ -696,6 +924,115 @@ def test_merge_filled_into_root_preserves_component_instances_without_id_fields(
     assert merged["employees"][1]["addresses"][0]["street"] == "Rue B"
 
 
+def test_merge_filled_into_root_shared_child_under_multiple_parents():
+    """When same child identity appears under multiple parents (ID pass one-per-parent), merge attaches it under each parent."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import merge_filled_into_root
+
+    class Item(BaseModel):
+        id: str = ""
+        model_config = ConfigDict(graph_id_fields=["id"])
+
+    class Section(BaseModel):
+        name: str = ""
+        items: list[Item] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["name"])
+
+    class RootWithSections(BaseModel):
+        ref: str = ""
+        sections: list[Section] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["ref"])
+
+    catalog = build_node_catalog(RootWithSections)
+    # Same child (id="x") under two different parents (sections A and B)
+    path_descriptors = {
+        "": [{"path": "", "ids": {"ref": "R"}, "parent": None}],
+        "sections[]": [
+            {
+                "path": "sections[]",
+                "ids": {"name": "A"},
+                "parent": {"path": "", "ids": {"ref": "R"}},
+            },
+            {
+                "path": "sections[]",
+                "ids": {"name": "B"},
+                "parent": {"path": "", "ids": {"ref": "R"}},
+            },
+        ],
+        "sections[].items[]": [
+            {
+                "path": "sections[].items[]",
+                "ids": {"id": "x"},
+                "parent": {"path": "sections[]", "ids": {"name": "A"}},
+            },
+            {
+                "path": "sections[].items[]",
+                "ids": {"id": "x"},
+                "parent": {"path": "sections[]", "ids": {"name": "B"}},
+            },
+        ],
+    }
+    path_filled = {
+        "": [{"ref": "R"}],
+        "sections[]": [{"name": "A"}, {"name": "B"}],
+        "sections[].items[]": [{"id": "x"}, {"id": "x"}],
+    }
+    merged = merge_filled_into_root(path_filled, path_descriptors, catalog)
+    assert merged.get("sections") is not None
+    assert len(merged["sections"]) == 2
+    assert len(merged["sections"][0]["items"]) == 1
+    assert len(merged["sections"][1]["items"]) == 1
+    assert merged["sections"][0]["items"][0]["id"] == "x"
+    assert merged["sections"][1]["items"][0]["id"] == "x"
+
+
+def test_merge_filled_into_root_canonical_lookup_resolves_parent_id_variants():
+    """After canonical dedup, child with parent ref run_1 finds parent kept as run1 (same canonical key)."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import merge_filled_into_root
+
+    class RunDetail(BaseModel):
+        detail_id: str = ""
+        model_config = ConfigDict(graph_id_fields=["detail_id"])
+
+    class Run(BaseModel):
+        run_id: str = ""
+        details: list[RunDetail] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=["run_id"])
+
+    class Root(BaseModel):
+        runs: list[Run] = Field(default_factory=list)
+        model_config = ConfigDict(graph_id_fields=[])
+
+    catalog = build_node_catalog(Root)
+    # One run descriptor (run1) after dedup; child descriptor references parent as run_1
+    path_descriptors = {
+        "": [{"path": "", "ids": {}, "parent": None}],
+        "runs[]": [
+            {"path": "runs[]", "ids": {"run_id": "run1"}, "parent": {"path": "", "ids": {}}},
+        ],
+        "runs[].details[]": [
+            {
+                "path": "runs[].details[]",
+                "ids": {"detail_id": "d1"},
+                "parent": {"path": "runs[]", "ids": {"run_id": "run_1"}},
+            },
+        ],
+    }
+    path_filled = {
+        "": [{}],
+        "runs[]": [{"run_id": "run1", "details": []}],
+        "runs[].details[]": [{"detail_id": "d1"}],
+    }
+    merge_stats: dict[str, int] = {}
+    merged = merge_filled_into_root(path_filled, path_descriptors, catalog, stats=merge_stats)
+    assert merged.get("runs") is not None
+    assert len(merged["runs"]) == 1
+    assert merged["runs"][0].get("run_id") == "run1"
+    assert merged["runs"][0].get("details") is not None
+    assert len(merged["runs"][0]["details"]) == 1
+    assert merged["runs"][0]["details"][0].get("detail_id") == "d1"
+    assert merge_stats.get("parent_lookup_miss", 0) == 0
+
+
 def test_fill_pass_order_bottom_up():
     """Fill pass runs in bottom-up order: employees[] (leaf) before root."""
     from docling_graph.core.extractors.contracts.staged.orchestrator import (
@@ -764,8 +1101,8 @@ def test_maybe_resolve_conflicts_returns_merged_when_no_conflicts():
     assert out == merged
 
 
-def test_id_pass_shards_run_sequentially_even_with_fill_workers():
-    """ID pass shards run sequentially; workers are used only for fill calls."""
+def test_id_pass_shards_can_run_in_parallel_with_fill_workers():
+    """ID pass shards run in parallel when parallel_workers > 1; results are merged in shard order."""
     from docling_graph.core.extractors.contracts.staged.orchestrator import (
         CatalogOrchestrator,
         CatalogOrchestratorConfig,
@@ -776,7 +1113,7 @@ def test_id_pass_shards_run_sequentially_even_with_fill_workers():
     def mock_llm(
         prompt: dict, schema_json: str, context: str, **kwargs: object
     ) -> dict | list | None:
-        if "catalog_id_pass_shard_" in context:
+        if "catalog_id_pass_shard_" in context and "_split" not in context:
             id_contexts.append(context)
             return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
         if "fill_call_" in context:
@@ -799,10 +1136,51 @@ def test_id_pass_shards_run_sequentially_even_with_fill_workers():
             config=config,
             debug_dir=tmp,
         )
-        orch.extract(markdown="Acme Corp...", context="test")
+        result = orch.extract(markdown="Acme Corp...", context="test")
 
-    shard_indexes = [int(c.split("catalog_id_pass_shard_")[1]) for c in id_contexts]
-    assert shard_indexes == sorted(shard_indexes)
+    shard_indexes = [
+        int(c.split("catalog_id_pass_shard_")[1])
+        for c in id_contexts
+        if "catalog_id_pass_shard_" in c and "_split" not in c
+    ]
+    # With id_shard_size=1 we get 2 identity shards (root + one other); all shards were invoked
+    assert len(shard_indexes) >= 1
+    assert set(shard_indexes) == set(range(len(shard_indexes)))
+    assert result is not None
+
+
+def test_fill_pass_accepts_wrapped_items_response():
+    """Fill pass unwraps LLM response when it is an object with 'items' (object-root schema)."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import (
+        CatalogOrchestrator,
+        CatalogOrchestratorConfig,
+    )
+
+    def mock_llm(
+        prompt: dict, schema_json: str, context: str, **kwargs: object
+    ) -> dict | list | None:
+        if "catalog_id_pass" in context:
+            return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
+        if "fill_call_" in context:
+            return {"items": [{"company_name": "Acme", "industry": "Tech"}]}
+        return None
+
+    with tempfile.TemporaryDirectory() as tmp:
+        config = CatalogOrchestratorConfig(max_nodes_per_call=5, parallel_workers=1)
+        schema_json = (
+            '{"type":"object","properties":{"company_name":{},"industry":{},"employees":{}}}'
+        )
+        orch = CatalogOrchestrator(
+            llm_call_fn=mock_llm,
+            schema_json=schema_json,
+            template=SampleCompany,
+            config=config,
+            debug_dir=tmp,
+        )
+        result = orch.extract(markdown="Acme Corp...", context="test")
+    assert result is not None
+    assert result.get("company_name") == "Acme"
+    assert result.get("industry") == "Tech"
 
 
 def test_get_identity_paths_returns_root_and_id_entities_only():

@@ -2,7 +2,10 @@
 
 import pytest
 
-from docling_graph.core.utils.entity_name_normalizer import normalize_entity_name
+from docling_graph.core.utils.entity_name_normalizer import (
+    canonicalize_identity_for_dedup,
+    normalize_entity_name,
+)
 
 
 def test_john_doe():
@@ -88,3 +91,28 @@ def test_prefix_strip_then_multiple_words():
 def test_unicode_possessive_word_appended():
     """Unicode possessive branch (word[-2:] == \\u2019s) strips suffix then words.append(word) (line 40)."""
     assert normalize_entity_name("Test\u2019s") == "TEST"
+
+
+def test_canonicalize_identity_for_dedup_name_fields():
+    """name/title/nom use normalize_entity_name."""
+    assert canonicalize_identity_for_dedup("name", "John Doe") == "JOHN_DOE"
+    assert canonicalize_identity_for_dedup("title", "The Company") == "COMPANY"
+    assert canonicalize_identity_for_dedup("nom", "  Alpha  ") == "ALPHA"
+
+
+def test_canonicalize_identity_for_dedup_identifier_collapse():
+    """Identifier-style id fields collapse run_1/run1/Run-1 to same canonical form."""
+    assert canonicalize_identity_for_dedup("run_id", "run_1") == "run1"
+    assert canonicalize_identity_for_dedup("run_id", "run1") == "run1"
+    assert canonicalize_identity_for_dedup("run_id", "Run-1") == "run1"
+    assert canonicalize_identity_for_dedup("batch_id", "batch1") == "batch1"
+    assert canonicalize_identity_for_dedup("batch_id", "batch_1") == "batch1"
+    assert canonicalize_identity_for_dedup("dataset_id", "dataset1") == "dataset1"
+    assert canonicalize_identity_for_dedup("dataset_id", "dataset_1") == "dataset1"
+
+
+def test_canonicalize_identity_for_dedup_none_empty():
+    """None and empty return empty string."""
+    assert canonicalize_identity_for_dedup("run_id", None) == ""
+    assert canonicalize_identity_for_dedup("name", "") == ""
+    assert canonicalize_identity_for_dedup("batch_id", "  ") == ""

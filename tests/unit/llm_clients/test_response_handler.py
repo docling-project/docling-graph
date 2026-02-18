@@ -167,3 +167,16 @@ class TestResponseHandler:
         assert len(response) == 1000
         assert response["key_0"] == "value_0"
         assert response["key_999"] == "value_999"
+
+    def test_parse_json_with_raw_newlines_and_tabs_in_strings(self):
+        """LLM may emit raw newlines/tabs in string values; sanitizer escapes them."""
+        # Simulates: "nom": "canalisations \n\t\t\t..."
+        raw = '{"items": [{"nom": "canalisations \n\t\t\t\t\t"}]}'
+        response = ResponseHandler.parse_json_response(raw, "TestClient")
+        assert response == {"items": [{"nom": "canalisations \n\t\t\t\t\t"}]}
+
+    def test_parse_json_with_broken_unicode_escape(self):
+        """LLM may emit \\u with newline/whitespace before hex digits; sanitizer normalizes."""
+        raw = '{"nom": "text\\u\n0009\\u\t0009"}'
+        response = ResponseHandler.parse_json_response(raw, "TestClient")
+        assert response == {"nom": "text\t\t"}

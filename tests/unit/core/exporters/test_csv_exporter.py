@@ -143,3 +143,23 @@ class TestCSVExporterExport:
 
         assert (output_dir / config.CSV_NODE_FILENAME).exists()
         assert (output_dir / config.CSV_EDGE_FILENAME).exists()
+
+    def test_export_handles_special_characters_in_attributes(self, tmp_path):
+        """Nodes/edges with commas, quotes, or newlines in attributes export without error."""
+        graph = nx.DiGraph()
+        graph.add_node(
+            "n1",
+            label="Item",
+            name='Text with "quotes" and, commas',
+            note="line1\nline2",
+        )
+        graph.add_edge("n1", "n2", label="ref", description='Say "hello"')
+        graph.add_node("n2", label="Other", name="simple")
+        exporter = CSVExporter()
+        output_dir = tmp_path
+        exporter.export(graph, output_dir)
+        nodes_df = pd.read_csv(output_dir / "nodes.csv")
+        assert len(nodes_df) == 2
+        assert 'Text with "quotes" and, commas' in nodes_df["name"].to_numpy()
+        edges_df = pd.read_csv(output_dir / "edges.csv")
+        assert 'Say "hello"' in edges_df["description"].to_numpy()

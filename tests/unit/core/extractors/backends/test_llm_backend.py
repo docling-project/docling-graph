@@ -894,6 +894,11 @@ class TestStagedPromptRetries:
         backend.trace_data.emit.assert_called_once()
         call_args = backend.trace_data.emit.call_args[0]
         assert call_args[0] == "structured_output_fallback_triggered"
+        payload = call_args[2]
+        assert "error_message" in payload
+        assert payload["error_message"] == "schema unsupported"
+        assert "details" in payload
+        assert isinstance(payload["details"], dict)
 
     def test_call_prompt_returns_none_when_client_returns_none(self, mock_llm_client):
         """When get_json_response returns None, _call_prompt returns None (No valid JSON path)."""
@@ -905,6 +910,38 @@ class TestStagedPromptRetries:
         mock_llm_client.get_json_response.return_value = None
         out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc")
         assert out is None
+
+    def test_call_prompt_structured_output_override_false_uses_legacy_only(self, mock_llm_client):
+        """When structured_output_override=False, skip structured attempt and call legacy once."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+            structured_output=True,
+        )
+        mock_llm_client.get_json_response.return_value = {"items": [{"id": "a"}]}
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "doc fill_call_0",
+            structured_output_override=False,
+        )
+        assert out == {"items": [{"id": "a"}]}
+        assert mock_llm_client.get_json_response.call_count == 1
+        assert mock_llm_client.get_json_response.call_args.kwargs["structured_output"] is False
+
+    def test_call_prompt_diagnostics_out_updated_on_success(self, mock_llm_client):
+        """When _diagnostics_out is passed, it is updated with last_call_diagnostics."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={},
+        )
+        mock_llm_client.get_json_response.return_value = {"k": "v"}
+        diag_out = {}
+        backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc", _diagnostics_out=diag_out)
+        assert "fallback_used" in diag_out
+        assert "structured_attempted" in diag_out
 
     def test_call_prompt_merges_client_last_call_diagnostics(self, mock_llm_client):
         """When client has last_call_diagnostics, merge and passthrough provider/model run."""
@@ -1050,6 +1087,17 @@ class TestDirectExtractionTraceAndDiagnostics:
         backend.trace_data.emit.assert_called()
         call_args_list = [c[0][0] for c in backend.trace_data.emit.call_args_list]
         assert "structured_output_fallback_triggered" in call_args_list
+        for call in backend.trace_data.emit.call_args_list:
+            if call[0][0] == "structured_output_fallback_triggered" and len(call[0]) >= 3:
+                payload = call[0][2]
+                assert "error_message" in payload
+                assert payload["error_message"] == "structured failed"
+                assert "details" in payload
+                break
+        else:
+            pytest.fail(
+                "Expected structured_output_fallback_triggered emit with error_message in payload"
+            )
 
     @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
     def test_direct_extraction_sparse_fallback_emits_trace(self, mock_get_prompt, mock_llm_client):
@@ -1085,13 +1133,12 @@ class TestDirectExtractionTraceAndDiagnostics:
             pytest.fail("Expected emit with reason SparseStructuredOutput")
 
     def test_call_prompt_truncation_retry_uses_details_max_tokens(self, mock_llm_client):
-        """When _get_staged_call_max_tokens returns None, context_max from details['max_tokens'] (1074-1078)."""
+        """When max_tokens is not passed, retry uses context_max from details['max_tokens']."""
         backend = LlmBackend(
             llm_client=mock_llm_client,
             extraction_contract="staged",
             staged_config={"retry_on_truncation": True},
         )
-        # Context that does not contain catalog_id_pass or fill_call_ so _get_staged_call_max_tokens returns None
         context = "custom_context_xyz"
         details = {"truncated": True, "max_tokens": 512}
         mock_llm_client.get_json_response.side_effect = [
