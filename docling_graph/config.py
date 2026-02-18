@@ -324,7 +324,8 @@ class PipelineConfig(BaseModel):
         default=0, description="Maximum allowed parent lookup misses before fallback."
     )
     staged_id_max_tokens: int | None = Field(
-        default=None, description="Optional max_tokens override for staged ID calls."
+        default=16384,
+        description="Max tokens for staged ID pass responses. Default 16384 avoids truncation on large catalogs; set to None to use client default.",
     )
     staged_fill_max_tokens: int | None = Field(
         default=None, description="Optional max_tokens override for staged fill calls."

@@ -30,12 +30,50 @@ def run_staged_orchestrator(
     debug_dir = staged_config_raw.get("debug_dir") or ""
     catalog_config = CatalogOrchestratorConfig.from_dict(staged_config_raw)
 
+    # Wrapper: inject max_tokens from config, track fill fallback, pass diagnostics so we can skip structured for later fill calls
+    _fill_structured_failed: list[bool] = [False]  # mutable so closure can update
+    _diagnostics: dict[str, Any] = {}
+
+    def _wrapped_llm(
+        prompt: Any,
+        schema_json_arg: str,
+        context_arg: str,
+        *,
+        response_top_level: str = "object",
+        response_schema_name: str = "staged_extraction",
+        **kwargs: Any,
+    ) -> Any:
+        if "catalog_id_pass" in context_arg:
+            max_tok = staged_config_raw.get("id_max_tokens")
+            call_max_tokens = int(max_tok) if max_tok is not None else None
+        elif "fill_call_" in context_arg:
+            max_tok = staged_config_raw.get("fill_max_tokens")
+            call_max_tokens = int(max_tok) if max_tok is not None else None
+        else:
+            call_max_tokens = None
+        structured_override: bool | None = None
+        if "fill_call_" in context_arg and _fill_structured_failed[0]:
+            structured_override = False
+        result = llm_call_fn(
+            prompt,
+            schema_json_arg,
+            context_arg,
+            response_top_level=response_top_level,
+            response_schema_name=response_schema_name,
+            max_tokens=call_max_tokens,
+            structured_output_override=structured_override,
+            _diagnostics_out=_diagnostics,
+        )
+        if "fill_call_" in context_arg and _diagnostics.get("fallback_used"):
+            _fill_structured_failed[0] = True
+        return result
+
     def _on_trace(trace_dict: dict) -> None:
         if trace_data is not None:
             trace_data.emit("staged_trace_emitted", "extraction", trace_dict)
 
     orchestrator = CatalogOrchestrator(
-        llm_call_fn=llm_call_fn,
+        llm_call_fn=_wrapped_llm,
         schema_json=schema_json,
         template=template,
         config=catalog_config,

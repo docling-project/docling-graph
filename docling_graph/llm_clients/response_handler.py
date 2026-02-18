@@ -89,8 +89,6 @@ class ResponseHandler:
 
             # Provide detailed error information
             rich_print(f"[red]Error:[/red] {client_name} JSON parse failed: {e}")
-            rich_print("[yellow]Raw response (first 500 chars):[/yellow]")
-            rich_print(raw_response[:500])
 
             raise ClientError(
                 f"{client_name}: Invalid JSON response",
@@ -131,6 +129,9 @@ class ResponseHandler:
         # LLMs often generate JSON with excessive whitespace/newlines that causes
         # Python's json.loads() to raise KeyError with keys like '\n  "slot_id"'
         content = ResponseHandler._normalize_json_whitespace(content)
+
+        # Escape raw newlines/tabs inside strings (invalid in JSON) and fix broken \u escapes
+        content = ResponseHandler._sanitize_json_string_escapes(content)
 
         return content.strip()
 
@@ -198,6 +199,72 @@ class ResponseHandler:
             # Structural characters and other content: keep as-is
             result.append(char)
 
+        return "".join(result)
+
+    @staticmethod
+    def _sanitize_json_string_escapes(content: str) -> str:
+        """
+        Escape raw newlines/tabs inside JSON strings and fix broken \\uXXXX escapes.
+
+        LLMs sometimes output literal newlines or tabs inside string values, which is
+        invalid JSON. They may also split \\uXXXX so that whitespace (e.g. newline)
+        appears between \\u and the four hex digits, causing "Invalid \\uXXXX escape".
+        """
+        result: list[str] = []
+        i = 0
+        in_string = False
+        escape_next = False
+        n = len(content)
+        while i < n:
+            char = content[i]
+            if escape_next:
+                result.append(char)
+                escape_next = False
+                i += 1
+                continue
+            if char == "\\" and in_string:
+                # Check for \u that might be split by whitespace (e.g. \u\\n0009)
+                if i + 1 < n and content[i + 1] == "u":
+                    j = i + 2
+                    hex_chars: list[str] = []
+                    while j < n and len(hex_chars) < 4:
+                        c = content[j]
+                        if c in "0123456789aAbBcCdDeEfF":
+                            hex_chars.append(c)
+                            j += 1
+                        elif c in " \t\n\r":
+                            j += 1
+                        else:
+                            break
+                    if len(hex_chars) == 4:
+                        result.append("\\u")
+                        result.extend(hex_chars)
+                        i = j
+                        continue
+                result.append(char)
+                escape_next = True
+                i += 1
+                continue
+            if char == '"':
+                in_string = not in_string
+                result.append(char)
+                i += 1
+                continue
+            if in_string:
+                if char == "\n":
+                    result.append("\\n")
+                elif char == "\r":
+                    result.append("\\r")
+                elif char == "\t":
+                    result.append("\\t")
+                elif ord(char) < 32:
+                    result.append(" ")
+                else:
+                    result.append(char)
+                i += 1
+                continue
+            result.append(char)
+            i += 1
         return "".join(result)
 
     @staticmethod
@@ -382,6 +449,15 @@ class ResponseHandler:
                 return result if isinstance(result, dict | list) else None
             except json.JSONDecodeError:
                 content = key_quote_fixed
+
+        # Strategy 0b: Retry with string-escape sanitization (fixes raw newlines/tabs and broken \u in strings)
+        sanitized = ResponseHandler._sanitize_json_string_escapes(content)
+        if sanitized != content:
+            try:
+                result = json.loads(sanitized)
+                return result if isinstance(result, dict | list) else None
+            except json.JSONDecodeError:
+                content = sanitized  # use sanitized for later strategies
 
         # Strategy 1: Fix unterminated strings (common with small LLMs)
         # Find the last complete object and truncate there

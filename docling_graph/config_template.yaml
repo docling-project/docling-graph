@@ -53,7 +53,7 @@ defaults:
   staged_quality_require_root: true
   staged_quality_min_instances: 1
   staged_quality_max_parent_lookup_miss: 0
-  staged_id_max_tokens: null
+  staged_id_max_tokens: 16384  # default avoids ID-pass truncation on large catalogs; set null to use client default
   staged_fill_max_tokens: null
 
 # Docling pipeline configuration

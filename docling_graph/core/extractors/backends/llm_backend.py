@@ -742,6 +742,8 @@ class LlmBackend:
                         {
                             "context": context,
                             "reason": type(e).__name__,
+                            "error_message": str(e),
+                            "details": getattr(e, "details", {}),
                             "provider": getattr(self.client, "provider", "unknown"),
                             "model": getattr(
                                 self.client, "model", getattr(self.client, "model_id", "unknown")
@@ -925,17 +927,6 @@ class LlmBackend:
         )
         return retry_max if retry_max > current else None
 
-    def _get_staged_call_max_tokens(self, context: str) -> int | None:
-        """Select staged max_tokens override by call type. Delta batch calls use client default (no override)."""
-        cfg = self._staged_config_raw or {}
-        if "catalog_id_pass" in context:
-            v = cfg.get("id_max_tokens")
-            return int(v) if v is not None else None
-        if "fill_call_" in context:
-            v = cfg.get("fill_max_tokens")
-            return int(v) if v is not None else None
-        return None
-
     def _call_with_optional_max_tokens(
         self,
         prompt: dict[str, str],
@@ -980,49 +971,25 @@ class LlmBackend:
         context: str,
         response_top_level: Literal["object", "array"] = "object",
         response_schema_name: str = "staged_extraction",
+        *,
+        max_tokens: int | None = None,
+        structured_output_override: bool | None = None,
+        _diagnostics_out: dict | None = None,
     ) -> dict | list | None:
-        """Call LLM with explicit prompt/schema and staged truncation recovery."""
+        """Call LLM with explicit prompt/schema and optional truncation recovery.
+        Callers may pass max_tokens, structured_output_override (False = use legacy only),
+        and _diagnostics_out (dict to update with last_call_diagnostics).
+        """
+        call_max_tokens = max_tokens
         try:
-            max_tokens = self._get_staged_call_max_tokens(context)
             self.last_call_diagnostics = {
                 "structured_attempted": bool(self.structured_output),
                 "structured_failed": False,
                 "fallback_used": False,
                 "fallback_error_class": None,
             }
-            try:
-                parsed_json = self._call_with_optional_max_tokens(
-                    prompt=prompt,
-                    schema_json=schema_json,
-                    max_tokens=max_tokens,
-                    response_top_level=response_top_level,
-                    response_schema_name=response_schema_name,
-                )
-            except ClientError as e:
-                if not self.structured_output:
-                    raise
-                if self.trace_data is not None:
-                    self.trace_data.emit(
-                        "structured_output_fallback_triggered",
-                        "extraction",
-                        {
-                            "context": context,
-                            "reason": type(e).__name__,
-                            "provider": getattr(self.client, "provider", "unknown"),
-                            "model": getattr(
-                                self.client, "model", getattr(self.client, "model_id", "unknown")
-                            ),
-                        },
-                    )
-                self._log_warning(
-                    f"Structured output failed for {context}; retrying with legacy prompt-schema mode."
-                )
-                self.last_call_diagnostics = {
-                    "structured_attempted": True,
-                    "structured_failed": True,
-                    "fallback_used": True,
-                    "fallback_error_class": type(e).__name__,
-                }
+            use_legacy_only = structured_output_override is False
+            if use_legacy_only:
                 legacy_prompt = {
                     "system": prompt["system"],
                     "user": (
@@ -1035,11 +1002,68 @@ class LlmBackend:
                 parsed_json = self._call_with_optional_max_tokens(
                     prompt=legacy_prompt,
                     schema_json=schema_json,
-                    max_tokens=max_tokens,
+                    max_tokens=call_max_tokens,
                     response_top_level=response_top_level,
                     response_schema_name=response_schema_name,
                     structured_output_override=False,
                 )
+                self.last_call_diagnostics["structured_attempted"] = True
+                self.last_call_diagnostics["fallback_used"] = True
+            else:
+                try:
+                    parsed_json = self._call_with_optional_max_tokens(
+                        prompt=prompt,
+                        schema_json=schema_json,
+                        max_tokens=call_max_tokens,
+                        response_top_level=response_top_level,
+                        response_schema_name=response_schema_name,
+                    )
+                except ClientError as e:
+                    if not self.structured_output:
+                        raise
+                    if self.trace_data is not None:
+                        self.trace_data.emit(
+                            "structured_output_fallback_triggered",
+                            "extraction",
+                            {
+                                "context": context,
+                                "reason": type(e).__name__,
+                                "error_message": str(e),
+                                "details": getattr(e, "details", {}),
+                                "provider": getattr(self.client, "provider", "unknown"),
+                                "model": getattr(
+                                    self.client,
+                                    "model",
+                                    getattr(self.client, "model_id", "unknown"),
+                                ),
+                            },
+                        )
+                    self._log_warning(
+                        f"Structured output failed for {context}; retrying with legacy prompt-schema mode."
+                    )
+                    self.last_call_diagnostics = {
+                        "structured_attempted": True,
+                        "structured_failed": True,
+                        "fallback_used": True,
+                        "fallback_error_class": type(e).__name__,
+                    }
+                    legacy_prompt = {
+                        "system": prompt["system"],
+                        "user": (
+                            prompt["user"]
+                            + "\n\n=== TARGET SCHEMA ===\n"
+                            + schema_json
+                            + "\n=== END SCHEMA ===\n\n"
+                        ),
+                    }
+                    parsed_json = self._call_with_optional_max_tokens(
+                        prompt=legacy_prompt,
+                        schema_json=schema_json,
+                        max_tokens=call_max_tokens,
+                        response_top_level=response_top_level,
+                        response_schema_name=response_schema_name,
+                        structured_output_override=False,
+                    )
             if not parsed_json:
                 self._log_warning(f"No valid JSON returned from LLM for {context}")
                 return None
@@ -1064,12 +1088,14 @@ class LlmBackend:
                 for passthrough_key in ("provider", "model"):
                     if passthrough_key in client_diag:
                         self.last_call_diagnostics[passthrough_key] = client_diag[passthrough_key]
+            if _diagnostics_out is not None:
+                _diagnostics_out.update(self.last_call_diagnostics)
             return parsed_json
         except Exception as e:
             details = getattr(e, "details", {}) if isinstance(e, ClientError) else {}
             truncated = bool(details.get("truncated")) if isinstance(details, dict) else False
             if truncated and self._retry_on_truncation:
-                context_max = self._get_staged_call_max_tokens(context)
+                context_max = call_max_tokens
                 if (
                     context_max is None
                     and isinstance(details, dict)
@@ -1196,7 +1222,7 @@ class LlmBackend:
             context=context,
             template=template,
             trace_data=trace_data,
-            structured_output=self.structured_output,
+            structured_output=False,  # Staged: use legacy prompt-schema only; avoid provider structured-output failures
         )
 
     def _repair_json(self, raw_text: str) -> str:

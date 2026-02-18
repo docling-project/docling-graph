@@ -404,6 +404,12 @@ def get_discovery_prompt(
     paths_block = "\n".join(path_lines)
     allowed_block = ", ".join(('""' if p == "" else p) for p in allowed_paths)
 
+    list_path_rule = (
+        "For list paths (nested paths under a parent): for each parent instance you list, "
+        "output every child instance that belongs to that parent. "
+        "If the same child (same path and ids) belongs to several parents, output one node per "
+        "(parent, child) pair — same path and ids, parent set to each parent in turn."
+    )
     if compact:
         system_prompt = (
             "ID pass only. Return strict JSON object with key 'nodes'. "
@@ -412,8 +418,11 @@ def get_discovery_prompt(
             "ROOT path is ''. ROOT parent is null. "
             "Every non-root node must have parent {path, ids}. "
             "ids keys must exactly match id_fields for the path. "
+            "For list paths: output one node per (parent, child) pair; same child under multiple parents → output once per parent. "
             "No markdown, no comments."
         )
+        if any(_is_list_under_list(s.path, s) for s in catalog.nodes):
+            system_prompt += "\nExample: " + _build_id_pass_example_from_catalog(catalog)
     else:
         system_prompt = (
             "You are a precise extraction assistant running an ID-pass node-skeleton discovery.\n\n"
@@ -428,6 +437,7 @@ def get_discovery_prompt(
             "ids keys must match id_fields for the path. "
             "If a path has no id_fields, ids must be {} (empty object). "
             "Use exact nested path strings from the catalog (list paths end with []). "
+            f"{list_path_rule} "
             "Return valid minified JSON only.\n"
             f"Example: {_build_id_pass_example_from_catalog(catalog)}"
         )
@@ -436,7 +446,11 @@ def get_discovery_prompt(
             "\nPaths with no id_fields (ids must be {}): " + ", ".join(no_id_paths) + "."
         )
 
-    user_prompt = "List every node instance in this document.\n\n=== DOCUMENT ===\n"
+    user_prompt = (
+        "List every node instance in this document. "
+        "For each parent instance, list all child instances that belong to it. "
+        "For nested list paths, same child under multiple parents: output one node per parent (same path and ids, parent set to each parent).\n\n=== DOCUMENT ===\n"
+    )
     user_prompt += f"{markdown_content}\n=== END DOCUMENT ===\n\n"
     user_prompt += f"=== ALLOWED PATHS ===\n{allowed_block}\n=== END ===\n\n"
     user_prompt += f"=== CATALOG ===\n{paths_block}\n=== END ===\n\n"
@@ -456,26 +470,73 @@ def get_discovery_prompt(
 
 
 def _build_id_pass_example_from_catalog(catalog: NodeCatalog) -> str:
-    """Build a minimal, domain-agnostic example JSON snippet from catalog (root + one child)."""
+    """Build a minimal, domain-agnostic example JSON snippet from catalog (root + one child).
+    If the catalog has a list path under another list, include same child under two parents to show shared-child pattern.
+    """
     root_spec = next((s for s in catalog.nodes if s.path == ""), None)
     root_ids: dict[str, str] = {}
     if root_spec and root_spec.id_fields:
         root_ids = dict.fromkeys(root_spec.id_fields, "value")
-    root_node = {"path": "", "ids": root_ids, "parent": None}
+    root_node: dict[str, Any] = {"path": "", "ids": root_ids, "parent": None}
+    nodes: list[dict[str, Any]] = [root_node]
+
+    # Optional: list path under a parent list (same child under multiple parents)
+    grandchild_spec = next(
+        (
+            s
+            for s in catalog.nodes
+            if s.path != "" and s.parent_path != "" and s.id_fields and s.path.endswith("[]")
+        ),
+        None,
+    )
+    if grandchild_spec:
+        parent_spec = next(
+            (s for s in catalog.nodes if s.path == grandchild_spec.parent_path and s.id_fields),
+            None,
+        )
+        if parent_spec:
+            parent_ids_1 = dict.fromkeys(parent_spec.id_fields, "P1")
+            parent_ids_2 = dict.fromkeys(parent_spec.id_fields, "P2")
+            grandchild_ids = dict.fromkeys(grandchild_spec.id_fields, "shared")
+            nodes.extend(
+                [
+                    {
+                        "path": parent_spec.path,
+                        "ids": parent_ids_1,
+                        "parent": {"path": "", "ids": root_ids},
+                    },
+                    {
+                        "path": parent_spec.path,
+                        "ids": parent_ids_2,
+                        "parent": {"path": "", "ids": root_ids},
+                    },
+                    {
+                        "path": grandchild_spec.path,
+                        "ids": grandchild_ids,
+                        "parent": {"path": parent_spec.path, "ids": parent_ids_1},
+                    },
+                    {
+                        "path": grandchild_spec.path,
+                        "ids": grandchild_ids,
+                        "parent": {"path": parent_spec.path, "ids": parent_ids_2},
+                    },
+                ]
+            )
+            return json.dumps({"nodes": nodes}, separators=(",", ":"))
+
+    # Fallback: root + one direct child of root
     child_spec = next(
         (s for s in catalog.nodes if s.path != "" and s.parent_path == "" and s.id_fields),
         None,
     )
-    if child_spec is None:
-        nodes = [root_node]
-    else:
+    if child_spec is not None:
         child_ids: dict[str, str] = dict.fromkeys(child_spec.id_fields, "value")
         child_node: dict[str, Any] = {
             "path": child_spec.path,
             "ids": child_ids,
             "parent": {"path": "", "ids": root_ids},
         }
-        nodes = [root_node, child_node]
+        nodes.append(child_node)
     return json.dumps({"nodes": nodes}, separators=(",", ":"))
 
 
@@ -576,21 +637,45 @@ def get_id_pass_shards_v2(
     return shards
 
 
-# Identity fields that hold entity names and should be normalized for dedup
-_NAME_IDENTITY_FIELDS: frozenset[str] = frozenset({"name", "title", "nom"})
+def _is_list_under_list(path: str, spec: NodeSpec) -> bool:
+    """True if path is a list path whose parent is also a list path (same child can belong to multiple parents)."""
+    return bool(path.endswith("[]") and spec.parent_path.endswith("[]"))
+
+
+def _canonical_parent_key(
+    parent: dict[str, Any],
+    parent_spec: NodeSpec | None,
+) -> tuple[Any, ...] | None:
+    """Stable key for parent for use in dedup when list-under-list. Matches _canonical_lookup_key style."""
+    if parent_spec is None:
+        return None
+    parent_path = parent.get("path", "")
+    if parent_spec.id_fields:
+        parent_ids = parent.get("ids") or {}
+        from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
+
+        normalized = tuple(
+            sorted(
+                (f, canonicalize_identity_for_dedup(f, parent_ids.get(f)))
+                for f in parent_spec.id_fields
+            )
+        )
+        return (parent_path, normalized)
+    return (parent_path, (parent.get("__instance_key") or "",))
 
 
 def merge_and_dedupe_flat_nodes(
     list_of_flat_nodes: list[list[dict[str, Any]]], catalog: NodeCatalog
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
-    """Merge shard results and dedupe by (path, ids tuple). Returns (flat_nodes, per_path_counts)."""
+    """Merge shard results and dedupe by (path, ids tuple), or (path, ids, parent_key) for list-under-list paths.
+    Returns (flat_nodes, per_path_counts)."""
     from docling_graph.core.utils.description_merger import merge_descriptions
-    from docling_graph.core.utils.entity_name_normalizer import normalize_entity_name
+    from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
 
     spec_by_path = _get_spec_by_path(catalog)
-    seen: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
+    seen: set[tuple[Any, ...]] = set()
     merged: list[dict[str, Any]] = []
-    key_to_index: dict = {}
+    key_to_index: dict[tuple[Any, ...], int] = {}
     path_ordinals: dict[str, int] = {}
     for shard_idx, flat in enumerate(list_of_flat_nodes):
         # Re-key no-id instances per shard to avoid cross-shard collisions and keep parent refs coherent.
@@ -642,12 +727,19 @@ def merge_and_dedupe_flat_nodes(
                 # so keep all instances.
                 merged.append(node)
                 continue
-            # Normalize name-like identity fields so "John Doe" and "john doe" dedupe
-            normalized_ids = dict(ids)
-            for f in spec.id_fields:
-                if f in _NAME_IDENTITY_FIELDS and isinstance(normalized_ids.get(f), str):
-                    normalized_ids[f] = normalize_entity_name(normalized_ids[f])
-            key = (path, tuple(sorted(normalized_ids.items())))
+            # Canonicalize all identity values for dedup key so "run_1"/"run1"/"Run-1" collapse
+            normalized_ids = {
+                f: canonicalize_identity_for_dedup(f, ids.get(f)) for f in spec.id_fields
+            }
+            ids_tuple = tuple(sorted(normalized_ids.items()))
+            # List-under-list: same (path, ids) can appear under multiple parents; keep one descriptor per (parent, child)
+            list_under_list = _is_list_under_list(path, spec)
+            parent_spec = spec_by_path.get(spec.parent_path) if spec.parent_path else None
+            if list_under_list and isinstance(parent, dict) and parent_spec is not None:
+                parent_key = _canonical_parent_key(parent, parent_spec)
+                key = (path, ids_tuple, parent_key) if parent_key is not None else (path, ids_tuple)
+            else:
+                key = (path, ids_tuple)
             if key not in seen:
                 seen.add(key)
                 merged.append(node)
@@ -783,7 +875,7 @@ def _validate_one_skeleton_node(
         assert p_ids is not None
         parent_desc = {"path": p_path, "ids": p_ids}
         is_root = False
-    if spec.id_fields:
+    if spec.id_fields and not _is_list_under_list(path, spec):
         key = (path, tuple(sorted(ids.items())))
         if key in seen_keys:
             return [], None, is_root

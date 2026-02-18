@@ -18,12 +18,15 @@ from typing import Any, Callable
 from pydantic import BaseModel
 from rich import print as rich_print
 
+from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
+
 from .....llm_clients.schema_utils import build_compact_semantic_guide
 from . import catalog as catalog_mod
 from .catalog import (
     EdgeSpec,
     NodeCatalog,
     NodeSpec,
+    _is_list_under_list,
     flat_nodes_to_path_lists,
     get_id_pass_shards,
     get_id_pass_shards_v2,
@@ -163,10 +166,25 @@ def get_fill_batch_prompt(
 def _id_tuple(
     spec: NodeSpec, ids: dict[str, Any], instance_key: str | None = None
 ) -> tuple[Any, ...]:
-    """Stable tuple of id values for lookup key."""
+    """Stable tuple of id values (raw) for display/ordering. Prefer _canonical_lookup_key for merge lookup."""
     if not spec.id_fields:
         return (instance_key or "",)
     return tuple(ids.get(f) for f in spec.id_fields)
+
+
+def _canonical_lookup_key(
+    path: str,
+    spec: NodeSpec,
+    ids: dict[str, Any],
+    instance_key: str | None = None,
+) -> tuple[Any, ...]:
+    """Same key as merge_and_dedupe_flat_nodes so parent lookup works after canonical dedup."""
+    if not spec.id_fields:
+        return (path, (instance_key or "",))
+    normalized = tuple(
+        sorted((f, canonicalize_identity_for_dedup(f, ids.get(f))) for f in spec.id_fields)
+    )
+    return (path, normalized)
 
 
 def merge_filled_into_root(
@@ -210,7 +228,7 @@ def merge_filled_into_root(
             desc = descriptors[i] if i < len(descriptors) else {}
             ids = desc.get("ids") or {}
             instance_key = desc.get("__instance_key") if isinstance(desc, dict) else None
-            key = (path, _id_tuple(spec, ids, instance_key=instance_key))
+            key = _canonical_lookup_key(path, spec, ids, instance_key=instance_key)
             lookup[key] = obj
 
     for spec in catalog.nodes:
@@ -248,9 +266,8 @@ def merge_filled_into_root(
                 continue
             parent_ids = parent.get("ids") or {}
             parent_instance_key = parent.get("__instance_key") if isinstance(parent, dict) else None
-            parent_key = (
-                parent_path,
-                _id_tuple(parent_spec, parent_ids, instance_key=parent_instance_key),
+            parent_key = _canonical_lookup_key(
+                parent_path, parent_spec, parent_ids, instance_key=parent_instance_key
             )
             parent_obj = lookup.get(parent_key)
             if parent_obj is None:
@@ -426,22 +443,53 @@ class CatalogOrchestrator:
         all_flat: list[list[dict[str, Any]]] = []
         id_validation_ok = True
         id_validation_errors: list[str] = []
-        for shard_idx, (primary_paths, allowed_paths) in enumerate(shards):
-            ok, errs, shard_flat = self._run_id_pass_shard(
+        workers = max(1, int(self._config.parallel_workers))
+        shard_tasks = list(enumerate(shards))
+        # When using multiple shards, default to compact prompt to reduce output size and token use
+        use_compact = self._config.id_compact_prompt or (len(shards) > 1)
+
+        def run_one_id_shard(
+            item: tuple[int, tuple[list[str], list[str]]],
+        ) -> tuple[int, bool, list[str], list[list[dict[str, Any]]]]:
+            shard_idx, (primary_paths, allowed_paths) = item
+            ok, errs, flat_lists = self._run_id_pass_shard(
                 markdown,
                 context,
                 shard_idx,
                 primary_paths,
                 allowed_paths,
                 max_retries,
-                all_flat,
-                id_validation_errors,
+                use_compact=use_compact,
             )
-            if not ok:
-                id_validation_ok = False
-                id_validation_errors.extend(errs[:15])
-            else:
-                all_flat.append(shard_flat)
+            return (shard_idx, ok, errs, flat_lists)
+
+        if workers <= 1:
+            for shard_idx, (primary_paths, allowed_paths) in shard_tasks:
+                ok, errs, flat_lists = self._run_id_pass_shard(
+                    markdown,
+                    context,
+                    shard_idx,
+                    primary_paths,
+                    allowed_paths,
+                    max_retries,
+                    use_compact=use_compact,
+                )
+                if not ok:
+                    id_validation_ok = False
+                    id_validation_errors.extend(errs[:15])
+                for flat in flat_lists:
+                    all_flat.append(flat)
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                completed = list(ex.map(run_one_id_shard, shard_tasks))
+            # Preserve shard order for merge (remap_no_id_keys uses shard order)
+            completed.sort(key=lambda x: x[0])
+            for _shard_idx, ok, errs, flat_lists in completed:
+                if not ok:
+                    id_validation_ok = False
+                    id_validation_errors.extend(errs[:15])
+                for flat in flat_lists:
+                    all_flat.append(flat)
         flat_nodes, per_path_counts = merge_and_dedupe_flat_nodes(all_flat, self._catalog)
         id_elapsed = time.perf_counter() - id_start
         total_instances = sum(per_path_counts.values())
@@ -463,17 +511,18 @@ class CatalogOrchestrator:
         primary_paths: list[str],
         allowed_paths: list[str],
         max_retries: int,
-        all_flat: list[list[dict[str, Any]]],
-        id_validation_errors: list[str],
-    ) -> tuple[bool, list[str], list[dict[str, Any]]]:
-        """Run one ID pass shard (with retries and optional split on failure). Returns (ok, errs, shard_flat)."""
+        *,
+        use_compact: bool | None = None,
+    ) -> tuple[bool, list[str], list[list[dict[str, Any]]]]:
+        """Run one ID pass shard (with retries and optional split on failure). Returns (ok, errs, list_of_flat_lists)."""
+        compact = use_compact if use_compact is not None else self._config.id_compact_prompt
         id_prompt = catalog_mod.get_discovery_prompt(
             markdown,
             self._catalog,
             primary_paths=primary_paths,
             allowed_paths=allowed_paths,
-            compact=self._config.id_compact_prompt,
-            include_schema_in_user=not self._config.id_compact_prompt,
+            compact=compact,
+            include_schema_in_user=not compact,
             structured_output=self._structured_output,
         )
         id_schema = catalog_mod.build_discovery_schema(self._catalog, allowed_paths)
@@ -527,7 +576,7 @@ class CatalogOrchestrator:
                 id_result, self._catalog, allowed_paths_override=set(allowed_paths)
             )
             if ok:
-                return (True, errs, shard_flat)
+                return (True, errs, [shard_flat])
             logger.warning(
                 "%s ID pass shard %s validation (attempt %s): %s",
                 "[IdentityDiscovery]",
@@ -549,8 +598,8 @@ class CatalogOrchestrator:
                     self._catalog,
                     primary_paths=primary_paths,
                     allowed_paths=allowed_paths,
-                    compact=self._config.id_compact_prompt,
-                    include_schema_in_user=not self._config.id_compact_prompt,
+                    compact=compact,
+                    include_schema_in_user=not compact,
                     structured_output=self._structured_output,
                 )
                 id_prompt["user"] = id_prompt["user"] + "\n\n=== FIX ===\n" + err_feedback
@@ -562,6 +611,7 @@ class CatalogOrchestrator:
                 identity_only=False,
                 root_first=False,
             )
+            split_flats: list[list[dict[str, Any]]] = []
             for sub_primary, sub_allowed in sub_shards:
                 if not set(sub_primary).issubset(set(primary_paths)):
                     continue
@@ -570,8 +620,8 @@ class CatalogOrchestrator:
                     self._catalog,
                     primary_paths=sub_primary,
                     allowed_paths=sub_allowed,
-                    compact=self._config.id_compact_prompt,
-                    include_schema_in_user=not self._config.id_compact_prompt,
+                    compact=compact,
+                    include_schema_in_user=not compact,
                     structured_output=self._structured_output,
                 )
                 sub_schema = catalog_mod.build_discovery_schema(self._catalog, sub_allowed)
@@ -585,19 +635,19 @@ class CatalogOrchestrator:
                 if isinstance(sub_result, list):
                     sub_result = {"nodes": sub_result}
                 if isinstance(sub_result, dict):
-                    sub_ok, sub_errs, sub_flat, _ = catalog_mod.validate_id_pass_skeleton_response(
+                    sub_ok, _sub_errs, sub_flat, _ = catalog_mod.validate_id_pass_skeleton_response(
                         sub_result,
                         self._catalog,
                         allowed_paths_override=set(sub_allowed),
                     )
                     if sub_ok:
-                        all_flat.append(sub_flat)
-                    else:
-                        id_validation_errors.extend(sub_errs[:10])
-            return (False, errs, shard_flat)
+                        split_flats.append(sub_flat)
+            if split_flats:
+                return (False, errs, split_flats)
+            return (False, errs, [shard_flat])
         if not ok:
-            all_flat.append(shard_flat)
-        return (ok, errs, shard_flat)
+            return (False, errs, [shard_flat])
+        return (ok, errs, [shard_flat])
 
     def _run_fill_pass(
         self,
@@ -620,12 +670,24 @@ class CatalogOrchestrator:
             call_index: int,
         ) -> tuple[str, int, list[dict[str, Any]], dict[str, Any]]:
             schema_dict: dict[str, Any] | None = None
+            item_schema: dict[str, Any] = {}
             if self._structured_output:
                 try:
                     parsed = json.loads(sub_schema)
-                    schema_dict = parsed if isinstance(parsed, dict) else None
+                    if isinstance(parsed, dict):
+                        schema_dict = parsed
+                        item_schema = parsed
                 except json.JSONDecodeError:
-                    schema_dict = None
+                    pass
+            # Request object root (not array) so providers that only support object-root json_schema succeed
+            wrapped_schema_dict: dict[str, Any] = {
+                "type": "object",
+                "properties": {
+                    "items": {"type": "array", "items": item_schema},
+                },
+                "required": ["items"],
+            }
+            fill_pass_schema_json = json.dumps(wrapped_schema_dict)
             prompt = get_fill_batch_prompt(
                 markdown,
                 spec.path,
@@ -637,9 +699,9 @@ class CatalogOrchestrator:
             )
             out = self._llm(
                 prompt,
-                sub_schema,
+                fill_pass_schema_json,
                 f"{context} fill_call_{call_index}",
-                response_top_level="array",
+                response_top_level="object",
                 response_schema_name="staged_fill_pass",
             )
             if isinstance(out, list):
@@ -668,6 +730,11 @@ class CatalogOrchestrator:
         def _path_depth(p: str) -> int:
             return (p.count(".") + 1) if p else 0
 
+        # For list-under-list paths, fill once per unique (path, ids) then expand to original descriptor order
+        expand_after_fill: list[
+            tuple[str, list[dict[str, Any]], list[dict[str, Any]], NodeSpec]
+        ] = []
+
         specs_by_depth = sorted(
             self._catalog.nodes,
             key=lambda s: _path_depth(s.path),
@@ -678,6 +745,21 @@ class CatalogOrchestrator:
             descriptors = path_to_descriptors.get(spec.path, [])
             if not descriptors:
                 continue
+            if _is_list_under_list(spec.path, spec):
+                seen_keys: set[tuple[Any, ...]] = set()
+                unique_descriptors: list[dict[str, Any]] = []
+                for d in descriptors:
+                    k = _canonical_lookup_key(
+                        spec.path,
+                        spec,
+                        d.get("ids") or {},
+                        d.get("__instance_key"),
+                    )
+                    if k not in seen_keys:
+                        seen_keys.add(k)
+                        unique_descriptors.append(d)
+                expand_after_fill.append((spec.path, descriptors, unique_descriptors, spec))
+                descriptors = unique_descriptors
             sub_schema = _build_projected_fill_schema(self._template, spec, self._catalog)
             batches = [
                 descriptors[i : i + max_nodes_per_call]
@@ -738,6 +820,32 @@ class CatalogOrchestrator:
                 for _, result in batch_results:
                     path_filled[path].extend(result)
             fill_debug_batches.sort(key=lambda e: e["call_index"])
+
+        # Expand list-under-list paths: one filled object per original descriptor (reuse by canonical key)
+        for path, original_descriptors, unique_descriptors, spec in expand_after_fill:
+            filled_unique = path_filled.get(path, [])
+            if len(filled_unique) != len(unique_descriptors):
+                continue
+            key_to_filled = {
+                _canonical_lookup_key(
+                    path,
+                    spec,
+                    u.get("ids") or {},
+                    u.get("__instance_key"),
+                ): filled_unique[i]
+                for i, u in enumerate(unique_descriptors)
+            }
+            path_filled[path] = [
+                key_to_filled[
+                    _canonical_lookup_key(
+                        path,
+                        spec,
+                        d.get("ids") or {},
+                        d.get("__instance_key"),
+                    )
+                ]
+                for d in original_descriptors
+            ]
 
         fill_elapsed = time.perf_counter() - fill_start
         if self._debug_dir and fill_debug_batches:
