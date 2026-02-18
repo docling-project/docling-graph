@@ -299,7 +299,7 @@ These flags apply when `--extraction-contract delta` is used in many-to-one mode
 --delta-resolver-semantic-threshold FLOAT
 ```
 
-- `--llm-batch-token-size`: max input tokens per delta batch (default: 2048).
+- `--llm-batch-token-size`: max input tokens per delta batch (default: 1024).
 - `--parallel-workers`: parallel workers for delta batch LLM calls.
 - Delta normalizer flags control path validation, ID canonicalization, and nested property stripping.
 - Resolvers optionally merge near-duplicate entities after merge (`fuzzy`, `semantic`, or `chain`).
