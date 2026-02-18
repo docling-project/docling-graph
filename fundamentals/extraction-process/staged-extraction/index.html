@@ -1835,16 +1835,111 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tuning" class="md-nav__link">
+    <nav class="md-nav" aria-label="Schema requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#staged-friendly-template-guidelines" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tuning
+        Staged-friendly template guidelines
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-and-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration and options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration and options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preset-and-overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preset and overrides
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ID pass
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3902,16 +3997,111 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tuning" class="md-nav__link">
+    <nav class="md-nav" aria-label="Schema requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#staged-friendly-template-guidelines" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tuning
+        Staged-friendly template guidelines
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-and-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration and options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration and options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preset-and-overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preset and overrides
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ID pass
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3949,7 +4139,7 @@
 <h1 id="staged-extraction-experimental">Staged Extraction - EXPERIMENTAL<a class="headerlink" href="#staged-extraction-experimental" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Staged extraction</strong> is a multi-pass extraction mode for the LLM backend when using <strong>many-to-one</strong> processing. It is useful for complex nested templates and for models that benefit from smaller, focused tasks.</p>
-<p>Set <code>extraction_contract="staged"</code> in your config or use <code>--extraction-contract staged</code> on the CLI.</p>
+<p>Set <code>extraction_contract="staged"</code> in your config or use <code>--extraction-contract staged</code> on the CLI. Staged currently uses <strong>legacy prompt-schema mode</strong> only (no API-level structured output) to avoid provider-specific failures; the global <code>structured_output</code> setting does not apply to staged.</p>
 <div class="admonition warning">
 <p class="admonition-title">Experimental feature - Not production-ready</p>
 <p><strong>Staged extraction</strong> is still in an <strong>experimental</strong> phase.</p>
@@ -3974,7 +4164,7 @@
 <p><strong>Catalog</strong> — Built from your Pydantic template. Derives all extractable node types and paths (e.g. root, <code>offres[]</code>, <code>offres[].garanties_incluses[]</code>) and their <code>graph_id_fields</code> and parent rules.</p>
 </li>
 <li>
-<p><strong>ID pass</strong> — The LLM discovers <strong>node instances</strong> per path with only the identifiers (from <code>graph_id_fields</code>) and parent linkage. Output is a <strong>skeleton</strong>: path, ids, parent. No full content yet. By default only paths that have identity fields are sent (reducing prompt size and truncation). ID pass runs <strong>sequentially</strong> and can be auto-sharded when the catalog is large (root and top-level paths first).</p>
+<p><strong>ID pass</strong> — The LLM discovers <strong>node instances</strong> per path with only the identifiers (from <code>graph_id_fields</code>) and parent linkage. Output is a <strong>skeleton</strong>: path, ids, parent. No full content yet. By default only paths that have identity fields are sent (reducing prompt size and truncation). ID pass can be auto-sharded when the catalog is large (root and top-level paths first); shards run in parallel when <code>parallel_workers</code> &gt; 1.</p>
 </li>
 <li>
 <p><strong>Fill pass</strong> — For each path, the LLM fills full schema content for the skeleton instances. Paths are processed in <strong>bottom-up</strong> order (leaf paths first). Fill calls can run in parallel. Each path gets a <strong>projected</strong> schema (no nested child paths in the same call), so root and children stay consistent. Results are merged into the root model by parent linkage.</p>
@@ -3983,6 +4173,7 @@
 <p><strong>Quality gate</strong> — After merge, a quick check runs (e.g. root instance present, minimum instances). If it fails, the pipeline can <strong>fall back to direct extraction</strong> so you still get a result; the trace will indicate why (e.g. <code>fallback_reason: "quality_gate_failed"</code>).</p>
 </li>
 </ol>
+<p><strong>List paths and many-to-many</strong> — For paths that are lists under another list (e.g. <code>offres[].garanties_incluses[]</code>), the same child entity can belong to multiple parents. The pipeline keeps <strong>one descriptor per (parent, child) pair</strong> in the ID pass and merge, and fills each <strong>unique child once</strong> in the fill pass, then reuses that filled object for every parent. That preserves many-to-many relationships in the graph (e.g. one guarantee linked to several offers) without duplicate fill calls.</p>
 <p><img alt="Staged Extraction" src="../../../assets/screenshots/staged_extraction.png" /></p>
 <hr />
 <h2 id="schema-requirements">Schema requirements<a class="headerlink" href="#schema-requirements" title="Permanent link">&para;</a></h2>
@@ -3994,77 +4185,148 @@
 <li>Keep <strong>nesting depth</strong> and catalog size reasonable to avoid truncation and excessive sharding.</li>
 </ul>
 <p>For a domain-agnostic checklist, identity best practices, and troubleshooting (e.g. mapping <code>missing_root_instance</code> or <code>insufficient_id_instances</code> to schema fixes), see <a href="../../schema-definition/staged-extraction-schema/">Schema design for staged extraction</a>.</p>
+<h3 id="staged-friendly-template-guidelines">Staged-friendly template guidelines<a class="headerlink" href="#staged-friendly-template-guidelines" title="Permanent link">&para;</a></h3>
+<p>Templates with <strong>many nested entities</strong> (e.g. <code>list[Exclusion]</code> with <code>Exclusion</code> containing <code>list[Bien]</code>) produce a large catalog and more ID-pass shards. That can lead to slower runs, more truncation, and retries. To keep the ID pass fast and reliable:</p>
+<ul>
+<li>Prefer <strong><code>list[str]</code></strong> (or other shallow types) for high-cardinality nested concepts when you only need labels or short values (e.g. exclusion titles, bien names). The catalog does not create node paths for <code>list[str]</code>, so you get fewer paths and smaller ID responses.</li>
+<li>Reserve <strong>nested Pydantic entities</strong> (<code>list[SomeModel]</code>) for when you need full structure and identity in the graph (e.g. deduplication by id, edges to other entities).</li>
+</ul>
+<p>Example: the MRH insurance template has a full variant (<a href="../../../examples/templates/cgv_mrh.py"><code>docs/examples/templates/cgv_mrh.py</code></a>) with <code>Garantie.exclusions_specifiques: list[Exclusion]</code> and <code>Exclusion.biens_exclus: list[Bien]</code>, which yields many catalog paths. The staged-optimized variant (<a href="../../../examples/templates/cgv_mrh_staged.py"><code>docs/examples/templates/cgv_mrh_staged.py</code></a>) uses <code>exclusions_specifiques: list[str]</code> and <code>biens_couverts: list[str]</code> on <code>Garantie</code>/<code>Option</code>, reducing catalog size and ID pass time while still filling the root structure. Use the staged variant when you want faster extraction and do not need full entity nodes for every exclusion or bien.</p>
 <hr />
-<h2 id="tuning">Tuning<a class="headerlink" href="#tuning" title="Permanent link">&para;</a></h2>
-<p>Staged behavior is controlled by a <strong>preset</strong> and optional overrides.</p>
+<h2 id="configuration-and-options">Configuration and options<a class="headerlink" href="#configuration-and-options" title="Permanent link">&para;</a></h2>
+<p>All options can be set in Python via <code>PipelineConfig</code> or a config dict passed to <code>run_pipeline()</code>. CLI flags (when available) override config-file defaults.</p>
+<h3 id="preset-and-overrides">Preset and overrides<a class="headerlink" href="#preset-and-overrides" title="Permanent link">&para;</a></h3>
+<p>The <strong>preset</strong> (<code>standard</code> or <code>advanced</code>) sets default values for retries, workers, fill cap, and ID shard size. Overrides apply when provided.</p>
 <table>
 <thead>
 <tr>
-<th>Option</th>
-<th>Meaning</th>
-<th>Default (standard preset)</th>
+<th>Python (<code>PipelineConfig</code> / config dict)</th>
+<th>CLI flag</th>
+<th>Default</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td><code>extraction_contract</code></td>
+<td><code>--extraction-contract</code></td>
+<td><code>"direct"</code></td>
+<td>Set to <code>"staged"</code> to enable staged extraction.</td>
+</tr>
+<tr>
 <td><code>staged_tuning_preset</code></td>
-<td><code>"standard"</code> or <code>"advanced"</code> (larger ID shards, larger fill batches)</td>
+<td><code>--staged-tuning</code></td>
 <td><code>"standard"</code></td>
+<td>Preset: <code>"standard"</code> or <code>"advanced"</code> (advanced = larger ID shards, larger fill batches).</td>
 </tr>
 <tr>
 <td><code>staged_pass_retries</code></td>
-<td>Retries per staged pass when the LLM returns invalid JSON</td>
-<td>preset</td>
+<td><code>--staged-retries</code></td>
+<td>preset (<code>standard</code>: 2)</td>
+<td>Retries per staged pass when the LLM returns invalid JSON.</td>
 </tr>
 <tr>
 <td><code>parallel_workers</code></td>
-<td>Parallel workers for the fill pass (ID pass is sequential); also used for delta batch parallelism</td>
-<td>preset</td>
+<td><code>--parallel-workers</code></td>
+<td>preset (<code>standard</code>: 1)</td>
+<td>Parallel workers for the fill pass and for the ID pass shards; also used for delta.</td>
 </tr>
 <tr>
 <td><code>staged_nodes_fill_cap</code></td>
-<td>Max node instances per LLM call in the fill pass</td>
-<td>preset</td>
+<td><code>--staged-nodes-fill-cap</code></td>
+<td>preset (<code>standard</code>: 5)</td>
+<td>Max node instances per LLM call in the fill pass.</td>
 </tr>
 <tr>
 <td><code>staged_id_shard_size</code></td>
-<td>Max catalog paths per ID-pass call; <code>0</code> = no sharding or auto-shard when catalog is large</td>
-<td>preset</td>
-</tr>
-<tr>
-<td><code>staged_id_identity_only</code></td>
-<td>Use only paths with identity fields in the ID pass (smaller prompts, fewer truncations)</td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td><code>staged_id_compact_prompt</code></td>
-<td>Use compact ID prompt and omit full schema in user message</td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td><code>staged_id_auto_shard_threshold</code></td>
-<td>If catalog paths exceed this and shard size is 0, auto-enable sharding</td>
-<td><code>12</code></td>
-</tr>
-<tr>
-<td><code>staged_quality_require_root</code></td>
-<td>Require at least one root instance; if not met, quality gate fails</td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td><code>staged_quality_min_instances</code></td>
-<td>Minimum total skeleton instances for quality gate</td>
-<td><code>1</code></td>
-</tr>
-<tr>
-<td><code>staged_id_max_tokens</code> / <code>staged_fill_max_tokens</code></td>
-<td>Optional token limits for ID and fill calls (e.g. to avoid truncation)</td>
-<td>unset (use client default)</td>
+<td><code>--staged-id-shard-size</code></td>
+<td>preset (<code>standard</code>: 0)</td>
+<td>Paths per ID-pass call; <code>0</code> = no sharding or auto-shard when catalog is large.</td>
 </tr>
 </tbody>
 </table>
-<p>When the <strong>quality gate</strong> fails (e.g. no root instance, too few instances), the pipeline returns <strong>direct extraction</strong> instead of the staged result so you still get output. Check the pipeline trace for <code>quality_gate</code> and <code>fallback_reason</code> to see why fallback occurred.</p>
-<p><strong>Python:</strong></p>
+<h3 id="id-pass">ID pass<a class="headerlink" href="#id-pass" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Python (config dict)</th>
+<th>CLI flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>staged_id_identity_only</code></td>
+<td><em>(config only)</em></td>
+<td><code>True</code></td>
+<td>Use only paths with identity fields in the ID pass (smaller prompts).</td>
+</tr>
+<tr>
+<td><code>staged_id_compact_prompt</code></td>
+<td><em>(config only)</em></td>
+<td><code>True</code></td>
+<td>Use compact ID prompt and omit full schema in user message.</td>
+</tr>
+<tr>
+<td><code>staged_id_auto_shard_threshold</code></td>
+<td><em>(config only)</em></td>
+<td><code>10</code></td>
+<td>If catalog paths exceed this and shard size is 0, auto-enable sharding.</td>
+</tr>
+<tr>
+<td><code>staged_id_shard_min_size</code></td>
+<td><em>(config only)</em></td>
+<td><code>2</code></td>
+<td>Minimum paths per shard when auto-sharding.</td>
+</tr>
+<tr>
+<td><code>staged_id_max_tokens</code></td>
+<td><code>--staged-id-max-tokens</code></td>
+<td><code>16384</code></td>
+<td>Max tokens for ID pass responses; avoids truncation on large catalogs. Set to <code>None</code> to use client default.</td>
+</tr>
+<tr>
+<td><code>staged_fill_max_tokens</code></td>
+<td><code>--staged-fill-max-tokens</code></td>
+<td><code>None</code></td>
+<td>Max tokens for fill pass responses; <code>None</code> = client default.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quality-gate">Quality gate<a class="headerlink" href="#quality-gate" title="Permanent link">&para;</a></h3>
+<p>When the <strong>quality gate</strong> fails (e.g. no root instance, too few instances), the pipeline returns <strong>direct extraction</strong> instead of the staged result. Check the trace for <code>quality_gate</code> and <code>fallback_reason</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Python (config dict)</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>staged_quality_require_root</code></td>
+<td><code>True</code></td>
+<td>Require at least one root instance; if not met, gate fails.</td>
+</tr>
+<tr>
+<td><code>staged_quality_min_instances</code></td>
+<td><code>1</code></td>
+<td>Minimum total skeleton instances for gate.</td>
+</tr>
+<tr>
+<td><code>staged_quality_max_parent_lookup_miss</code></td>
+<td><code>0</code></td>
+<td>Max allowed parent lookup misses before gate fails.</td>
+</tr>
+</tbody>
+</table>
+<p>Quality gate options are not CLI flags; set them in a config file or config dict.</p>
+<hr />
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h3 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h3>
+<p>Pass options via <code>PipelineConfig</code> or a dict to <code>run_pipeline()</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span><span class="p">,</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -4074,29 +4336,53 @@
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;staged&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">staged_tuning_preset</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;advanced&quot;</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="c1"># Optional overrides:</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># parallel_workers=2,</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="c1"># staged_nodes_fill_cap=10,</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="c1"># staged_id_shard_size=0,</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># staged_id_identity_only=True,</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="c1"># staged_id_compact_prompt=True,</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="c1"># staged_id_max_tokens=4096, staged_fill_max_tokens=8192,</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="p">)</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="c1"># Optional overrides (preset defaults applied when not set):</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># staged_pass_retries=2,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="c1"># parallel_workers=2,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="c1"># staged_nodes_fill_cap=5,</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># staged_id_shard_size=0,</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="c1"># staged_id_max_tokens=16384,  # default; set None for client default</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="c1"># staged_fill_max_tokens=None,</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="c1"># staged_quality_require_root=True,</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="c1"># staged_quality_min_instances=1,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="c1"># staged_quality_max_parent_lookup_miss=0,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="p">)</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>CLI:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--staged-tuning<span class="w"> </span>standard
+<h3 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h3>
+<p>Staged-related flags (when using <code>--extraction-contract staged</code>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Enable staged</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Preset and overrides</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span>--staged-tuning<span class="w"> </span>standard<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span>--staged-retries<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span>--parallel-workers<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span>--staged-nodes-fill-cap<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span>--staged-id-shard-size<span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Token limits (e.g. to avoid truncation)</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span>--staged-id-max-tokens<span class="w"> </span><span class="m">8192</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span>--staged-fill-max-tokens<span class="w"> </span><span class="m">8192</span>
 </code></pre></div>
-<p>See <a href="../../../reference/config/">Configuration reference</a> and <a href="../../../usage/cli/convert-command/#staged-extraction-tuning">convert command</a> for all options.</p>
+<p>Options such as <code>staged_id_identity_only</code>, <code>staged_id_compact_prompt</code>, <code>staged_id_auto_shard_threshold</code>, and <code>staged_quality_*</code> have no CLI flags; set them in a config file or in a config dict when using the Python API.</p>
+<p>See <a href="../../../reference/config/">Configuration reference</a> and <a href="../../../usage/cli/convert-command/#staged-extraction-tuning">convert command</a> for the full list.</p>
 <p><strong>When to adjust:</strong></p>
 <ul>
-<li><strong>Truncation or invalid ID output</strong>: Set <code>staged_id_max_tokens</code> and/or <code>staged_fill_max_tokens</code> so ID and fill calls have enough headroom; the backend may retry once with higher tokens when truncation is detected.</li>
-<li><strong>Staged fallback to direct</strong>: If the trace shows <code>fallback_reason: "quality_gate_failed"</code>, check <code>quality_gate.reasons</code> (e.g. missing root instance). You can relax <code>staged_quality_require_root</code> or <code>staged_quality_min_instances</code> if your template legitimately has no root or very few instances; otherwise improve template or document so the ID pass finds the expected structure.</li>
-<li><strong>Large catalogs</strong>: Defaults use identity-only paths and auto-sharding; you can tune <code>staged_id_auto_shard_threshold</code> or <code>staged_id_shard_size</code> if ID pass is still too heavy.</li>
+<li><strong>Structured output</strong>: Staged uses legacy prompt-schema mode only (no API structured output); the global <code>structured_output</code> setting does not apply to staged.</li>
+<li><strong>Truncation or invalid ID output</strong>: Default <code>staged_id_max_tokens=16384</code> reduces ID-pass truncation; increase or set <code>staged_fill_max_tokens</code> if fill responses are cut off.</li>
+<li><strong>Slow ID pass or “Response Truncated”</strong>: For large catalogs or long documents, the ID pass can hit the response token limit, causing truncation, validation errors, retries, and shard splits—and much longer runtimes. Set <code>staged_id_max_tokens</code> explicitly (e.g. <code>16384</code> or <code>32768</code>) via CLI <code>--staged-id-max-tokens</code> or config so ID responses are less likely to truncate; this reduces retries and speeds up the ID pass.</li>
+<li><strong>Staged fallback to direct</strong>: If the trace shows <code>fallback_reason: "quality_gate_failed"</code>, check <code>quality_gate.reasons</code> (e.g. missing root instance). Relax <code>staged_quality_require_root</code> or <code>staged_quality_min_instances</code> only if your template legitimately has no root or very few instances.</li>
+<li><strong>Large catalogs</strong>: Defaults use identity-only paths and auto-sharding; tune <code>staged_id_auto_shard_threshold</code> or <code>staged_id_shard_size</code> via config if the ID pass is still too heavy. For very large catalogs, also increase <code>staged_id_max_tokens</code> to avoid truncation and extra retries.</li>
 </ul>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
