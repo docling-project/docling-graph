@@ -1218,6 +1218,101 @@ def test_discovery_prompt_compact_omits_schema_block():
     assert "=== ALLOWED PATHS ===" in prompt["user"]
 
 
+def test_catalog_orchestrator_config_from_dict():
+    """CatalogOrchestratorConfig.from_dict handles None, empty dict, and custom values."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import (
+        CatalogOrchestratorConfig,
+    )
+
+    c_none = CatalogOrchestratorConfig.from_dict(None)
+    assert c_none.max_nodes_per_call == 5
+    assert c_none.parallel_workers == 1
+    assert c_none.quality_require_root is True
+
+    c_empty = CatalogOrchestratorConfig.from_dict({})
+    assert c_empty.max_nodes_per_call == 5
+    assert c_empty.id_shard_size == 0
+
+    c_custom = CatalogOrchestratorConfig.from_dict(
+        {
+            "catalog_max_nodes_per_call": 10,
+            "parallel_workers": 2,
+            "id_shard_size": 4,
+            "quality_min_instances": 5,
+            "quality_max_parent_lookup_miss": 1,
+        }
+    )
+    assert c_custom.max_nodes_per_call == 10
+    assert c_custom.parallel_workers == 2
+    assert c_custom.id_shard_size == 4
+    assert c_custom.quality_min_instances == 5
+    assert c_custom.quality_max_parent_lookup_miss == 1
+
+
+def test_evaluate_quality_gate_all_branches():
+    """_evaluate_quality_gate returns (False, reasons) for each failure branch."""
+    from docling_graph.core.extractors.contracts.staged.orchestrator import (
+        CatalogOrchestratorConfig,
+        _evaluate_quality_gate,
+    )
+
+    config = CatalogOrchestratorConfig()
+
+    ok, reasons = _evaluate_quality_gate(
+        config=config,
+        per_path_counts={"": 0},
+        merge_stats={},
+        merged={"x": 1},
+    )
+    assert not ok
+    assert "missing_root_instance" in reasons
+
+    ok, reasons = _evaluate_quality_gate(
+        config=config,
+        per_path_counts={"": 1},
+        merge_stats={},
+        merged={"x": 1},
+    )
+    assert ok
+    assert len(reasons) == 0
+
+    ok, reasons = _evaluate_quality_gate(
+        config=CatalogOrchestratorConfig(quality_min_instances=10),
+        per_path_counts={"": 1},
+        merge_stats={},
+        merged={"x": 1},
+    )
+    assert not ok
+    assert "insufficient_id_instances" in reasons
+
+    ok, reasons = _evaluate_quality_gate(
+        config=CatalogOrchestratorConfig(quality_max_parent_lookup_miss=0),
+        per_path_counts={"": 1},
+        merge_stats={"parent_lookup_miss": 1},
+        merged={"x": 1},
+    )
+    assert not ok
+    assert "excess_parent_lookup_miss" in reasons
+
+    ok, reasons = _evaluate_quality_gate(
+        config=config,
+        per_path_counts={"": 1},
+        merge_stats={},
+        merged=None,
+    )
+    assert not ok
+    assert "empty_merged_output" in reasons
+
+    ok, reasons = _evaluate_quality_gate(
+        config=config,
+        per_path_counts={"": 1},
+        merge_stats={},
+        merged={},
+    )
+    assert not ok
+    assert "empty_merged_output" in reasons
+
+
 def test_orchestrator_quality_gate_fails_without_root_instance():
     """When ID pass has no valid root, orchestrator should return None for fallback."""
     from docling_graph.core.extractors.contracts.staged.orchestrator import (

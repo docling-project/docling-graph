@@ -183,6 +183,7 @@ combine-as-imports = true
 pretty = true
 python_version = "3.10"
 no_implicit_optional = true
+exclude = ["^site/", "^docs/examples/"]
 plugins = "pydantic.mypy"
 warn_return_any = true
 warn_unused_configs = true

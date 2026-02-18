@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import BaseModel
 
@@ -12,27 +12,13 @@ from .orchestrator import CatalogOrchestrator, CatalogOrchestratorConfig
 logger = logging.getLogger(__name__)
 
 
-def run_staged_orchestrator(
-    *,
+def _make_wrapped_llm(
     llm_call_fn: Any,
     staged_config_raw: dict[str, Any],
-    markdown: str,
-    schema_json: str,
-    context: str,
-    template: type[BaseModel] | None,
-    trace_data: Any,
-    structured_output: bool,
-) -> dict | list | None:
-    """Run staged orchestrator from contract-local module."""
-    if template is None:
-        logger.warning("Staged extraction requires a template; skipping.")
-        return None
-    debug_dir = staged_config_raw.get("debug_dir") or ""
-    catalog_config = CatalogOrchestratorConfig.from_dict(staged_config_raw)
-
-    # Wrapper: inject max_tokens from config, track fill fallback, pass diagnostics so we can skip structured for later fill calls
-    _fill_structured_failed: list[bool] = [False]  # mutable so closure can update
-    _diagnostics: dict[str, Any] = {}
+    _fill_structured_failed: list[bool],
+    _diagnostics: dict[str, Any],
+) -> Callable[..., Any]:
+    """Build the wrapped LLM callable that injects max_tokens and diagnostics. Used by run_staged_orchestrator and tests."""
 
     def _wrapped_llm(
         prompt: Any,
@@ -67,6 +53,33 @@ def run_staged_orchestrator(
         if "fill_call_" in context_arg and _diagnostics.get("fallback_used"):
             _fill_structured_failed[0] = True
         return result
+
+    return _wrapped_llm
+
+
+def run_staged_orchestrator(
+    *,
+    llm_call_fn: Any,
+    staged_config_raw: dict[str, Any],
+    markdown: str,
+    schema_json: str,
+    context: str,
+    template: type[BaseModel] | None,
+    trace_data: Any,
+    structured_output: bool,
+) -> dict | list | None:
+    """Run staged orchestrator from contract-local module."""
+    if template is None:
+        logger.warning("Staged extraction requires a template; skipping.")
+        return None
+    debug_dir = staged_config_raw.get("debug_dir") or ""
+    catalog_config = CatalogOrchestratorConfig.from_dict(staged_config_raw)
+
+    _fill_structured_failed: list[bool] = [False]
+    _diagnostics: dict[str, Any] = {}
+    _wrapped_llm = _make_wrapped_llm(
+        llm_call_fn, staged_config_raw, _fill_structured_failed, _diagnostics
+    )
 
     def _on_trace(trace_dict: dict) -> None:
         if trace_data is not None:
