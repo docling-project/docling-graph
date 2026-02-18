@@ -68,7 +68,7 @@ All options can be set in Python via `PipelineConfig` or a config dict passed to
 |----------------------------------------|----------|---------|-------------|
 | `extraction_contract` | `--extraction-contract` | `"direct"` | Set to `"delta"` to enable delta extraction. |
 | `use_chunking` | `--use-chunking` / `--no-use-chunking` | `True` | Must be enabled for delta (chunk → batch flow). |
-| `llm_batch_token_size` | `--llm-batch-token-size` | `2048` | Max input tokens per LLM batch; a new call is started when a batch would exceed this. |
+| `llm_batch_token_size` | `--llm-batch-token-size` | `1024` | Max input tokens per LLM batch; a new call is started when a batch would exceed this. |
 | `parallel_workers` | `--parallel-workers` | `1` (or preset) | Number of parallel workers for delta batch LLM calls. |
 | `staged_pass_retries` | `--staged-retries` | `1` | Retries per batch when the LLM returns invalid JSON (used as `max_pass_retries` for delta). |
 
