@@ -14,8 +14,8 @@ Extract structured information from insurance policy documents including coverag
 ## Prerequisites
 
 ```bash
-# Install dependencies
-uv sync
+# Install
+pip install docling-graph
 
 # For remote API (recommended for complex documents)
 export MISTRAL_API_KEY="your_key_here"

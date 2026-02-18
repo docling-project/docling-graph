@@ -2,28 +2,21 @@
 
 ## Overview
 
-Docling Graph uses **uv** as the package manager for fast, reliable dependency management. All installation and execution commands use `uv` exclusively.
+Docling Graph is available on **PyPI**. Install with pip for the recommended experience, or clone the repository and use **uv** for development.
 
 ### What You'll Install
 
 1. **Core Package**: Docling Graph with VLM support
-2. **Optional Features**: LLM providers (local and/or remote)
+2. **Optional Features**: LLM providers (local and/or remote) via LiteLLM (included by default)
 3. **GPU Support** (optional): PyTorch with CUDA for local inference
 4. **API Keys** (optional): For remote LLM providers
 
 ## Quick Start
 
-### Minimal Installation
-
-For basic VLM functionality:
+### Install from PyPI (Recommended)
 
 ```bash
-# Clone repository
-git clone https://github.com/docling-project/docling-graph
-cd docling-graph
-
-# Install core dependencies
-uv sync
+pip install docling-graph
 ```
 
 This installs:
@@ -31,20 +24,26 @@ This installs:
 - ✅ Docling (document conversion)
 - ✅ VLM backend (NuExtract models)
 - ✅ Core graph functionality
-- ❌ LLM providers (not included)
+- ✅ LiteLLM (for LLM providers; no extra install needed)
 
-### Installation
-
-LiteLLM is included by default; no extra installs are required for LLM providers.
+Run the CLI with:
 
 ```bash
-# Clone repository
+docling-graph --version
+docling-graph --help
+```
+
+### Install from Source (Development)
+
+To contribute or use the latest development version:
+
+```bash
 git clone https://github.com/docling-project/docling-graph
 cd docling-graph
-
-# Install dependencies
 uv sync
 ```
+
+Use `uv run docling-graph` when running the CLI from a source checkout.
 
 ## System Requirements
 
@@ -78,27 +77,23 @@ uv sync
 ### Check Installation
 
 ```bash
-# Check version
-uv run docling-graph --version
-
-# Check Python version
-uv run python --version
+# Check version (use docling-graph if installed via pip; uv run docling-graph if from source)
+docling-graph --version
 
 # Test CLI
-uv run docling-graph --help
+docling-graph --help
 ```
 
 Expected output:
 ```
 Docling Graph v1.2.0
-Python 3.10+ 
 Usage: docling-graph [OPTIONS] COMMAND [ARGS]...
 ```
 
 ### Test Import
 
 ```bash
-uv run python -c "import docling_graph; print(docling_graph.__version__)"
+python -c "import docling_graph; print(docling_graph.__version__)"
 ```
 
 Expected output:
@@ -117,9 +112,9 @@ After installation, you need to:
 
 ## Common Issues
 
-### 🐛 `uv` not found
+### 🐛 `uv` not found (source install only)
 
-**Solution**: Install uv first:
+If you install from source, you need [uv](https://docs.astral.sh/uv/). Install it with:
 
 ```bash
 # Linux/macOS
@@ -132,9 +127,9 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 pip install uv
 ```
 
-### 🐛 Python version mismatch
+### 🐛 Python version mismatch (source install)
 
-**Solution**: Specify Python version:
+When using uv from source, specify Python version if needed:
 
 ```bash
 uv python install 3.10
@@ -143,15 +138,14 @@ uv sync
 
 ### 🐛 Import errors after installation
 
-**Solution**: Ensure you're using `uv run`:
+**Solution**: If you installed from source with uv, run scripts and the CLI via `uv run`:
 
 ```bash
-# Wrong
-python script.py
-
-# Correct
 uv run python script.py
+uv run docling-graph --help
 ```
+
+If you installed with pip, use `python` and `docling-graph` directly.
 
 ### 🐛 GPU not detected
 
@@ -188,25 +182,31 @@ uv run pytest
 
 ## Updating
 
-To update to the latest version:
+**If you installed from PyPI:**
 
 ```bash
-# Update from git
-git pull origin main
+pip install -U docling-graph
+```
 
-# Sync dependencies
+**If you installed from source:**
+
+```bash
+git pull origin main
 uv sync
 ```
 
 ## Uninstalling
 
-To remove Docling Graph:
+**If you installed from PyPI:**
 
 ```bash
-# Remove virtual environment
-rm -rf .venv
+pip uninstall docling-graph
+```
 
-# Remove cloned repository
+**If you installed from source:**
+
+```bash
+rm -rf .venv
 cd ..
 rm -rf docling-graph
 ```

@@ -41,13 +41,10 @@ print(f"Extracted {graph.number_of_nodes()} nodes")
 ## Installation
 
 ```bash
-# Install with all features
-uv sync
-
-# Or specific features
-uv sync  # Remote APIs
-uv sync  # Local inference
+pip install docling-graph
 ```
+
+The package includes LiteLLM and supports both remote and local inference out of the box.
 
 ---
 

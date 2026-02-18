@@ -2,13 +2,38 @@
 
 ## Installation Methods
 
-### Method 1: From Source (Recommended)
+### Method 1: From PyPI (Recommended)
 
-This is the recommended method for most users.
+Install the latest release from PyPI:
+
+```bash
+pip install docling-graph
+```
+
+This installs the core package with VLM support and LiteLLM (for LLM providers). No extra steps are required for remote or local LLM backends.
+
+**Verify installation:**
+
+```bash
+docling-graph --version
+docling-graph --help
+python -c "import docling_graph; print(docling_graph.__version__)"
+```
+
+Expected output:
+```
+Docling Graph v1.2.0
+Usage: docling-graph [OPTIONS] COMMAND [ARGS]...
+v1.2.0
+```
+
+### Method 2: From Source (Development)
+
+Use this method to contribute or run the latest development version.
 
 #### Step 1: Install uv
 
-First, install the `uv` package manager:
+Install the [uv](https://docs.astral.sh/uv/) package manager:
 
 **Linux/macOS**:
 ```bash
@@ -32,77 +57,22 @@ git clone https://github.com/docling-project/docling-graph
 cd docling-graph
 ```
 
-#### Step 3: Choose Installation Type
+#### Step 3: Install Dependencies
 
-**Minimal (VLM only)**:
 ```bash
 uv sync
 ```
 
-**Full (all features)**:
-```bash
-uv sync
-```
-
-**Local LLM only**:
-```bash
-uv sync
-```
-
-**Remote API only**:
-```bash
-uv sync
-```
-
-**Specific providers**:
-```bash
-# OpenAI
-uv sync
-
-# Mistral
-uv sync
-
-# Gemini
-uv sync
-
-# WatsonX
-uv sync
-
-# Ollama (local)
-uv sync
-
-# vLLM (local, requires GPU)
-uv sync
-```
+This installs the same core package as PyPI (VLM + LiteLLM). Use `uv sync --extra dev` for development tools.
 
 #### Step 4: Verify Installation
 
+When installed from source, run the CLI with `uv run`:
+
 ```bash
-# Check version
 uv run docling-graph --version
-
-# Test CLI
 uv run docling-graph --help
-
-# Test Python import
 uv run python -c "import docling_graph; print(docling_graph.__version__)"
-```
-
-Expected output:
-```
-Docling Graph v1.2.0
-Usage: docling-graph [OPTIONS] COMMAND [ARGS]...
-v1.2.0
-```
-
-### Method 2: From PyPI (Coming Soon)
-
-!!! info "Coming Soon"
-    PyPI installation will be available in a future release.
-
-```bash
-# Future release
-pip install docling-graph[all]
 ```
 
 ## Installation Scenarios
@@ -112,19 +82,17 @@ pip install docling-graph[all]
 For users who want to get started quickly without GPU:
 
 ```bash
-# Install
-git clone https://github.com/docling-project/docling-graph
-cd docling-graph
-uv sync
+# Install from PyPI
+pip install docling-graph
 
 # Set API key
 export OPENAI_API_KEY="your-key-here"
 
 # Test
-uv run docling-graph --version
+docling-graph --version
 ```
 
-**Time**: ~2-3 minutes  
+**Time**: ~1-2 minutes  
 **Requirements**: Internet connection, API key  
 **GPU**: Not required
 
@@ -133,19 +101,17 @@ uv run docling-graph --version
 For users with GPU who want local inference:
 
 ```bash
-# Install
-git clone https://github.com/docling-project/docling-graph
-cd docling-graph
-uv sync
+# Install from PyPI
+pip install docling-graph
 
 # Verify GPU
 nvidia-smi
 
 # Test
-uv run docling-graph --version
+docling-graph --version
 ```
 
-**Time**: ~5-10 minutes  
+**Time**: ~2-5 minutes  
 **Requirements**: NVIDIA GPU with 4+ GB VRAM  
 **GPU**: Required
 
@@ -154,19 +120,17 @@ uv run docling-graph --version
 For users who want all local capabilities:
 
 ```bash
-# Install
-git clone https://github.com/docling-project/docling-graph
-cd docling-graph
-uv sync
+# Install from PyPI
+pip install docling-graph
 
 # Verify GPU
 nvidia-smi
 
 # Test
-uv run docling-graph --version
+docling-graph --version
 ```
 
-**Time**: ~10-15 minutes  
+**Time**: ~5-10 minutes  
 **Requirements**: NVIDIA GPU with 8+ GB VRAM  
 **GPU**: Required
 
@@ -175,20 +139,18 @@ uv run docling-graph --version
 For maximum flexibility:
 
 ```bash
-# Install
-git clone https://github.com/docling-project/docling-graph
-cd docling-graph
-uv sync
+# Install from PyPI
+pip install docling-graph
 
 # Set API keys (optional)
 export OPENAI_API_KEY="your-key-here"
 export MISTRAL_API_KEY="your-key-here"
 
 # Test
-uv run docling-graph --version
+docling-graph --version
 ```
 
-**Time**: ~10-15 minutes  
+**Time**: ~2-5 minutes  
 **Requirements**: GPU recommended, API keys optional  
 **GPU**: Optional
 
@@ -199,8 +161,10 @@ uv run docling-graph --version
 Run the interactive configuration wizard:
 
 ```bash
-uv run docling-graph init
+docling-graph init
 ```
+
+(Use `uv run docling-graph init` if you installed from source.)
 
 This creates a `config.yaml` file with your preferences.
 
@@ -211,23 +175,24 @@ This creates a `config.yaml` file with your preferences.
 Run a simple test:
 
 ```bash
-# Check all commands work
-uv run docling-graph --help
-uv run docling-graph init --help
-uv run docling-graph convert --help
-uv run docling-graph inspect --help
+# Check all commands work (use uv run ... if from source)
+docling-graph --help
+docling-graph init --help
+docling-graph convert --help
+docling-graph inspect --help
 ```
 
 ### Test with Example
 
 ```bash
-# Run a simple example (requires API key or GPU)
-uv run python docs/examples/scripts/02_quickstart_llm_pdf.py
+# Run a simple example (requires API key or GPU; from repo only)
+python docs/examples/scripts/02_quickstart_llm_pdf.py
+# Or from source: uv run python docs/examples/scripts/02_quickstart_llm_pdf.py
 ```
 
-## Directory Structure
+## Directory Structure (Source Install Only)
 
-After installation, your directory should look like:
+When you install from source, your directory should look like:
 
 ```
 docling-graph/
@@ -311,18 +276,17 @@ rm -rf .venv
 uv sync
 ```
 
-### 🐛 Import errors
+### 🐛 Import errors (source install)
 
-**Cause**: Not using `uv run`
+**Cause**: When installed from source, scripts must be run with `uv run` so they use the project environment.
 
 **Solution**:
 ```bash
-# Wrong
-python script.py
-
-# Correct
+# From source: use uv run
 uv run python script.py
+uv run docling-graph --help
 ```
+If you installed with pip, use `python` and `docling-graph` directly.
 
 ### 🐛 Slow installation
 
@@ -365,12 +329,12 @@ uv sync  # No extras
 
 After installation, verify:
 
-- [ ] `uv run docling-graph --version` works
-- [ ] `uv run docling-graph --help` shows commands
-- [ ] `uv run python -c "import docling_graph"` succeeds
+- [ ] `docling-graph --version` works (or `uv run docling-graph --version` if from source)
+- [ ] `docling-graph --help` shows commands
+- [ ] `python -c "import docling_graph"` succeeds
 - [ ] GPU detected (if using local inference): `nvidia-smi`
 - [ ] API keys set (if using remote): `echo $OPENAI_API_KEY`
-- [ ] Config initialized: `uv run docling-graph init`
+- [ ] Config initialized: `docling-graph init`
 
 ## Performance Notes
 
@@ -424,18 +388,18 @@ uv run mypy docling_graph
 
 ## Uninstalling
 
-To completely remove Docling Graph:
-
+**If you installed from PyPI:**
 ```bash
-# Remove virtual environment
+pip uninstall docling-graph
+```
+
+**If you installed from source:**
+```bash
 cd docling-graph
 rm -rf .venv
-
-# Remove repository (optional)
 cd ..
 rm -rf docling-graph
-
-# Remove cache (optional)
+# Optional: remove cache
 rm -rf ~/.cache/docling-graph
 ```
 

@@ -6,7 +6,7 @@
 
 # Docling Graph
 
-[![Docs](https://img.shields.io/badge/docs-live-brightgreen)](https://ibm.github.io/docling-graph)
+[![Docs](https://img.shields.io/badge/docs-live-brightgreen)](https://docling-project.github.io/docling-graph/)
 [![PyPI version](https://img.shields.io/pypi/v/docling-graph?cacheSeconds=300)](https://pypi.org/project/docling-graph/)
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
@@ -34,35 +34,33 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ## Key Capabilities
 
-- **✍🏻 Input Formats**: All inputs go through [Docling](https://docling-project.github.io/docling/usage/supported_formats/) for conversion (PDF, Office, HTML, images, markdown, etc.); [DoclingDocument](docs/fundamentals/pipeline-configuration/input-formats.md#doclingdocument-json-skip-conversion) JSON skips conversion.
+- **✍🏻 Input formats** - [Docling](https://docling-project.github.io/docling/usage/supported_formats/)’s supported inputs: PDF, images, markdown, Office, HTML, and more.
 
-- **🧠 Data Extraction**: Extract structured data using [VLM](docs/fundamentals/pipeline-configuration/backend-selection.md) or [LLM](docs/fundamentals/pipeline-configuration/backend-selection.md). Supports [intelligent chunking](docs/fundamentals/extraction-process/chunking-strategies.md) and flexible [processing modes](docs/fundamentals/pipeline-configuration/processing-modes.md).
+- **🧠 Extraction** - [VLM](docs/fundamentals/pipeline-configuration/backend-selection.md) or [LLM](docs/fundamentals/pipeline-configuration/backend-selection.md), chunking and processing modes.
 
-- **💎 Graph Construction**: Convert validated Pydantic models into NetworkX [directed graphs](docs/fundamentals/graph-management/graph-conversion.md) with semantic relationships and stable node IDs, and rich edge metadata.
+- **💎 Graphs** - Pydantic → [NetworkX](docs/fundamentals/graph-management/graph-conversion.md) directed graphs with stable IDs and edge metadata.
 
-- **📦 Export**: Save graphs in multiple KG databases compatible formats like [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), and [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export) for bulk import.
+- **📦 Export** - [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export), and other KG-friendly formats.
 
-- **🔍 Visualization**: Explore graphs with [interactive HTML](docs/fundamentals/graph-management/visualization.md) pages, and detailed [Markdown reports](docs/fundamentals/graph-management/visualization.md#markdown-reports).
+- **🔍 Visualization** - [Interactive HTML](docs/fundamentals/graph-management/visualization.md) and Markdown reports.
 
 ### Latest Changes
 
-- **🪜 Multi-pass Extraction** - Experimental: Use `extraction_contract="delta"` or `extraction_contract="staged"`.
-    - [Delta extraction](docs/fundamentals/extraction-process/delta-extraction.md) for long documents: chunk → token-batched LLM calls → normalize → merge → project to template.
-    - [Staged extraction](docs/fundamentals/extraction-process/staged-extraction.md) for complex nested templates: Catalog → ID pass (skeleton) → Fill pass (bottom-up) → Merge.
+- **🪜 Multi-pass extraction** - [Delta](docs/fundamentals/extraction-process/delta-extraction.md) and [staged](docs/fundamentals/extraction-process/staged-extraction.md) contracts (experimental).
 
-- **📐 Structured Extraction**: LLM extraction now uses API schema-enforced output by default (`response_format=json_schema` via LiteLLM). Disable with `structured_output=False` (API) or `--no-schema-enforced-llm` (CLI) to fall back to the legacy prompt-schema mode if your LLM provider doesn’t support it.
+- **📐 Structured extraction** - LLM output is schema-enforced by default; see [CLI](docs/usage/cli/convert-command.md#structured-output-mode) and [API](docs/usage/api/llm-model-config.md) to disable.
 
-- **✨ LiteLLM abstraction**: Unified interface to local and remote LLM providers (vLLM, Mistral, OpenAI, WatsonX, etc.) via [LiteLLM](docs/reference/llm-clients.md), offering improved support and greater flexibility.
+- **✨ LiteLLM** - Single [interface](docs/reference/llm-clients.md) for vLLM, OpenAI, Mistral, WatsonX, and more.
 
-- **🐛 Trace Capture**: [Comprehensive debug data](docs/usage/advanced/trace-data-debugging.md) via event-based [`trace_data`](docs/reference/pipeline.md) exports with diagnostics for extraction, staged passes, fallback behavior, and more.
+- **🐛 Trace capture** - [Debug exports](docs/usage/advanced/trace-data-debugging.md) for extraction and fallback diagnostics.
 
 ### Coming Soon
 
-* 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
+* 🧩 **Interactive Template Builder** - Guided workflows for building Pydantic templates.
 
-* 🧲 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
+* 🧲 **Ontology-Based Templates** - Match content to the best Pydantic template using semantic similarity.
 
-* 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
+* 💾 **Graph Database Integration** - Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
 
 
@@ -71,20 +69,14 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 ### Requirements
 
 - Python 3.10 or higher
-- [uv](https://docs.astral.sh/uv/) package manager
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/docling-project/docling-graph
-cd docling-graph
-
-# Install with uv
-uv sync                    # Core + LiteLLM + VLM
+pip install docling-graph
 ```
 
-For detailed installation instructions, see [Installation Guide](docs/fundamentals/installation/index.md).
+This installs the core package with VLM support and LiteLLM for LLM providers. For detailed installation instructions (including optional extras and GPU setup), see [Installation Guide](docs/fundamentals/installation/index.md).
 
 ### API Key Setup (Remote Inference)
 
@@ -105,17 +97,17 @@ export WATSONX_URL="..."           # IBM WatsonX URL (optional)
 
 ```bash
 # Initialize configuration
-uv run docling-graph init
+docling-graph init
 
 # Convert document from URL (each line except the last must end with \)
-uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
+docling-graph convert "https://arxiv.org/pdf/2207.02720" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --processing-mode "many-to-one" \
     --extraction-contract "staged" \
     --debug
 
 # Visualize results
-uv run docling-graph inspect outputs
+docling-graph inspect outputs
 ```
 
 #### Python API - Default Behavior
@@ -217,7 +209,6 @@ We welcome contributions! Please see:
 
 - [Contributing Guidelines](.github/CONTRIBUTING.md) - How to contribute
 - [Development Guide](docs/community/index.md) - Development setup
-- [GitHub Workflow](docs/community/github-workflow.md) - Branch strategy and CI/CD
 
 ### Development Setup
 
@@ -243,11 +234,14 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- Powered by [Docling](https://github.com/docling-project/docling) for advanced document processing
-- Uses [Pydantic](https://pydantic.dev) for data validation
-- Graph generation powered by [NetworkX](https://networkx.org/)
-- Visualizations powered by [Cytoscape.js](https://js.cytoscape.org/)
-- CLI powered by [Typer](https://typer.tiangolo.com/) and [Rich](https://github.com/Textualize/rich)
+Docling Graph builds on outstanding open-source projects:
+
+- [Docling](https://github.com/docling-project/docling) - document conversion and VLM extraction
+- [Pydantic](https://pydantic.dev) - schema definition and validation
+- [NetworkX](https://networkx.org/) - graph construction and analysis
+- [LiteLLM](https://github.com/BerriAI/litellm) - unified LLM provider interface
+- [SpaCy](https://spacy.io/) - semantic entity resolution in delta extraction
+- [Cytoscape](https://js.cytoscape.org/) - interactive graph visualization
 
 
 

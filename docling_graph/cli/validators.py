@@ -123,7 +123,7 @@ def _print_provider_status(provider: str) -> None:
 
 def _get_install_command(provider: str) -> str:
     """Get the installation command for a provider."""
-    return "uv sync"
+    return "pip install docling-graph"
 
 
 def print_dependency_setup_guide(inference_type: str, provider: str | None = None) -> None:

@@ -18,7 +18,6 @@ permissions:
 jobs:
   release:
     name: Release
-    environment: auto-release
     runs-on: ubuntu-latest
     concurrency: release
     steps:
@@ -60,6 +59,7 @@ jobs:
             git tag -f "$TAG"
           fi
       - name: Push changes
+        id: push
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           REMOTE: https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
@@ -70,6 +70,12 @@ jobs:
             TAG=$(git describe --exact-match --tags HEAD 2>/dev/null) && git tag -f "$TAG"
           fi
           git push "$REMOTE" HEAD:main --follow-tags
+          TAG=$(git describe --exact-match --tags HEAD 2>/dev/null) && echo "released_tag=${TAG}" >> "$GITHUB_OUTPUT"
+      - name: Create GitHub Release with changelog
+        if: steps.push.outputs.released_tag != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: uv run semantic-release changelog --post-to-release-tag "${{ steps.push.outputs.released_tag }}"
       - name: Summary
         run: |
           echo "## Semantic Release Summary" >> $GITHUB_STEP_SUMMARY

@@ -17,25 +17,26 @@ The **docling-graph CLI** provides command-line tools for document-to-graph conv
 ### Installation
 
 ```bash
-# Install with all features
-uv sync
+pip install docling-graph
 
 # Verify installation
-uv run docling-graph --version
+docling-graph --version
 ```
+
+(If you installed from source with uv, use `uv run docling-graph` instead of `docling-graph`.)
 
 ### Basic Usage
 
 ```bash
 # 1. Initialize configuration
-uv run docling-graph init
+docling-graph init
 
 # 2. Convert a document
-uv run docling-graph convert document.pdf \
+docling-graph convert document.pdf \
     --template "templates.BillingDocument"
 
 # 3. Visualize the graph
-uv run docling-graph inspect outputs/
+docling-graph inspect outputs/
 ```
 
 ---
@@ -54,14 +55,14 @@ Available with all commands:
 
 ```bash
 # Show version
-uv run docling-graph --version
+docling-graph --version
 
 # Enable verbose logging
-uv run docling-graph --verbose convert document.pdf -t "templates.BillingDocument"
+docling-graph --verbose convert document.pdf -t "templates.BillingDocument"
 
 # Show help
-uv run docling-graph --help
-uv run docling-graph convert --help
+docling-graph --help
+docling-graph convert --help
 ```
 
 ---
@@ -73,7 +74,7 @@ uv run docling-graph convert --help
 Create a configuration file with interactive prompts.
 
 ```bash
-uv run docling-graph init
+docling-graph init
 ```
 
 **Features:**
@@ -92,7 +93,7 @@ uv run docling-graph init
 Convert documents to knowledge graphs.
 
 ```bash
-uv run docling-graph convert SOURCE --template TEMPLATE [OPTIONS]
+docling-graph convert SOURCE --template TEMPLATE [OPTIONS]
 ```
 
 **Features:**
@@ -110,7 +111,7 @@ uv run docling-graph convert SOURCE --template TEMPLATE [OPTIONS]
 Visualize graphs in your browser.
 
 ```bash
-uv run docling-graph inspect PATH [OPTIONS]
+docling-graph inspect PATH [OPTIONS]
 ```
 
 **Features:**
@@ -129,7 +130,7 @@ uv run docling-graph inspect PATH [OPTIONS]
 
 ```bash
 # 1. Initialize configuration
-uv run docling-graph init
+docling-graph init
 
 # 2. Install dependencies (if prompted)
 uv sync
@@ -138,7 +139,7 @@ uv sync
 export MISTRAL_API_KEY="your-key"
 
 # 4. Convert first document
-uv run docling-graph convert document.pdf \
+docling-graph convert document.pdf \
     --template "templates.BillingDocument"
 ```
 
@@ -147,14 +148,14 @@ uv run docling-graph convert document.pdf \
 ```bash
 # Process multiple documents
 for pdf in documents/*.pdf; do
-    uv run docling-graph convert "$pdf" \
+    docling-graph convert "$pdf" \
         --template "templates.BillingDocument" \
         --output-dir "outputs/$(basename $pdf .pdf)"
 done
 
 # Visualize results
 for dir in outputs/*/; do
-    uv run docling-graph inspect "$dir" \
+    docling-graph inspect "$dir" \
         --output "${dir}/visualization.html" \
         --no-open
 done
@@ -164,18 +165,18 @@ done
 
 ```bash
 # 1. Convert with verbose logging
-uv run docling-graph --verbose convert document.pdf \
+docling-graph --verbose convert document.pdf \
     --template "templates.BillingDocument" \
     --output-dir "test_output"
 
 # 2. Inspect results
-uv run docling-graph inspect test_output/
+docling-graph inspect test_output/
 
 # 3. Iterate on template
 # Edit templates/billing_document.py
 
 # 4. Re-run conversion
-uv run docling-graph convert document.pdf \
+docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --output-dir "test_output"
 ```
@@ -201,7 +202,7 @@ defaults:
 
 ```bash
 # This uses remote inference (CLI overrides config)
-uv run docling-graph convert doc.pdf \
+docling-graph convert doc.pdf \
     --template "templates.BillingDocument" \
     --inference remote
 ```
@@ -279,7 +280,7 @@ outputs/
 Enable verbose logging for debugging:
 
 ```bash
-uv run docling-graph --verbose convert document.pdf \
+docling-graph --verbose convert document.pdf \
     --template "templates.BillingDocument"
 ```
 
@@ -291,11 +292,11 @@ uv run docling-graph --verbose convert document.pdf \
 
 ```bash
 # ✅ Good - Reusable configuration
-uv run docling-graph init
-uv run docling-graph convert document.pdf -t "templates.BillingDocument"
+docling-graph init
+docling-graph convert document.pdf -t "templates.BillingDocument"
 
 # ❌ Avoid - Repeating options
-uv run docling-graph convert document.pdf \
+docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --backend llm \
     --inference remote \
@@ -307,12 +308,12 @@ uv run docling-graph convert document.pdf \
 
 ```bash
 # ✅ Good - Organized by document
-uv run docling-graph convert invoice_001.pdf \
+docling-graph convert invoice_001.pdf \
     --template "templates.BillingDocument" \
     --output-dir "outputs/invoice_001"
 
 # ❌ Avoid - Overwriting outputs
-uv run docling-graph convert invoice_001.pdf \
+docling-graph convert invoice_001.pdf \
     --template "templates.BillingDocument"
 ```
 
@@ -320,11 +321,11 @@ uv run docling-graph convert invoice_001.pdf \
 
 ```bash
 # ✅ Good - Debug during development
-uv run docling-graph --verbose convert document.pdf \
+docling-graph --verbose convert document.pdf \
     --template "templates.BillingDocument"
 
 # ✅ Good - Silent in production
-uv run docling-graph convert document.pdf \
+docling-graph convert document.pdf \
     --template "templates.BillingDocument"
 ```
 

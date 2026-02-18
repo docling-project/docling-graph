@@ -12,7 +12,6 @@ Get started with docling-graph in **5 minutes** by extracting structured data fr
 
 **Prerequisites:**
 - Python 3.10+
-- `uv` package manager
 - A sample billing document (PDF or image)
 
 ---
@@ -20,11 +19,10 @@ Get started with docling-graph in **5 minutes** by extracting structured data fr
 ## Step 1: Installation
 
 ```bash
-# Install docling-graph with all features
-uv sync
+pip install docling-graph
 
 # Verify installation
-uv run docling-graph --version
+docling-graph --version
 ```
 
 ---
@@ -70,7 +68,7 @@ class SimpleBillingDoc(BaseModel):
 
 ```bash
 # Process billing document
-uv run docling-graph convert billing_doc.pdf \
+docling-graph convert billing_doc.pdf \
     --template "simple_billing_doc.SimpleBillingDoc" \
     --output-dir "quickstart_output"
 ```
@@ -100,7 +98,7 @@ print(f"✅ Complete! Extracted {graph.number_of_nodes()} nodes")
 Run it:
 
 ```bash
-uv run python run_quickstart.py
+python run_quickstart.py
 ```
 
 ---
@@ -110,13 +108,13 @@ uv run python run_quickstart.py
 **Template Not Found:**
 ```bash
 # Ensure template is in current directory or use absolute path
-uv run docling-graph convert billing_doc.pdf --template "$(pwd)/simple_billing_doc.SimpleBillingDoc"
+docling-graph convert billing_doc.pdf --template "$(pwd)/simple_billing_doc.SimpleBillingDoc"
 ```
 
 **No Data Extracted:**
 ```bash
 # Use verbose logging to debug
-uv run docling-graph --verbose convert billing_doc.pdf --template simple_billing_doc.SimpleBillingDoc
+docling-graph --verbose convert billing_doc.pdf --template simple_billing_doc.SimpleBillingDoc
 ```
 
 **API Key Error:**
@@ -193,12 +191,12 @@ class BillingDoc(BaseModel):
 
 ```bash
 # VLM for images (faster)
-uv run docling-graph convert billing_doc.jpg \
+docling-graph convert billing_doc.jpg \
     --template "simple_billing_doc.SimpleBillingDoc" \
     --backend vlm
 
 # LLM for complex documents
-uv run docling-graph convert billing_doc.pdf \
+docling-graph convert billing_doc.pdf \
     --template "simple_billing_doc.SimpleBillingDoc" \
     --backend llm \
     --inference remote

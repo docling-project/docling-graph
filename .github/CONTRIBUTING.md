@@ -1,80 +1,106 @@
 # Contribution guidelines
 
-## Contributing in General
+## Contributing In General
 
 Our project welcomes external contributions. If you have an itch, please feel
 free to scratch it.
 
-To contribute code or documentation, please submit a [pull request](https://github.com/docling-project/pulls).
+For more details on the contributing guidelines head to the Docling Project [community repository](https://github.com/docling-project/community).
 
-A good way to familiarize yourself with the codebase and contribution process is
-to look for and tackle low-hanging fruit in the [issue tracker](https://github.com/docling-project/issues).
-Before embarking on a more ambitious contribution, please quickly [get in touch](#communication) with us.
+## Developing
 
-For general questions or support requests, please refer to the [discussion section](https://github.com/docling-project/discussions).
+### Usage of uv
 
-**Note: We appreciate your effort, and want to avoid a situation where a contribution
-requires extensive rework (by you or by us), sits in backlog for a long time, or
-cannot be accepted at all!**
+We use [uv](https://docs.astral.sh/uv/) as package and project manager.
 
-### Proposing new features
+#### Installation
 
-If you would like to implement a new feature, please [raise an issue](https://github.com/docling-project/issues)
-before sending a pull request so the feature can be discussed. This is to avoid
-you wasting your valuable time working on a feature that the project developers
-are not interested in accepting into the code base.
+To install `uv`, check the documentation on [Installing uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-### Fixing bugs
+#### Create an environment and sync it
 
-If you would like to fix a bug, please [raise an issue](https://github.com/docling-project/issues) before sending a
-pull request so it can be tracked.
+You can use the `uv sync` to create a project virtual environment (if it does not already exist) and sync
+the project's dependencies with the environment.
 
-### Merge approval
-
-A pull request can be reviewed by any [committer](./GOVERNANCE.md#committer), but only
-a [maintainer](./GOVERNANCE.md#maintainer) of the respective repository can merge it to
-the main branch.
-
-### Quick execution
-
-The governance team favours quick iterations and execution. Contributors and committers are
-encouraged to provide quick and effective feedback for finalizing the contributions.
-
-Stale contributions will be flagged and eventually closed.
-
-## Legal
-
-Each source file must include a license header for the MIT
-Software. Using the SPDX format is the simplest approach.
-e.g.
-
-```py
-# Copyright © Docling a Series of LF Projects, LLC
-# For web site terms of use, trademark policy and other project policies please see https://lfprojects.org.
+```bash
+uv sync
 ```
 
-We have tried to make it as easy as possible to make contributions. This
-applies to how we handle the legal aspects of contribution. We use the
-same approach - the [Developer's Certificate of Origin 1.1 (DCO)](https://github.com/hyperledger/fabric/blob/master/docs/source/DCO1.1.txt) - that the Linux® Kernel [community](https://elinux.org/Developer_Certificate_Of_Origin)
-uses to manage code contributions.
+#### Use a specific Python version (optional)
 
-We simply ask that when submitting a patch for review, the developer
-must include a sign-off statement in the commit message.
+If you need to work with a specific version of Python, you can create a new virtual environment for that version
+and run the sync command:
 
-Here is an example Signed-off-by line, which indicates that the
-submitter accepts the DCO:
-
-```text
-Signed-off-by: John Doe <john.doe@example.com>
+```bash
+uv venv --python 3.12
+uv sync
 ```
 
-You can include this automatically when you commit a change to your
-local git repository using the following command:
+More detailed options are described on the [Using Python environments](https://docs.astral.sh/uv/pip/environments/) documentation.
 
-```text
-git commit -s
+#### Add a new dependency
+
+Simply use the `uv add` command. The `pyproject.toml` and `uv.lock` files will be updated.
+
+```bash
+uv add [OPTIONS] <PACKAGES|--requirements <REQUIREMENTS>>
 ```
 
-## Communication
+## Coding Style Guidelines
 
-Please feel free to connect with us using the [discussion section](https://github.com/docling-project/discussions) of the main Docling repository.
+We use the following tools to enforce code style:
+
+- [Ruff](https://docs.astral.sh/ruff/), as linter and code formatter
+- [MyPy](https://mypy.readthedocs.io), as static type checker
+
+A set of styling checks, as well as regression tests, are defined and managed through the [pre-commit](https://pre-commit.com/) framework.
+To ensure that those scripts run automatically before a commit is finalized, install `pre-commit` on your local repository:
+
+```bash
+pre-commit install
+```
+
+To run the checks on-demand, run:
+
+```bash
+pre-commit run --all-files
+```
+
+Note: Checks like `Ruff` will "fail" if they modify files. This is because `pre-commit` doesn't like to see files modified by its hooks. In these cases, `git add` the modified files and `git commit` again.
+
+## Tests
+
+When submitting a new feature or fix, please consider adding a short test for it.
+
+### Reference test documents
+
+When a change improves the conversion results, multiple reference documents must be regenerated and reviewed.
+
+The reference data can be regenerated with
+
+```sh
+DOCLING_GEN_TEST_DATA=1 uv run pytest
+```
+
+All PRs modifying the reference test data require a double review to guarantee we don't miss edge cases.
+
+
+## Documentation
+
+We use [MkDocs](https://www.mkdocs.org/) to write documentation.
+
+To run the documentation server, run:
+
+```bash
+mkdocs serve
+```
+
+The server will be available at [http://localhost:8000](http://localhost:8000).
+
+### Pushing Documentation to GitHub Pages
+
+Run the following:
+
+```bash
+mkdocs gh-deploy
+```

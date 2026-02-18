@@ -13,8 +13,8 @@ Extract complete structured data from billing documents (invoices, credit notes,
 ## Prerequisites
 
 ```bash
-# Install dependencies
-uv sync
+# Install
+pip install docling-graph
 
 # Verify installation
 uv run docling-graph --version

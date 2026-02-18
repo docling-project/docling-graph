@@ -29,7 +29,7 @@ This guide provides **ready-to-use CLI commands** for all example scripts. Run t
 
 **CLI Command:**
 ```bash
-uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
+docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
     --template "docs.examples.templates.billing_document.BillingDocument" \
     --output-dir "outputs/cli_01" \
     --backend "vlm" \
@@ -54,13 +54,13 @@ uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
 
 **Prerequisites:**
 ```bash
+pip install docling-graph
 export MISTRAL_API_KEY="your-api-key"
-uv sync
 ```
 
 **CLI Command:**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_02" \
     --backend "llm" \
@@ -88,13 +88,13 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 
 **Prerequisites:**
 ```bash
+pip install docling-graph
 export MISTRAL_API_KEY="your-api-key"
-uv sync
 ```
 
 **CLI Command:**
 ```bash
-uv run docling-graph convert "https://arxiv.org/pdf/2207.02720" \
+docling-graph convert "https://arxiv.org/pdf/2207.02720" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_03" \
     --backend "llm" \
@@ -130,7 +130,7 @@ Key Points:
 - Point 2" > sample.txt
 
 # Process text file
-uv run docling-graph convert "sample.txt" \
+docling-graph convert "sample.txt" \
     --template "docs.examples.templates.simple.SimpleDocument" \
     --output-dir "outputs/cli_04_text" \
     --backend "llm" \
@@ -141,7 +141,7 @@ uv run docling-graph convert "sample.txt" \
 **Markdown File:**
 ```bash
 # Process markdown file
-uv run docling-graph convert "README.md" \
+docling-graph convert "README.md" \
     --template "docs.examples.templates.simple.SimpleDocument" \
     --output-dir "outputs/cli_04_markdown" \
     --backend "llm"
@@ -166,12 +166,12 @@ uv run docling-graph convert "README.md" \
 ```bash
 ollama serve
 ollama pull llama3:8b
-uv sync
+pip install docling-graph
 ```
 
 **One-to-One Mode:**
 ```bash
-uv run docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.pdf" \
+docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.pdf" \
     --template "docs.examples.templates.id_card.IDCard" \
     --output-dir "outputs/cli_05_one_to_one" \
     --backend "llm" \
@@ -184,7 +184,7 @@ uv run docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.p
 
 **Many-to-One Mode:**
 ```bash
-uv run docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.pdf" \
+docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.pdf" \
     --template "docs.examples.templates.id_card.IDCard" \
     --output-dir "outputs/cli_05_many_to_one" \
     --backend "llm" \
@@ -205,7 +205,7 @@ uv run docling-graph convert "docs/examples/data/id_card/multi_french_id_cards.p
 
 **CSV Export (Bulk Import):**
 ```bash
-uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
+docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
     --template "docs.examples.templates.billing_document.BillingDocument" \
     --output-dir "outputs/cli_06_csv" \
     --backend "vlm" \
@@ -214,7 +214,7 @@ uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
 
 **Cypher Export (Script):**
 ```bash
-uv run docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
+docling-graph convert "docs/examples/data/invoice/sample_invoice.jpg" \
     --template "docs.examples.templates.billing_document.BillingDocument" \
     --output-dir "outputs/cli_06_cypher" \
     --backend "vlm" \
@@ -245,12 +245,12 @@ cat outputs/cli_06_cypher/docling_graph/graph.cypher | \
 ```bash
 ollama serve
 ollama pull llama3:8b
-uv sync
+pip install docling-graph
 ```
 
 **CLI Command:**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_07" \
     --backend "llm" \
@@ -278,13 +278,13 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 
 **Prerequisites:**
 ```bash
+pip install docling-graph
 export MISTRAL_API_KEY="your-api-key"
-uv sync
 ```
 
 **Programmatic Merge (Fast):**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_08_programmatic" \
     --backend "llm" \
@@ -311,7 +311,7 @@ for file in docs/examples/data/invoice/*.jpg; do
     filename=$(basename "$file" .jpg)
     echo "Processing $filename..."
     
-    uv run docling-graph convert "$file" \
+    docling-graph convert "$file" \
         --template "docs.examples.templates.billing_document.BillingDocument" \
         --output-dir "outputs/cli_09/$filename" \
         --backend "vlm" \
@@ -338,12 +338,12 @@ export GEMINI_API_KEY="..."
 export WATSONX_API_KEY="..."
 export WATSONX_PROJECT_ID="..."
 
-uv sync
+pip install docling-graph
 ```
 
 **OpenAI:**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_10_openai" \
     --backend "llm" \
@@ -354,7 +354,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 
 **Mistral:**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_10_mistral" \
     --backend "llm" \
@@ -365,7 +365,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 
 **Gemini:**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_10_gemini" \
     --backend "llm" \
@@ -376,7 +376,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 
 **WatsonX:**
 ```bash
-uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --output-dir "outputs/cli_10_watsonx" \
     --backend "llm" \
@@ -392,7 +392,7 @@ uv run docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
 ### Visualization
 ```bash
 # View interactive graph
-uv run docling-graph inspect outputs/cli_01
+docling-graph inspect outputs/cli_01
 
 # Open specific HTML file
 open outputs/cli_01/docling_graph/graph.html
@@ -401,22 +401,22 @@ open outputs/cli_01/docling_graph/graph.html
 ### Debugging
 ```bash
 # Verbose output
-uv run docling-graph --verbose convert ...
+docling-graph --verbose convert ...
 
 # Check version
-uv run docling-graph --version
+docling-graph --version
 
 # Get help
-uv run docling-graph convert --help
+docling-graph convert --help
 ```
 
 ### Configuration
 ```bash
 # Initialize config file
-uv run docling-graph init
+docling-graph init
 
 # Use custom config
-uv run docling-graph convert --config custom_config.yaml ...
+docling-graph convert --config custom_config.yaml ...
 ```
 
 ---
@@ -452,14 +452,14 @@ ollama pull llama3:8b
 
 ### 🐛 Installation Issues
 ```bash
-# Reinstall dependencies
-uv sync --force
+# Reinstall
+pip install --force-reinstall docling-graph
 
 # Check Python version
 python --version  # Should be 3.10+
 
 # Verify installation
-uv run python -c "import docling_graph; print(docling_graph.__version__)"
+python -c "import docling_graph; print(docling_graph.__version__)"
 ```
 
 ---

@@ -14,8 +14,8 @@ Extract personal information from ID cards and identity documents using vision-b
 ## Prerequisites
 
 ```bash
-# Install dependencies
-uv sync
+# Install
+pip install docling-graph
 ```
 
 ---

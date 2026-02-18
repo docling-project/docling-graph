@@ -17,7 +17,7 @@ The `init` command creates a `config.yaml` file in your current directory throug
 ## Basic Usage
 
 ```bash
-uv run docling-graph init
+docling-graph init
 ```
 
 This launches an interactive wizard that guides you through:
@@ -300,11 +300,11 @@ After configuration, `init` validates required dependencies:
 
 ```
 ⚠ Missing dependencies for remote inference
-Run: uv sync
+Run: pip install docling-graph
 ```
 
 **Dependencies:**
-- `uv sync` installs LiteLLM and all core runtime dependencies
+- `pip install docling-graph` installs the package with LiteLLM and all core runtime dependencies. If you installed from source, use `uv sync` instead.
 
 ---
 
@@ -314,8 +314,7 @@ Run: uv sync
 
 ```
 Next steps:
-1. Install dependencies:
-   uv sync
+1. Install (if not already): pip install docling-graph
 
 2. Set your API key:
    export MISTRAL_API_KEY="your-api-key-here"
@@ -325,7 +324,7 @@ Next steps:
    export CUSTOM_LLM_API_KEY="your-key"
 
 3. Run your first conversion:
-   uv run docling-graph convert document.pdf \
+   docling-graph convert document.pdf \
        --template "templates.BillingDocument"
 ```
 
@@ -335,8 +334,7 @@ If you selected **LM Studio**: start the Local Server in the LM Studio app; set 
 
 ```
 Next steps:
-1. Install dependencies:
-   uv sync
+1. Install (if not already): pip install docling-graph
 
 2. Start Ollama server (if using Ollama):
    ollama serve
@@ -345,7 +343,7 @@ Next steps:
    ollama pull llama3:8b
 
 4. Run your first conversion:
-   uv run docling-graph convert document.pdf \
+   docling-graph convert document.pdf \
        --template "templates.BillingDocument"
 ```
 
@@ -370,7 +368,7 @@ Overwrite it? [y/N]:
 If interactive mode is unavailable (e.g., in CI/CD):
 
 ```bash
-uv run docling-graph init
+docling-graph init
 # Falls back to default configuration
 ```
 
@@ -389,8 +387,11 @@ Default configuration uses:
 ### 📍 First-Time Setup
 
 ```bash
+# Install (if not already)
+pip install docling-graph
+
 # Initialize configuration
-uv run docling-graph init
+docling-graph init
 
 # Follow prompts:
 # 1. Processing mode (e.g. many-to-one)
@@ -401,22 +402,22 @@ uv run docling-graph init
 # 6. Provider and model
 # 7. Export format, output directory
 
-# Install dependencies
-uv sync
-
 # Set API key
 export MISTRAL_API_KEY="your-key"
 
 # Test conversion
-uv run docling-graph convert test.pdf \
+docling-graph convert test.pdf \
     --template "templates.BillingDocument"
 ```
 
 ### 📍 Local Development Setup
 
 ```bash
+# Install (if not already)
+pip install docling-graph
+
 # Initialize for local development
-uv run docling-graph init
+docling-graph init
 
 # Follow prompts:
 # 1. Processing mode (e.g. many-to-one)
@@ -426,9 +427,6 @@ uv run docling-graph init
 # 5. Provider and model
 # 6. Export format, output directory
 
-# Install dependencies
-uv sync
-
 # Start Ollama
 ollama serve
 
@@ -436,15 +434,18 @@ ollama serve
 ollama pull llama3:8b
 
 # Test conversion
-uv run docling-graph convert test.pdf \
+docling-graph convert test.pdf \
     --template "templates.BillingDocument"
 ```
 
 ### 📍 VLM Setup
 
 ```bash
+# Install (if not already)
+pip install docling-graph
+
 # Initialize for VLM
-uv run docling-graph init
+docling-graph init
 
 # Follow prompts:
 # 1. Processing mode (e.g. one-to-one)
@@ -453,11 +454,8 @@ uv run docling-graph init
 # 4. Docling pipeline and export options
 # 5. Model, export format, output directory
 
-# Install dependencies
-uv sync
-
 # Test conversion
-uv run docling-graph convert form.jpg \
+docling-graph convert form.jpg \
     --template "templates.IDCard"
 ```
 
@@ -470,7 +468,7 @@ The `config.yaml` file is created in your **current working directory**:
 ```bash
 # Create config in project root
 cd /path/to/project
-uv run docling-graph init
+docling-graph init
 
 # Creates: /path/to/project/config.yaml
 ```
@@ -536,7 +534,7 @@ ls -la
 
 # Run from writable directory
 cd ~/projects/my-project
-uv run docling-graph init
+docling-graph init
 ```
 
 ### 🐛 Invalid Configuration
@@ -560,14 +558,14 @@ Error creating config: Invalid backend type
 ```bash
 # ✅ Good - One config per project
 cd project1/
-uv run docling-graph init
+docling-graph init
 
 cd project2/
-uv run docling-graph init
+docling-graph init
 
 # ❌ Avoid - Shared config across projects
 cd ~/
-uv run docling-graph init
+docling-graph init
 ```
 
 ### 👍 Version Control
@@ -592,7 +590,7 @@ cp config.yaml config.prod.yaml
 
 # Use specific config
 cp config.prod.yaml config.yaml
-uv run docling-graph convert document.pdf -t "templates.BillingDocument"
+docling-graph convert document.pdf -t "templates.BillingDocument"
 ```
 
 ---

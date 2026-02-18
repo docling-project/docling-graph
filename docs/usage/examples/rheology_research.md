@@ -15,7 +15,7 @@ Extract complex research data from scientific papers including experiments, meas
 
 ```bash
 # Install with remote API support
-uv sync
+pip install docling-graph
 
 # Set API key
 export MISTRAL_API_KEY="your-key"
