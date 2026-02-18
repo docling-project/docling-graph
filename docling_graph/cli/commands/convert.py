@@ -188,6 +188,20 @@ def convert_command(
             help="Paths per ID pass call (0 = no sharding, overrides preset).",
         ),
     ] = None,
+    staged_id_max_tokens: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-id-max-tokens",
+            help="Max tokens for staged ID pass responses (default from config: 16384).",
+        ),
+    ] = None,
+    staged_fill_max_tokens: Annotated[
+        int | None,
+        typer.Option(
+            "--staged-fill-max-tokens",
+            help="Max tokens for staged fill pass responses (default: use client default).",
+        ),
+    ] = None,
     # Docling export options
     export_docling_json: Annotated[
         bool,
@@ -393,6 +407,17 @@ def convert_command(
         if staged_id_shard_size is not None
         else defaults.get("staged_id_shard_size")
     )
+    # Apply default 16384 when unset so ID pass avoids truncation on large catalogs (CLI and config)
+    final_staged_id_max_tokens = (
+        staged_id_max_tokens
+        if staged_id_max_tokens is not None
+        else defaults.get("staged_id_max_tokens", 16384)
+    )
+    final_staged_fill_max_tokens = (
+        staged_fill_max_tokens
+        if staged_fill_max_tokens is not None
+        else defaults.get("staged_fill_max_tokens")
+    )
     final_structured_output = (
         schema_enforced_llm
         if schema_enforced_llm is not None
@@ -565,6 +590,8 @@ def convert_command(
         gleaning_max_passes=final_gleaning_max_passes,
         staged_nodes_fill_cap=final_staged_nodes_fill_cap,
         staged_id_shard_size=final_staged_id_shard_size,
+        staged_id_max_tokens=final_staged_id_max_tokens,
+        staged_fill_max_tokens=final_staged_fill_max_tokens,
         export_format=export_format_val,
         export_docling=True,
         export_docling_json=final_export_docling_json,

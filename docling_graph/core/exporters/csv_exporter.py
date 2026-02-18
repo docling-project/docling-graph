@@ -1,5 +1,6 @@
 """CSV exporter for Neo4j-compatible format."""
 
+import csv
 from pathlib import Path
 from typing import Optional, cast
 
@@ -69,7 +70,13 @@ class CSVExporter:
             nodes_data.append(node_dict)
 
         nodes_df = pd.DataFrame(nodes_data)
-        nodes_df.to_csv(path, index=False, encoding=self.config.CSV_ENCODING)
+        nodes_df.to_csv(
+            path,
+            index=False,
+            encoding=self.config.CSV_ENCODING,
+            quoting=csv.QUOTE_NONNUMERIC,
+            doublequote=True,
+        )
 
     def _export_edges(self, graph: nx.DiGraph, path: Path) -> None:
         """Export edges to CSV.
@@ -85,4 +92,10 @@ class CSVExporter:
             edges_data.append(edge_dict)
 
         edges_df = pd.DataFrame(edges_data)
-        edges_df.to_csv(path, index=False, encoding=self.config.CSV_ENCODING)
+        edges_df.to_csv(
+            path,
+            index=False,
+            encoding=self.config.CSV_ENCODING,
+            quoting=csv.QUOTE_NONNUMERIC,
+            doublequote=True,
+        )

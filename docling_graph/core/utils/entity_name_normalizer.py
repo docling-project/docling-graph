@@ -8,7 +8,9 @@ Used by dict_merger, delta resolvers, staged merge, and node_id_registry.
 
 from __future__ import annotations
 
+import re
 import unicodedata
+from typing import Any
 
 
 def normalize_entity_name(raw: str) -> str:
@@ -39,3 +41,26 @@ def normalize_entity_name(raw: str) -> str:
     if not words:
         return ""
     return "_".join(words).upper()
+
+
+# Identity fields that use name-style normalization (same as staged _NAME_IDENTITY_FIELDS).
+_NAME_DEDUP_FIELDS: frozenset[str] = frozenset({"name", "title", "nom"})
+
+
+def canonicalize_identity_for_dedup(field_name: str, value: Any) -> str:
+    """
+    Canonicalize an identity field value for dedup key computation only.
+    - For name/title/nom: use normalize_entity_name so "John Doe" and "john doe" match.
+    - For other id fields (run_id, batch_id, etc.): lowercase and keep only
+      alphanumeric characters so "Run-1", "run_1", "run1" all become "run1".
+    """
+    if value is None:
+        return ""
+    if field_name in _NAME_DEDUP_FIELDS and isinstance(value, str):
+        return normalize_entity_name(value)
+    text = str(value).strip()
+    if not text:
+        return ""
+    normalized = unicodedata.normalize("NFKD", text)
+    lower = normalized.casefold()
+    return re.sub(r"[^a-z0-9]", "", lower)

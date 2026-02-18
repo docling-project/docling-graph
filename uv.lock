@@ -1189,7 +1189,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "1.4.1"
+version = "1.4.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
