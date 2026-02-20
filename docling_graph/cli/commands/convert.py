@@ -56,6 +56,12 @@ def _resolve_cli_settings(
     delta_resolver_fuzzy_threshold: float | None,
     delta_resolver_semantic_threshold: float | None,
     delta_quality_min_instances: int | None,
+    dense_resolvers_enabled: bool | None,
+    dense_resolvers_mode: str | None,
+    dense_resolvers_fuzzy_threshold: float | None,
+    dense_resolvers_semantic_threshold: float | None,
+    dense_resolvers_allow_merge_different_ids: bool | None,
+    dense_prune_barren_branches: bool | None,
     staged_nodes_fill_cap: int | None,
     staged_id_shard_size: int | None,
     staged_id_max_tokens: int | None,
@@ -91,6 +97,14 @@ def _resolve_cli_settings(
     )
     if final_delta_resolvers_mode not in ("off", "fuzzy", "semantic", "chain"):
         final_delta_resolvers_mode = "off"
+
+    final_dense_resolvers_mode = (
+        dense_resolvers_mode
+        if dense_resolvers_mode is not None
+        else defaults.get("dense_resolvers_mode", "off")
+    )
+    if final_dense_resolvers_mode not in ("off", "fuzzy", "semantic", "chain"):
+        final_dense_resolvers_mode = "off"
 
     docling_export_settings = docling_cfg.get("export", {})
 
@@ -164,6 +178,37 @@ def _resolve_cli_settings(
             if delta_quality_min_instances is not None
             else int(defaults.get("delta_quality_min_instances", 20))
         ),
+        "dense_resolvers_enabled": (
+            dense_resolvers_enabled
+            if dense_resolvers_enabled is not None
+            else bool(defaults.get("dense_resolvers_enabled", False))
+        ),
+        "dense_resolvers_mode": final_dense_resolvers_mode,
+        "dense_resolvers_fuzzy_threshold": (
+            dense_resolvers_fuzzy_threshold
+            if dense_resolvers_fuzzy_threshold is not None
+            else float(defaults.get("dense_resolvers_fuzzy_threshold", 0.8))
+        ),
+        "dense_resolvers_semantic_threshold": (
+            dense_resolvers_semantic_threshold
+            if dense_resolvers_semantic_threshold is not None
+            else float(defaults.get("dense_resolvers_semantic_threshold", 0.8))
+        ),
+        "dense_resolvers_allow_merge_different_ids": (
+            dense_resolvers_allow_merge_different_ids
+            if dense_resolvers_allow_merge_different_ids is not None
+            else bool(defaults.get("dense_resolvers_allow_merge_different_ids", False))
+        ),
+        "dense_prune_barren_branches": (
+            dense_prune_barren_branches
+            if dense_prune_barren_branches is not None
+            else bool(defaults.get("dense_prune_barren_branches", False))
+        ),
+        "staged_nodes_fill_cap": (
+            delta_quality_min_instances
+            if delta_quality_min_instances is not None
+            else int(defaults.get("delta_quality_min_instances", 20))
+        ),
         "staged_nodes_fill_cap": (
             staged_nodes_fill_cap
             if staged_nodes_fill_cap is not None
@@ -230,7 +275,7 @@ def _validate_resolved_settings(settings: dict[str, Any]) -> dict[str, Any]:
     return settings
 
 
-def convert_command(
+def convert_command(  # noqa: C901
     source: Annotated[
         str,
         typer.Argument(
@@ -254,7 +299,8 @@ def convert_command(
     extraction_contract: Annotated[
         str | None,
         typer.Option(
-            "--extraction-contract", help="Extraction contract: 'direct', 'staged', or 'delta'."
+            "--extraction-contract",
+            help="Extraction contract: 'direct', 'staged', 'delta', or 'dense'.",
         ),
     ] = None,
     backend: Annotated[
@@ -368,6 +414,48 @@ def convert_command(
         float | None,
         typer.Option(
             "--delta-resolver-semantic-threshold", help="Semantic resolver similarity threshold."
+        ),
+    ] = None,
+    dense_resolvers_enabled: Annotated[
+        bool | None,
+        typer.Option(
+            "--dense-resolvers-enabled/--no-dense-resolvers-enabled",
+            help="Enable optional post-merge dense duplicate resolvers (fuzzy/semantic merge).",
+        ),
+    ] = None,
+    dense_resolvers_mode: Annotated[
+        str | None,
+        typer.Option(
+            "--dense-resolvers-mode",
+            help="Dense resolver mode: off | fuzzy | semantic | chain.",
+        ),
+    ] = None,
+    dense_resolvers_fuzzy_threshold: Annotated[
+        float | None,
+        typer.Option(
+            "--dense-resolvers-fuzzy-threshold",
+            help="Dense fuzzy resolver similarity threshold.",
+        ),
+    ] = None,
+    dense_resolvers_semantic_threshold: Annotated[
+        float | None,
+        typer.Option(
+            "--dense-resolvers-semantic-threshold",
+            help="Dense semantic resolver similarity threshold.",
+        ),
+    ] = None,
+    dense_resolvers_allow_merge_different_ids: Annotated[
+        bool | None,
+        typer.Option(
+            "--dense-resolvers-allow-merge-different-ids/--no-dense-resolvers-allow-merge-different-ids",
+            help="Allow dense resolver to merge nodes with different non-empty ids.",
+        ),
+    ] = None,
+    dense_prune_barren_branches: Annotated[
+        bool | None,
+        typer.Option(
+            "--dense-prune-barren-branches/--no-dense-prune-barren-branches",
+            help="Remove dense skeleton nodes that have no filled children and no scalar data (barren branches).",
         ),
     ] = None,
     staged_nodes_fill_cap: Annotated[
@@ -537,6 +625,12 @@ def convert_command(
             delta_resolver_fuzzy_threshold=delta_resolver_fuzzy_threshold,
             delta_resolver_semantic_threshold=delta_resolver_semantic_threshold,
             delta_quality_min_instances=delta_quality_min_instances,
+            dense_resolvers_enabled=dense_resolvers_enabled,
+            dense_resolvers_mode=dense_resolvers_mode,
+            dense_resolvers_fuzzy_threshold=dense_resolvers_fuzzy_threshold,
+            dense_resolvers_semantic_threshold=dense_resolvers_semantic_threshold,
+            dense_resolvers_allow_merge_different_ids=dense_resolvers_allow_merge_different_ids,
+            dense_prune_barren_branches=dense_prune_barren_branches,
             staged_nodes_fill_cap=staged_nodes_fill_cap,
             staged_id_shard_size=staged_id_shard_size,
             staged_id_max_tokens=staged_id_max_tokens,
@@ -578,6 +672,12 @@ def convert_command(
     final_quality_max_id_mismatch = settings["quality_max_id_mismatch"]
     final_quality_max_nested_property_drops = settings["quality_max_nested_property_drops"]
     final_delta_quality_min_instances = settings["delta_quality_min_instances"]
+    final_dense_resolvers_enabled = settings["dense_resolvers_enabled"]
+    final_dense_resolvers_mode = settings["dense_resolvers_mode"]
+    final_dense_resolvers_fuzzy_threshold = settings["dense_resolvers_fuzzy_threshold"]
+    final_dense_resolvers_semantic_threshold = settings["dense_resolvers_semantic_threshold"]
+    final_dense_resolvers_allow_merge_different_ids = settings["dense_resolvers_allow_merge_different_ids"]
+    final_dense_prune_barren_branches = settings["dense_prune_barren_branches"]
     final_staged_nodes_fill_cap = settings["staged_nodes_fill_cap"]
     final_staged_id_shard_size = settings["staged_id_shard_size"]
     final_staged_id_max_tokens = settings["staged_id_max_tokens"]
@@ -626,7 +726,7 @@ def convert_command(
     rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
-    if extraction_contract_val in ("direct", "delta"):
+    if extraction_contract_val in ("direct", "delta", "dense"):
         rich_print(
             f"  • Gleaning: [cyan]enabled={final_gleaning_enabled}, max_passes={final_gleaning_max_passes}[/cyan]"
         )
@@ -644,6 +744,15 @@ def convert_command(
             f"  • Resolvers: [cyan]enabled={final_delta_resolvers_enabled}, mode={final_delta_resolvers_mode}[/cyan]"
         )
         rich_print(f"  • LLM Batch Tokens: [yellow]{final_llm_batch_token_size}[/yellow]")
+    if extraction_contract_val == "dense":
+        rich_print("[yellow][DenseTuning][/yellow]")
+        rich_print(
+            f"  • Parallel Workers: [cyan]{final_parallel_workers if final_parallel_workers is not None else 1}[/cyan]"
+        )
+        rich_print("  • Skeleton batch tokens / fill nodes cap: from config or defaults")
+        rich_print(
+            f"  • Resolvers: [cyan]enabled={final_dense_resolvers_enabled}, mode={final_dense_resolvers_mode}[/cyan]"
+        )
     if extraction_contract_val == "staged":
         from docling_graph.config import get_effective_staged_tuning
 
@@ -722,6 +831,12 @@ def convert_command(
         staged_id_shard_size=final_staged_id_shard_size,
         staged_id_max_tokens=final_staged_id_max_tokens,
         staged_fill_max_tokens=final_staged_fill_max_tokens,
+        dense_resolvers_enabled=final_dense_resolvers_enabled,
+        dense_resolvers_mode=final_dense_resolvers_mode,
+        dense_resolvers_fuzzy_threshold=final_dense_resolvers_fuzzy_threshold,
+        dense_resolvers_semantic_threshold=final_dense_resolvers_semantic_threshold,
+        dense_resolvers_allow_merge_different_ids=final_dense_resolvers_allow_merge_different_ids,
+        dense_prune_barren_branches=final_dense_prune_barren_branches,
         export_format=export_format_val,
         export_docling=True,
         export_docling_json=final_export_docling_json,

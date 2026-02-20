@@ -9,7 +9,7 @@
 - LLM vs VLM comparison
 - Backend selection criteria
 - Configuration and usage
-- Extraction contracts (direct, staged, delta)
+- Extraction contracts (direct, staged, delta, dense)
 - Performance optimization
 - Error handling
 
@@ -65,6 +65,7 @@ For many-to-one extraction with the LLM backend you can choose:
 - **direct** (default): Single-pass extraction; chunks are extracted and merged programmatically.
 - **staged**: Multi-pass extraction (catalog → ID pass → fill pass → merge), better for complex nested templates and weaker models. See [Staged Extraction](staged-extraction.md).
 - **delta**: Chunk → token-bounded batches → flat graph IR (nodes/relationships) → normalize → merge → projection; for long documents and graph-first extraction. Requires chunking. See [Delta Extraction](delta-extraction.md).
+- **dense**: Two-phase skeleton-then-fill (Phase 1: identify all entities per path; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
 
 ---
 
@@ -722,6 +723,7 @@ Now that you understand extraction backends:
 
 1. **[Staged Extraction →](staged-extraction.md)** - Multi-pass extraction for complex templates
 2. **[Delta Extraction →](delta-extraction.md)** - Chunk-based graph extraction for long documents
+3. **[Dense Extraction →](dense-extraction.md)** - Skeleton-then-fill for granular structure and rich data
 3. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
 4. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
 5. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Advanced optimization
