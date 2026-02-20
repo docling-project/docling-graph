@@ -304,6 +304,10 @@ These flags apply when `--extraction-contract delta` is used in many-to-one mode
 - Delta normalizer flags control path validation, ID canonicalization, and nested property stripping.
 - Resolvers optionally merge near-duplicate entities after merge (`fuzzy`, `semantic`, or `chain`).
 
+### Dense extraction
+
+Use `--extraction-contract dense` for two-phase **skeleton-then-fill** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. Dense-specific options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`) can be set in a config file; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
+
 Quality gate options (e.g. `delta_quality_max_parent_lookup_miss`, `delta_quality_require_relationships`) are not CLI flags; set them in `config.yaml` under `defaults` or use the init wizard when selecting delta.
 
 See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for full options and quality gate settings.

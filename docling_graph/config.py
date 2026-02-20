@@ -27,7 +27,7 @@ class ExtractorConfig(BaseModel):
     """Configuration for the extraction strategy."""
 
     strategy: Literal["many-to-one", "one-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "staged", "delta"] = Field(default="direct")
+    extraction_contract: Literal["direct", "staged", "delta", "dense"] = Field(default="direct")
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
     use_chunking: bool = Field(default=True)
     chunker_config: Dict[str, Any] | None = Field(default=None)
@@ -118,7 +118,7 @@ class PipelineConfig(BaseModel):
     backend: Literal["llm", "vlm"] = Field(default="llm")
     inference: Literal["local", "remote"] = Field(default="local")
     processing_mode: Literal["one-to-one", "many-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "staged", "delta"] = Field(default="direct")
+    extraction_contract: Literal["direct", "staged", "delta", "dense"] = Field(default="direct")
 
     # Docling settings (with defaults)
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
@@ -330,6 +330,31 @@ class PipelineConfig(BaseModel):
     staged_fill_max_tokens: int | None = Field(
         default=None, description="Optional max_tokens override for staged fill calls."
     )
+    # Dense contract: optional post-merge fuzzy/semantic resolvers
+    dense_resolvers_enabled: bool = Field(
+        default=False,
+        description="Enable optional post-merge dense duplicate resolvers (fuzzy/semantic merge).",
+    )
+    dense_resolvers_mode: Literal["off", "fuzzy", "semantic", "chain"] = Field(
+        default="off",
+        description="Dense resolver mode: off | fuzzy | semantic | chain.",
+    )
+    dense_resolvers_fuzzy_threshold: float = Field(
+        default=0.8,
+        description="Similarity threshold for dense fuzzy post-merge dedup.",
+    )
+    dense_resolvers_semantic_threshold: float = Field(
+        default=0.8,
+        description="Similarity threshold for dense semantic post-merge dedup.",
+    )
+    dense_resolvers_allow_merge_different_ids: bool = Field(
+        default=False,
+        description="If True, allow dense resolver to merge nodes with different non-empty ids.",
+    )
+    dense_prune_barren_branches: bool = Field(
+        default=False,
+        description="If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches).",
+    )
     # Export settings (with defaults)
     export_format: Literal["csv", "cypher"] = Field(default="csv")
     export_docling: bool = Field(default=True)
@@ -477,6 +502,12 @@ class PipelineConfig(BaseModel):
             "staged_quality_max_parent_lookup_miss": self.staged_quality_max_parent_lookup_miss,
             "staged_id_max_tokens": self.staged_id_max_tokens,
             "staged_fill_max_tokens": self.staged_fill_max_tokens,
+            "dense_resolvers_enabled": self.dense_resolvers_enabled,
+            "dense_resolvers_mode": self.dense_resolvers_mode,
+            "dense_resolvers_fuzzy_threshold": self.dense_resolvers_fuzzy_threshold,
+            "dense_resolvers_semantic_threshold": self.dense_resolvers_semantic_threshold,
+            "dense_resolvers_allow_merge_different_ids": self.dense_resolvers_allow_merge_different_ids,
+            "dense_prune_barren_branches": self.dense_prune_barren_branches,
             "export_format": self.export_format,
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
@@ -555,6 +586,12 @@ class PipelineConfig(BaseModel):
                 "staged_quality_max_parent_lookup_miss": default_config.staged_quality_max_parent_lookup_miss,
                 "staged_id_max_tokens": default_config.staged_id_max_tokens,
                 "staged_fill_max_tokens": default_config.staged_fill_max_tokens,
+                "dense_resolvers_enabled": default_config.dense_resolvers_enabled,
+                "dense_resolvers_mode": default_config.dense_resolvers_mode,
+                "dense_resolvers_fuzzy_threshold": default_config.dense_resolvers_fuzzy_threshold,
+                "dense_resolvers_semantic_threshold": default_config.dense_resolvers_semantic_threshold,
+                "dense_resolvers_allow_merge_different_ids": default_config.dense_resolvers_allow_merge_different_ids,
+                "dense_prune_barren_branches": default_config.dense_prune_barren_branches,
             },
             "docling": {
                 "pipeline": default_config.docling_config,

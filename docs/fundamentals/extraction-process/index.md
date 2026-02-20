@@ -144,6 +144,7 @@ For LLM many-to-one extraction you can choose:
 - **direct** (default): Single-pass extraction then programmatic merge.
 - **staged**: Catalog → ID pass → fill pass → merge; better for complex nested templates. See [Staged Extraction](staged-extraction.md).
 - **delta**: Chunk → token-bounded batches → flat graph IR → normalize → merge → projection; for long documents and graph-first extraction. Supports optional resolvers and configurable quality gates. Use `docling-graph init` and select **delta** to configure resolvers and quality interactively. See [Delta Extraction](delta-extraction.md).
+- **dense**: Two-phase skeleton-then-fill (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
 
 ---
 
@@ -333,7 +334,7 @@ Deep dive into LLM and VLM extraction backends.
 - LLM backend (text-based)
 - VLM backend (vision-based)
 - Backend selection
-- Extraction contracts (direct, staged, delta)
+- Extraction contracts (direct, staged, delta, dense)
 
 ---
 
@@ -356,7 +357,16 @@ Chunk-based graph extraction: token-bounded batches → flat graph IR → normal
 
 ---
 
-### 6. [Model Merging](model-merging.md)
+### 6. [Dense Extraction](dense-extraction.md)
+Two-phase skeleton-then-fill: Phase 1 discovers all entity instances per path; Phase 2 fills each with full schema data from the document.
+
+**Topics:**
+- When to use dense (granular structure + rich data)
+- Configuration (dense_skeleton_batch_tokens, dense_fill_nodes_cap, quality gate)
+
+---
+
+### 7. [Model Merging](model-merging.md)
 Learn how multiple extractions are consolidated into single models.
 
 **Topics:**
@@ -367,7 +377,7 @@ Learn how multiple extractions are consolidated into single models.
 
 ---
 
-### 7. [Batch Processing](batch-processing.md)
+### 8. [Batch Processing](batch-processing.md)
 Optimize extraction with intelligent batching.
 
 **Topics:**
@@ -378,7 +388,7 @@ Optimize extraction with intelligent batching.
 
 ---
 
-### 8. Pipeline Orchestration
+### 9. Pipeline Orchestration
 Understand how pipeline stages are coordinated through the extraction process.
 
 **Topics:**
