@@ -82,6 +82,67 @@ def _normalize_enum(enum_cls: Type[Enum], v: Any) -> Any:
 # ============================================================================
 
 
+class SeriesDefinition(BaseModel):
+    """
+    Defines a variable parameter that changes across a series of samples/experiments.
+    Use when one logical node represents multiple values of a varying parameter
+    (e.g. solid loading φ = 0.10 … 0.29) so the fill phase can capture the full series.
+    """
+
+    model_config = ConfigDict(is_entity=False, extra="ignore")
+
+    variable_name: str = Field(
+        ...,
+        description=(
+            "The parameter being varied (e.g. 'Solid Loading', 'Temperature', 'φ'). "
+            "EXTRACT: Use the symbol or name from the document."
+        ),
+        examples=["φ", "Solid Loading", "Temperature"],
+    )
+    variable_values: List[Union[float, str]] = Field(
+        ...,
+        description=(
+            "The distinct values in the series, in order. "
+            "EXTRACT: List every value mentioned (e.g. 0.10, 0.15, 0.20, …, 0.29)."
+        ),
+    )
+    range_min: float | None = Field(
+        None,
+        description="Minimum value if document gives a range instead of a list.",
+    )
+    range_max: float | None = Field(
+        None,
+        description="Maximum value if document gives a range instead of a list.",
+    )
+
+
+class ConditionalValue(BaseModel):
+    """
+    A value that applies only under specific conditions.
+    Use when the document gives different values in different contexts
+    (e.g. pre-shear 10 s⁻¹ for low φ, 0.5 s⁻¹ for high φ).
+    """
+
+    model_config = ConfigDict(is_entity=False, extra="ignore")
+
+    value: Union[float, str] = Field(
+        ...,
+        description="The extracted value (number or string).",
+    )
+    unit: str | None = Field(
+        None,
+        description="Unit of measure when applicable (e.g. '1/s', 'Pa·s').",
+    )
+    condition: str | None = Field(
+        None,
+        description=(
+            "The condition requiring this value (e.g. 'High Concentration', "
+            "'phi >= 0.27', 'Default'). EXTRACT: Assign when the document gives "
+            "different values for different samples or conditions."
+        ),
+    )
+
+
 class QuantityWithUnit(BaseModel):
     """
     Flexible measurement supporting single values, ranges, or text.
@@ -385,8 +446,9 @@ class ScholarlyRheologyPaper(BaseModel):
         label="HAS_STUDY",
         default_factory=list,
         description=(
-            "List of experimental studies in the paper. "
-            "Each study represents a distinct experimental campaign or section."
+            "The specific, original research campaigns conducted and reported by the authors in this document. "
+            "Each study is a distinct experimental campaign or section. "
+            "Do not extract prior literature or cited papers here."
         ),
     )
 
@@ -810,6 +872,15 @@ class BatterySlurryBatch(BaseModel):
         description="Storage temperature during aging.",
     )
 
+    series_definition: SeriesDefinition | None = Field(
+        None,
+        description=(
+            "If this batch represents a series of samples with one varying parameter "
+            "(e.g. solid loading φ = 0.10 … 0.29), define it here. EXTRACT: variable name "
+            "and all distinct values from the document."
+        ),
+    )
+
 
 # ============================================================================
 # LAYER 5: RHEOMETRY SETUP
@@ -970,19 +1041,20 @@ class TestProtocol(BaseModel):
         ),
     )
 
-    pre_shear_rate: QuantityWithUnit | None = Field(
-        None,
+    pre_shear_rates: List[ConditionalValue] = Field(
+        default_factory=list,
         description=(
-            "Conditioning shear rate applied before test. "
-            "Look in Methods for 'pre-shear', 'shear rate'; extract values even if mid-paragraph."
+            "Pre-shear (conditioning) shear rates. If different rates are used for different "
+            "samples or conditions (e.g. 10 s⁻¹ for low φ, 0.5 s⁻¹ for high φ), extract all "
+            "with their conditions. Look in Methods for 'pre-shear', 'shear rate'."
         ),
     )
 
-    pre_shear_duration: QuantityWithUnit | None = Field(
-        None,
+    pre_shear_durations: List[ConditionalValue] = Field(
+        default_factory=list,
         description=(
-            "Duration of pre-shear. "
-            "Look in Methods for 'pre-sheared for', 'duration'; extract values even if mid-paragraph."
+            "Duration of pre-shear per condition. If different durations for different "
+            "samples/conditions, extract all with their conditions. Look for 'pre-sheared for', 'duration'."
         ),
     )
 

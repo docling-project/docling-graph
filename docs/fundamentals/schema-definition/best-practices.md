@@ -16,6 +16,12 @@
 - Avoid identity fields that require invention by the model.
 - Use lenient validators that normalize values instead of rejecting entire output.
 
+## Dense extraction: series and conditional values
+
+- When one node can represent a **series** of values (e.g. one batch with φ = 0.10 … 0.29), add a `SeriesDefinition | None` type (define it in your template; see the [rheology template](../../examples/templates/rheology_research.py) for the pattern) so the fill phase can capture the full variation in one node.
+- When a field has **different values under different conditions** (e.g. pre-shear rate for low vs high concentration), use `List[ConditionalValue]` (again, define in your template) instead of a scalar so the fill phase can extract all branches with their conditions.
+- See [Advanced patterns: Series and conditional values](advanced-patterns.md#series-and-conditional-values) for examples.
+
 ## Delta-specific quality guidance
 
 - Keep node properties flat (primitives or list of primitives).

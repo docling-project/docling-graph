@@ -6,11 +6,70 @@
 This guide covers advanced Pydantic patterns for complex document structures, reusable components, and sophisticated validation scenarios. These patterns are drawn from production templates across multiple domains.
 
 **In this guide:**
+- Series and conditional values (dense extraction)
 - Flexible measurement models
 - Nested list patterns with edges
 - Multiple address support
 - Optional edges and conditional fields
 - Reusable component library
+
+---
+
+## Series and conditional values
+
+For **dense extraction**, when one logical entity represents a **series** of values (e.g. a batch with solid loading φ = 0.10 … 0.29) or when a field has **different values under different conditions** (e.g. pre-shear 10 s⁻¹ for low φ, 0.5 s⁻¹ for high φ), define **SeriesDefinition** and **ConditionalValue** in your template so the fill phase can capture the full variation without forcing the skeleton to explode the graph. The [rheology template](../../examples/templates/rheology_research.py) implements both; you can copy or adapt them.
+
+### SeriesDefinition
+
+Use when a single node can represent multiple values of one varying parameter. Define the class in your template (see rheology_research.py for the full definition):
+
+```python
+from typing import List, Optional, Union
+from pydantic import BaseModel, ConfigDict, Field
+
+class SeriesDefinition(BaseModel):
+    model_config = ConfigDict(is_entity=False, extra="ignore")
+    variable_name: str = Field(..., description="The parameter being varied (e.g. 'φ', 'Temperature').")
+    variable_values: List[Union[float, str]] = Field(..., description="The distinct values in the series.")
+    range_min: Optional[float] = None
+    range_max: Optional[float] = None
+
+class BatterySlurryBatch(BaseModel):
+    batch_id: str = Field(...)
+    # ... other fields ...
+    series_definition: SeriesDefinition | None = Field(
+        None,
+        description="If this batch represents a series of samples with one varying parameter, define it here.",
+    )
+```
+
+`SeriesDefinition` has `variable_name`, `variable_values` (list of numbers or strings), and optional `range_min`/`range_max`. The fill phase will populate it from the document so one node holds e.g. φ = [0.10, 0.15, …, 0.29].
+
+### ConditionalValue
+
+Use when the document gives different values in different contexts; replace a scalar field with a list. Define the class in your template (see rheology_research.py):
+
+```python
+from typing import List, Optional, Union
+from pydantic import BaseModel, ConfigDict, Field
+
+class ConditionalValue(BaseModel):
+    model_config = ConfigDict(is_entity=False, extra="ignore")
+    value: Union[float, str] = Field(...)
+    unit: Optional[str] = None
+    condition: Optional[str] = Field(None, description="e.g. 'phi >= 0.27', 'High Concentration'")
+
+class TestProtocol(BaseModel):
+    protocol_id: str = Field(...)
+    pre_shear_rates: List[ConditionalValue] = Field(
+        default_factory=list,
+        description="If different rates for different samples/conditions, extract all with their conditions.",
+    )
+```
+
+Each `ConditionalValue` has `value`, optional `unit`, and optional `condition`. The fill phase can return multiple entries when the document specifies different values under different conditions.
+
+See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md#schema-tips-for-dense) for how these patterns fit into the skeleton-then-flesh flow.
 
 ---
 
