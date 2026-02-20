@@ -24,6 +24,7 @@ from ....protocols import (
 )
 from ...utils.dict_merger import merge_pydantic_models
 from ..contracts.delta.strategy_ops import extract_delta_from_document, extract_delta_from_text
+from ..contracts.dense.strategy_ops import extract_dense_from_document, extract_dense_from_text
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
 
@@ -64,9 +65,11 @@ class ManyToOneStrategy(BaseExtractor):
 
         if extraction_contract == "delta" and not use_chunking:
             raise ValueError("Delta extraction requires use_chunking=True.")
+        if extraction_contract == "dense" and not use_chunking:
+            raise ValueError("Dense extraction requires use_chunking=True.")
 
         chunker_config: dict[str, Any] | None = None
-        if use_chunking and extraction_contract == "delta":
+        if use_chunking and extraction_contract in ("delta", "dense"):
             chunker_config = {"chunk_max_tokens": int(chunk_max_tokens or 512)}
 
         self.doc_processor = DocumentProcessor(
@@ -228,6 +231,37 @@ class ManyToOneStrategy(BaseExtractor):
             ):
                 backend.trace_data = self.trace_data
 
+            if self._extraction_contract == "dense" and hasattr(
+                backend, "extract_from_chunk_batches"
+            ):
+                model, extraction_time = extract_dense_from_text(
+                    backend=backend,
+                    doc_processor=self.doc_processor,
+                    text=text,
+                    template=template,
+                )
+                if hasattr(self, "trace_data") and self.trace_data:
+                    extraction_metadata = {}
+                    backend_diag = getattr(backend, "last_call_diagnostics", None)
+                    if isinstance(backend_diag, dict) and backend_diag:
+                        extraction_metadata.update(backend_diag)
+                    self.trace_data.emit(
+                        "extraction_completed",
+                        "extraction",
+                        {
+                            "extraction_id": 0,
+                            "source_type": "chunk",
+                            "source_id": 0,
+                            "parsed_model": model,
+                            "extraction_time": extraction_time,
+                            "error": None,
+                            "metadata": extraction_metadata,
+                        },
+                    )
+                if model:
+                    logger.info("Dense text extraction successful")
+                    return [model], None
+                return [], None
             if self._extraction_contract == "delta" and hasattr(
                 backend, "extract_from_chunk_batches"
             ):
@@ -248,7 +282,7 @@ class ManyToOneStrategy(BaseExtractor):
                 extraction_time = time.time() - start_time
 
             if hasattr(self, "trace_data") and self.trace_data:
-                extraction_metadata: dict[str, Any] = {}
+                extraction_metadata = {}
                 backend_diag = getattr(backend, "last_call_diagnostics", None)
                 if isinstance(backend_diag, dict) and backend_diag:
                     extraction_metadata.update(backend_diag)
@@ -386,6 +420,48 @@ class ManyToOneStrategy(BaseExtractor):
                         "extraction",
                         {"reason": "direct_fallback_returned_no_model"},
                     )
+                return [], document
+
+            if self._extraction_contract == "dense" and hasattr(
+                backend, "extract_from_chunk_batches"
+            ):
+                model, extraction_time = extract_dense_from_document(
+                    backend=backend,
+                    doc_processor=self.doc_processor,
+                    document=document,
+                    template=template,
+                    trace_data=self.trace_data if hasattr(self, "trace_data") else None,
+                )
+                if hasattr(self, "trace_data") and self.trace_data:
+                    extraction_metadata = {}
+                    backend_diag = getattr(backend, "last_call_diagnostics", None)
+                    if isinstance(backend_diag, dict) and backend_diag:
+                        extraction_metadata.update(backend_diag)
+                    self.trace_data.emit(
+                        "extraction_completed",
+                        "extraction",
+                        {
+                            "extraction_id": 0,
+                            "source_type": "chunk_batch",
+                            "source_id": 0,
+                            "parsed_model": model,
+                            "extraction_time": extraction_time,
+                            "error": None,
+                            "metadata": extraction_metadata,
+                        },
+                    )
+                if model:
+                    logger.info("Dense extraction successful")
+                    return [model], document
+                logger.warning(
+                    "Dense extraction returned no model; falling back to direct extraction"
+                )
+                fallback_model = self._extract_direct_fallback_model(
+                    backend, full_markdown, template
+                )
+                if fallback_model:
+                    logger.info("Direct fallback after dense extraction succeeded")
+                    return [fallback_model], document
                 return [], document
 
             if hasattr(self, "trace_data") and self.trace_data:

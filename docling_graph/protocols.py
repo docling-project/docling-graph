@@ -50,7 +50,7 @@ class TextExtractionBackendProtocol(Protocol):
     """
 
     client: Any  # LLM client instance
-    extraction_contract: str  # "direct" | "staged" | "delta"; optional on some backends
+    extraction_contract: str  # "direct" | "staged" | "delta" | "dense"; optional on some backends
 
     def extract_from_markdown(
         self,

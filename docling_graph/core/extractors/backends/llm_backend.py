@@ -22,6 +22,7 @@ from ....exceptions import ClientError
 from ....protocols import LLMClientProtocol
 from ..contracts import direct
 from ..contracts.delta.backend_ops import run_delta_orchestrator
+from ..contracts.dense.backend_ops import run_dense_orchestrator
 from ..contracts.staged.backend_ops import run_staged_orchestrator
 from ..gleaning import merge_gleaned_direct, run_gleaning_pass_direct
 
@@ -38,7 +39,7 @@ class LlmBackend:
     def __init__(
         self,
         llm_client: LLMClientProtocol,
-        extraction_contract: Literal["direct", "staged", "delta"] = "direct",
+        extraction_contract: Literal["direct", "staged", "delta", "dense"] = "direct",
         staged_config: dict[str, Any] | None = None,
         structured_output: bool = True,
         structured_sparse_check: bool = True,
@@ -50,7 +51,9 @@ class LlmBackend:
             llm_client: LLM client instance implementing LLMClientProtocol
         """
         self.client = llm_client
-        self.extraction_contract: Literal["direct", "staged", "delta"] = extraction_contract
+        self.extraction_contract: Literal["direct", "staged", "delta", "dense"] = (
+            extraction_contract
+        )
         self._staged_config_raw = staged_config or {}
         self.structured_output = structured_output
         self.structured_sparse_check = structured_sparse_check
@@ -652,7 +655,7 @@ class LlmBackend:
         ratio = non_empty / max(schema_leafs, 1)
         return ratio < 0.40
 
-    def _call_llm_for_extraction(
+    def _call_llm_for_extraction(  # noqa: C901
         self,
         markdown: str,
         schema_json: str,
@@ -674,6 +677,19 @@ class LlmBackend:
             Parsed JSON (dict or list) or None if call failed
         """
         try:
+            if self.extraction_contract == "dense" and not is_partial:
+                dense_result = self._extract_with_dense_contract(
+                    markdown=markdown,
+                    context=context,
+                    template=template,
+                    trace_data=getattr(self, "trace_data", None),
+                )
+                if dense_result:
+                    return dense_result
+                self._log_warning(
+                    f"Dense extraction produced no JSON for {context}; falling back to direct."
+                )
+
             if self.extraction_contract == "delta" and not is_partial:
                 delta_result = self._extract_with_delta_contract(
                     markdown=markdown,
@@ -1174,25 +1190,40 @@ class LlmBackend:
         template: Type[BaseModel],
         context: str = "document",
     ) -> BaseModel | None:
-        """Run delta extraction from pre-chunked content and validate final model."""
-        self._log_extraction(
-            f"Running delta extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
-            "DeltaExtraction",
-        )
-        self._log_extraction("Calling LLM (batch mode)...", "DeltaExtraction")
-        schema_dict = self._get_schema_dict(template)
-        parsed_json = self._run_delta_orchestrator(
-            chunks=chunks,
-            chunk_metadata=chunk_metadata,
-            context=context,
-            template=template,
-            trace_data=getattr(self, "trace_data", None),
-        )
+        """Run delta or dense extraction from pre-chunked content and validate final model."""
+        if self.extraction_contract == "dense":
+            self._log_extraction(
+                f"Running dense extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
+                "DenseExtraction",
+            )
+            full_markdown = "\n\n".join(chunks) if chunks else ""
+            parsed_json = self._run_dense_orchestrator(
+                chunks=chunks,
+                chunk_metadata=chunk_metadata,
+                full_markdown=full_markdown,
+                context=context,
+                template=template,
+                trace_data=getattr(self, "trace_data", None),
+            )
+        else:
+            self._log_extraction(
+                f"Running delta extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
+                "DeltaExtraction",
+            )
+            self._log_extraction("Calling LLM (batch mode)...", "DeltaExtraction")
+            parsed_json = self._run_delta_orchestrator(
+                chunks=chunks,
+                chunk_metadata=chunk_metadata,
+                context=context,
+                template=template,
+                trace_data=getattr(self, "trace_data", None),
+            )
         if not parsed_json:
             return None
+        schema_dict = self._get_schema_dict(template)
         if (
             self.structured_sparse_check
-            and self.extraction_contract != "delta"
+            and self.extraction_contract not in ("delta", "dense")
             and self._is_sparse_structured_result(
                 parsed_json,
                 schema_dict,
@@ -1200,10 +1231,75 @@ class LlmBackend:
             )
         ):
             self._log_warning(
-                f"Delta extraction appears sparse for {context}; falling back to direct extraction."
+                f"Extraction appears sparse for {context}; falling back to direct extraction."
             )
             return None
         return self._validate_extraction(parsed_json, template, context)
+
+    def _extract_with_dense_contract(
+        self,
+        markdown: str,
+        context: str,
+        template: Type[BaseModel] | None = None,
+        trace_data: Any = None,
+    ) -> dict | list | None:
+        """Dense extraction (skeleton + fill) with single-chunk fallback."""
+        chunks = [markdown]
+        chunk_metadata = [
+            {"chunk_id": 0, "token_count": max(1, len(markdown.split())), "page_numbers": [0]}
+        ]
+        return self._run_dense_orchestrator(
+            chunks=chunks,
+            chunk_metadata=chunk_metadata,
+            full_markdown=markdown,
+            context=context,
+            template=template,
+            trace_data=trace_data,
+        )
+
+    def _run_dense_orchestrator(
+        self,
+        *,
+        chunks: list[str],
+        chunk_metadata: list[dict[str, Any]] | None,
+        full_markdown: str,
+        context: str,
+        template: Type[BaseModel] | None,
+        trace_data: Any,
+    ) -> dict | list | None:
+        """Run dense orchestrator (Phase 1 skeleton + Phase 2 fill)."""
+
+        # Dense uses legacy prompt-schema only (no API structured output), like staged,
+        # to avoid provider-specific failures and empty/null JSON on skeleton and fill.
+        def _dense_llm(
+            prompt: dict[str, str],
+            schema_json: str,
+            context: str,
+            *,
+            response_top_level: Literal["object", "array"] = "object",
+            response_schema_name: str = "staged_extraction",
+            **kwargs: Any,
+        ) -> dict | list | None:
+            return self._call_prompt(
+                prompt,
+                schema_json,
+                context,
+                response_top_level=response_top_level,
+                response_schema_name=response_schema_name,
+                structured_output_override=False,
+                **kwargs,
+            )
+
+        return run_dense_orchestrator(
+            llm_call_fn=_dense_llm,
+            staged_config_raw=self._staged_config_raw,
+            chunks=chunks,
+            chunk_metadata=chunk_metadata,
+            full_markdown=full_markdown,
+            context=context,
+            template=template,
+            trace_data=trace_data,
+        )
 
     def _extract_with_staged_contract(
         self,
@@ -1316,7 +1412,13 @@ class LlmBackend:
             "Delta"
             if (self.extraction_contract == "delta" and not is_partial)
             else (
-                "Staged" if (self.extraction_contract == "staged" and not is_partial) else "Direct"
+                "Dense"
+                if (self.extraction_contract == "dense" and not is_partial)
+                else (
+                    "Staged"
+                    if (self.extraction_contract == "staged" and not is_partial)
+                    else "Direct"
+                )
             )
         )
         prefix = f"{mode}Extraction"
