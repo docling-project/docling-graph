@@ -76,6 +76,7 @@ class CSVExporter:
             encoding=self.config.CSV_ENCODING,
             quoting=csv.QUOTE_NONNUMERIC,
             doublequote=True,
+            escapechar="\\",
         )
 
     def _export_edges(self, graph: nx.DiGraph, path: Path) -> None:
@@ -98,4 +99,5 @@ class CSVExporter:
             encoding=self.config.CSV_ENCODING,
             quoting=csv.QUOTE_NONNUMERIC,
             doublequote=True,
+            escapechar="\\",
         )
