@@ -27,7 +27,7 @@ config = PipelineConfig(
     backend: Literal["llm", "vlm"] = "llm",
     inference: Literal["local", "remote"] = "local",
     processing_mode: Literal["one-to-one", "many-to-one"] = "many-to-one",
-    extraction_contract: Literal["direct", "staged", "delta"] = "direct",
+    extraction_contract: Literal["direct", "staged", "delta", "dense"] = "direct",
     docling_config: Literal["ocr", "vision"] = "ocr",
     model_override: str | None = None,
     provider_override: str | None = None,
@@ -71,7 +71,7 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `"direct"`, `"staged"`, or `"delta"` | `"direct"` | LLM extraction contract (`staged` is optimized for weaker models in many-to-one mode) |
+| `extraction_contract` | `"direct"`, `"staged"`, `"delta"`, or `"dense"` | `"direct"` | LLM extraction contract (`staged` for ID→fill on full doc; `delta` for chunk-based graph IR; `dense` for skeleton-then-fill) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking) |
@@ -112,9 +112,23 @@ Delta extraction uses the same `parallel_workers` setting (see Staged Tuning abo
 | `delta_resolver_properties` | `list[str]` | `[]` | Preferred properties used for resolver matching |
 | `delta_resolver_paths` | `list[str]` | `[]` | Restrict resolver to selected catalog paths |
 
-#### Gleaning (direct and delta)
+#### Dense extraction (skeleton-then-fill)
 
-Optional second-pass extraction to improve recall. Applies to **direct** and **delta** contracts only (not staged).
+Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extraction_contract="dense"` and `use_chunking=True`.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
+| `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
+| `dense_quality_require_root` | `bool` | `True` | Require at least one root instance after Phase 1. |
+| `dense_quality_min_instances` | `int` | `1` | Minimum skeleton node count after Phase 1. |
+| `dense_prune_barren_branches` | `bool` | `False` | If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches). |
+
+`parallel_workers` and `max_pass_retries` (or `staged_pass_retries`) are also used by dense.
+
+#### Gleaning (direct, delta, and dense)
+
+Optional second-pass extraction to improve recall. Applies to **direct**, **delta**, and **dense** contracts (not staged).
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|

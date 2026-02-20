@@ -21,7 +21,7 @@ class ExtractorFactory:
     def create_extractor(
         processing_mode: Literal["one-to-one", "many-to-one"],
         backend_name: Literal["vlm", "llm"],
-        extraction_contract: Literal["direct", "staged", "delta"] = "direct",
+        extraction_contract: Literal["direct", "staged", "delta", "dense"] = "direct",
         structured_output: bool = True,
         structured_sparse_check: bool = True,
         staged_config: dict | None = None,
@@ -57,7 +57,11 @@ class ExtractorFactory:
             if not llm_client:
                 raise ValueError("LLM requires llm_client parameter")
             effective_contract = extraction_contract
-            if processing_mode != "many-to-one" and extraction_contract in {"staged", "delta"}:
+            if processing_mode != "many-to-one" and extraction_contract in {
+                "staged",
+                "delta",
+                "dense",
+            }:
                 rich_print(
                     "[yellow][ExtractorFactory][/yellow] "
                     "Staged/delta contracts currently apply only to many-to-one; using direct."
