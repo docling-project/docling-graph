@@ -22,7 +22,7 @@ jobs:
     concurrency: release
     steps:
       - name: Create GitHub App token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.CI_APP_ID }}
