@@ -31,7 +31,7 @@ authors = [
 ]
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "docling[vlm]>=2.70.0,<3.0.0",
+    "docling>=2.70.0,<3.0.0",
     "docling-core[chunking, chunking-openai]>=2.50.0,<3.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "networkx>=3.0.0,<4.0.0",
@@ -53,6 +53,9 @@ changelog = "https://github.com/docling-project/docling-graph/blob/main/CHANGELO
 docling-graph = "docling_graph.cli.main:main"
 
 [project.optional-dependencies]
+vlm = [
+    "docling[vlm]>=2.70.0,<3.0.0",
+]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
 delta-resolvers = [
     "spacy",
