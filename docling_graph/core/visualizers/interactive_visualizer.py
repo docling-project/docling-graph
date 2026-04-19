@@ -274,6 +274,42 @@ class InteractiveVisualizer:
         if template_path.exists():
             with open(template_path, encoding="utf-8") as f:
                 html_template = f.read()
+
+            # Embed the JavaScript libraries inline
+            try:
+                cytoscape_lib = self._get_cytoscape_library()
+                dagre_lib = self._get_dagre_library()
+                cytoscape_dagre_lib = self._get_cytoscape_dagre_library()
+
+                # Replace placeholders with inline scripts
+                html_template = html_template.replace(
+                    "<!-- Cytoscape core - EMBEDDED_CYTOSCAPE_PLACEHOLDER -->",
+                    f"<script>\n{cytoscape_lib}\n</script>",
+                )
+                html_template = html_template.replace(
+                    "<!-- Dagre layout extension - EMBEDDED_DAGRE_PLACEHOLDER -->",
+                    f"<script>\n{dagre_lib}\n</script>",
+                )
+                html_template = html_template.replace(
+                    "<!-- Cytoscape-Dagre extension - EMBEDDED_CYTOSCAPE_DAGRE_PLACEHOLDER -->",
+                    f"<script>\n{cytoscape_dagre_lib}\n</script>",
+                )
+            except FileNotFoundError as e:
+                rich_print(f"[yellow][InteractiveVisualizer][/yellow] Warning: {e}")
+                rich_print("[yellow]Falling back to CDN links for missing libraries[/yellow]")
+                # Replace placeholders with CDN links as fallback
+                html_template = html_template.replace(
+                    "<!-- Cytoscape core - EMBEDDED_CYTOSCAPE_PLACEHOLDER -->",
+                    '<script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>',
+                )
+                html_template = html_template.replace(
+                    "<!-- Dagre layout extension - EMBEDDED_DAGRE_PLACEHOLDER -->",
+                    '<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>',
+                )
+                html_template = html_template.replace(
+                    "<!-- Cytoscape-Dagre extension - EMBEDDED_CYTOSCAPE_DAGRE_PLACEHOLDER -->",
+                    '<script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>',
+                )
         else:
             # Fallback: use inline template (minimal version)
             rich_print(
@@ -293,32 +329,84 @@ class InteractiveVisualizer:
         with open(path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
+    def _get_library_content(self, filename: str) -> str:
+        """
+        Read and return the content of a JavaScript library file from assets.
+
+        Args:
+            filename: Name of the library file (e.g., 'cytoscape.min.js')
+
+        Returns:
+            Content of the library file as a string
+
+        Raises:
+            FileNotFoundError: If the library file is not found
+        """
+        library_path = Path(__file__).parent / "assets" / filename
+
+        if not library_path.exists():
+            raise FileNotFoundError(
+                f"Library file not found: {library_path}. "
+                f"Please ensure the file exists in the assets directory."
+            )
+
+        with open(library_path, encoding="utf-8") as f:
+            return f.read()
+
+    def _get_cytoscape_library(self) -> str:
+        """Get the Cytoscape.js library content."""
+        return self._get_library_content("cytoscape.min.js")
+
+    def _get_dagre_library(self) -> str:
+        """Get the Dagre library content."""
+        return self._get_library_content("dagre.min.js")
+
+    def _get_cytoscape_dagre_library(self) -> str:
+        """Get the Cytoscape-Dagre extension library content."""
+        return self._get_library_content("cytoscape-dagre.js")
+
     def _get_default_template(self) -> str:
         """Get the default HTML template if external file is not found."""
-        return """<!DOCTYPE html>
+        # Get library contents
+        try:
+            cytoscape_lib = self._get_cytoscape_library()
+        except FileNotFoundError as e:
+            rich_print(f"[yellow][InteractiveVisualizer][/yellow] Warning: {e}")
+            rich_print("[yellow]Falling back to CDN for Cytoscape.js[/yellow]")
+            cytoscape_lib = None
+
+        # Build the script tags
+        if cytoscape_lib:
+            cytoscape_script = f"<script>\n{cytoscape_lib}\n</script>"
+        else:
+            cytoscape_script = (
+                '<script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>'
+            )
+
+        return f"""<!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <title>Knowledge Graph - Cytoscape</title>
-                <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+                {cytoscape_script}
                 <style>
-                    body { margin: 0; padding: 0; }
-                    #cy { width: 100%; height: 100vh; background: #1a1a2e; }
+                    body {{ margin: 0; padding: 0; }}
+                    #cy {{ width: 100%; height: 100vh; background: #1a1a2e; }}
                 </style>
             </head>
             <body>
                 <div id="cy"></div>
                 <script>
                     /* ELEMENTS_DATA_PLACEHOLDER */
-                    cytoscape({
+                    cytoscape({{
                         container: document.getElementById('cy'),
                         elements: [...graphElements.nodes, ...graphElements.edges],
                         style: [
-                            { selector: 'node', style: { 'background-color': '#667eea', 'label': 'data(label)' }},
-                            { selector: 'edge', style: { 'width': 2, 'line-color': '#718096', 'target-arrow-shape': 'triangle' }}
+                            {{ selector: 'node', style: {{ 'background-color': '#667eea', 'label': 'data(label)' }}}},
+                            {{ selector: 'edge', style: {{ 'width': 2, 'line-color': '#718096', 'target-arrow-shape': 'triangle' }}}}
                         ],
-                        layout: { name: 'cose', animate: true }
-                    });
+                        layout: {{ name: 'cose', animate: true }}
+                    }});
                 </script>
             </body>
             </html>"""
