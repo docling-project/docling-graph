@@ -1,4 +1,4 @@
-__version__ = "1.4.4"
+__version__ = "1.5.0"
 
 from .config import LLMConfig, ModelConfig, ModelsConfig, PipelineConfig, VLMConfig
 from .pipeline import run_pipeline

@@ -2,6 +2,217 @@
 
 <!-- version list -->
 
+## v1.5.0 (2026-04-19)
+
+### Chores
+
+- **deps**: Bump aiohttp from 3.13.3 to 3.13.4
+  ([`216026a`](https://github.com/docling-project/docling-graph/commit/216026a4a4d7c3e155f92a457bab6263c7906380))
+
+--- updated-dependencies: - dependency-name: aiohttp dependency-version: 3.13.4
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump litellm from 1.81.3 to 1.83.0
+  ([`a78f9a1`](https://github.com/docling-project/docling-graph/commit/a78f9a140208e4655a4a8464f7be94c2c182113f))
+
+Bumps [litellm](https://github.com/BerriAI/litellm) from 1.81.3 to 1.83.0. - [Release
+  notes](https://github.com/BerriAI/litellm/releases) -
+  [Commits](https://github.com/BerriAI/litellm/commits)
+
+--- updated-dependencies: - dependency-name: litellm dependency-version: 1.83.0
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump pillow from 12.1.1 to 12.2.0
+  ([`f4dd5cb`](https://github.com/docling-project/docling-graph/commit/f4dd5cbcb7a4309d9970487faaf1e1c48cdda6de))
+
+Bumps [pillow](https://github.com/python-pillow/Pillow) from 12.1.1 to 12.2.0. - [Release
+  notes](https://github.com/python-pillow/Pillow/releases) -
+  [Changelog](https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst) -
+  [Commits](https://github.com/python-pillow/Pillow/compare/12.1.1...12.2.0)
+
+--- updated-dependencies: - dependency-name: pillow dependency-version: 12.2.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump pygments from 2.19.2 to 2.20.0
+  ([`3361b85`](https://github.com/docling-project/docling-graph/commit/3361b85c4a62904a0fa425e28d663b1dcf08e663))
+
+Bumps [pygments](https://github.com/pygments/pygments) from 2.19.2 to 2.20.0. - [Release
+  notes](https://github.com/pygments/pygments/releases) -
+  [Changelog](https://github.com/pygments/pygments/blob/master/CHANGES) -
+  [Commits](https://github.com/pygments/pygments/compare/2.19.2...2.20.0)
+
+--- updated-dependencies: - dependency-name: pygments dependency-version: 2.20.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump requests from 2.32.5 to 2.33.0
+  ([`bb35933`](https://github.com/docling-project/docling-graph/commit/bb35933a26182651a9c3fe38fb6b4d836e569a85))
+
+Bumps [requests](https://github.com/psf/requests) from 2.32.5 to 2.33.0. - [Release
+  notes](https://github.com/psf/requests/releases) -
+  [Changelog](https://github.com/psf/requests/blob/main/HISTORY.md) -
+  [Commits](https://github.com/psf/requests/compare/v2.32.5...v2.33.0)
+
+--- updated-dependencies: - dependency-name: requests dependency-version: 2.33.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump tornado from 6.5.4 to 6.5.5
+  ([`92e68cd`](https://github.com/docling-project/docling-graph/commit/92e68cd9d85795a54148abebbfa403958b2845e2))
+
+Bumps [tornado](https://github.com/tornadoweb/tornado) from 6.5.4 to 6.5.5. -
+  [Changelog](https://github.com/tornadoweb/tornado/blob/master/docs/releases.rst) -
+  [Commits](https://github.com/tornadoweb/tornado/compare/v6.5.4...v6.5.5)
+
+--- updated-dependencies: - dependency-name: tornado dependency-version: 6.5.5
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update rich requirement in the dev-dependencies group
+  ([`a8d0eeb`](https://github.com/docling-project/docling-graph/commit/a8d0eeb774b48bf393d8b15b55ee42d67ee60a69))
+
+Updates the requirements on [rich](https://github.com/Textualize/rich) to permit the latest version.
+
+Updates `rich` to 15.0.0 - [Release notes](https://github.com/Textualize/rich/releases) -
+  [Changelog](https://github.com/Textualize/rich/blob/master/CHANGELOG.md) -
+  [Commits](https://github.com/Textualize/rich/compare/v13.0.0...v15.0.0)
+
+--- updated-dependencies: - dependency-name: rich dependency-version: 15.0.0
+
+dependency-type: direct:production
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps)(deps**: Bump the all-actions group across 1 directory with 2 updates
+  ([`7b48a58`](https://github.com/docling-project/docling-graph/commit/7b48a58a7cb6f3b814f1ea72cc4964567f5f249d))
+
+Bumps the all-actions group with 2 updates in the / directory:
+  [codecov/codecov-action](https://github.com/codecov/codecov-action) and
+  [actions/create-github-app-token](https://github.com/actions/create-github-app-token).
+
+Updates `codecov/codecov-action` from 5 to 6 - [Release
+  notes](https://github.com/codecov/codecov-action/releases) -
+  [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/codecov/codecov-action/compare/v5...v6)
+
+Updates `actions/create-github-app-token` from 2 to 3 - [Release
+  notes](https://github.com/actions/create-github-app-token/releases) -
+  [Commits](https://github.com/actions/create-github-app-token/compare/v2...v3)
+
+--- updated-dependencies: - dependency-name: codecov/codecov-action dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions
+
+- dependency-name: actions/create-github-app-token dependency-version: '3'
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps)(deps**: Bump the all-actions group across 1 directory with 4 updates
+  ([`117fe7c`](https://github.com/docling-project/docling-graph/commit/117fe7c6505d5b205031195e300d02728985ec49))
+
+Bumps the all-actions group with 4 updates in the / directory:
+  [actions/checkout](https://github.com/actions/checkout),
+  [actions/upload-artifact](https://github.com/actions/upload-artifact),
+  [actions/download-artifact](https://github.com/actions/download-artifact) and
+  [actions/create-github-app-token](https://github.com/actions/create-github-app-token).
+
+Updates `actions/checkout` from 4 to 6 - [Release
+  notes](https://github.com/actions/checkout/releases) -
+  [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/checkout/compare/v4...v6)
+
+Updates `actions/upload-artifact` from 6 to 7 - [Release
+  notes](https://github.com/actions/upload-artifact/releases) -
+  [Commits](https://github.com/actions/upload-artifact/compare/v6...v7)
+
+Updates `actions/download-artifact` from 7 to 8 - [Release
+  notes](https://github.com/actions/download-artifact/releases) -
+  [Commits](https://github.com/actions/download-artifact/compare/v7...v8)
+
+Updates `actions/create-github-app-token` from 1 to 2 - [Release
+  notes](https://github.com/actions/create-github-app-token/releases) -
+  [Commits](https://github.com/actions/create-github-app-token/compare/v1...v2)
+
+--- updated-dependencies: - dependency-name: actions/checkout dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions
+
+- dependency-name: actions/upload-artifact dependency-version: '7'
+
+- dependency-name: actions/download-artifact dependency-version: '8'
+
+- dependency-name: actions/create-github-app-token dependency-version: '2'
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump pytest from 9.0.2 to 9.0.3
+  ([`94ff305`](https://github.com/docling-project/docling-graph/commit/94ff3054e51e7ee4a20e0ee2bdf8151ba8c2a6ef))
+
+Bumps [pytest](https://github.com/pytest-dev/pytest) from 9.0.2 to 9.0.3. - [Release
+  notes](https://github.com/pytest-dev/pytest/releases) -
+  [Changelog](https://github.com/pytest-dev/pytest/blob/main/CHANGELOG.rst) -
+  [Commits](https://github.com/pytest-dev/pytest/compare/9.0.2...9.0.3)
+
+--- updated-dependencies: - dependency-name: pytest dependency-version: 9.0.3
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+### Features
+
+- **deps**: Add optional vlm installation mode
+  ([`46f1ebb`](https://github.com/docling-project/docling-graph/commit/46f1ebbb1b0462eeb9051ff1f6a10f737fe07c36))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **llm-client**: Add streaming support for LiteLLM responses
+  ([`311c28e`](https://github.com/docling-project/docling-graph/commit/311c28e3c163d254bc14c855a70beec929d15a36))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **visualizer**: Embed Cytoscape library for offline HTML generation
+  ([`00c3f27`](https://github.com/docling-project/docling-graph/commit/00c3f27b82b081c7984fd2bdcc79fa1735f62a06))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Testing
+
+- **core**: Improve coverage for untested paths and edge cases
+  ([`39d9d5e`](https://github.com/docling-project/docling-graph/commit/39d9d5e734c47e3c76593c4ab6e3cb0d45ff377b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.4.4 (2026-02-18)
 
 ### Bug Fixes
