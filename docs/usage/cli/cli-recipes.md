@@ -18,6 +18,7 @@ This guide provides **ready-to-use CLI commands** for all example scripts. Run t
 | [08: Chunking](#chunking-consolidation) | `08_chunking_consolidation.py` | LLM (Remote) | Large documents |
 | [09: Batch Processing](#batch-processing) | `09_batch_processing.py` | VLM | Multiple documents |
 | [10: Multi-Provider](#multi-provider) | `10_provider_configs.py` | LLM (Remote) | Provider comparison |
+| [11: Streaming Responses](#streaming-responses) | `14_streaming_responses.py` | LLM (Remote) | Timeout avoidance |
 
 ---
 
@@ -69,6 +70,20 @@ docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --model "mistral-large-latest" \
     --processing-mode "many-to-one" \
     --use-chunking
+```
+
+**With Streaming (for timeout-constrained environments):**
+```bash
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+    --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
+    --output-dir "outputs/cli_02_streaming" \
+    --backend "llm" \
+    --inference "remote" \
+    --provider "mistral" \
+    --model "mistral-large-latest" \
+    --processing-mode "many-to-one" \
+    --use-chunking \
+    --llm-streaming
 ```
 
 **When to Use:**
@@ -383,6 +398,59 @@ docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --inference "remote" \
     --provider "watsonx" \
     --model "ibm/granite-4-h-small"
+```
+
+---
+
+## 📍 Streaming Responses
+
+**Python Script:** `14_streaming_responses.py`
+
+**Use Case:** Avoid timeout issues in constrained infrastructure environments
+
+**Prerequisites:**
+```bash
+pip install docling-graph
+export MISTRAL_API_KEY="your-api-key"
+```
+
+**CLI Command:**
+```bash
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+    --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
+    --output-dir "outputs/cli_streaming" \
+    --backend "llm" \
+    --inference "remote" \
+    --provider "mistral" \
+    --model "mistral-large-latest" \
+    --processing-mode "many-to-one" \
+    --use-chunking \
+    --llm-streaming
+```
+
+**When to Use:**
+
+- ✅ Infrastructure with strict connection timeouts
+- ✅ Long-running extractions (large documents)
+- ✅ Aggressive proxy/gateway timeout policies
+- ✅ Cloud environments with connection limits
+
+**Note:** Streaming maintains connection liveness but doesn't reduce latency. The response is still accumulated before parsing.
+
+**Comparison:**
+
+```bash
+# Without streaming (may timeout in constrained environments)
+docling-graph convert large_document.pdf \
+    --template "templates.ComplexSchema" \
+    --backend llm \
+    --no-llm-streaming
+
+# With streaming (keeps connection alive)
+docling-graph convert large_document.pdf \
+    --template "templates.ComplexSchema" \
+    --backend llm \
+    --llm-streaming
 ```
 
 ---

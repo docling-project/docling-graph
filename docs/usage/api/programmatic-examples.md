@@ -21,6 +21,7 @@ All examples use `uv run python` for execution.
 | [Error Handling](#example-6-robust-error-handling) | Production code | Any |
 | [Flask Integration](#example-7-flask-api-integration) | Web application | Any |
 | [Jupyter Notebook](#example-8-jupyter-notebook-analysis) | Interactive analysis | Any |
+| [Streaming Responses](#example-9-streaming-responses) | Real-time processing | LLM (Remote) |
 
 ---
 
@@ -576,6 +577,89 @@ plt.show()
 ```bash
 jupyter notebook examples/notebook_analysis.ipynb
 ```
+
+---
+
+## Example 9: Streaming Responses
+
+**Use Case:** Real-time processing with progress feedback for interactive applications.
+
+**File:** `examples/streaming_extraction.py`
+
+```python
+"""
+Streaming LLM responses for real-time processing.
+"""
+
+import os
+from docling_graph.llm_clients import get_client
+from docling_graph.llm_clients.config import resolve_effective_model_config
+
+# Set API key
+os.environ["MISTRAL_API_KEY"] = "your-api-key"
+
+# Configure client
+effective = resolve_effective_model_config(
+    "mistral",
+    "mistral-large-latest",
+    overrides={"generation": {"max_tokens": 2048}},
+)
+client_class = get_client("mistral")
+client = client_class(model_config=effective)
+
+# Prepare prompt and schema
+prompt = {
+    "system": "Extract structured billing information from the text.",
+    "user": "Invoice #12345, Date: 2024-01-15, Amount: $1,234.56, Customer: Acme Corp"
+}
+
+from examples.templates.billing_document import BillingDocument
+import json
+
+schema_json = json.dumps(BillingDocument.model_json_schema())
+
+# Stream responses with progress feedback
+print("Starting extraction...")
+for result in client.get_json_response_stream(
+    prompt=prompt,
+    schema_json=schema_json,
+):
+    print("✅ Result received!")
+    print(f"   Type: {type(result).__name__}")
+    print(f"   Fields: {list(result.keys()) if isinstance(result, dict) else len(result)}")
+    
+    # Process result in real-time
+    if isinstance(result, dict):
+        print(f"   Extracted data: {result}")
+
+print("\n✅ Streaming complete!")
+```
+
+**Run:**
+```bash
+uv run python examples/streaming_extraction.py
+```
+
+**Benefits:**
+- **Reduced Latency**: Get first results faster
+- **Progress Feedback**: Show real-time updates to users
+- **Better UX**: Display progress indicators during processing
+- **Memory Efficiency**: Handle large responses incrementally
+
+**When to Use Streaming:**
+- Interactive web applications with progress bars
+- Real-time data processing pipelines
+- Applications requiring immediate user feedback
+- Processing large documents where partial results are useful
+
+**When to Use Non-Streaming:**
+- Batch processing where latency doesn't matter
+- Simple scripts without UI feedback
+- Cases where complete response is needed before processing
+
+**See Also:**
+- [Example 14: Streaming Responses](../../examples/scripts/14_streaming_responses.py) - Complete streaming examples
+- [LLM Clients Reference](../../reference/llm-clients.md#streaming-responses) - Streaming API documentation
 
 ---
 

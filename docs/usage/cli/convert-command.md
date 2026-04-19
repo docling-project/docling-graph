@@ -390,6 +390,50 @@ uv run docling-graph convert document.pdf \
 
 ---
 
+### LLM Streaming
+
+```bash
+--llm-streaming / --no-llm-streaming
+```
+
+Enable or disable streaming responses from the LLM.
+
+**Default:** `--no-llm-streaming` (disabled)
+
+**Use case:** Streaming helps avoid timeout issues in infrastructure environments with strict connection timeout constraints. When enabled, the LLM response is received incrementally as chunks, keeping the connection alive even during long-running extractions.
+
+**When to use:**
+
+- ✅ Constrained infrastructure with strict timeouts
+- ✅ Long-running extractions that may exceed connection limits
+- ✅ Environments with aggressive proxy/gateway timeouts
+- ✅ Large documents with extended processing times
+
+**Note:** The current implementation accumulates all streaming chunks before parsing, so there is no latency benefit. The primary benefit is maintaining connection liveness in timeout-constrained environments.
+
+**Example:**
+
+```bash
+# Enable streaming to avoid timeouts
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --backend llm \
+    --llm-streaming
+
+# Explicitly disable streaming (default behavior)
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --backend llm \
+    --no-llm-streaming
+```
+
+**See Also:**
+- [Streaming Responses Recipe](cli-recipes.md#streaming-responses) - CLI examples
+- [Python API Streaming](../api/programmatic-examples.md#example-9-streaming-responses) - Programmatic usage
+- [LLM Clients Reference](../../reference/llm-clients.md#streaming-responses) - Streaming API details
+
+---
+
 ## Docling Configuration
 
 ### Pipeline Selection

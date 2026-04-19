@@ -4,7 +4,7 @@ Convert command - converts documents to knowledge graphs.
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 from rich import print as rich_print
@@ -32,6 +32,202 @@ from ..validators import (
 
 logger = logging.getLogger(__name__)
 DEFAULT_OUTPUT_DIR = Path("outputs")
+
+
+def _resolve_cli_settings(
+    defaults: dict[str, Any],
+    docling_cfg: dict[str, Any],
+    processing_mode: str | None,
+    extraction_contract: str | None,
+    backend: str | None,
+    inference: str | None,
+    export_format: str | None,
+    docling_pipeline: str | None,
+    chunk_max_tokens: int | None,
+    llm_batch_token_size: int | None,
+    staged_tuning_preset: str | None,
+    staged_pass_retries: int | None,
+    parallel_workers: int | None,
+    delta_normalizer_validate_paths: bool | None,
+    delta_normalizer_canonicalize_ids: bool | None,
+    delta_normalizer_strip_nested_properties: bool | None,
+    delta_resolvers_enabled: bool | None,
+    delta_resolvers_mode: str | None,
+    delta_resolver_fuzzy_threshold: float | None,
+    delta_resolver_semantic_threshold: float | None,
+    delta_quality_min_instances: int | None,
+    staged_nodes_fill_cap: int | None,
+    staged_id_shard_size: int | None,
+    staged_id_max_tokens: int | None,
+    staged_fill_max_tokens: int | None,
+    schema_enforced_llm: bool | None,
+    structured_sparse_check: bool | None,
+    gleaning_enabled: bool,
+    gleaning_max_passes: int | None,
+    export_docling_json: bool,
+    export_markdown: bool,
+    export_per_page: bool,
+) -> dict[str, Any]:
+    """Resolve CLI and config-file settings into effective values."""
+    processing_mode_val = processing_mode or defaults.get("processing_mode", "many-to-one")
+    extraction_contract_val = extraction_contract or defaults.get("extraction_contract", "direct")
+    backend_val = backend or defaults.get("backend", "llm")
+    inference_val = inference or defaults.get("inference", "local")
+    export_format_val = export_format or defaults.get("export_format", "csv")
+    docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
+
+    final_staged_tuning_preset = (
+        staged_tuning_preset
+        if staged_tuning_preset is not None
+        else defaults.get("staged_tuning_preset", "standard")
+    )
+    if final_staged_tuning_preset not in ("standard", "advanced"):
+        final_staged_tuning_preset = "standard"
+
+    final_delta_resolvers_mode = (
+        delta_resolvers_mode
+        if delta_resolvers_mode is not None
+        else defaults.get("delta_resolvers_mode", "semantic")
+    )
+    if final_delta_resolvers_mode not in ("off", "fuzzy", "semantic", "chain"):
+        final_delta_resolvers_mode = "off"
+
+    docling_export_settings = docling_cfg.get("export", {})
+
+    return {
+        "processing_mode": processing_mode_val,
+        "extraction_contract": extraction_contract_val,
+        "backend": backend_val,
+        "inference": inference_val,
+        "export_format": export_format_val,
+        "docling_pipeline": docling_pipeline_val,
+        "chunk_max_tokens": (
+            chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
+        ),
+        "llm_batch_token_size": (
+            llm_batch_token_size
+            if llm_batch_token_size is not None
+            else defaults.get("llm_batch_token_size", 1024)
+        ),
+        "staged_tuning_preset": final_staged_tuning_preset,
+        "staged_pass_retries": (
+            staged_pass_retries
+            if staged_pass_retries is not None
+            else defaults.get("staged_pass_retries")
+        ),
+        "parallel_workers": (
+            parallel_workers if parallel_workers is not None else defaults.get("parallel_workers")
+        ),
+        "delta_normalizer_validate_paths": (
+            delta_normalizer_validate_paths
+            if delta_normalizer_validate_paths is not None
+            else bool(defaults.get("delta_normalizer_validate_paths", True))
+        ),
+        "delta_normalizer_canonicalize_ids": (
+            delta_normalizer_canonicalize_ids
+            if delta_normalizer_canonicalize_ids is not None
+            else bool(defaults.get("delta_normalizer_canonicalize_ids", True))
+        ),
+        "delta_normalizer_strip_nested_properties": (
+            delta_normalizer_strip_nested_properties
+            if delta_normalizer_strip_nested_properties is not None
+            else bool(defaults.get("delta_normalizer_strip_nested_properties", True))
+        ),
+        "delta_normalizer_attach_provenance": bool(
+            defaults.get("delta_normalizer_attach_provenance", True)
+        ),
+        "delta_resolvers_enabled": (
+            delta_resolvers_enabled
+            if delta_resolvers_enabled is not None
+            else bool(defaults.get("delta_resolvers_enabled", True))
+        ),
+        "delta_resolvers_mode": final_delta_resolvers_mode,
+        "delta_resolver_fuzzy_threshold": (
+            delta_resolver_fuzzy_threshold
+            if delta_resolver_fuzzy_threshold is not None
+            else float(defaults.get("delta_resolver_fuzzy_threshold", 0.8))
+        ),
+        "delta_resolver_semantic_threshold": (
+            delta_resolver_semantic_threshold
+            if delta_resolver_semantic_threshold is not None
+            else float(defaults.get("delta_resolver_semantic_threshold", 0.8))
+        ),
+        "delta_resolver_properties": defaults.get("delta_resolver_properties"),
+        "delta_resolver_paths": defaults.get("delta_resolver_paths"),
+        "quality_max_unknown_path_drops": int(defaults.get("quality_max_unknown_path_drops", -1)),
+        "quality_max_id_mismatch": int(defaults.get("quality_max_id_mismatch", -1)),
+        "quality_max_nested_property_drops": int(
+            defaults.get("quality_max_nested_property_drops", -1)
+        ),
+        "delta_quality_min_instances": (
+            delta_quality_min_instances
+            if delta_quality_min_instances is not None
+            else int(defaults.get("delta_quality_min_instances", 20))
+        ),
+        "staged_nodes_fill_cap": (
+            staged_nodes_fill_cap
+            if staged_nodes_fill_cap is not None
+            else defaults.get("staged_nodes_fill_cap")
+        ),
+        "staged_id_shard_size": (
+            staged_id_shard_size
+            if staged_id_shard_size is not None
+            else defaults.get("staged_id_shard_size")
+        ),
+        "staged_id_max_tokens": (
+            staged_id_max_tokens
+            if staged_id_max_tokens is not None
+            else defaults.get("staged_id_max_tokens", 16384)
+        ),
+        "staged_fill_max_tokens": (
+            staged_fill_max_tokens
+            if staged_fill_max_tokens is not None
+            else defaults.get("staged_fill_max_tokens")
+        ),
+        "structured_output": (
+            schema_enforced_llm
+            if schema_enforced_llm is not None
+            else bool(defaults.get("structured_output", True))
+        ),
+        "structured_sparse_check": (
+            structured_sparse_check
+            if structured_sparse_check is not None
+            else bool(defaults.get("structured_sparse_check", True))
+        ),
+        "gleaning_enabled": gleaning_enabled or bool(defaults.get("gleaning_enabled", True)),
+        "gleaning_max_passes": (
+            gleaning_max_passes
+            if gleaning_max_passes is not None
+            else int(defaults.get("gleaning_max_passes", 1) or 1)
+        ),
+        "export_docling_json": (
+            export_docling_json
+            if export_docling_json is not None
+            else docling_export_settings.get("docling_json", True)
+        ),
+        "export_markdown": (
+            export_markdown
+            if export_markdown is not None
+            else docling_export_settings.get("markdown", True)
+        ),
+        "export_per_page": (
+            export_per_page
+            if export_per_page is not None
+            else docling_export_settings.get("per_page_markdown", False)
+        ),
+    }
+
+
+def _validate_resolved_settings(settings: dict[str, Any]) -> dict[str, Any]:
+    """Validate effective CLI settings."""
+    settings["processing_mode"] = validate_processing_mode(settings["processing_mode"])
+    settings["extraction_contract"] = validate_extraction_contract(settings["extraction_contract"])
+    settings["backend"] = validate_backend_type(settings["backend"])
+    settings["inference"] = validate_inference(settings["inference"])
+    settings["docling_pipeline"] = validate_docling_config(settings["docling_pipeline"])
+    settings["export_format"] = validate_export_format(settings["export_format"])
+    validate_vlm_constraints(settings["backend"], settings["inference"])
+    return settings
 
 
 def convert_command(
@@ -257,6 +453,13 @@ def convert_command(
             help="Override LLM max output tokens (maximum tokens the model can generate).",
         ),
     ] = None,
+    llm_streaming: Annotated[
+        bool | None,
+        typer.Option(
+            "--llm-streaming/--no-llm-streaming",
+            help="Enable streaming responses from LLM to avoid timeout issues in constrained infrastructures (default: disabled).",
+        ),
+    ] = None,
     show_llm_config: Annotated[
         bool,
         typer.Option(
@@ -311,156 +514,81 @@ def convert_command(
     models_from_yaml = config_data.get("models", {})
     llm_overrides = config_data.get("llm_overrides", {}) or {}
 
-    # Resolve configuration (CLI args override config file)
-    processing_mode_val = processing_mode or defaults.get("processing_mode", "many-to-one")
-    extraction_contract_val = extraction_contract or defaults.get("extraction_contract", "direct")
-    backend_val = backend or defaults.get("backend", "llm")
-    inference_val = inference or defaults.get("inference", "local")
-    export_format_val = export_format or defaults.get("export_format", "csv")
-
-    # Docling settings
-    docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
-
-    # Chunking: resolve from CLI or config defaults
-    final_chunk_max_tokens = (
-        chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
-    )
-    final_llm_batch_token_size = (
-        llm_batch_token_size
-        if llm_batch_token_size is not None
-        else defaults.get("llm_batch_token_size", 1024)
-    )
-    final_staged_tuning_preset = (
-        staged_tuning_preset
-        if staged_tuning_preset is not None
-        else defaults.get("staged_tuning_preset", "standard")
-    )
-    if final_staged_tuning_preset not in ("standard", "advanced"):
-        final_staged_tuning_preset = "standard"
-    final_staged_pass_retries = (
-        staged_pass_retries
-        if staged_pass_retries is not None
-        else defaults.get("staged_pass_retries")
-    )
-    final_parallel_workers = (
-        parallel_workers if parallel_workers is not None else defaults.get("parallel_workers")
-    )
-    final_delta_normalizer_validate_paths = (
-        delta_normalizer_validate_paths
-        if delta_normalizer_validate_paths is not None
-        else bool(defaults.get("delta_normalizer_validate_paths", True))
-    )
-    final_delta_normalizer_canonicalize_ids = (
-        delta_normalizer_canonicalize_ids
-        if delta_normalizer_canonicalize_ids is not None
-        else bool(defaults.get("delta_normalizer_canonicalize_ids", True))
-    )
-    final_delta_normalizer_strip_nested_properties = (
-        delta_normalizer_strip_nested_properties
-        if delta_normalizer_strip_nested_properties is not None
-        else bool(defaults.get("delta_normalizer_strip_nested_properties", True))
-    )
-    final_delta_normalizer_attach_provenance = bool(
-        defaults.get("delta_normalizer_attach_provenance", True)
-    )
-    final_delta_resolvers_enabled = (
-        delta_resolvers_enabled
-        if delta_resolvers_enabled is not None
-        else bool(defaults.get("delta_resolvers_enabled", True))
-    )
-    final_delta_resolvers_mode = (
-        delta_resolvers_mode
-        if delta_resolvers_mode is not None
-        else defaults.get("delta_resolvers_mode", "semantic")
-    )
-    if final_delta_resolvers_mode not in ("off", "fuzzy", "semantic", "chain"):
-        final_delta_resolvers_mode = "off"
-    final_delta_resolver_fuzzy_threshold = (
-        delta_resolver_fuzzy_threshold
-        if delta_resolver_fuzzy_threshold is not None
-        else float(defaults.get("delta_resolver_fuzzy_threshold", 0.8))
-    )
-    final_delta_resolver_semantic_threshold = (
-        delta_resolver_semantic_threshold
-        if delta_resolver_semantic_threshold is not None
-        else float(defaults.get("delta_resolver_semantic_threshold", 0.8))
-    )
-    final_delta_resolver_properties = defaults.get("delta_resolver_properties")
-    final_delta_resolver_paths = defaults.get("delta_resolver_paths")
-    final_quality_max_unknown_path_drops = int(defaults.get("quality_max_unknown_path_drops", -1))
-    final_quality_max_id_mismatch = int(defaults.get("quality_max_id_mismatch", -1))
-    final_quality_max_nested_property_drops = int(
-        defaults.get("quality_max_nested_property_drops", -1)
-    )
-    final_delta_quality_min_instances = (
-        delta_quality_min_instances
-        if delta_quality_min_instances is not None
-        else int(defaults.get("delta_quality_min_instances", 20))
-    )
-    final_staged_nodes_fill_cap = (
-        staged_nodes_fill_cap
-        if staged_nodes_fill_cap is not None
-        else defaults.get("staged_nodes_fill_cap")
-    )
-    final_staged_id_shard_size = (
-        staged_id_shard_size
-        if staged_id_shard_size is not None
-        else defaults.get("staged_id_shard_size")
-    )
-    # Apply default 16384 when unset so ID pass avoids truncation on large catalogs (CLI and config)
-    final_staged_id_max_tokens = (
-        staged_id_max_tokens
-        if staged_id_max_tokens is not None
-        else defaults.get("staged_id_max_tokens", 16384)
-    )
-    final_staged_fill_max_tokens = (
-        staged_fill_max_tokens
-        if staged_fill_max_tokens is not None
-        else defaults.get("staged_fill_max_tokens")
-    )
-    final_structured_output = (
-        schema_enforced_llm
-        if schema_enforced_llm is not None
-        else bool(defaults.get("structured_output", True))
-    )
-    final_structured_sparse_check = (
-        structured_sparse_check
-        if structured_sparse_check is not None
-        else bool(defaults.get("structured_sparse_check", True))
-    )
-    final_gleaning_enabled = gleaning_enabled or bool(defaults.get("gleaning_enabled", True))
-    final_gleaning_max_passes = (
-        gleaning_max_passes
-        if gleaning_max_passes is not None
-        else int(defaults.get("gleaning_max_passes", 1) or 1)
+    settings = _validate_resolved_settings(
+        _resolve_cli_settings(
+            defaults=defaults,
+            docling_cfg=docling_cfg,
+            processing_mode=processing_mode,
+            extraction_contract=extraction_contract,
+            backend=backend,
+            inference=inference,
+            export_format=export_format,
+            docling_pipeline=docling_pipeline,
+            chunk_max_tokens=chunk_max_tokens,
+            llm_batch_token_size=llm_batch_token_size,
+            staged_tuning_preset=staged_tuning_preset,
+            staged_pass_retries=staged_pass_retries,
+            parallel_workers=parallel_workers,
+            delta_normalizer_validate_paths=delta_normalizer_validate_paths,
+            delta_normalizer_canonicalize_ids=delta_normalizer_canonicalize_ids,
+            delta_normalizer_strip_nested_properties=delta_normalizer_strip_nested_properties,
+            delta_resolvers_enabled=delta_resolvers_enabled,
+            delta_resolvers_mode=delta_resolvers_mode,
+            delta_resolver_fuzzy_threshold=delta_resolver_fuzzy_threshold,
+            delta_resolver_semantic_threshold=delta_resolver_semantic_threshold,
+            delta_quality_min_instances=delta_quality_min_instances,
+            staged_nodes_fill_cap=staged_nodes_fill_cap,
+            staged_id_shard_size=staged_id_shard_size,
+            staged_id_max_tokens=staged_id_max_tokens,
+            staged_fill_max_tokens=staged_fill_max_tokens,
+            schema_enforced_llm=schema_enforced_llm,
+            structured_sparse_check=structured_sparse_check,
+            gleaning_enabled=gleaning_enabled,
+            gleaning_max_passes=gleaning_max_passes,
+            export_docling_json=export_docling_json,
+            export_markdown=export_markdown,
+            export_per_page=export_per_page,
+        )
     )
 
-    # Docling export settings - use config file as fallback
-    docling_export_settings = docling_cfg.get("export", {})
-    final_export_docling_json = (
-        export_docling_json
-        if export_docling_json is not None
-        else docling_export_settings.get("docling_json", True)
-    )
-    final_export_markdown = (
-        export_markdown
-        if export_markdown is not None
-        else docling_export_settings.get("markdown", True)
-    )
-    final_export_per_page = (
-        export_per_page
-        if export_per_page is not None
-        else docling_export_settings.get("per_page_markdown", False)
-    )
-
-    # Validate all inputs
-    processing_mode_val = validate_processing_mode(processing_mode_val)
-    extraction_contract_val = validate_extraction_contract(extraction_contract_val)
-    backend_val = validate_backend_type(backend_val)
-    inference_val = validate_inference(inference_val)
-    docling_pipeline_val = validate_docling_config(docling_pipeline_val)
-    export_format_val = validate_export_format(export_format_val)
-    validate_vlm_constraints(backend_val, inference_val)
+    processing_mode_val = settings["processing_mode"]
+    extraction_contract_val = settings["extraction_contract"]
+    backend_val = settings["backend"]
+    inference_val = settings["inference"]
+    export_format_val = settings["export_format"]
+    docling_pipeline_val = settings["docling_pipeline"]
+    final_chunk_max_tokens = settings["chunk_max_tokens"]
+    final_llm_batch_token_size = settings["llm_batch_token_size"]
+    final_staged_tuning_preset = settings["staged_tuning_preset"]
+    final_staged_pass_retries = settings["staged_pass_retries"]
+    final_parallel_workers = settings["parallel_workers"]
+    final_delta_normalizer_validate_paths = settings["delta_normalizer_validate_paths"]
+    final_delta_normalizer_canonicalize_ids = settings["delta_normalizer_canonicalize_ids"]
+    final_delta_normalizer_strip_nested_properties = settings[
+        "delta_normalizer_strip_nested_properties"
+    ]
+    final_delta_normalizer_attach_provenance = settings["delta_normalizer_attach_provenance"]
+    final_delta_resolvers_enabled = settings["delta_resolvers_enabled"]
+    final_delta_resolvers_mode = settings["delta_resolvers_mode"]
+    final_delta_resolver_fuzzy_threshold = settings["delta_resolver_fuzzy_threshold"]
+    final_delta_resolver_semantic_threshold = settings["delta_resolver_semantic_threshold"]
+    final_delta_resolver_properties = settings["delta_resolver_properties"]
+    final_delta_resolver_paths = settings["delta_resolver_paths"]
+    final_quality_max_unknown_path_drops = settings["quality_max_unknown_path_drops"]
+    final_quality_max_id_mismatch = settings["quality_max_id_mismatch"]
+    final_quality_max_nested_property_drops = settings["quality_max_nested_property_drops"]
+    final_delta_quality_min_instances = settings["delta_quality_min_instances"]
+    final_staged_nodes_fill_cap = settings["staged_nodes_fill_cap"]
+    final_staged_id_shard_size = settings["staged_id_shard_size"]
+    final_staged_id_max_tokens = settings["staged_id_max_tokens"]
+    final_staged_fill_max_tokens = settings["staged_fill_max_tokens"]
+    final_structured_output = settings["structured_output"]
+    final_structured_sparse_check = settings["structured_sparse_check"]
+    final_gleaning_enabled = settings["gleaning_enabled"]
+    final_gleaning_max_passes = settings["gleaning_max_passes"]
+    final_export_docling_json = settings["export_docling_json"]
+    final_export_markdown = settings["export_markdown"]
+    final_export_per_page = settings["export_per_page"]
 
     logger.debug(f"Validated configuration - Backend: {backend_val}, Inference: {inference_val}")
     logger.debug(f"Processing mode: {processing_mode_val}, Export format: {export_format_val}")
@@ -551,6 +679,8 @@ def convert_command(
         llm_overrides["context_limit"] = llm_context_limit
     if llm_max_output_tokens is not None:
         llm_overrides["max_output_tokens"] = llm_max_output_tokens
+    if llm_streaming is not None:
+        llm_overrides["streaming"] = llm_streaming
 
     cfg = PipelineConfig(
         source=str(source),

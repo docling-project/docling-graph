@@ -41,6 +41,86 @@ result = client.get_json_response(
 JSON/Structured Outputs are requested by default via `response_format`, with
 `ResponseHandler` providing a fallback if the model output is not strictly JSON.
 
+### Streaming Responses
+
+`LiteLLMClient` supports streaming responses via the `get_json_response_stream()` method, which returns an iterator that yields parsed JSON results. This enables real-time processing and progress feedback for interactive applications.
+
+**Method Signature:**
+
+```python
+def get_json_response_stream(
+    self,
+    prompt: str | Mapping[str, str],
+    schema_json: str,
+    structured_output: bool = True,
+    response_top_level: Literal["object", "array"] = "object",
+    response_schema_name: str = "extraction_result",
+) -> Iterator[Dict[str, Any] | list[Any]]:
+    """Stream JSON responses from LiteLLM."""
+```
+
+**Basic Usage:**
+
+```python
+from docling_graph.llm_clients import get_client
+from docling_graph.llm_clients.config import resolve_effective_model_config
+
+effective = resolve_effective_model_config(
+    "mistral",
+    "mistral-large-latest",
+    overrides={"generation": {"max_tokens": 4096}},
+)
+client_class = get_client("mistral")
+client = client_class(model_config=effective)
+
+# Stream responses
+for result in client.get_json_response_stream(
+    prompt={"system": "Extract data", "user": "Alice is a manager"},
+    schema_json="{}",
+):
+    print("Received result:", result)
+    # Process result in real-time
+```
+
+**Benefits of Streaming:**
+
+- **Reduced Latency**: Get first results faster without waiting for complete response
+- **Progress Feedback**: Provide real-time updates in interactive applications
+- **Memory Efficiency**: Handle large responses incrementally
+- **Better UX**: Show progress indicators and intermediate results to users
+
+**When to Use Streaming:**
+
+- Interactive applications requiring immediate feedback
+- Processing large documents where partial results are useful
+- Applications with progress indicators or real-time UI updates
+- Real-time data processing pipelines
+
+**When to Use Non-Streaming:**
+
+- Batch processing where latency doesn't matter
+- Simple scripts without UI feedback
+- Cases where complete response is needed before processing
+- Maximum compatibility (all models support non-streaming)
+
+**Implementation Notes:**
+
+The current implementation accumulates the full streaming response before yielding the final parsed result. This provides a foundation for future chunk-by-chunk streaming while maintaining compatibility with the existing JSON parsing and validation pipeline.
+
+**Error Handling:**
+
+Streaming may fail if the model/provider doesn't support streaming with structured output (`response_format: json_schema`). In such cases, disable structured output or use a compatible model:
+
+```python
+# Disable structured output for streaming if needed
+for result in client.get_json_response_stream(
+    prompt=prompt,
+    schema_json=schema_json,
+    structured_output=False,  # Use json_object mode instead
+):
+    process(result)
+```
+
 ---
 
 ## Custom LLM Clients

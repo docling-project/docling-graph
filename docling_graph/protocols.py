@@ -6,7 +6,18 @@ for backends, extractors, and clients. Using Protocols instead of abstract
 base classes provides better type checking and duck typing support.
 """
 
-from typing import Any, Dict, List, Literal, Mapping, Protocol, Type, TypeGuard, runtime_checkable
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Mapping,
+    Protocol,
+    Type,
+    TypeGuard,
+    runtime_checkable,
+)
 
 from pydantic import BaseModel
 
@@ -109,6 +120,32 @@ class LLMClientProtocol(Protocol):
 
         Returns:
             Parsed JSON dictionary from the LLM response.
+        """
+        ...
+
+    def get_json_response_stream(
+        self,
+        prompt: str | Mapping[str, str],
+        schema_json: str,
+        structured_output: bool = True,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "extraction_result",
+    ) -> Iterator[Dict[str, Any] | List[Any]]:
+        """Stream JSON responses as they arrive from the LLM.
+
+        This method enables streaming responses, yielding parsed JSON objects
+        as they become available. The implementation should accumulate chunks
+        and yield the complete parsed result.
+
+        Args:
+            prompt: The prompt text or message mapping
+            schema_json: JSON schema for structured output
+            structured_output: Whether to use structured output mode
+            response_top_level: Expected top-level type ("object" or "array")
+            response_schema_name: Name for the response schema
+
+        Yields:
+            Parsed JSON objects or arrays as they arrive
         """
         ...
 

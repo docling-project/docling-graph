@@ -13,7 +13,7 @@ import json
 import logging
 import re
 from functools import lru_cache
-from typing import Any, Literal, Type, cast
+from typing import Any, Literal, Mapping, Type, cast
 
 from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
@@ -73,6 +73,37 @@ class LlmBackend:
             f"  • Client: [cyan]{self.client.__class__.__name__}[/cyan]\n"
             f"  • Model: [cyan]{model_attr or 'unknown'}[/cyan]"
         )
+
+    def _get_json_response(
+        self,
+        prompt: str | Mapping[str, str],
+        schema_json: str,
+        structured_output: bool = True,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "extraction_result",
+    ) -> dict | list | None:
+        """Get JSON response, using streaming if enabled."""
+        streaming_attr = getattr(self.client, "streaming", False)
+        is_streaming = isinstance(streaming_attr, bool) and streaming_attr
+        if is_streaming:
+            result_iter = self.client.get_json_response_stream(
+                prompt=prompt,
+                schema_json=schema_json,
+                structured_output=structured_output,
+                response_top_level=response_top_level,
+                response_schema_name=response_schema_name,
+            )
+            return next(result_iter)
+        result: object = self.client.get_json_response(
+            prompt=prompt,
+            schema_json=schema_json,
+            structured_output=structured_output,
+            response_top_level=response_top_level,
+            response_schema_name=response_schema_name,
+        )
+        if isinstance(result, dict | list):
+            return result
+        return None
 
     @staticmethod
     @lru_cache(maxsize=32)
@@ -718,7 +749,7 @@ class LlmBackend:
             structured_primary_attempt_parsed_json: dict | list | None = None
             structured_primary_attempt_raw: str | None = None
             try:
-                parsed_json = self.client.get_json_response(
+                parsed_json = self._get_json_response(
                     prompt=prompt,
                     schema_json=schema_json,
                     structured_output=self.structured_output,
@@ -780,7 +811,7 @@ class LlmBackend:
                     schema_dict=schema_dict,
                     force_legacy_prompt_schema=True,
                 )
-                parsed_json = self.client.get_json_response(
+                parsed_json = self._get_json_response(
                     prompt=legacy_prompt,
                     schema_json=schema_json,
                     structured_output=False,
@@ -827,7 +858,7 @@ class LlmBackend:
                     schema_dict=schema_dict,
                     force_legacy_prompt_schema=True,
                 )
-                legacy_json = self.client.get_json_response(
+                legacy_json = self._get_json_response(
                     prompt=legacy_prompt,
                     schema_json=schema_json,
                     structured_output=False,
@@ -877,7 +908,7 @@ class LlmBackend:
             ):
 
                 def _gleaning_llm_call(prompt_dict: dict) -> dict | list | None:
-                    return self.client.get_json_response(
+                    return self._get_json_response(
                         prompt=prompt_dict,
                         schema_json=schema_json,
                         structured_output=self.structured_output,
