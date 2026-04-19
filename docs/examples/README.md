@@ -32,6 +32,7 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 11. **`11_staged_extraction.py`** — Staged extraction (ID pass → fill pass → merge) for complex templates
 12. **`12_custom_llm_client.py`** — Custom LLM client (bring your own URL) with full pipeline
 13. **`13_delta_extraction.py`** — Delta extraction (chunk → batch → graph IR → merge → projection) for long documents
+14. **`14_streaming_responses.py`** — Streaming LLM responses for real-time processing and progress feedback
 
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).
 

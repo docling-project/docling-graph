@@ -679,7 +679,8 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                 elif parent_path != expected_parent_path:
                     parent["path"] = expected_parent_path
                     stats["parent_ref_repaired"] += 1
-                parent_policy = dedup_policy.get(parent["path"])
+                parent_path = str(parent["path"])
+                parent_policy = dedup_policy.get(parent_path)
                 parent_path_for_inference = parent_path_raw
                 if not parent_path_for_inference and isinstance(parent_raw, dict):
                     parent_path_for_inference = str(parent_raw.get("path") or "")
@@ -687,14 +688,14 @@ def normalize_delta_ir_batch_results(  # noqa: C901
                     parent_path_for_inference = path_raw
                 parent_ids_raw, parent_id_inferred = _infer_ids_from_index(
                     path_raw=parent_path_for_inference,
-                    canonical_path=parent["path"],
+                    canonical_path=parent_path,
                     ids_raw=parent.get("ids"),
                     identity_fields=parent_policy.identity_fields if parent_policy else (),
                 )
                 if not parent_id_inferred and parent_path_for_inference != path_raw and path_raw:
                     parent_ids_raw, parent_id_inferred = _infer_ids_from_index(
                         path_raw=path_raw,
-                        canonical_path=parent["path"],
+                        canonical_path=parent_path,
                         ids_raw=parent.get("ids"),
                         identity_fields=parent_policy.identity_fields if parent_policy else (),
                     )

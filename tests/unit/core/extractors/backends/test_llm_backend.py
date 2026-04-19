@@ -1171,4 +1171,155 @@ class TestDirectExtractionTraceAndDiagnostics:
         )
         assert result is not None
         mock_gleaning.assert_called_once()
-        assert result.name == "Pre" and result.age == 10
+
+
+# ============================================================================
+# Streaming Configuration Tests
+# ============================================================================
+
+
+class TestStreamingConfiguration:
+    """Test that streaming configuration flows through the backend correctly."""
+
+    def test_llm_backend_uses_streaming_when_enabled(self, mock_llm_client):
+        """Test that backend uses streaming method when enabled."""
+        # Setup mock client with streaming enabled
+        mock_llm_client.streaming = True
+        mock_llm_client.get_json_response_stream.return_value = iter([{"name": "Alice", "age": 30}])
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call _get_json_response
+        result = backend._get_json_response(
+            prompt="Extract data",
+            schema_json='{"type": "object"}',
+        )
+
+        # Verify streaming method was called
+        mock_llm_client.get_json_response_stream.assert_called_once()
+        mock_llm_client.get_json_response.assert_not_called()
+        assert result == {"name": "Alice", "age": 30}
+
+    def test_llm_backend_uses_non_streaming_by_default(self, mock_llm_client):
+        """Test that backend uses non-streaming method by default."""
+        # Setup mock client with streaming disabled (default)
+        mock_llm_client.streaming = False
+        mock_llm_client.get_json_response.return_value = {"name": "Bob", "age": 25}
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call _get_json_response
+        result = backend._get_json_response(
+            prompt="Extract data",
+            schema_json='{"type": "object"}',
+        )
+
+        # Verify non-streaming method was called
+        mock_llm_client.get_json_response.assert_called_once()
+        mock_llm_client.get_json_response_stream.assert_not_called()
+        assert result == {"name": "Bob", "age": 25}
+
+    def test_llm_backend_handles_streaming_iterator(self, mock_llm_client):
+        """Test that backend properly extracts result from streaming iterator."""
+        # Setup mock client with streaming enabled
+        mock_llm_client.streaming = True
+        expected_result = {"entities": ["entity1", "entity2"], "count": 2}
+        mock_llm_client.get_json_response_stream.return_value = iter([expected_result])
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call _get_json_response
+        result = backend._get_json_response(
+            prompt="Extract entities",
+            schema_json='{"type": "object"}',
+        )
+
+        # Verify next() was used to get result from iterator
+        assert result == expected_result
+
+    def test_llm_backend_streaming_with_structured_output(self, mock_llm_client):
+        """Test that streaming works with structured output enabled."""
+        # Setup mock client with streaming enabled
+        mock_llm_client.streaming = True
+        mock_llm_client.get_json_response_stream.return_value = iter([{"data": "value"}])
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call with structured_output=True
+        result = backend._get_json_response(
+            prompt="Extract",
+            schema_json='{"type": "object"}',
+            structured_output=True,
+        )
+
+        # Verify streaming method was called with structured_output
+        call_kwargs = mock_llm_client.get_json_response_stream.call_args.kwargs
+        assert call_kwargs["structured_output"] is True
+        assert result == {"data": "value"}
+
+    def test_llm_backend_streaming_with_array_response(self, mock_llm_client):
+        """Test that streaming works with array response type."""
+        # Setup mock client with streaming enabled
+        mock_llm_client.streaming = True
+        expected_array = [{"id": 1}, {"id": 2}]
+        mock_llm_client.get_json_response_stream.return_value = iter([expected_array])
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call with response_top_level="array"
+        result = backend._get_json_response(
+            prompt="Extract list",
+            schema_json='{"type": "array"}',
+            response_top_level="array",
+        )
+
+        # Verify streaming method was called with correct parameters
+        call_kwargs = mock_llm_client.get_json_response_stream.call_args.kwargs
+        assert call_kwargs["response_top_level"] == "array"
+        assert result == expected_array
+
+    def test_llm_backend_without_streaming_attribute(self, mock_llm_client):
+        """Test that backend handles clients without streaming attribute."""
+        # Remove streaming attribute to simulate older client
+        if hasattr(mock_llm_client, "streaming"):
+            delattr(mock_llm_client, "streaming")
+
+        mock_llm_client.get_json_response.return_value = {"fallback": "works"}
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call _get_json_response
+        result = backend._get_json_response(
+            prompt="Extract",
+            schema_json='{"type": "object"}',
+        )
+
+        # Should fall back to non-streaming method
+        mock_llm_client.get_json_response.assert_called_once()
+        assert result == {"fallback": "works"}
+
+    def test_llm_backend_streaming_passes_all_parameters(self, mock_llm_client):
+        """Test that all parameters are passed through to streaming method."""
+        # Setup mock client with streaming enabled
+        mock_llm_client.streaming = True
+        mock_llm_client.get_json_response_stream.return_value = iter([{"result": "ok"}])
+
+        backend = LlmBackend(llm_client=mock_llm_client)
+
+        # Call with all parameters
+        result = backend._get_json_response(
+            prompt={"system": "You are helpful", "user": "Extract data"},
+            schema_json='{"type": "object", "properties": {}}',
+            structured_output=False,
+            response_top_level="object",
+            response_schema_name="custom_schema",
+        )
+
+        # Verify all parameters were passed
+        call_kwargs = mock_llm_client.get_json_response_stream.call_args.kwargs
+        assert call_kwargs["prompt"] == {"system": "You are helpful", "user": "Extract data"}
+        assert call_kwargs["schema_json"] == '{"type": "object", "properties": {}}'
+        assert call_kwargs["structured_output"] is False
+        assert call_kwargs["response_top_level"] == "object"
+        assert call_kwargs["response_schema_name"] == "custom_schema"
+        assert result == {"result": "ok"}

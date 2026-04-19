@@ -174,3 +174,64 @@ def test_resolve_effective_model_config_lmstudio_produces_litellm_model(_info, _
     effective = resolve_effective_model_config("lmstudio", "my-local-model")
     assert effective.litellm_model == "lm_studio/my-local-model"
     assert effective.provider_id == "lmstudio"
+
+
+# ============================================================================
+# Streaming Configuration Tests
+# ============================================================================
+
+
+@patch("docling_graph.llm_clients.config._get_litellm_max_tokens", return_value=8192)
+@patch("docling_graph.llm_clients.config._get_litellm_model_info", return_value=None)
+def test_streaming_config_default(_info, _max_tokens):
+    """Test that streaming defaults to False."""
+    effective = resolve_effective_model_config("openai", "gpt-4o")
+    assert effective.streaming is False
+
+
+@patch("docling_graph.llm_clients.config._get_litellm_max_tokens", return_value=8192)
+@patch("docling_graph.llm_clients.config._get_litellm_model_info", return_value=None)
+def test_streaming_config_override(_info, _max_tokens):
+    """Test that streaming can be overridden."""
+    overrides = LlmRuntimeOverrides(streaming=True)
+    effective = resolve_effective_model_config("openai", "gpt-4o", overrides=overrides)
+    assert effective.streaming is True
+
+
+@patch("docling_graph.llm_clients.config._get_litellm_max_tokens", return_value=8192)
+@patch("docling_graph.llm_clients.config._get_litellm_model_info", return_value=None)
+def test_streaming_config_in_effective_config(_info, _max_tokens):
+    """Test that streaming appears in EffectiveModelConfig."""
+    # Test with streaming=False (default)
+    effective_default = resolve_effective_model_config("openai", "gpt-4o")
+    assert hasattr(effective_default, "streaming")
+    assert effective_default.streaming is False
+
+    # Test with streaming=True
+    overrides = LlmRuntimeOverrides(streaming=True)
+    effective_enabled = resolve_effective_model_config("openai", "gpt-4o", overrides=overrides)
+    assert effective_enabled.streaming is True
+
+
+@patch("docling_graph.llm_clients.config._get_litellm_max_tokens", return_value=8192)
+@patch("docling_graph.llm_clients.config._get_litellm_model_info", return_value=None)
+def test_streaming_config_via_dict_override(_info, _max_tokens):
+    """Test that streaming can be overridden via dict."""
+    overrides = {"streaming": True}
+    effective = resolve_effective_model_config("openai", "gpt-4o", overrides=overrides)
+    assert effective.streaming is True
+
+
+@patch("docling_graph.llm_clients.config._get_litellm_max_tokens", return_value=8192)
+@patch("docling_graph.llm_clients.config._get_litellm_model_info", return_value=None)
+def test_streaming_config_with_other_overrides(_info, _max_tokens):
+    """Test that streaming works alongside other overrides."""
+    overrides = LlmRuntimeOverrides(
+        streaming=True,
+        generation={"temperature": 0.5},
+        reliability={"timeout_s": 60},
+    )
+    effective = resolve_effective_model_config("openai", "gpt-4o", overrides=overrides)
+    assert effective.streaming is True
+    assert effective.generation.temperature == 0.5
+    assert effective.reliability.timeout_s == 60

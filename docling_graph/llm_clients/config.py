@@ -211,6 +211,7 @@ class EffectiveModelConfig(BaseModel):
     tokenizer: str
     merge_threshold: float
     token_density: float | None = None
+    streaming: bool = False
 
 
 class LlmRuntimeOverrides(BaseModel):
@@ -224,6 +225,7 @@ class LlmRuntimeOverrides(BaseModel):
     context_limit: int | None = None
     max_output_tokens: int | None = None
     token_density: float | None = None
+    streaming: bool | None = None
 
 
 _DEFAULT_CONTEXT_LIMIT = 32000
@@ -584,6 +586,9 @@ def resolve_effective_model_config(
             },
         )
 
+    # Merge streaming
+    streaming = overrides.streaming if overrides.streaming is not None else False
+
     effective = EffectiveModelConfig(
         model_id=model_id,
         provider_id=provider_id.lower(),
@@ -596,6 +601,7 @@ def resolve_effective_model_config(
         tokenizer=provider.tokenizer,
         merge_threshold=provider.merge_threshold,
         token_density=overrides.token_density,  # Use override directly, no registry
+        streaming=streaming,
     )
 
     return effective

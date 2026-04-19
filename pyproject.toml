@@ -205,16 +205,13 @@ module = [
     "rich.*",
     "typer.*",
     "yaml.*",
-    "mypy.*",
     "pandas.*",
     "networkx.*",
     "litellm.*",
     "tiktoken.*",
     "google.*",
     "rapidfuzz",
-    "rapidfuzz.*",
     "spacy",
-    "spacy.*",
 ]
 ignore_missing_imports = true
 

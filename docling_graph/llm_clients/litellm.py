@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import Any, Dict, Literal, Mapping
+from typing import Any, Dict, Iterator, Literal, Mapping
 
 from ..exceptions import ClientError, ConfigurationError
 from .config import EffectiveModelConfig
@@ -42,6 +42,7 @@ class LiteLLMClient:
         self._generation = model_config.generation
         self._reliability = model_config.reliability
         self._connection = model_config.connection
+        self.streaming = model_config.streaming
         self.last_call_diagnostics: dict[str, Any] = {}
 
         self._setup_client(**kwargs)
@@ -90,6 +91,98 @@ class LiteLLMClient:
         )
         self.last_call_diagnostics["parsed_json"] = parsed
         return parsed
+
+    def get_json_response_stream(
+        self,
+        prompt: str | Mapping[str, str],
+        schema_json: str,
+        structured_output: bool = True,
+        response_top_level: Literal["object", "array"] = "object",
+        response_schema_name: str = "extraction_result",
+    ) -> Iterator[Dict[str, Any] | list[Any]]:
+        """Stream JSON responses from LiteLLM.
+
+        This method accumulates streaming chunks and yields the final parsed result.
+        """
+        messages = self._prepare_messages(prompt)
+
+        request = self._build_request(
+            messages,
+            schema_json=schema_json,
+            structured_output=structured_output,
+            response_top_level=response_top_level,
+            response_schema_name=response_schema_name,
+        )
+        request["stream"] = True
+
+        accumulated_content = ""
+        finish_reason = None
+        model_used = None
+
+        try:
+            for chunk in litellm.completion(**request):
+                # Extract delta content
+                if hasattr(chunk, "choices") and chunk.choices:
+                    choice = chunk.choices[0]
+                    if hasattr(choice, "delta"):
+                        delta = choice.delta
+                        if hasattr(delta, "content") and delta.content:
+                            accumulated_content += delta.content
+
+                    # Capture finish reason
+                    if hasattr(choice, "finish_reason") and choice.finish_reason:
+                        finish_reason = choice.finish_reason
+
+                # Capture model information
+                if hasattr(chunk, "model") and chunk.model:
+                    model_used = chunk.model
+
+            # Parse accumulated content
+            if accumulated_content:
+                truncated = finish_reason == "length" if finish_reason else False
+                parsed = ResponseHandler.parse_json_response(
+                    accumulated_content,
+                    self.__class__.__name__,
+                    aggressive_clean=self._needs_aggressive_cleaning(),
+                    truncated=truncated,
+                    max_tokens=self.max_tokens,
+                )
+
+                # Update diagnostics
+                self.last_call_diagnostics = {
+                    "finish_reason": finish_reason,
+                    "model": model_used or self.model,
+                    "streaming": True,
+                    "raw_response": accumulated_content,
+                    "parsed_json": parsed,
+                    "provider": self._config.provider_id,
+                }
+
+                yield parsed
+            else:
+                raise ClientError(
+                    "No content received from streaming response", details={"model": self.model}
+                )
+
+        except Exception as e:
+            if isinstance(e, ClientError):
+                raise
+            if structured_output:
+                raise ClientError(
+                    "Streaming structured output request failed. Disable structured output for this model "
+                    "or use a model/provider that supports streaming with response_format json_schema.",
+                    details={
+                        "model": self.model,
+                        "provider": self._config.provider_id,
+                        "error": str(e),
+                    },
+                    cause=e,
+                ) from e
+            raise ClientError(
+                f"Streaming API call failed: {type(e).__name__}",
+                details={"model": self.model, "error": str(e)},
+                cause=e,
+            ) from e
 
     def _prepare_messages(self, prompt: str | Mapping[str, str]) -> list[Dict[str, str]]:
         if isinstance(prompt, Mapping):
