@@ -112,7 +112,9 @@ def example_1_basic_streaming() -> None:
             console.print(f"  Keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}")
 
     console.print(f"\n[bold]Total time:[/bold] {elapsed:.2f}s")
-    console.print("\n[dim]Note: Streaming currently accumulates the full response before yielding.[/dim]")
+    console.print(
+        "\n[dim]Note: Streaming currently accumulates the full response before yielding.[/dim]"
+    )
     console.print("[dim]This provides a foundation for future chunk-by-chunk streaming.[/dim]")
 
 
@@ -331,7 +333,9 @@ def main() -> None:
     except ImportError as e:
         console.print(f"\n[red]Import Error:[/red] {e}")
         console.print("\n[yellow]Troubleshooting:[/yellow]")
-        console.print("  • Run from project root: [cyan]uv run python docs/examples/scripts/14_streaming_responses.py[/cyan]")
+        console.print(
+            "  • Run from project root: [cyan]uv run python docs/examples/scripts/14_streaming_responses.py[/cyan]"
+        )
         console.print("  • Ensure dependencies installed: [cyan]uv sync[/cyan]")
         sys.exit(1)
 
@@ -341,7 +345,9 @@ def main() -> None:
         console.print("\n[yellow]Troubleshooting:[/yellow]")
 
         if "api" in error_msg or "key" in error_msg or "auth" in error_msg:
-            console.print("  • Set your Mistral API key: [cyan]export MISTRAL_API_KEY='your-key'[/cyan]")
+            console.print(
+                "  • Set your Mistral API key: [cyan]export MISTRAL_API_KEY='your-key'[/cyan]"
+            )
             console.print("  • Get a key at: https://console.mistral.ai/")
         else:
             console.print("  • Check your internet connection")
