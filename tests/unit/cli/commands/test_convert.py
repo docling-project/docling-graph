@@ -309,6 +309,51 @@ def test_input_type_detector_exception_shows_unknown(mock_load_config, mock_run_
     mock_run_pipeline.assert_called_once()
 
 
+@patch("docling_graph.cli.commands.convert.rich_print")
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_input_type_detector_exception_continues_execution(
+    mock_load_config, mock_run_pipeline, mock_rich_print
+):
+    """Verify exception in InputTypeDetector doesn't break pipeline execution.
+
+    When InputTypeDetector.detect() raises an exception, the code should:
+    1. Catch the exception
+    2. Set input_type_display to "Unknown"
+    3. Continue execution without raising the exception
+    4. Successfully complete pipeline execution
+    """
+    mock_load_config.return_value = _base_config()
+
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        # Make InputTypeDetector.detect() raise an exception
+        mock_detector.detect.side_effect = RuntimeError("Detection failed")
+
+        # Call convert_command - should NOT raise an exception
+        try:
+            convert_command(
+                source="doc.pdf",
+                template="templates.Foo",
+                output_dir=Path("out"),
+            )
+        except typer.Exit:
+            # Expected exit after successful pipeline execution
+            pass
+
+    # Verify run_pipeline was called (execution continued)
+    mock_run_pipeline.assert_called_once()
+
+    # Verify "Unknown" was displayed in the configuration output
+    # Find the call that displays "Input Type: Unknown"
+    input_type_calls = [
+        call for call in mock_rich_print.call_args_list if "Input Type:" in str(call)
+    ]
+    assert len(input_type_calls) > 0, "Input Type should be displayed"
+    assert "Unknown" in str(input_type_calls[0]), (
+        "Input Type should be 'Unknown' when detection fails"
+    )
+
+
 @patch("docling_graph.cli.commands.convert.run_pipeline")
 @patch("docling_graph.cli.commands.convert.load_config")
 @patch("docling_graph.llm_clients.config.resolve_effective_model_config")

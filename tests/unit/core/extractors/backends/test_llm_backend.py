@@ -978,6 +978,34 @@ class TestStagedPromptRetries:
         )
         assert out is None
 
+    def test_call_prompt_truncation_retry_skipped_when_retry_max_not_greater_than_current(
+        self, mock_llm_client
+    ):
+        """When retry_max <= current, _retry_max_tokens_for_truncation returns None and no retry occurs."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="staged",
+            staged_config={
+                "retry_on_truncation": True,
+                "truncation_retry_multiplier": 1.0,  # multiplier of 1.0 means retry_max == current
+            },
+            structured_output=False,  # Disable structured output to avoid fallback
+        )
+        # Use max_tokens at the cap (32768) so that retry_max = min(32768 * 1.0, 32768) = 32768
+        # which is NOT > current (32768), so retry is skipped
+        trunc = ClientError(
+            "truncated",
+            details={"truncated": True, "max_tokens": 32768},
+        )
+        mock_llm_client.get_json_response.side_effect = [trunc]
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"}, "{}", "doc catalog_id_pass_shard_0"
+        )
+        # Should return None because retry is skipped (retry_max not > current)
+        assert out is None
+        # Should only call once (no retry because retry_max <= current)
+        assert mock_llm_client.get_json_response.call_count == 1
+
     @patch("docling_graph.core.extractors.backends.llm_backend.run_delta_orchestrator")
     @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
     def test_delta_contract_fallback_to_direct_when_delta_returns_none(
