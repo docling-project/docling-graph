@@ -65,11 +65,7 @@ def get_skeleton_batch_prompt(
             "Extract ADDITIONAL node instances not already listed above.\n\n"
         )
     if global_context:
-        user_prompt += (
-            "=== DOCUMENT CONTEXT ===\n"
-            f"{global_context}\n"
-            "=== END ===\n\n"
-        )
+        user_prompt += f"=== DOCUMENT CONTEXT ===\n{global_context}\n=== END ===\n\n"
     user_prompt += (
         "=== BATCH DOCUMENT ===\n"
         f"{batch_markdown}\n"
@@ -79,14 +75,8 @@ def get_skeleton_batch_prompt(
         "=== END CATALOG ===\n\n"
     )
     if semantic_guide:
-        user_prompt += (
-            "=== SEMANTIC FIELD GUIDANCE ===\n"
-            f"{semantic_guide}\n"
-            "=== END ===\n\n"
-        )
-    user_prompt += (
-        'List every distinct entity instance in this batch. Return JSON: {"nodes": [...]} with each node having path, ids, and parent only.'
-    )
+        user_prompt += f"=== SEMANTIC FIELD GUIDANCE ===\n{semantic_guide}\n=== END ===\n\n"
+    user_prompt += 'List every distinct entity instance in this batch. Return JSON: {"nodes": [...]} with each node having path, ids, and parent only.'
     return {"system": system_prompt, "user": user_prompt}
 
 

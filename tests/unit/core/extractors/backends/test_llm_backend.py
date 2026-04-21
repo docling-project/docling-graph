@@ -266,190 +266,6 @@ class TestExtractFromMarkdown:
         assert mock_llm_client.get_json_response.call_count == 1
         assert backend.last_call_diagnostics["fallback_used"] is False
 
-    @patch("docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator")
-    def test_staged_contract_uses_catalog_flow(self, mock_run_staged, mock_llm_client):
-        """Staged contract uses CatalogOrchestrator (3-pass node catalog)."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={"catalog_max_nodes_per_call": 5},
-        )
-        mock_run_staged.return_value = {"name": "Alice", "age": 21}
-
-        result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
-
-        assert result is not None
-        assert result.name == "Alice"
-        assert result.age == 21
-        mock_run_staged.assert_called_once()
-
-    @patch("docling_graph.core.extractors.backends.llm_backend.run_delta_orchestrator")
-    def test_delta_contract_uses_delta_orchestrator(self, mock_run_delta, mock_llm_client):
-        """Delta contract routes extraction through DeltaOrchestrator."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="delta",
-            staged_config={"llm_batch_token_size": 4096},
-        )
-        mock_run_delta.return_value = {"name": "Alice", "age": 21}
-
-        result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
-
-        assert result is not None
-        assert result.name == "Alice"
-        assert result.age == 21
-        mock_run_delta.assert_called_once()
-
-
-class TestDeltaPathRealOrchestrator:
-    """Run delta extraction without mocking run_delta_orchestrator; mock LLM instead to cover backend paths."""
-
-    @staticmethod
-    def _delta_root_template() -> type[BaseModel]:
-        """Minimal root model for delta extraction (catalog has single root path)."""
-
-        class Root(BaseModel):
-            model_config = ConfigDict(graph_id_fields=["document_number"])
-            document_number: str
-
-        return Root
-
-    def test_delta_extract_from_chunk_batches_with_real_orchestrator(self, mock_llm_client):
-        """Delta path: extract_from_chunk_batches runs real run_delta_orchestrator; LLM returns valid delta graph."""
-        root = self._delta_root_template()
-        # Valid DeltaGraph: one root node so orchestrator merge + quality gate pass
-        mock_llm_client.get_json_response.return_value = {
-            "nodes": [
-                {
-                    "path": "",
-                    "ids": {"document_number": "D1"},
-                    "properties": {"document_number": "D1"},
-                }
-            ],
-            "relationships": [],
-        }
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="delta",
-            staged_config={
-                "llm_batch_token_size": 1024,
-                "delta_quality_min_instances": 1,
-            },
-        )
-        result = backend.extract_from_chunk_batches(
-            chunks=["Chunk one."],
-            chunk_metadata=[{"chunk_id": 0, "token_count": 10}],
-            template=root,
-            context="test",
-        )
-        assert result is not None
-        assert result.document_number == "D1"
-
-    def test_delta_extract_from_markdown_fallback_path(self, mock_llm_client):
-        """Delta contract: extract_from_markdown uses _extract_with_delta_contract (single-chunk fallback)."""
-        root = self._delta_root_template()
-        mock_llm_client.get_json_response.return_value = {
-            "nodes": [
-                {
-                    "path": "",
-                    "ids": {"document_number": "D2"},
-                    "properties": {"document_number": "D2"},
-                }
-            ],
-            "relationships": [],
-        }
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="delta",
-            staged_config={
-                "llm_batch_token_size": 1024,
-                "delta_quality_min_instances": 1,
-            },
-        )
-        result = backend.extract_from_markdown(markdown="Full doc.", template=root, context="doc")
-        assert result is not None
-        assert result.document_number == "D2"
-
-    def test_delta_extract_from_chunk_batches_returns_none_when_no_result(self, mock_llm_client):
-        """When delta orchestrator returns None (e.g. quality gate fail), backend returns None."""
-        root = self._delta_root_template()
-        # Empty nodes -> quality gate may fail (no root); or we can return None from LLM
-        mock_llm_client.get_json_response.return_value = {"nodes": [], "relationships": []}
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="delta",
-            staged_config={"llm_batch_token_size": 1024, "delta_quality_require_root": True},
-        )
-        result = backend.extract_from_chunk_batches(
-            chunks=["Chunk."],
-            chunk_metadata=None,
-            template=root,
-            context="test",
-        )
-        # Empty graph leads to quality gate failure -> orchestrator returns None
-        assert result is None
-
-    def test_staged_extract_with_real_orchestrator(self, mock_llm_client):
-        """Staged path: run_staged_orchestrator is invoked; mock LLM for ID/fill passes."""
-        mock_llm_client.get_json_response.side_effect = [
-            {"nodes": [{"path": "", "id_fields": ["invoice_number"]}], "edges": []},
-            {
-                "nodes": [
-                    {
-                        "path": "",
-                        "ids": {"invoice_number": "INV-1"},
-                        "properties": {"invoice_number": "INV-1"},
-                    }
-                ]
-            },
-            {"edges": []},
-        ]
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-        )
-        # We still need to not mock run_staged_orchestrator to hit backend code; but staged
-        # has 3 passes and complex contract. Prefer patching run_staged to return a dict and
-        # assert backend passes it through and validates.
-        with patch(
-            "docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator"
-        ) as mock_staged:
-            mock_staged.return_value = {"name": "Staged", "age": 22}
-            result = backend.extract_from_markdown(markdown="x", template=MockTemplate)
-        assert result is not None
-        assert result.name == "Staged"
-        assert result.age == 22
-        mock_staged.assert_called_once()
-        # Backend should pass trace_data when present
-        backend.trace_data = MagicMock()
-        with patch(
-            "docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator"
-        ) as mock_staged2:
-            mock_staged2.return_value = {"name": "T", "age": 1}
-            backend.extract_from_markdown(markdown="y", template=MockTemplate)
-        call_kw = mock_staged2.call_args[1]
-        assert call_kw.get("trace_data") is backend.trace_data
-
-
-class TestStagedContractPartialFallback:
-    """Staged contract with partial extraction falls back to direct."""
-
-    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
-    def test_staged_contract_partial_extraction_falls_back_to_direct(
-        self, mock_get_prompt, mock_llm_client
-    ):
-        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="staged")
-        mock_get_prompt.return_value = {"system": "sys", "user": "user"}
-        mock_llm_client.get_json_response.return_value = {"name": "Test", "age": 30}
-
-        result = backend.extract_from_markdown(
-            markdown="partial page", template=MockTemplate, is_partial=True
-        )
-
-        assert result is not None
-        mock_get_prompt.assert_called_once()
-
 
 class TestQuantityCoercionAndPruneSalvage:
     """Test best-effort validation: QuantityWithUnit coercion and prune salvage."""
@@ -554,7 +370,7 @@ class TestCoerceStringTypeErrors:
     """Test that int/float/bool in string fields are coerced so validation can pass."""
 
     def test_validate_extraction_coerces_study_id_int_to_string(self, llm_backend):
-        """When delta projects study_id as int (e.g. 3), coercion pass converts to '3' and validation passes."""
+        """When a projected study_id is int (e.g. 3), coercion pass converts it to '3' and validation passes."""
         from pydantic import BaseModel, Field
 
         class Study(BaseModel):
@@ -617,7 +433,7 @@ class TestCoerceListTypeErrors:
     """Test that scalar in list field is coerced to single-element list so validation can pass."""
 
     def test_validate_extraction_coerces_statut_occupation_string_to_list(self, llm_backend):
-        """When delta projects statut_occupation as string (e.g. list[str] field), coercion wraps in list."""
+        """When statut_occupation is returned as a string for a list[str] field, coercion wraps it in a list."""
         from pydantic import BaseModel, Field
 
         class Offre(BaseModel):
@@ -821,231 +637,6 @@ class TestCleanup:
         # GC should still be called
         mock_gc_collect.assert_called_once()
 
-
-class TestStagedPromptRetries:
-    """Test staged prompt retries and max-token override behavior."""
-
-    def test_call_prompt_retries_on_truncation(self, mock_llm_client):
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={"retry_on_truncation": True, "id_max_tokens": 256},
-        )
-        Exception("wrapper")
-        from docling_graph.exceptions import ClientError
-
-        trunc = ClientError(
-            "truncated",
-            details={"truncated": True, "max_tokens": 256},
-        )
-        mock_llm_client.get_json_response.side_effect = [trunc, {"name": "A", "age": 1}]
-
-        out = backend._call_prompt(
-            {"system": "s", "user": "u"}, "{}", "doc catalog_id_pass_shard_0"
-        )
-        assert out == {"name": "A", "age": 1}
-        assert mock_llm_client.get_json_response.call_count == 2
-
-    def test_call_prompt_falls_back_to_legacy_schema_mode_on_structured_failure(
-        self, mock_llm_client
-    ):
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-            structured_output=True,
-        )
-        mock_llm_client.get_json_response.side_effect = [
-            ClientError("schema mode unsupported"),
-            [{"id": "x"}],
-        ]
-        out = backend._call_prompt(
-            {"system": "s", "user": "u"},
-            '{"type":"array","items":{"type":"object"}}',
-            "doc fill_call_0",
-            response_top_level="array",
-        )
-        assert out == [{"id": "x"}]
-        assert mock_llm_client.get_json_response.call_count == 2
-        first = mock_llm_client.get_json_response.call_args_list[0].kwargs
-        second = mock_llm_client.get_json_response.call_args_list[1].kwargs
-        assert first["structured_output"] is True
-        assert second["structured_output"] is False
-
-    def test_call_prompt_client_error_fallback_emits_trace_data_when_set(self, mock_llm_client):
-        """When ClientError is raised and trace_data is set, emit structured_output_fallback_triggered."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-            structured_output=True,
-        )
-        backend.trace_data = MagicMock()
-        mock_llm_client.get_json_response.side_effect = [
-            ClientError("schema unsupported"),
-            {"id": "x"},
-        ]
-        out = backend._call_prompt(
-            {"system": "s", "user": "u"},
-            '{"type":"object"}',
-            "doc fill_call_0",
-        )
-        assert out == {"id": "x"}
-        backend.trace_data.emit.assert_called_once()
-        call_args = backend.trace_data.emit.call_args[0]
-        assert call_args[0] == "structured_output_fallback_triggered"
-        payload = call_args[2]
-        assert "error_message" in payload
-        assert payload["error_message"] == "schema unsupported"
-        assert "details" in payload
-        assert isinstance(payload["details"], dict)
-
-    def test_call_prompt_returns_none_when_client_returns_none(self, mock_llm_client):
-        """When get_json_response returns None, _call_prompt returns None (No valid JSON path)."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-        )
-        mock_llm_client.get_json_response.return_value = None
-        out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc")
-        assert out is None
-
-    def test_call_prompt_structured_output_override_false_uses_legacy_only(self, mock_llm_client):
-        """When structured_output_override=False, skip structured attempt and call legacy once."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-            structured_output=True,
-        )
-        mock_llm_client.get_json_response.return_value = {"items": [{"id": "a"}]}
-        out = backend._call_prompt(
-            {"system": "s", "user": "u"},
-            "{}",
-            "doc fill_call_0",
-            structured_output_override=False,
-        )
-        assert out == {"items": [{"id": "a"}]}
-        assert mock_llm_client.get_json_response.call_count == 1
-        assert mock_llm_client.get_json_response.call_args.kwargs["structured_output"] is False
-
-    def test_call_prompt_diagnostics_out_updated_on_success(self, mock_llm_client):
-        """When _diagnostics_out is passed, it is updated with last_call_diagnostics."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-        )
-        mock_llm_client.get_json_response.return_value = {"k": "v"}
-        diag_out = {}
-        backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc", _diagnostics_out=diag_out)
-        assert "fallback_used" in diag_out
-        assert "structured_attempted" in diag_out
-
-    def test_call_prompt_merges_client_last_call_diagnostics(self, mock_llm_client):
-        """When client has last_call_diagnostics, merge and passthrough provider/model run."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-        )
-        mock_llm_client.get_json_response.return_value = {"k": "v"}
-        mock_llm_client.last_call_diagnostics = {
-            "structured_attempted": True,
-            "provider": "openai",
-            "model": "gpt-4",
-        }
-        out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "doc")
-        assert out == {"k": "v"}
-        assert backend.last_call_diagnostics.get("provider") == "openai"
-        assert backend.last_call_diagnostics.get("model") == "gpt-4"
-
-    def test_call_prompt_truncation_retry_fails_logs_error(self, mock_llm_client):
-        """When truncation retry raises, _log_error path is exercised."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={"retry_on_truncation": True, "id_max_tokens": 256},
-        )
-        trunc = ClientError(
-            "truncated",
-            details={"truncated": True, "max_tokens": 256},
-        )
-        mock_llm_client.get_json_response.side_effect = [trunc, RuntimeError("retry failed")]
-        out = backend._call_prompt(
-            {"system": "s", "user": "u"}, "{}", "doc catalog_id_pass_shard_0"
-        )
-        assert out is None
-
-    def test_call_prompt_truncation_retry_skipped_when_retry_max_not_greater_than_current(
-        self, mock_llm_client
-    ):
-        """When retry_max <= current, _retry_max_tokens_for_truncation returns None and no retry occurs."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={
-                "retry_on_truncation": True,
-                "truncation_retry_multiplier": 1.0,  # multiplier of 1.0 means retry_max == current
-            },
-            structured_output=False,  # Disable structured output to avoid fallback
-        )
-        # Use max_tokens at the cap (32768) so that retry_max = min(32768 * 1.0, 32768) = 32768
-        # which is NOT > current (32768), so retry is skipped
-        trunc = ClientError(
-            "truncated",
-            details={"truncated": True, "max_tokens": 32768},
-        )
-        mock_llm_client.get_json_response.side_effect = [trunc]
-        out = backend._call_prompt(
-            {"system": "s", "user": "u"}, "{}", "doc catalog_id_pass_shard_0"
-        )
-        # Should return None because retry is skipped (retry_max not > current)
-        assert out is None
-        # Should only call once (no retry because retry_max <= current)
-        assert mock_llm_client.get_json_response.call_count == 1
-
-    @patch("docling_graph.core.extractors.backends.llm_backend.run_delta_orchestrator")
-    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
-    def test_delta_contract_fallback_to_direct_when_delta_returns_none(
-        self, mock_get_prompt, mock_run_delta, mock_llm_client
-    ):
-        """When extraction_contract=delta and run_delta_orchestrator returns None, fall back to direct."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="delta",
-            staged_config={"delta_quality_min_instances": 1},
-        )
-        mock_run_delta.return_value = None
-        mock_get_prompt.return_value = {"system": "s", "user": "u"}
-        mock_llm_client.get_json_response.return_value = {"name": "Fallback", "age": 22}
-        result = backend.extract_from_markdown(markdown="doc", template=MockTemplate, context="doc")
-        assert result is not None
-        assert result.name == "Fallback"
-        mock_run_delta.assert_called_once()
-        mock_get_prompt.assert_called_once()
-
-    @patch("docling_graph.core.extractors.backends.llm_backend.run_staged_orchestrator")
-    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
-    def test_staged_contract_fallback_to_direct_when_staged_returns_none(
-        self, mock_get_prompt, mock_run_staged, mock_llm_client
-    ):
-        """When extraction_contract=staged and run_staged_orchestrator returns None, fall back to direct."""
-        backend = LlmBackend(
-            llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={},
-        )
-        mock_run_staged.return_value = None
-        mock_get_prompt.return_value = {"system": "s", "user": "u"}
-        mock_llm_client.get_json_response.return_value = {"name": "StagedFallback", "age": 33}
-        result = backend.extract_from_markdown(markdown="doc", template=MockTemplate, context="doc")
-        assert result is not None
-        assert result.name == "StagedFallback"
-        mock_run_staged.assert_called_once()
-        mock_get_prompt.assert_called_once()
-
     def test_generate_returns_empty_response_on_exception(self, mock_llm_client):
         """When client.get_json_response raises in generate(), return EmptyResponse with text '{}'."""
         backend = LlmBackend(llm_client=mock_llm_client)
@@ -1164,8 +755,8 @@ class TestDirectExtractionTraceAndDiagnostics:
         """When max_tokens is not passed, retry uses context_max from details['max_tokens']."""
         backend = LlmBackend(
             llm_client=mock_llm_client,
-            extraction_contract="staged",
-            staged_config={"retry_on_truncation": True},
+            extraction_contract="dense",
+            dense_config={"retry_on_truncation": True},
         )
         context = "custom_context_xyz"
         details = {"truncated": True, "max_tokens": 512}
@@ -1186,7 +777,7 @@ class TestDirectExtractionTraceAndDiagnostics:
         backend = LlmBackend(
             llm_client=mock_llm_client,
             extraction_contract="direct",
-            staged_config={"gleaning_enabled": True, "gleaning_max_passes": 1},
+            dense_config={"gleaning_enabled": True, "gleaning_max_passes": 1},
         )
         mock_get_prompt.return_value = {"system": "s", "user": "u"}
         mock_llm_client.get_json_response.side_effect = [

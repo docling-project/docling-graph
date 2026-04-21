@@ -167,7 +167,7 @@ def test_gleaning_enabled_and_max_passes_passed_to_config(mock_load_config, mock
             "backend": "llm",
             "inference": "remote",
             "processing_mode": "many-to-one",
-            "extraction_contract": "delta",
+            "extraction_contract": "direct",
             "export_format": "csv",
         },
         "docling": {"pipeline": "ocr"},
@@ -223,12 +223,6 @@ def test_cli_overrides_passed_to_config(mock_load_config, mock_run_pipeline):
                 template="templates.Foo",
                 output_dir=Path("out"),
                 chunk_max_tokens=256,
-                staged_tuning_preset="advanced",
-                staged_pass_retries=3,
-                delta_normalizer_validate_paths=False,
-                delta_resolvers_mode="fuzzy",
-                delta_quality_min_instances=5,
-                staged_nodes_fill_cap=100,
                 gleaning_max_passes=2,
                 export_docling_json=False,
                 export_markdown=False,
@@ -239,56 +233,10 @@ def test_cli_overrides_passed_to_config(mock_load_config, mock_run_pipeline):
     mock_run_pipeline.assert_called_once()
     cfg = mock_run_pipeline.call_args[0][0]
     assert cfg.chunk_max_tokens == 256
-    assert cfg.staged_tuning_preset == "advanced"
-    assert cfg.staged_pass_retries == 3
-    assert cfg.delta_normalizer_validate_paths is False
-    assert cfg.delta_resolvers_mode == "fuzzy"
-    assert cfg.delta_quality_min_instances == 5
-    assert cfg.staged_nodes_fill_cap == 100
     assert cfg.gleaning_max_passes == 2
     assert cfg.export_docling_json is False
     assert cfg.export_markdown is False
     assert cfg.export_per_page_markdown is True
-
-
-@patch("docling_graph.cli.commands.convert.run_pipeline")
-@patch("docling_graph.cli.commands.convert.load_config")
-def test_invalid_staged_tuning_preset_fallback(mock_load_config, mock_run_pipeline):
-    """Invalid staged_tuning_preset from config falls back to 'standard' (324-325)."""
-    mock_load_config.return_value = _base_config()
-    mock_load_config.return_value["defaults"]["staged_tuning_preset"] = "custom"
-    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
-        mock_detector.detect.return_value = MagicMock(value="file")
-        try:
-            convert_command(
-                source="doc.pdf",
-                template="templates.Foo",
-                output_dir=Path("out"),
-            )
-        except typer.Exit:
-            pass
-    cfg = mock_run_pipeline.call_args[0][0]
-    assert cfg.staged_tuning_preset == "standard"
-
-
-@patch("docling_graph.cli.commands.convert.run_pipeline")
-@patch("docling_graph.cli.commands.convert.load_config")
-def test_invalid_delta_resolvers_mode_fallback(mock_load_config, mock_run_pipeline):
-    """Invalid delta_resolvers_mode falls back to 'off' (362-363)."""
-    mock_load_config.return_value = _base_config()
-    mock_load_config.return_value["defaults"]["delta_resolvers_mode"] = "invalid"
-    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
-        mock_detector.detect.return_value = MagicMock(value="file")
-        try:
-            convert_command(
-                source="doc.pdf",
-                template="templates.Foo",
-                output_dir=Path("out"),
-            )
-        except typer.Exit:
-            pass
-    cfg = mock_run_pipeline.call_args[0][0]
-    assert cfg.delta_resolvers_mode == "off"
 
 
 @patch("docling_graph.cli.commands.convert.run_pipeline")

@@ -31,7 +31,10 @@ def test_skeleton_prompt_includes_localized_and_global_entity_instructions():
     assert "Global / shared entities" in system
     assert "Do not ignore an entity just because it lacks a distinct sub-label" in system
     assert "localized" in system.lower()
-    assert "if the schema defines it and the text describes it, it must be included in the skeleton" in system
+    assert (
+        "if the schema defines it and the text describes it, it must be included in the skeleton"
+        in system
+    )
 
 
 def test_skeleton_prompt_includes_global_singleton_id_guidance():

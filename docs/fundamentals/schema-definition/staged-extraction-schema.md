@@ -1,6 +1,6 @@
-# Schema Design for Staged and Delta Extraction
+# Schema Design for Dense Extraction
 
-This guide defines schema constraints for multi-pass extraction (staged and delta contracts use the same catalog and identity concepts).
+This guide defines schema constraints for dense multi-pass extraction.
 
 ## Identity requirements
 
@@ -31,13 +31,6 @@ Prefer short, **document-derived** ID examples (section numbers, figure/table la
 - Prefer 2-4 depth levels.
 - Reduce fan-out where possible.
 - Split very broad domains into focused templates.
-
-## Delta-specific additions
-
-- Keep extracted properties flat.
-- Enforce exact catalog path usage.
-- Favor fields that stabilize cross-batch identity and reconciliation.
-- Provide canonicalization instructions in field descriptions.
 
 ## Quality-readiness checklist
 

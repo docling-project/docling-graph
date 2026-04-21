@@ -49,7 +49,7 @@ run_pipeline(config)
 | `backend` | `Literal["llm", "vlm"]` | `"llm"` | Backend type |
 | `inference` | `Literal["local", "remote"]` | `"local"` | Inference mode |
 | `processing_mode` | `Literal["one-to-one", "many-to-one"]` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `Literal["direct", "staged", "delta"]` | `"direct"` | LLM extraction contract: `direct` (single-pass), `staged` (multi-pass ID→fill→merge), `delta` (chunk-based graph IR→merge→projection). See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md). |
+| `extraction_contract` | `Literal["direct", "dense"]` | `"direct"` | LLM extraction contract: `direct` (single-pass) or `dense` (two-phase skeleton→fill for chunked many-to-one extraction). See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md). |
 
 ### Docling Settings
 
@@ -93,10 +93,10 @@ run_pipeline(config)  # or config.run()
 |-----------|------|---------|-------------|
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `max_batch_size` | `int` | `1` | Maximum batch size |
-| `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **delta** contracts only (not staged). See [Gleaning](../../fundamentals/extraction-process/delta-extraction.md#gleaning-direct-and-delta). |
+| `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **dense** contracts. |
 | `gleaning_max_passes` | `int` | `1` | Max number of gleaning passes when `gleaning_enabled` is True (1 = one extra pass). |
 
-For **delta** extraction, additional options (e.g. `llm_batch_token_size`, `parallel_workers`, `delta_resolvers_enabled`, `delta_resolvers_mode`, `delta_quality_max_parent_lookup_miss`) can be set via a config dict or YAML `defaults`; see [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) and [Configuration reference](../../reference/config.md).
+For **dense** extraction, additional options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`, `parallel_workers`, `dense_quality_require_root`, `dense_quality_min_instances`) can be set via a config dict or YAML `defaults`; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 
 ### Debug Settings
 
@@ -279,18 +279,17 @@ run_pipeline(config)
 ```python
 from docling_graph import run_pipeline, PipelineConfig
 
-# Delta: chunk → batches → flat graph IR → merge → projection
+# Dense: skeleton batches → fill calls → merge
 config = PipelineConfig(
     source="long_document.pdf",
     template="templates.ScholarlyRheologyPaper",
     backend="llm",
     processing_mode="many-to-one",
-    extraction_contract="delta",
+    extraction_contract="dense",
     use_chunking=True,
-    llm_batch_token_size=2048,
+    dense_skeleton_batch_tokens=1024,
+    dense_fill_nodes_cap=5,
     parallel_workers=2,
-    delta_resolvers_enabled=True,
-    delta_resolvers_mode="semantic",
     gleaning_enabled=True,  # Set False to disable optional second-pass recall boost
     gleaning_max_passes=1,
 )
@@ -298,7 +297,7 @@ config = PipelineConfig(
 run_pipeline(config)
 ```
 
-See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for all delta options, quality gates, and [Gleaning](../../fundamentals/extraction-process/delta-extraction.md#gleaning-direct-and-delta) (direct and delta).
+See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) for dense options and [Configuration reference](../../reference/config.md) for all available settings.
 
 ### 📍 Local VLM
 

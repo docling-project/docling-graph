@@ -1,7 +1,7 @@
 """
 Optional post-merge resolvers for dense skeleton nodes (fuzzy/semantic dedup).
 
-Fully autonomous: no imports from contracts.delta or contracts.staged.
+Fully autonomous: no imports from other contracts.
 """
 
 from __future__ import annotations
@@ -38,6 +38,7 @@ def _fuzzy_similarity(a: str, b: str) -> float:
         return 0.0
     try:
         from rapidfuzz import fuzz
+
         return float(fuzz.token_sort_ratio(a, b)) / 100.0
     except Exception:
         return SequenceMatcher(None, a.lower(), b.lower()).ratio()
@@ -48,6 +49,7 @@ def _semantic_similarity(a: str, b: str) -> tuple[float, str | None]:
         return 0.0, None
     try:
         import spacy
+
         nlp = spacy.blank("en")
         doc_a = nlp(a)
         doc_b = nlp(b)

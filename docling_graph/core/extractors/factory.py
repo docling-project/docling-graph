@@ -21,10 +21,9 @@ class ExtractorFactory:
     def create_extractor(
         processing_mode: Literal["one-to-one", "many-to-one"],
         backend_name: Literal["vlm", "llm"],
-        extraction_contract: Literal["direct", "staged", "delta", "dense"] = "direct",
+        extraction_contract: Literal["direct", "dense"] = "direct",
         structured_output: bool = True,
         structured_sparse_check: bool = True,
-        staged_config: dict | None = None,
         model_name: str | None = None,
         llm_client: LLMClientProtocol | None = None,
         docling_config: str = "ocr",
@@ -37,8 +36,7 @@ class ExtractorFactory:
         Args:
             processing_mode (str): 'one-to-one' or 'many-to-one'
             backend_name (str): 'vlm' or 'llm'
-            extraction_contract (str): 'direct', 'staged', or 'delta' (LLM only)
-            staged_config (dict): Optional staged extraction tuning config
+            extraction_contract (str): 'direct' or 'dense' (LLM only)
             model_name (str): Model name for VLM (optional)
             llm_client (LLMClientProtocol): LLM client instance (optional)
             docling_config (str): Docling pipeline configuration ('ocr' or 'vision')
@@ -57,14 +55,10 @@ class ExtractorFactory:
             if not llm_client:
                 raise ValueError("LLM requires llm_client parameter")
             effective_contract = extraction_contract
-            if processing_mode != "many-to-one" and extraction_contract in {
-                "staged",
-                "delta",
-                "dense",
-            }:
+            if processing_mode != "many-to-one" and extraction_contract == "dense":
                 rich_print(
                     "[yellow][ExtractorFactory][/yellow] "
-                    "Staged/delta contracts currently apply only to many-to-one; using direct."
+                    "Dense contract currently applies only to many-to-one; using direct."
                 )
                 effective_contract = "direct"
             backend_obj = cast(
@@ -72,7 +66,6 @@ class ExtractorFactory:
                 LlmBackend(
                     llm_client=llm_client,
                     extraction_contract=effective_contract,
-                    staged_config=staged_config,
                     structured_output=structured_output,
                     structured_sparse_check=structured_sparse_check,
                 ),

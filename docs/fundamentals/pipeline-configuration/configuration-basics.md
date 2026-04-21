@@ -49,7 +49,7 @@ config = PipelineConfig(
 | **Backend** | `backend`, `inference`, `models` | How to extract |
 | **Processing** | `processing_mode`, `extraction_contract`, `docling_config`, `use_chunking` | How to process |
 | **Export** | `export_format`, `output_dir`, `export_*` | What to output |
-| **Advanced** | `staged_*` (staged extraction), `reverse_edges`, `chunker_config` | Optimization |
+| **Advanced** | `dense_*`, `reverse_edges`, `chunker_config` | Optimization |
 
 ---
 

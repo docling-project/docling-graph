@@ -21,7 +21,7 @@ Field definitions are the main quality lever for extraction consistency.
 
 - Required for identity and structural anchor fields.
 - Optional for sparse enrichments that may not exist in source documents.
-- Avoid optional identity fields in staged and delta extraction (both use catalog identity for merge and linkage).
+- Avoid optional identity fields in dense extraction, where stable catalog identity is important for merge and linkage.
 
 ## Description style
 

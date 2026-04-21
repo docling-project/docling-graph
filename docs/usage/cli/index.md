@@ -79,7 +79,6 @@ docling-graph init
 
 **Features:**
 - Interactive configuration builder (processing mode, extraction contract, backend, inference, provider/model, export, output)
-- When you select **delta** as extraction contract, prompts for delta resolvers and quality gate tuning
 - Dependency validation
 - Provider/model identifiers use LiteLLM routing
 - API key guidance

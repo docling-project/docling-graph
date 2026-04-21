@@ -31,58 +31,6 @@ Optimize docling-graph pipeline performance for speed, memory efficiency, and re
 
 ---
 
-## Staged Extraction Tuning
-
-When using `extraction_contract=\"staged\"`, tune these parameters first:
-
-- `staged_id_shard_size`: paths per ID-pass call (`0` = no sharding, single call).
-- `staged_nodes_fill_cap`: instances per fill-pass call.
-- `parallel_workers`: parallel workers for extraction (staged fill pass and delta batch calls).
-
-```python
-from docling_graph import PipelineConfig
-
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.MyTemplate",
-    processing_mode="many-to-one",
-    extraction_contract="staged",
-    staged_id_shard_size=2,      # reduce ID payload size
-    staged_nodes_fill_cap=10,    # balance quality vs throughput
-    parallel_workers=4,         # parallel fill/delta calls
-)
-```
-
-Tuning guidance:
-- If ID-pass responses truncate, reduce `staged_id_shard_size`.
-- If fill calls are too slow, increase `parallel_workers` (within system limits).
-- If fill quality drops, reduce `staged_nodes_fill_cap`.
-
----
-
-## Delta Extraction Tuning
-
-When using `extraction_contract="delta"`, tune these first:
-
-- `llm_batch_token_size`: max input tokens per LLM batch (default 2048). Larger batches = fewer calls but higher token usage per call.
-- `parallel_workers`: parallel workers for delta batch LLM calls.
-
-Delta runs chunk → batch plan → per-batch LLM (DeltaGraph) → IR normalize → merge → optional resolvers → projection → quality gate. See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md).
-
-```python
-config = PipelineConfig(
-    source="document.pdf",
-    template="templates.MyTemplate",
-    processing_mode="many-to-one",
-    extraction_contract="delta",
-    use_chunking=True,
-    llm_batch_token_size=2048,
-    parallel_workers=2,
-)
-```
-
----
-
 ## Model Selection
 
 ### Local vs Remote
@@ -173,12 +121,11 @@ All providers now use a **95% threshold** by default. This provides an optimal b
 
 **Note**: You can override the threshold programmatically if needed (see [Batch Processing](../../fundamentals/extraction-process/batch-processing.md)).
 
-### Batch size, staged and delta extraction
+### Batch size and dense extraction
 
 `max_batch_size` is available in the config for metadata and future use. For many-to-one LLM extraction, batching is controlled by:
 
-- **Chunking** and **delta extraction** when `extraction_contract="delta"`: token-bounded batches (`llm_batch_token_size`), then merge. See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md).
-- **Staged extraction** when `extraction_contract="staged"`: `staged_nodes_fill_cap`, `parallel_workers`, etc. See [Staged Extraction](../../fundamentals/extraction-process/staged-extraction.md).
+- **Chunking** plus **dense extraction** when `extraction_contract="dense"`: chunk splitting, Phase 1 skeleton batching (`dense_skeleton_batch_tokens`), then Phase 2 fill batching (`dense_fill_nodes_cap`). See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md).
 
 ---
 
@@ -721,17 +668,16 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 ### Advanced Optimizations
 
 1. **Multi-GPU Processing**: Parallel document processing
-2. **Staged Extraction**: Use `extraction_contract="staged"` for complex nested templates
-3. **Delta Extraction**: Use `extraction_contract="delta"` for long documents (chunk-based graph extraction)
-4. **Memory Profiling**: Monitor and optimize resource usage
-5. **Chunking**: Tune `chunk_max_tokens` and `use_chunking` for your docs
+2. **Dense Extraction**: Use `extraction_contract="dense"` for rich many-to-one extraction on complex documents
+3. **Memory Profiling**: Monitor and optimize resource usage
+4. **Chunking**: Tune `chunk_max_tokens` and `use_chunking` for your docs
 
 ---
 
 ## Next Steps
 
-1. **[Staged Extraction →](../../fundamentals/extraction-process/staged-extraction.md)** - Multi-pass extraction tuning
-2. **[Delta Extraction →](../../fundamentals/extraction-process/delta-extraction.md)** - Chunk-based graph extraction tuning
-3. **[Error Handling →](error-handling.md)** - Handle errors gracefully
+1. **[Dense Extraction →](../../fundamentals/extraction-process/dense-extraction.md)** - Skeleton-then-fill extraction tuning
+2. **[Error Handling →](error-handling.md)** - Handle errors gracefully
+3. **[Batch Processing →](../api/batch-processing.md)** - Scale extraction across multiple documents
 4. **[Testing →](testing.md)** - Test performance optimizations
 5. **[GPU Setup →](../../fundamentals/installation/gpu-setup.md)** - Configure GPU

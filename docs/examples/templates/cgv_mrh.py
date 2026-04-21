@@ -254,7 +254,7 @@ class Bien(BaseModel):
 class Exclusion(BaseModel):
     """
     Clause d'exclusion (commune ou spécifique).
-    Identity uses short exclusion_id for delta-friendly deduplication.
+    Identity uses short exclusion_id for stable deduplication.
     """
 
     model_config = ConfigDict(

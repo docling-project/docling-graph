@@ -112,13 +112,13 @@ def merge_gleaned_direct(
     return merged
 
 
-def build_already_found_summary_delta(
+def build_already_found_summary_dense(
     merged_graph: dict[str, Any],
     max_nodes: int = 100,
     max_rels: int = 50,
 ) -> str:
     """
-    Build a compact text summary of merged graph for delta gleaning prompt.
+    Build a compact text summary of merged graph for dense gleaning prompt.
 
     Used to inject "already extracted from other batches" into batch prompts.
     """

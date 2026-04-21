@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def run_dense_orchestrator(
     *,
     llm_call_fn: Any,
-    staged_config_raw: dict[str, Any],
+    dense_config_raw: dict[str, Any],
     chunks: list[str],
     chunk_metadata: list[dict[str, Any]] | None,
     full_markdown: str | None,
@@ -29,8 +29,8 @@ def run_dense_orchestrator(
         return None
     if full_markdown is None or not full_markdown.strip():
         full_markdown = "\n\n".join(chunks) if chunks else ""
-    debug_dir = staged_config_raw.get("debug_dir") or ""
-    config = DenseOrchestratorConfig.from_dict(staged_config_raw)
+    debug_dir = dense_config_raw.get("debug_dir") or ""
+    config = DenseOrchestratorConfig.from_dict(dense_config_raw)
 
     def _on_trace(trace_dict: dict) -> None:
         if trace_data is not None:

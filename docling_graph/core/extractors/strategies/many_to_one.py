@@ -4,7 +4,7 @@ Many-to-one extraction strategy.
 Extracts one consolidated model from an entire document.
 
 For LLM backend, extraction behavior is driven by the configured
-extraction contract (e.g., direct single-pass or staged multi-pass).
+extraction contract (direct or dense).
 """
 
 import logging
@@ -23,7 +23,6 @@ from ....protocols import (
     is_vlm_backend,
 )
 from ...utils.dict_merger import merge_pydantic_models
-from ..contracts.delta.strategy_ops import extract_delta_from_document, extract_delta_from_text
 from ..contracts.dense.strategy_ops import extract_dense_from_document, extract_dense_from_text
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
@@ -63,13 +62,11 @@ class ManyToOneStrategy(BaseExtractor):
         self._backend_type = get_backend_type(self.backend)
         self._extraction_contract = extraction_contract
 
-        if extraction_contract == "delta" and not use_chunking:
-            raise ValueError("Delta extraction requires use_chunking=True.")
         if extraction_contract == "dense" and not use_chunking:
             raise ValueError("Dense extraction requires use_chunking=True.")
 
         chunker_config: dict[str, Any] | None = None
-        if use_chunking and extraction_contract in ("delta", "dense"):
+        if use_chunking and extraction_contract == "dense":
             chunker_config = {"chunk_max_tokens": int(chunk_max_tokens or 512)}
 
         self.doc_processor = DocumentProcessor(
@@ -262,24 +259,14 @@ class ManyToOneStrategy(BaseExtractor):
                     logger.info("Dense text extraction successful")
                     return [model], None
                 return [], None
-            if self._extraction_contract == "delta" and hasattr(
-                backend, "extract_from_chunk_batches"
-            ):
-                model, extraction_time = extract_delta_from_text(
-                    backend=backend,
-                    doc_processor=self.doc_processor,
-                    text=text,
-                    template=template,
-                )
-            else:
-                start_time = time.time()
-                model = backend.extract_from_markdown(
-                    markdown=text,
-                    template=template,
-                    context="text input",
-                    is_partial=False,
-                )
-                extraction_time = time.time() - start_time
+            start_time = time.time()
+            model = backend.extract_from_markdown(
+                markdown=text,
+                template=template,
+                context="text input",
+                is_partial=False,
+            )
+            extraction_time = time.time() - start_time
 
             if hasattr(self, "trace_data") and self.trace_data:
                 extraction_metadata = {}
@@ -337,91 +324,6 @@ class ManyToOneStrategy(BaseExtractor):
 
         try:
             full_markdown = self.doc_processor.extract_full_markdown(document)
-            if self._extraction_contract == "delta" and hasattr(
-                backend, "extract_from_chunk_batches"
-            ):
-                model, extraction_time = extract_delta_from_document(
-                    backend=backend,
-                    doc_processor=self.doc_processor,
-                    document=document,
-                    template=template,
-                    trace_data=self.trace_data if hasattr(self, "trace_data") else None,
-                )
-
-                if hasattr(self, "trace_data") and self.trace_data:
-                    extraction_metadata: dict[str, Any] = {}
-                    backend_diag = getattr(backend, "last_call_diagnostics", None)
-                    if isinstance(backend_diag, dict) and backend_diag:
-                        extraction_metadata.update(backend_diag)
-                    self.trace_data.emit(
-                        "extraction_completed",
-                        "extraction",
-                        {
-                            "extraction_id": 0,
-                            "source_type": "chunk_batch",
-                            "source_id": 0,
-                            "parsed_model": model,
-                            "extraction_time": extraction_time,
-                            "error": None,
-                            "metadata": extraction_metadata,
-                        },
-                    )
-
-                if model:
-                    logger.info("Delta extraction successful")
-                    return [model], document
-                logger.warning(
-                    "Delta extraction returned no model; falling back to direct extraction"
-                )
-                if hasattr(self, "trace_data") and self.trace_data:
-                    delta_trace_payload = (
-                        self.trace_data.latest_payload("delta_trace_emitted")
-                        if hasattr(self.trace_data, "latest_payload")
-                        else None
-                    )
-                    self.trace_data.emit(
-                        "delta_failed_then_direct_fallback",
-                        "extraction",
-                        {
-                            "reason": "delta_returned_no_model",
-                            "delta_quality_gate": (
-                                delta_trace_payload.get("quality_gate")
-                                if isinstance(delta_trace_payload, dict)
-                                else None
-                            ),
-                            "delta_merge_stats": (
-                                delta_trace_payload.get("merge_stats")
-                                if isinstance(delta_trace_payload, dict)
-                                else None
-                            ),
-                            "delta_normalizer_stats": (
-                                delta_trace_payload.get("normalizer_stats")
-                                if isinstance(delta_trace_payload, dict)
-                                else None
-                            ),
-                        },
-                    )
-                fallback_model = self._extract_direct_fallback_model(
-                    backend, full_markdown, template
-                )
-                if fallback_model:
-                    logger.info("Direct fallback after delta extraction succeeded")
-                    if hasattr(self, "trace_data") and self.trace_data:
-                        self.trace_data.emit(
-                            "delta_failed_then_direct_fallback",
-                            "extraction",
-                            {"reason": "direct_fallback_succeeded"},
-                        )
-                    return [fallback_model], document
-                logger.warning("Direct fallback after delta extraction returned no model")
-                if hasattr(self, "trace_data") and self.trace_data:
-                    self.trace_data.emit(
-                        "delta_failed_then_direct_fallback",
-                        "extraction",
-                        {"reason": "direct_fallback_returned_no_model"},
-                    )
-                return [], document
-
             if self._extraction_contract == "dense" and hasattr(
                 backend, "extract_from_chunk_batches"
             ):
@@ -456,12 +358,6 @@ class ManyToOneStrategy(BaseExtractor):
                 logger.warning(
                     "Dense extraction returned no model; falling back to direct extraction"
                 )
-                fallback_model = self._extract_direct_fallback_model(
-                    backend, full_markdown, template
-                )
-                if fallback_model:
-                    logger.info("Direct fallback after dense extraction succeeded")
-                    return [fallback_model], document
                 return [], document
 
             if hasattr(self, "trace_data") and self.trace_data:
@@ -514,11 +410,6 @@ class ManyToOneStrategy(BaseExtractor):
                 backend_diag = getattr(backend, "last_call_diagnostics", None)
                 if isinstance(backend_diag, dict) and backend_diag:
                     direct_extraction_metadata.update(backend_diag)
-                if self.trace_data.find_events("staged_trace_emitted"):
-                    direct_extraction_metadata["extraction_contract"] = "staged"
-                    direct_extraction_metadata["staged_passes_count"] = len(
-                        self.trace_data.find_events("staged_trace_emitted")
-                    )
                 self.trace_data.emit(
                     "extraction_completed",
                     "extraction",
@@ -557,37 +448,3 @@ class ManyToOneStrategy(BaseExtractor):
                     },
                 )
             return [], document
-
-    def _extract_direct_fallback_model(
-        self,
-        backend: TextExtractionBackendProtocol,
-        markdown: str,
-        template: Type[BaseModel],
-    ) -> BaseModel | None:
-        """Run one best-effort direct extraction fallback after delta returns no model."""
-        original_contract = getattr(backend, "extraction_contract", None)
-        switched_contract = False
-        try:
-            # Force direct mode when backend supports contract switching.
-            if isinstance(original_contract, str) and original_contract != "direct":
-                try:
-                    backend.extraction_contract = "direct"
-                    switched_contract = True
-                except Exception:
-                    switched_contract = False
-
-            return backend.extract_from_markdown(
-                markdown=markdown,
-                template=template,
-                context="full document (delta fallback)",
-                is_partial=False if switched_contract else True,
-            )
-        except Exception as e:
-            logger.warning("Direct fallback after delta failed: %s", e)
-            return None
-        finally:
-            if switched_contract and original_contract is not None:
-                try:
-                    backend.extraction_contract = original_contract
-                except Exception:
-                    pass
