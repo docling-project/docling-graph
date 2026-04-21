@@ -98,7 +98,7 @@ When validating structured output rollouts, track:
 - schema conformance rate before salvage/repair,
 - salvage invocation rate (how often repair/coercion is needed),
 - strict-mode failure rate by model/provider,
-- latency and token deltas versus legacy prompt-schema mode.
+- latency and token differences versus legacy prompt-schema mode.
 
 This allows you to compare quality and cost impact between:
 `structured_output=True` (default) and `structured_output=False` (fallback).

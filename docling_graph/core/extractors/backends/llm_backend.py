@@ -21,9 +21,7 @@ from rich import print as rich_print
 from ....exceptions import ClientError
 from ....protocols import LLMClientProtocol
 from ..contracts import direct
-from ..contracts.delta.backend_ops import run_delta_orchestrator
 from ..contracts.dense.backend_ops import run_dense_orchestrator
-from ..contracts.staged.backend_ops import run_staged_orchestrator
 from ..gleaning import merge_gleaned_direct, run_gleaning_pass_direct
 
 logger = logging.getLogger(__name__)
@@ -39,8 +37,8 @@ class LlmBackend:
     def __init__(
         self,
         llm_client: LLMClientProtocol,
-        extraction_contract: Literal["direct", "staged", "delta", "dense"] = "direct",
-        staged_config: dict[str, Any] | None = None,
+        extraction_contract: Literal["direct", "dense"] = "direct",
+        dense_config: dict[str, Any] | None = None,
         structured_output: bool = True,
         structured_sparse_check: bool = True,
     ) -> None:
@@ -51,18 +49,16 @@ class LlmBackend:
             llm_client: LLM client instance implementing LLMClientProtocol
         """
         self.client = llm_client
-        self.extraction_contract: Literal["direct", "staged", "delta", "dense"] = (
-            extraction_contract
-        )
-        self._staged_config_raw = staged_config or {}
+        self.extraction_contract: Literal["direct", "dense"] = extraction_contract
+        self._dense_config_raw = dense_config or {}
         self.structured_output = structured_output
         self.structured_sparse_check = structured_sparse_check
         self.trace_data: Any = None  # Set by strategy when config.debug is True
         self.last_call_diagnostics: dict[str, Any] = {}
-        self._retry_on_truncation = bool(self._staged_config_raw.get("retry_on_truncation", True))
+        self._retry_on_truncation = bool(self._dense_config_raw.get("retry_on_truncation", True))
         self._truncation_retry_multiplier = max(
             1.0,
-            float(self._staged_config_raw.get("truncation_retry_max_tokens_multiplier", 2.0)),
+            float(self._dense_config_raw.get("truncation_retry_max_tokens_multiplier", 2.0)),
         )
         self._truncation_retry_cap = 32768
 
@@ -686,7 +682,7 @@ class LlmBackend:
         ratio = non_empty / max(schema_leafs, 1)
         return ratio < 0.40
 
-    def _call_llm_for_extraction(  # noqa: C901
+    def _call_llm_for_extraction(
         self,
         markdown: str,
         schema_json: str,
@@ -719,33 +715,6 @@ class LlmBackend:
                     return dense_result
                 self._log_warning(
                     f"Dense extraction produced no JSON for {context}; falling back to direct."
-                )
-
-            if self.extraction_contract == "delta" and not is_partial:
-                delta_result = self._extract_with_delta_contract(
-                    markdown=markdown,
-                    context=context,
-                    template=template,
-                    trace_data=getattr(self, "trace_data", None),
-                )
-                if delta_result:
-                    return delta_result
-                self._log_warning(
-                    f"Delta extraction produced no JSON for {context}; falling back to direct."
-                )
-
-            if self.extraction_contract == "staged" and not is_partial:
-                staged_result = self._extract_with_staged_contract(
-                    markdown=markdown,
-                    schema_json=schema_json,
-                    context=context,
-                    template=template,
-                    trace_data=getattr(self, "trace_data", None),
-                )
-                if staged_result:
-                    return staged_result
-                self._log_warning(
-                    f"Staged extraction produced no JSON for {context}; falling back to direct."
                 )
 
             prompt = direct.get_extraction_prompt(
@@ -919,8 +888,8 @@ class LlmBackend:
                 not is_partial
                 and template is not None
                 and isinstance(parsed_json, dict)
-                and self._staged_config_raw.get("gleaning_enabled")
-                and int(self._staged_config_raw.get("gleaning_max_passes", 1) or 1) >= 1
+                and self._dense_config_raw.get("gleaning_enabled")
+                and int(self._dense_config_raw.get("gleaning_max_passes", 1) or 1) >= 1
             ):
 
                 def _gleaning_llm_call(prompt_dict: dict) -> dict | list | None:
@@ -980,7 +949,7 @@ class LlmBackend:
         schema_json: str,
         max_tokens: int | None,
         response_top_level: Literal["object", "array"] = "object",
-        response_schema_name: str = "staged_extraction",
+        response_schema_name: str = "extraction",
         structured_output_override: bool | None = None,
     ) -> dict | list | None:
         """Invoke client with temporary max_tokens override when supported."""
@@ -1017,7 +986,7 @@ class LlmBackend:
         schema_json: str,
         context: str,
         response_top_level: Literal["object", "array"] = "object",
-        response_schema_name: str = "staged_extraction",
+        response_schema_name: str = "extraction",
         *,
         max_tokens: int | None = None,
         structured_output_override: bool | None = None,
@@ -1169,50 +1138,6 @@ class LlmBackend:
             self._log_error(f"Error during LLM call for {context}", e)
             return None
 
-    def _extract_with_delta_contract(
-        self,
-        markdown: str,
-        context: str,
-        template: Type[BaseModel] | None = None,
-        trace_data: Any = None,
-    ) -> dict | list | None:
-        """Delta extraction from a single markdown payload (fallback path)."""
-        chunks = [markdown]
-        chunk_metadata = [
-            {
-                "chunk_id": 0,
-                "page_numbers": [0],
-                "token_count": max(1, len(markdown.split())),
-            }
-        ]
-        return self._run_delta_orchestrator(
-            chunks=chunks,
-            chunk_metadata=chunk_metadata,
-            context=context,
-            template=template,
-            trace_data=trace_data,
-        )
-
-    def _run_delta_orchestrator(
-        self,
-        *,
-        chunks: list[str],
-        chunk_metadata: list[dict[str, Any]] | None,
-        context: str,
-        template: Type[BaseModel] | None,
-        trace_data: Any,
-    ) -> dict | list | None:
-        return run_delta_orchestrator(
-            llm_call_fn=self._call_prompt,
-            staged_config_raw=self._staged_config_raw,
-            chunks=chunks,
-            chunk_metadata=chunk_metadata,
-            context=context,
-            template=template,
-            trace_data=trace_data,
-            structured_output=self.structured_output,
-        )
-
     def extract_from_chunk_batches(
         self,
         *,
@@ -1221,7 +1146,7 @@ class LlmBackend:
         template: Type[BaseModel],
         context: str = "document",
     ) -> BaseModel | None:
-        """Run delta or dense extraction from pre-chunked content and validate final model."""
+        """Run dense extraction from pre-chunked content and validate final model."""
         if self.extraction_contract == "dense":
             self._log_extraction(
                 f"Running dense extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
@@ -1237,29 +1162,16 @@ class LlmBackend:
                 trace_data=getattr(self, "trace_data", None),
             )
         else:
-            self._log_extraction(
-                f"Running delta extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
-                "DeltaExtraction",
-            )
-            self._log_extraction("Calling LLM (batch mode)...", "DeltaExtraction")
-            parsed_json = self._run_delta_orchestrator(
-                chunks=chunks,
-                chunk_metadata=chunk_metadata,
-                context=context,
-                template=template,
-                trace_data=getattr(self, "trace_data", None),
-            )
+            # Batch extraction not supported for direct contract
+            self._log_error("Batch extraction only supported for dense contract")
+            return None
         if not parsed_json:
             return None
         schema_dict = self._get_schema_dict(template)
-        if (
-            self.structured_sparse_check
-            and self.extraction_contract not in ("delta", "dense")
-            and self._is_sparse_structured_result(
-                parsed_json,
-                schema_dict,
-                "\n".join(chunks),
-            )
+        if self.structured_sparse_check and self._is_sparse_structured_result(
+            parsed_json,
+            schema_dict,
+            "\n".join(chunks),
         ):
             self._log_warning(
                 f"Extraction appears sparse for {context}; falling back to direct extraction."
@@ -1300,7 +1212,7 @@ class LlmBackend:
     ) -> dict | list | None:
         """Run dense orchestrator (Phase 1 skeleton + Phase 2 fill)."""
 
-        # Dense uses legacy prompt-schema only (no API structured output), like staged,
+        # Dense uses legacy prompt-schema only (no API structured output)
         # to avoid provider-specific failures and empty/null JSON on skeleton and fill.
         def _dense_llm(
             prompt: dict[str, str],
@@ -1308,7 +1220,7 @@ class LlmBackend:
             context: str,
             *,
             response_top_level: Literal["object", "array"] = "object",
-            response_schema_name: str = "staged_extraction",
+            response_schema_name: str = "extraction",
             **kwargs: Any,
         ) -> dict | list | None:
             return self._call_prompt(
@@ -1323,33 +1235,13 @@ class LlmBackend:
 
         return run_dense_orchestrator(
             llm_call_fn=_dense_llm,
-            staged_config_raw=self._staged_config_raw,
+            dense_config_raw=self._dense_config_raw,
             chunks=chunks,
             chunk_metadata=chunk_metadata,
             full_markdown=full_markdown,
             context=context,
             template=template,
             trace_data=trace_data,
-        )
-
-    def _extract_with_staged_contract(
-        self,
-        markdown: str,
-        schema_json: str,
-        context: str,
-        template: Type[BaseModel] | None = None,
-        trace_data: Any = None,
-    ) -> dict | list | None:
-        """3-pass catalog extraction: ID discovery, fill nodes, assemble edges."""
-        return run_staged_orchestrator(
-            llm_call_fn=self._call_prompt,
-            staged_config_raw=self._staged_config_raw,
-            markdown=markdown,
-            schema_json=schema_json,
-            context=context,
-            template=template,
-            trace_data=trace_data,
-            structured_output=False,  # Staged: use legacy prompt-schema only; avoid provider structured-output failures
         )
 
     def _repair_json(self, raw_text: str) -> str:
@@ -1439,19 +1331,7 @@ class LlmBackend:
             Extracted and validated Pydantic model instance, or None if failed
         """
         # Log extraction start with contract-specific prefix
-        mode = (
-            "Delta"
-            if (self.extraction_contract == "delta" and not is_partial)
-            else (
-                "Dense"
-                if (self.extraction_contract == "dense" and not is_partial)
-                else (
-                    "Staged"
-                    if (self.extraction_contract == "staged" and not is_partial)
-                    else "Direct"
-                )
-            )
-        )
+        mode = "Dense" if (self.extraction_contract == "dense" and not is_partial) else "Direct"
         prefix = f"{mode}Extraction"
         self._log_extraction(
             f"{mode} extraction from {context} ([cyan]{len(markdown)}[/cyan] chars)", prefix

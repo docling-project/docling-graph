@@ -99,7 +99,7 @@ def main() -> None:
             model_override="mistral-large-latest",
             # Many-to-one: merge all pages into single result
             processing_mode="many-to-one",
-            # extraction_contract="direct" (default); use "staged" for complex nested templates (see Example 11)
+            # extraction_contract="direct" (default); use "dense" for richer chunk-aware extraction
             use_chunking=True,
         )
 

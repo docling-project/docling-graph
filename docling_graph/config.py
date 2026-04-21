@@ -27,7 +27,7 @@ class ExtractorConfig(BaseModel):
     """Configuration for the extraction strategy."""
 
     strategy: Literal["many-to-one", "one-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "staged", "delta", "dense"] = Field(default="direct")
+    extraction_contract: Literal["direct", "dense"] = Field(default="direct")
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
     use_chunking: bool = Field(default=True)
     chunker_config: Dict[str, Any] | None = Field(default=None)
@@ -75,30 +75,6 @@ class ModelsConfig(BaseModel):
     vlm: VLMConfig = Field(default_factory=VLMConfig)
 
 
-# Staged (3-pass) preset defaults: (pass_retries, workers, nodes_fill_cap, id_shard_size).
-_STAGED_PRESETS: Dict[str, tuple[int, int, int, int]] = {
-    "standard": (2, 1, 5, 0),
-    "advanced": (1, 1, 15, 0),
-}
-
-
-def get_effective_staged_tuning(
-    preset: str,
-    pass_retries: int | None,
-    workers: int | None,
-    nodes_fill_cap: int | None,
-    id_shard_size: int | None = None,
-) -> tuple[int, int, int, int]:
-    """Return (pass_retries, workers, nodes_fill_cap, id_shard_size) with preset defaults applied."""
-    r, w, n, s = _STAGED_PRESETS.get(preset, _STAGED_PRESETS["standard"])
-    return (
-        pass_retries if pass_retries is not None else r,
-        workers if workers is not None else w,
-        nodes_fill_cap if nodes_fill_cap is not None else n,
-        id_shard_size if id_shard_size is not None else s,
-    )
-
-
 class PipelineConfig(BaseModel):
     """
     Type-safe configuration for the docling-graph pipeline.
@@ -118,7 +94,7 @@ class PipelineConfig(BaseModel):
     backend: Literal["llm", "vlm"] = Field(default="llm")
     inference: Literal["local", "remote"] = Field(default="local")
     processing_mode: Literal["one-to-one", "many-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "staged", "delta", "dense"] = Field(default="direct")
+    extraction_contract: Literal["direct", "dense"] = Field(default="direct")
 
     # Docling settings (with defaults)
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
@@ -158,177 +134,25 @@ class PipelineConfig(BaseModel):
         default=None,
         description="Max tokens per chunk when chunking is used (default: 512).",
     )
-    llm_batch_token_size: int = Field(
-        default=1024,
-        description="Max total input tokens per LLM batch in delta extraction.",
-    )
     debug: bool = Field(
         default=False, description="Enable debug artifacts (controlled by --debug flag)"
     )
     max_batch_size: int = 1
 
-    # Staged (3-pass) tuning: ID pass → fill pass (bottom-up) → merge. Preset sets defaults; overrides apply when not None.
-    staged_tuning_preset: Literal["standard", "advanced"] = Field(
-        default="standard",
-        description="Preset: 'standard' for typical LLMs; 'advanced' for larger context (more paths per ID-pass call, larger fill batches).",
-    )
-    staged_pass_retries: int | None = Field(
-        default=None,
-        description="Retries per staged pass when LLM returns invalid JSON (None = use preset).",
-    )
+    # Parallel workers for extraction
     parallel_workers: int | None = Field(
         default=None,
-        description="Parallel workers for extraction (staged fill pass and delta batch calls). None = use preset for staged.",
+        description="Parallel workers for extraction.",
     )
-    delta_normalizer_validate_paths: bool = Field(
-        default=True, description="Drop/repair delta IR nodes with unknown catalog paths."
-    )
-    delta_normalizer_canonicalize_ids: bool = Field(
-        default=True, description="Canonicalize delta IR identifier values before merge."
-    )
-    delta_normalizer_strip_nested_properties: bool = Field(
-        default=True, description="Drop nested properties from delta IR nodes/relationships."
-    )
-    delta_normalizer_attach_provenance: bool = Field(
-        default=True, description="Attach batch/chunk provenance to normalized delta IR."
-    )
-    delta_resolvers_enabled: bool = Field(
-        default=True, description="Enable optional post-merge delta duplicate resolvers."
-    )
-    delta_resolvers_mode: Literal["off", "fuzzy", "semantic", "chain"] = Field(
-        default="semantic", description="Resolver mode for delta post-merge dedup."
-    )
-    delta_resolver_fuzzy_threshold: float = Field(
-        default=0.8, description="Similarity threshold for fuzzy post-merge dedup."
-    )
-    delta_resolver_semantic_threshold: float = Field(
-        default=0.8, description="Similarity threshold for semantic post-merge dedup."
-    )
-    delta_resolver_properties: list[str] | None = Field(
-        default=None,
-        description="Optional list of property names used for resolver matching.",
-    )
-    delta_resolver_paths: list[str] | None = Field(
-        default=None, description="Optional path allowlist for resolver matching."
-    )
-    delta_resolver_allow_merge_different_ids: bool = Field(
-        default=False,
-        description="If True, allow resolver to merge nodes with different non-empty ids (content similarity decides). If False, do not merge when both have distinct identity strings.",
-    )
-    quality_max_unknown_path_drops: int = Field(
-        default=-1,
-        description="Maximum allowed unknown-path drops before delta quality gate fails (-1 disables).",
-    )
-    quality_max_id_mismatch: int = Field(
-        default=-1,
-        description="Maximum allowed ID key mismatches before delta quality gate fails (-1 disables).",
-    )
-    quality_max_nested_property_drops: int = Field(
-        default=-1,
-        description="Maximum allowed nested property drops before delta quality gate fails (-1 disables).",
-    )
-    delta_quality_require_root: bool = Field(
-        default=True, description="Require root instance in delta quality gate."
-    )
-    delta_quality_min_instances: int = Field(
-        default=20,
-        description="Minimum attached nodes required by delta quality gate; below this, fall back to direct extraction.",
-    )
-    delta_quality_max_parent_lookup_miss: int = Field(
-        default=4,
-        description=(
-            "Maximum allowed parent lookup misses before delta quality gate fails. "
-            "Use -1 to disable this check (e.g. for deep or id-sparse schemas)."
-        ),
-    )
-    delta_quality_adaptive_parent_lookup: bool = Field(
-        default=True,
-        description="Enable adaptive parent_lookup_miss tolerance for delta quality gate.",
-    )
-    delta_quality_min_non_empty_properties: int = Field(
-        default=-1,
-        description=(
-            "Minimum non-empty merged node properties required by delta quality gate (-1 disables)."
-        ),
-    )
-    delta_quality_min_root_non_empty_fields: int = Field(
-        default=-1,
-        description=(
-            "Minimum non-empty scalar root fields required by delta quality gate (-1 disables)."
-        ),
-    )
-    delta_quality_min_non_empty_by_path: dict[str, int] | None = Field(
-        default=None,
-        description=(
-            "Optional minimum non-empty property counts per catalog path for delta quality gate "
-            "(e.g. {'line_items[]': 3})."
-        ),
-    )
-    delta_quality_max_orphan_ratio: float = Field(
-        default=-1.0,
-        description="Maximum allowed orphan ratio before delta quality gate fails (-1 disables).",
-    )
-    delta_quality_max_canonical_duplicates: int = Field(
-        default=-1,
-        description=(
-            "Maximum allowed duplicate canonical identities across paths before delta quality gate fails "
-            "(-1 disables)."
-        ),
-    )
-    delta_batch_split_max_retries: int = Field(
-        default=1,
-        description="Maximum split-retry rounds for failed delta batches.",
-    )
-    delta_identity_filter_enabled: bool = Field(
-        default=True,
-        description="Drop entity nodes whose identity value is not in schema allowlist or looks like a section title.",
-    )
-    delta_identity_filter_strict: bool = Field(
-        default=False,
-        description="If True, drop any entity node whose identity is not in allowlist; if False, also drop when section-title heuristic matches.",
-    )
+
+    # Gleaning settings (for direct contract)
     gleaning_enabled: bool = Field(
         default=True,
-        description="Run optional second-pass extraction (what did you miss?) for direct and delta contracts.",
+        description="Run optional second-pass extraction (what did you miss?) for direct contract.",
     )
     gleaning_max_passes: int = Field(
         default=1,
         description="Max gleaning passes (1 = one extra pass). Used when gleaning_enabled is True.",
-    )
-    staged_nodes_fill_cap: int | None = Field(
-        default=None, description="Max nodes per LLM call in fill pass (None = use preset)."
-    )
-    staged_id_shard_size: int | None = Field(
-        default=None, description="Paths per ID-pass call; 0 = single call (None = use preset)."
-    )
-
-    staged_id_identity_only: bool = Field(
-        default=True, description="Discover only identity-bearing paths in ID pass."
-    )
-    staged_id_compact_prompt: bool = Field(
-        default=True, description="Use compact ID-pass prompt to reduce token pressure."
-    )
-    staged_id_auto_shard_threshold: int = Field(
-        default=10, description="Auto-shard ID pass when catalog paths exceed this threshold."
-    )
-    staged_id_shard_min_size: int = Field(
-        default=2, description="Minimum split size when retrying failed ID shards."
-    )
-    staged_quality_require_root: bool = Field(
-        default=True, description="Require root descriptor in staged quality gate."
-    )
-    staged_quality_min_instances: int = Field(
-        default=1, description="Minimum ID instances required by staged quality gate."
-    )
-    staged_quality_max_parent_lookup_miss: int = Field(
-        default=0, description="Maximum allowed parent lookup misses before fallback."
-    )
-    staged_id_max_tokens: int | None = Field(
-        default=16384,
-        description="Max tokens for staged ID pass responses. Default 16384 avoids truncation on large catalogs; set to None to use client default.",
-    )
-    staged_fill_max_tokens: int | None = Field(
-        default=None, description="Optional max_tokens override for staged fill calls."
     )
     # Dense contract: optional post-merge fuzzy/semantic resolvers
     dense_resolvers_enabled: bool = Field(
@@ -401,18 +225,6 @@ class PipelineConfig(BaseModel):
         Return full effective config as a JSON-serializable dict for metadata.json.
         Includes all options with their effective values (including defaults not overridden).
         """
-        (
-            effective_retries,
-            effective_workers,
-            effective_nodes_fill_cap,
-            effective_id_shard_size,
-        ) = get_effective_staged_tuning(
-            self.staged_tuning_preset,
-            self.staged_pass_retries,
-            self.parallel_workers,
-            self.staged_nodes_fill_cap,
-            self.staged_id_shard_size,
-        )
         # Full dump, JSON-serializable (Path -> str, etc.), exclude non-serializable
         data = self.model_dump(mode="json", exclude={"llm_client", "template"})
         # template can be a Pydantic model class; serialize as dotted path string
@@ -420,10 +232,6 @@ class PipelineConfig(BaseModel):
             data["template"] = self.template
         else:
             data["template"] = f"{self.template.__module__}.{self.template.__qualname__}"
-        data["staged_pass_retries"] = effective_retries
-        data["parallel_workers"] = effective_workers
-        data["staged_nodes_fill_cap"] = effective_nodes_fill_cap
-        data["staged_id_shard_size"] = effective_id_shard_size
         if resolved_model is not None:
             data["resolved_model"] = resolved_model
         if resolved_provider is not None:
@@ -432,18 +240,6 @@ class PipelineConfig(BaseModel):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary format expected by run_pipeline."""
-        (
-            effective_retries,
-            effective_workers,
-            effective_nodes_fill_cap,
-            effective_id_shard_size,
-        ) = get_effective_staged_tuning(
-            self.staged_tuning_preset,
-            self.staged_pass_retries,
-            self.parallel_workers,
-            self.staged_nodes_fill_cap,
-            self.staged_id_shard_size,
-        )
         return {
             "source": self.source,
             "template": self.template,
@@ -456,52 +252,12 @@ class PipelineConfig(BaseModel):
             "structured_sparse_check": self.structured_sparse_check,
             "use_chunking": self.use_chunking,
             "chunk_max_tokens": self.chunk_max_tokens,
-            "llm_batch_token_size": self.llm_batch_token_size,
             "debug": self.debug,
             "model_override": self.model_override,
             "provider_override": self.provider_override,
-            "staged_tuning_preset": self.staged_tuning_preset,
-            "staged_pass_retries": effective_retries,
-            "parallel_workers": effective_workers,
-            "delta_normalizer_validate_paths": self.delta_normalizer_validate_paths,
-            "delta_normalizer_canonicalize_ids": self.delta_normalizer_canonicalize_ids,
-            "delta_normalizer_strip_nested_properties": self.delta_normalizer_strip_nested_properties,
-            "delta_normalizer_attach_provenance": self.delta_normalizer_attach_provenance,
-            "delta_resolvers_enabled": self.delta_resolvers_enabled,
-            "delta_resolvers_mode": self.delta_resolvers_mode,
-            "delta_resolver_fuzzy_threshold": self.delta_resolver_fuzzy_threshold,
-            "delta_resolver_semantic_threshold": self.delta_resolver_semantic_threshold,
-            "delta_resolver_properties": self.delta_resolver_properties,
-            "delta_resolver_paths": self.delta_resolver_paths,
-            "delta_resolver_allow_merge_different_ids": self.delta_resolver_allow_merge_different_ids,
-            "quality_max_unknown_path_drops": self.quality_max_unknown_path_drops,
-            "quality_max_id_mismatch": self.quality_max_id_mismatch,
-            "quality_max_nested_property_drops": self.quality_max_nested_property_drops,
-            "delta_quality_require_root": self.delta_quality_require_root,
-            "delta_quality_min_instances": self.delta_quality_min_instances,
-            "delta_quality_max_parent_lookup_miss": self.delta_quality_max_parent_lookup_miss,
-            "delta_quality_adaptive_parent_lookup": self.delta_quality_adaptive_parent_lookup,
-            "delta_quality_min_non_empty_properties": self.delta_quality_min_non_empty_properties,
-            "delta_quality_min_root_non_empty_fields": self.delta_quality_min_root_non_empty_fields,
-            "delta_quality_min_non_empty_by_path": self.delta_quality_min_non_empty_by_path,
-            "delta_quality_max_orphan_ratio": self.delta_quality_max_orphan_ratio,
-            "delta_quality_max_canonical_duplicates": self.delta_quality_max_canonical_duplicates,
-            "delta_batch_split_max_retries": self.delta_batch_split_max_retries,
-            "delta_identity_filter_enabled": self.delta_identity_filter_enabled,
-            "delta_identity_filter_strict": self.delta_identity_filter_strict,
+            "parallel_workers": self.parallel_workers,
             "gleaning_enabled": self.gleaning_enabled,
             "gleaning_max_passes": self.gleaning_max_passes,
-            "staged_nodes_fill_cap": effective_nodes_fill_cap,
-            "staged_id_shard_size": effective_id_shard_size,
-            "staged_id_identity_only": self.staged_id_identity_only,
-            "staged_id_compact_prompt": self.staged_id_compact_prompt,
-            "staged_id_auto_shard_threshold": self.staged_id_auto_shard_threshold,
-            "staged_id_shard_min_size": self.staged_id_shard_min_size,
-            "staged_quality_require_root": self.staged_quality_require_root,
-            "staged_quality_min_instances": self.staged_quality_min_instances,
-            "staged_quality_max_parent_lookup_miss": self.staged_quality_max_parent_lookup_miss,
-            "staged_id_max_tokens": self.staged_id_max_tokens,
-            "staged_fill_max_tokens": self.staged_fill_max_tokens,
             "dense_resolvers_enabled": self.dense_resolvers_enabled,
             "dense_resolvers_mode": self.dense_resolvers_mode,
             "dense_resolvers_fuzzy_threshold": self.dense_resolvers_fuzzy_threshold,
@@ -543,49 +299,9 @@ class PipelineConfig(BaseModel):
                 "extraction_contract": default_config.extraction_contract,
                 "export_format": default_config.export_format,
                 "chunk_max_tokens": default_config.chunk_max_tokens,
-                "llm_batch_token_size": default_config.llm_batch_token_size,
                 "structured_output": default_config.structured_output,
                 "structured_sparse_check": default_config.structured_sparse_check,
-                "staged_tuning_preset": default_config.staged_tuning_preset,
-                "staged_pass_retries": default_config.staged_pass_retries,
                 "parallel_workers": default_config.parallel_workers,
-                "delta_normalizer_validate_paths": default_config.delta_normalizer_validate_paths,
-                "delta_normalizer_canonicalize_ids": default_config.delta_normalizer_canonicalize_ids,
-                "delta_normalizer_strip_nested_properties": default_config.delta_normalizer_strip_nested_properties,
-                "delta_normalizer_attach_provenance": default_config.delta_normalizer_attach_provenance,
-                "delta_resolvers_enabled": default_config.delta_resolvers_enabled,
-                "delta_resolvers_mode": default_config.delta_resolvers_mode,
-                "delta_resolver_fuzzy_threshold": default_config.delta_resolver_fuzzy_threshold,
-                "delta_resolver_semantic_threshold": default_config.delta_resolver_semantic_threshold,
-                "delta_resolver_properties": default_config.delta_resolver_properties,
-                "delta_resolver_paths": default_config.delta_resolver_paths,
-                "delta_resolver_allow_merge_different_ids": default_config.delta_resolver_allow_merge_different_ids,
-                "quality_max_unknown_path_drops": default_config.quality_max_unknown_path_drops,
-                "quality_max_id_mismatch": default_config.quality_max_id_mismatch,
-                "quality_max_nested_property_drops": default_config.quality_max_nested_property_drops,
-                "delta_quality_require_root": default_config.delta_quality_require_root,
-                "delta_quality_min_instances": default_config.delta_quality_min_instances,
-                "delta_quality_max_parent_lookup_miss": default_config.delta_quality_max_parent_lookup_miss,
-                "delta_quality_adaptive_parent_lookup": default_config.delta_quality_adaptive_parent_lookup,
-                "delta_quality_min_non_empty_properties": default_config.delta_quality_min_non_empty_properties,
-                "delta_quality_min_root_non_empty_fields": default_config.delta_quality_min_root_non_empty_fields,
-                "delta_quality_min_non_empty_by_path": default_config.delta_quality_min_non_empty_by_path,
-                "delta_quality_max_orphan_ratio": default_config.delta_quality_max_orphan_ratio,
-                "delta_quality_max_canonical_duplicates": default_config.delta_quality_max_canonical_duplicates,
-                "delta_batch_split_max_retries": default_config.delta_batch_split_max_retries,
-                "delta_identity_filter_enabled": default_config.delta_identity_filter_enabled,
-                "delta_identity_filter_strict": default_config.delta_identity_filter_strict,
-                "staged_nodes_fill_cap": default_config.staged_nodes_fill_cap,
-                "staged_id_shard_size": default_config.staged_id_shard_size,
-                "staged_id_identity_only": default_config.staged_id_identity_only,
-                "staged_id_compact_prompt": default_config.staged_id_compact_prompt,
-                "staged_id_auto_shard_threshold": default_config.staged_id_auto_shard_threshold,
-                "staged_id_shard_min_size": default_config.staged_id_shard_min_size,
-                "staged_quality_require_root": default_config.staged_quality_require_root,
-                "staged_quality_min_instances": default_config.staged_quality_min_instances,
-                "staged_quality_max_parent_lookup_miss": default_config.staged_quality_max_parent_lookup_miss,
-                "staged_id_max_tokens": default_config.staged_id_max_tokens,
-                "staged_fill_max_tokens": default_config.staged_fill_max_tokens,
                 "dense_resolvers_enabled": default_config.dense_resolvers_enabled,
                 "dense_resolvers_mode": default_config.dense_resolvers_mode,
                 "dense_resolvers_fuzzy_threshold": default_config.dense_resolvers_fuzzy_threshold,

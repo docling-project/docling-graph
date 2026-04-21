@@ -57,7 +57,7 @@ vlm = [
     "docling[vlm]>=2.70.0,<3.0.0",
 ]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
-delta-resolvers = [
+semantic = [
     "spacy",
     "rapidfuzz",
 ]

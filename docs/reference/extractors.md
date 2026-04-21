@@ -343,8 +343,8 @@ from docling_graph.core.extractors import ExtractorFactory
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
-    extraction_contract="direct",  # or "staged" / "delta" (LLM + many-to-one only)
-    staged_config=None,            # optional: pass_retries, parallel_workers, nodes_fill_cap, id_shard_size, delta_* for delta
+    extraction_contract="direct",  # or "dense" (LLM + many-to-one only)
+    dense_config=None,             # optional: dense_skeleton_batch_tokens, dense_fill_nodes_cap, parallel_workers
     llm_client=client,
     docling_config="ocr",
 )
@@ -356,8 +356,8 @@ extractor = ExtractorFactory.create_extractor(
 |-----------|------|-------------|
 | `processing_mode` | `"one-to-one"` \| `"many-to-one"` | Extraction strategy |
 | `backend_name` | `"llm"` \| `"vlm"` | Backend type |
-| `extraction_contract` | `"direct"` \| `"staged"` \| `"delta"` | LLM contract; `staged` and `delta` only apply to many-to-one |
-| `staged_config` | `dict` \| `None` | Optional staged tuning (pass_retries, parallel_workers, etc.) |
+| `extraction_contract` | `"direct"` \| `"dense"` | LLM contract; `dense` applies to many-to-one |
+| `dense_config` | `dict` \| `None` | Optional dense tuning (skeleton batch tokens, fill cap, parallel workers, etc.) |
 | `model_name` | `str` \| `None` | Required for VLM |
 | `llm_client` | `LLMClientProtocol` \| `None` | Required for LLM |
 | `docling_config` | `str` | `"ocr"` or `"vision"` |
@@ -400,8 +400,7 @@ chunker = DocumentChunker(
 
 ## Related APIs
 
-- **[Staged Extraction](../fundamentals/extraction-process/staged-extraction.md)** - Multi-pass extraction
-- **[Delta Extraction](../fundamentals/extraction-process/delta-extraction.md)** - Chunk-based graph extraction
+- **[Dense Extraction](../fundamentals/extraction-process/dense-extraction.md)** - Two-phase skeleton-then-fill extraction
 - **[Extraction Process](../fundamentals/extraction-process/index.md)** - Usage guide
 - **[Model Merging](../fundamentals/extraction-process/model-merging.md)** - Zero data loss
 - **[Protocols](protocols.md)** - Backend protocols

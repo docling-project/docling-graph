@@ -44,28 +44,12 @@ def _resolve_cli_settings(
     export_format: str | None,
     docling_pipeline: str | None,
     chunk_max_tokens: int | None,
-    llm_batch_token_size: int | None,
-    staged_tuning_preset: str | None,
-    staged_pass_retries: int | None,
-    parallel_workers: int | None,
-    delta_normalizer_validate_paths: bool | None,
-    delta_normalizer_canonicalize_ids: bool | None,
-    delta_normalizer_strip_nested_properties: bool | None,
-    delta_resolvers_enabled: bool | None,
-    delta_resolvers_mode: str | None,
-    delta_resolver_fuzzy_threshold: float | None,
-    delta_resolver_semantic_threshold: float | None,
-    delta_quality_min_instances: int | None,
     dense_resolvers_enabled: bool | None,
     dense_resolvers_mode: str | None,
     dense_resolvers_fuzzy_threshold: float | None,
     dense_resolvers_semantic_threshold: float | None,
     dense_resolvers_allow_merge_different_ids: bool | None,
     dense_prune_barren_branches: bool | None,
-    staged_nodes_fill_cap: int | None,
-    staged_id_shard_size: int | None,
-    staged_id_max_tokens: int | None,
-    staged_fill_max_tokens: int | None,
     schema_enforced_llm: bool | None,
     structured_sparse_check: bool | None,
     gleaning_enabled: bool,
@@ -81,22 +65,6 @@ def _resolve_cli_settings(
     inference_val = inference or defaults.get("inference", "local")
     export_format_val = export_format or defaults.get("export_format", "csv")
     docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
-
-    final_staged_tuning_preset = (
-        staged_tuning_preset
-        if staged_tuning_preset is not None
-        else defaults.get("staged_tuning_preset", "standard")
-    )
-    if final_staged_tuning_preset not in ("standard", "advanced"):
-        final_staged_tuning_preset = "standard"
-
-    final_delta_resolvers_mode = (
-        delta_resolvers_mode
-        if delta_resolvers_mode is not None
-        else defaults.get("delta_resolvers_mode", "semantic")
-    )
-    if final_delta_resolvers_mode not in ("off", "fuzzy", "semantic", "chain"):
-        final_delta_resolvers_mode = "off"
 
     final_dense_resolvers_mode = (
         dense_resolvers_mode
@@ -117,66 +85,6 @@ def _resolve_cli_settings(
         "docling_pipeline": docling_pipeline_val,
         "chunk_max_tokens": (
             chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
-        ),
-        "llm_batch_token_size": (
-            llm_batch_token_size
-            if llm_batch_token_size is not None
-            else defaults.get("llm_batch_token_size", 1024)
-        ),
-        "staged_tuning_preset": final_staged_tuning_preset,
-        "staged_pass_retries": (
-            staged_pass_retries
-            if staged_pass_retries is not None
-            else defaults.get("staged_pass_retries")
-        ),
-        "parallel_workers": (
-            parallel_workers if parallel_workers is not None else defaults.get("parallel_workers")
-        ),
-        "delta_normalizer_validate_paths": (
-            delta_normalizer_validate_paths
-            if delta_normalizer_validate_paths is not None
-            else bool(defaults.get("delta_normalizer_validate_paths", True))
-        ),
-        "delta_normalizer_canonicalize_ids": (
-            delta_normalizer_canonicalize_ids
-            if delta_normalizer_canonicalize_ids is not None
-            else bool(defaults.get("delta_normalizer_canonicalize_ids", True))
-        ),
-        "delta_normalizer_strip_nested_properties": (
-            delta_normalizer_strip_nested_properties
-            if delta_normalizer_strip_nested_properties is not None
-            else bool(defaults.get("delta_normalizer_strip_nested_properties", True))
-        ),
-        "delta_normalizer_attach_provenance": bool(
-            defaults.get("delta_normalizer_attach_provenance", True)
-        ),
-        "delta_resolvers_enabled": (
-            delta_resolvers_enabled
-            if delta_resolvers_enabled is not None
-            else bool(defaults.get("delta_resolvers_enabled", True))
-        ),
-        "delta_resolvers_mode": final_delta_resolvers_mode,
-        "delta_resolver_fuzzy_threshold": (
-            delta_resolver_fuzzy_threshold
-            if delta_resolver_fuzzy_threshold is not None
-            else float(defaults.get("delta_resolver_fuzzy_threshold", 0.8))
-        ),
-        "delta_resolver_semantic_threshold": (
-            delta_resolver_semantic_threshold
-            if delta_resolver_semantic_threshold is not None
-            else float(defaults.get("delta_resolver_semantic_threshold", 0.8))
-        ),
-        "delta_resolver_properties": defaults.get("delta_resolver_properties"),
-        "delta_resolver_paths": defaults.get("delta_resolver_paths"),
-        "quality_max_unknown_path_drops": int(defaults.get("quality_max_unknown_path_drops", -1)),
-        "quality_max_id_mismatch": int(defaults.get("quality_max_id_mismatch", -1)),
-        "quality_max_nested_property_drops": int(
-            defaults.get("quality_max_nested_property_drops", -1)
-        ),
-        "delta_quality_min_instances": (
-            delta_quality_min_instances
-            if delta_quality_min_instances is not None
-            else int(defaults.get("delta_quality_min_instances", 20))
         ),
         "dense_resolvers_enabled": (
             dense_resolvers_enabled
@@ -203,31 +111,6 @@ def _resolve_cli_settings(
             dense_prune_barren_branches
             if dense_prune_barren_branches is not None
             else bool(defaults.get("dense_prune_barren_branches", False))
-        ),
-        "staged_nodes_fill_cap": (
-            delta_quality_min_instances
-            if delta_quality_min_instances is not None
-            else int(defaults.get("delta_quality_min_instances", 20))
-        ),
-        "staged_nodes_fill_cap": (
-            staged_nodes_fill_cap
-            if staged_nodes_fill_cap is not None
-            else defaults.get("staged_nodes_fill_cap")
-        ),
-        "staged_id_shard_size": (
-            staged_id_shard_size
-            if staged_id_shard_size is not None
-            else defaults.get("staged_id_shard_size")
-        ),
-        "staged_id_max_tokens": (
-            staged_id_max_tokens
-            if staged_id_max_tokens is not None
-            else defaults.get("staged_id_max_tokens", 16384)
-        ),
-        "staged_fill_max_tokens": (
-            staged_fill_max_tokens
-            if staged_fill_max_tokens is not None
-            else defaults.get("staged_fill_max_tokens")
         ),
         "structured_output": (
             schema_enforced_llm
@@ -275,7 +158,7 @@ def _validate_resolved_settings(settings: dict[str, Any]) -> dict[str, Any]:
     return settings
 
 
-def convert_command(  # noqa: C901
+def convert_command(
     source: Annotated[
         str,
         typer.Argument(
@@ -300,7 +183,7 @@ def convert_command(  # noqa: C901
         str | None,
         typer.Option(
             "--extraction-contract",
-            help="Extraction contract: 'direct', 'staged', 'delta', or 'dense'.",
+            help="Extraction contract: 'direct' or 'dense'.",
         ),
     ] = None,
     backend: Annotated[
@@ -346,74 +229,14 @@ def convert_command(  # noqa: C901
         int | None,
         typer.Option(
             "--llm-batch-token-size",
-            help="Delta: max total chunk tokens per batch (chunks are batched until this limit). Does not set LLM output limit (default: 1024).",
-        ),
-    ] = None,
-    staged_tuning_preset: Annotated[
-        str | None,
-        typer.Option(
-            "--staged-tuning",
-            help="Staged preset: 'standard' or 'advanced' (larger ID-pass shards, larger fill batches).",
-        ),
-    ] = None,
-    staged_pass_retries: Annotated[
-        int | None,
-        typer.Option(
-            "--staged-retries",
-            help="Retries per staged pass when LLM returns invalid JSON (overrides preset).",
+            help="Max total chunk tokens per batch. Does not set LLM output limit (default: 1024).",
         ),
     ] = None,
     parallel_workers: Annotated[
         int | None,
         typer.Option(
             "--parallel-workers",
-            help="Parallel workers for extraction (staged fill pass and delta batch calls; overrides preset for staged).",
-        ),
-    ] = None,
-    delta_normalizer_validate_paths: Annotated[
-        bool | None,
-        typer.Option(
-            "--delta-normalizer-validate-paths/--no-delta-normalizer-validate-paths",
-            help="Validate and repair/drop unknown delta IR paths before merge.",
-        ),
-    ] = None,
-    delta_normalizer_canonicalize_ids: Annotated[
-        bool | None,
-        typer.Option(
-            "--delta-normalizer-canonicalize-ids/--no-delta-normalizer-canonicalize-ids",
-            help="Canonicalize delta IR IDs before merge.",
-        ),
-    ] = None,
-    delta_normalizer_strip_nested_properties: Annotated[
-        bool | None,
-        typer.Option(
-            "--delta-normalizer-strip-nested-properties/--no-delta-normalizer-strip-nested-properties",
-            help="Drop nested delta IR properties before merge.",
-        ),
-    ] = None,
-    delta_resolvers_enabled: Annotated[
-        bool | None,
-        typer.Option(
-            "--delta-resolvers-enabled/--no-delta-resolvers-enabled",
-            help="Enable optional post-merge delta duplicate resolvers.",
-        ),
-    ] = None,
-    delta_resolvers_mode: Annotated[
-        str | None,
-        typer.Option(
-            "--delta-resolvers-mode", help="Resolver mode: off | fuzzy | semantic | chain."
-        ),
-    ] = None,
-    delta_resolver_fuzzy_threshold: Annotated[
-        float | None,
-        typer.Option(
-            "--delta-resolver-fuzzy-threshold", help="Fuzzy resolver similarity threshold."
-        ),
-    ] = None,
-    delta_resolver_semantic_threshold: Annotated[
-        float | None,
-        typer.Option(
-            "--delta-resolver-semantic-threshold", help="Semantic resolver similarity threshold."
+            help="Parallel workers for extraction.",
         ),
     ] = None,
     dense_resolvers_enabled: Annotated[
@@ -456,34 +279,6 @@ def convert_command(  # noqa: C901
         typer.Option(
             "--dense-prune-barren-branches/--no-dense-prune-barren-branches",
             help="Remove dense skeleton nodes that have no filled children and no scalar data (barren branches).",
-        ),
-    ] = None,
-    staged_nodes_fill_cap: Annotated[
-        int | None,
-        typer.Option(
-            "--staged-nodes-fill-cap",
-            help="Max nodes per LLM call in fill pass (overrides preset).",
-        ),
-    ] = None,
-    staged_id_shard_size: Annotated[
-        int | None,
-        typer.Option(
-            "--staged-id-shard-size",
-            help="Paths per ID pass call (0 = no sharding, overrides preset).",
-        ),
-    ] = None,
-    staged_id_max_tokens: Annotated[
-        int | None,
-        typer.Option(
-            "--staged-id-max-tokens",
-            help="Max tokens for staged ID pass responses (default from config: 16384).",
-        ),
-    ] = None,
-    staged_fill_max_tokens: Annotated[
-        int | None,
-        typer.Option(
-            "--staged-fill-max-tokens",
-            help="Max tokens for staged fill pass responses (default: use client default).",
         ),
     ] = None,
     # Docling export options
@@ -562,18 +357,11 @@ def convert_command(  # noqa: C901
     reverse_edges: Annotated[
         bool, typer.Option("--reverse-edges", "-r", help="Create bidirectional edges.")
     ] = False,
-    delta_quality_min_instances: Annotated[
-        int | None,
-        typer.Option(
-            "--delta-quality-min-instances",
-            help="Minimum attached nodes for delta quality gate; below this, fallback to direct. Default 20; use a lower value (e.g. 5) for small documents.",
-        ),
-    ] = None,
     gleaning_enabled: Annotated[
         bool,
         typer.Option(
             "--gleaning-enabled/--no-gleaning-enabled",
-            help="Run optional second-pass extraction to improve recall (direct and delta). Default: enabled.",
+            help="Run optional second-pass extraction to improve recall (direct contract). Default: enabled.",
         ),
     ] = True,
     gleaning_max_passes: Annotated[
@@ -613,28 +401,12 @@ def convert_command(  # noqa: C901
             export_format=export_format,
             docling_pipeline=docling_pipeline,
             chunk_max_tokens=chunk_max_tokens,
-            llm_batch_token_size=llm_batch_token_size,
-            staged_tuning_preset=staged_tuning_preset,
-            staged_pass_retries=staged_pass_retries,
-            parallel_workers=parallel_workers,
-            delta_normalizer_validate_paths=delta_normalizer_validate_paths,
-            delta_normalizer_canonicalize_ids=delta_normalizer_canonicalize_ids,
-            delta_normalizer_strip_nested_properties=delta_normalizer_strip_nested_properties,
-            delta_resolvers_enabled=delta_resolvers_enabled,
-            delta_resolvers_mode=delta_resolvers_mode,
-            delta_resolver_fuzzy_threshold=delta_resolver_fuzzy_threshold,
-            delta_resolver_semantic_threshold=delta_resolver_semantic_threshold,
-            delta_quality_min_instances=delta_quality_min_instances,
             dense_resolvers_enabled=dense_resolvers_enabled,
             dense_resolvers_mode=dense_resolvers_mode,
             dense_resolvers_fuzzy_threshold=dense_resolvers_fuzzy_threshold,
             dense_resolvers_semantic_threshold=dense_resolvers_semantic_threshold,
             dense_resolvers_allow_merge_different_ids=dense_resolvers_allow_merge_different_ids,
             dense_prune_barren_branches=dense_prune_barren_branches,
-            staged_nodes_fill_cap=staged_nodes_fill_cap,
-            staged_id_shard_size=staged_id_shard_size,
-            staged_id_max_tokens=staged_id_max_tokens,
-            staged_fill_max_tokens=staged_fill_max_tokens,
             schema_enforced_llm=schema_enforced_llm,
             structured_sparse_check=structured_sparse_check,
             gleaning_enabled=gleaning_enabled,
@@ -652,36 +424,14 @@ def convert_command(  # noqa: C901
     export_format_val = settings["export_format"]
     docling_pipeline_val = settings["docling_pipeline"]
     final_chunk_max_tokens = settings["chunk_max_tokens"]
-    final_llm_batch_token_size = settings["llm_batch_token_size"]
-    final_staged_tuning_preset = settings["staged_tuning_preset"]
-    final_staged_pass_retries = settings["staged_pass_retries"]
-    final_parallel_workers = settings["parallel_workers"]
-    final_delta_normalizer_validate_paths = settings["delta_normalizer_validate_paths"]
-    final_delta_normalizer_canonicalize_ids = settings["delta_normalizer_canonicalize_ids"]
-    final_delta_normalizer_strip_nested_properties = settings[
-        "delta_normalizer_strip_nested_properties"
-    ]
-    final_delta_normalizer_attach_provenance = settings["delta_normalizer_attach_provenance"]
-    final_delta_resolvers_enabled = settings["delta_resolvers_enabled"]
-    final_delta_resolvers_mode = settings["delta_resolvers_mode"]
-    final_delta_resolver_fuzzy_threshold = settings["delta_resolver_fuzzy_threshold"]
-    final_delta_resolver_semantic_threshold = settings["delta_resolver_semantic_threshold"]
-    final_delta_resolver_properties = settings["delta_resolver_properties"]
-    final_delta_resolver_paths = settings["delta_resolver_paths"]
-    final_quality_max_unknown_path_drops = settings["quality_max_unknown_path_drops"]
-    final_quality_max_id_mismatch = settings["quality_max_id_mismatch"]
-    final_quality_max_nested_property_drops = settings["quality_max_nested_property_drops"]
-    final_delta_quality_min_instances = settings["delta_quality_min_instances"]
     final_dense_resolvers_enabled = settings["dense_resolvers_enabled"]
     final_dense_resolvers_mode = settings["dense_resolvers_mode"]
     final_dense_resolvers_fuzzy_threshold = settings["dense_resolvers_fuzzy_threshold"]
     final_dense_resolvers_semantic_threshold = settings["dense_resolvers_semantic_threshold"]
-    final_dense_resolvers_allow_merge_different_ids = settings["dense_resolvers_allow_merge_different_ids"]
+    final_dense_resolvers_allow_merge_different_ids = settings[
+        "dense_resolvers_allow_merge_different_ids"
+    ]
     final_dense_prune_barren_branches = settings["dense_prune_barren_branches"]
-    final_staged_nodes_fill_cap = settings["staged_nodes_fill_cap"]
-    final_staged_id_shard_size = settings["staged_id_shard_size"]
-    final_staged_id_max_tokens = settings["staged_id_max_tokens"]
-    final_staged_fill_max_tokens = settings["staged_fill_max_tokens"]
     final_structured_output = settings["structured_output"]
     final_structured_sparse_check = settings["structured_sparse_check"]
     final_gleaning_enabled = settings["gleaning_enabled"]
@@ -726,49 +476,18 @@ def convert_command(  # noqa: C901
     rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
-    if extraction_contract_val in ("direct", "delta", "dense"):
+    if extraction_contract_val in ("direct", "dense"):
         rich_print(
             f"  • Gleaning: [cyan]enabled={final_gleaning_enabled}, max_passes={final_gleaning_max_passes}[/cyan]"
         )
     if final_chunk_max_tokens is not None:
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
-    if extraction_contract_val == "delta":
-        rich_print("[yellow][DeltaTuning][/yellow]")
-        rich_print(
-            f"  • Parallel Workers: [cyan]{final_parallel_workers if final_parallel_workers is not None else 1}[/cyan]"
-        )
-        rich_print(
-            f"  • IR Normalizer: [cyan]paths={final_delta_normalizer_validate_paths}, ids={final_delta_normalizer_canonicalize_ids}, strip_nested={final_delta_normalizer_strip_nested_properties}[/cyan]"
-        )
-        rich_print(
-            f"  • Resolvers: [cyan]enabled={final_delta_resolvers_enabled}, mode={final_delta_resolvers_mode}[/cyan]"
-        )
-        rich_print(f"  • LLM Batch Tokens: [yellow]{final_llm_batch_token_size}[/yellow]")
     if extraction_contract_val == "dense":
         rich_print("[yellow][DenseTuning][/yellow]")
-        rich_print(
-            f"  • Parallel Workers: [cyan]{final_parallel_workers if final_parallel_workers is not None else 1}[/cyan]"
-        )
         rich_print("  • Skeleton batch tokens / fill nodes cap: from config or defaults")
         rich_print(
             f"  • Resolvers: [cyan]enabled={final_dense_resolvers_enabled}, mode={final_dense_resolvers_mode}[/cyan]"
         )
-    if extraction_contract_val == "staged":
-        from docling_graph.config import get_effective_staged_tuning
-
-        eff_retries, eff_workers, eff_fill_cap, eff_id_shard_size = get_effective_staged_tuning(
-            final_staged_tuning_preset,
-            final_staged_pass_retries,
-            final_parallel_workers,
-            final_staged_nodes_fill_cap,
-            final_staged_id_shard_size,
-        )
-        rich_print("[yellow][StagedTuning][/yellow]")
-        rich_print(f"  • Preset: [cyan]{final_staged_tuning_preset}[/cyan]")
-        rich_print(f"  • Retries: [cyan]{eff_retries}[/cyan]")
-        rich_print(f"  • Workers: [cyan]{eff_workers}[/cyan]")
-        rich_print(f"  • Nodes Fill Cap: [cyan]{eff_fill_cap}[/cyan]")
-        rich_print(f"  • ID shard size: [cyan]{eff_id_shard_size}[/cyan]")
 
     # Build typed config
     logger.debug("Building PipelineConfig object")
@@ -807,30 +526,8 @@ def convert_command(  # noqa: C901
         structured_sparse_check=final_structured_sparse_check,
         debug=debug,
         chunk_max_tokens=final_chunk_max_tokens,
-        llm_batch_token_size=final_llm_batch_token_size,
-        staged_tuning_preset=final_staged_tuning_preset,
-        staged_pass_retries=final_staged_pass_retries,
-        parallel_workers=final_parallel_workers,
-        delta_normalizer_validate_paths=final_delta_normalizer_validate_paths,
-        delta_normalizer_canonicalize_ids=final_delta_normalizer_canonicalize_ids,
-        delta_normalizer_strip_nested_properties=final_delta_normalizer_strip_nested_properties,
-        delta_normalizer_attach_provenance=final_delta_normalizer_attach_provenance,
-        delta_resolvers_enabled=final_delta_resolvers_enabled,
-        delta_resolvers_mode=final_delta_resolvers_mode,
-        delta_resolver_fuzzy_threshold=final_delta_resolver_fuzzy_threshold,
-        delta_resolver_semantic_threshold=final_delta_resolver_semantic_threshold,
-        delta_resolver_properties=final_delta_resolver_properties,
-        delta_resolver_paths=final_delta_resolver_paths,
-        quality_max_unknown_path_drops=final_quality_max_unknown_path_drops,
-        quality_max_id_mismatch=final_quality_max_id_mismatch,
-        quality_max_nested_property_drops=final_quality_max_nested_property_drops,
-        delta_quality_min_instances=final_delta_quality_min_instances,
         gleaning_enabled=final_gleaning_enabled,
         gleaning_max_passes=final_gleaning_max_passes,
-        staged_nodes_fill_cap=final_staged_nodes_fill_cap,
-        staged_id_shard_size=final_staged_id_shard_size,
-        staged_id_max_tokens=final_staged_id_max_tokens,
-        staged_fill_max_tokens=final_staged_fill_max_tokens,
         dense_resolvers_enabled=final_dense_resolvers_enabled,
         dense_resolvers_mode=final_dense_resolvers_mode,
         dense_resolvers_fuzzy_threshold=final_dense_resolvers_fuzzy_threshold,

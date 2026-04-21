@@ -103,10 +103,10 @@ context = run_pipeline(config)
 | `backend` | `str` | `"llm"` | Backend type: `"llm"` or `"vlm"` |
 | `inference` | `str` | `"local"` | Inference mode: `"local"` or `"remote"` |
 | `processing_mode` | `str` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `str` | `"direct"` | Extraction contract: `"direct"`, `"staged"`, or `"delta"` (see [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md)) |
+| `extraction_contract` | `str` | `"direct"` | Extraction contract: `"direct"` or `"dense"` (see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md)) |
 | `docling_config` | `str` | `"ocr"` | Docling pipeline: `"ocr"` or `"vision"` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction to improve recall (direct and delta only). |
+| `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction to improve recall. |
 | `gleaning_max_passes` | `int` | `1` | Max gleaning passes when gleaning is enabled. |
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports (None=auto: CLI=True, API=False) |
 | `export_format` | `str` | `"csv"` | Export format: `"csv"` or `"cypher"` |

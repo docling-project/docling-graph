@@ -65,9 +65,7 @@ def test_chunk_batches_produces_multiple_batches_for_parallel():
     """With small max_batch_tokens, multiple chunks yield multiple batches."""
     chunks = ["chunk one", "chunk two", "chunk three", "chunk four", "chunk five"]
     token_counts = [40, 40, 40, 40, 40]
-    batches = chunk_batches_by_token_limit(
-        chunks, token_counts, max_batch_tokens=50
-    )
+    batches = chunk_batches_by_token_limit(chunks, token_counts, max_batch_tokens=50)
     assert len(batches) >= 2
 
 
@@ -83,7 +81,17 @@ def test_orchestrator_parallel_workers_returns_non_null_root():
         for _ in range(5)
     ]
     fill_responses = [
-        {"items": [{"invoice_number": "INV-1", "date": "2024-01-01", "total_amount": 100.0, "vendor_name": "Acme", "items": []}]}
+        {
+            "items": [
+                {
+                    "invoice_number": "INV-1",
+                    "date": "2024-01-01",
+                    "total_amount": 100.0,
+                    "vendor_name": "Acme",
+                    "items": [],
+                }
+            ]
+        }
     ]
     skeleton_idx = [0]
     fill_idx = [0]
@@ -130,9 +138,30 @@ def test_prune_barren_branches_removes_barren_branch_keeps_non_barren():
     """prune_barren_branches removes branch nodes that are childless and barren; leaves non-barren and leaf paths unchanged."""
     catalog = NodeCatalog(
         nodes=[
-            NodeSpec(path="", node_type="Root", id_fields=[], parent_path="", field_name="", is_list=False),
-            NodeSpec(path="studies[]", node_type="Study", id_fields=["study_id"], parent_path="", field_name="studies", is_list=True),
-            NodeSpec(path="studies[].experiments[]", node_type="Experiment", id_fields=["exp_id"], parent_path="studies[]", field_name="experiments", is_list=True),
+            NodeSpec(
+                path="",
+                node_type="Root",
+                id_fields=[],
+                parent_path="",
+                field_name="",
+                is_list=False,
+            ),
+            NodeSpec(
+                path="studies[]",
+                node_type="Study",
+                id_fields=["study_id"],
+                parent_path="",
+                field_name="studies",
+                is_list=True,
+            ),
+            NodeSpec(
+                path="studies[].experiments[]",
+                node_type="Experiment",
+                id_fields=["exp_id"],
+                parent_path="studies[]",
+                field_name="experiments",
+                is_list=True,
+            ),
         ]
     )
     root = {

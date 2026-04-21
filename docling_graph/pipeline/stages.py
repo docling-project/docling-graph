@@ -384,52 +384,12 @@ class ExtractionStage(PipelineStage):
 
         processing_mode = cast(Literal["one-to-one", "many-to-one"], conf["processing_mode"])
         extraction_contract = cast(
-            Literal["direct", "staged", "delta", "dense"], conf.get("extraction_contract", "direct")
+            Literal["direct", "dense"], conf.get("extraction_contract", "direct")
         )
-        staged_config = {
+        dense_config = {
             "structured_output": bool(conf.get("structured_output", True)),
             "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
-            "max_pass_retries": conf.get("staged_pass_retries", 1),
-            "catalog_max_nodes_per_call": conf.get("staged_nodes_fill_cap", 5),
             "parallel_workers": conf.get("parallel_workers", 1),
-            "id_shard_size": conf.get("staged_id_shard_size", 0),
-            "id_identity_only": conf.get("staged_id_identity_only", True),
-            "id_compact_prompt": conf.get("staged_id_compact_prompt", True),
-            "id_auto_shard_threshold": conf.get("staged_id_auto_shard_threshold", 10),
-            "id_shard_min_size": conf.get("staged_id_shard_min_size", 2),
-            "quality_require_root": conf.get("staged_quality_require_root", True),
-            "quality_min_instances": conf.get("staged_quality_min_instances", 1),
-            "quality_max_parent_lookup_miss": conf.get("staged_quality_max_parent_lookup_miss", 0),
-            "id_max_tokens": conf.get("staged_id_max_tokens"),
-            "fill_max_tokens": conf.get("staged_fill_max_tokens"),
-            "llm_batch_token_size": conf.get("llm_batch_token_size", 1024),
-            "delta_normalizer_validate_paths": conf.get("delta_normalizer_validate_paths", True),
-            "delta_normalizer_canonicalize_ids": conf.get(
-                "delta_normalizer_canonicalize_ids", True
-            ),
-            "delta_normalizer_strip_nested_properties": conf.get(
-                "delta_normalizer_strip_nested_properties", True
-            ),
-            "delta_normalizer_attach_provenance": conf.get(
-                "delta_normalizer_attach_provenance", True
-            ),
-            "delta_resolvers_enabled": conf.get("delta_resolvers_enabled", True),
-            "delta_resolvers_mode": conf.get("delta_resolvers_mode", "semantic"),
-            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.8),
-            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.8),
-            "delta_resolver_properties": conf.get("delta_resolver_properties"),
-            "delta_resolver_paths": conf.get("delta_resolver_paths"),
-            "delta_quality_require_root": conf.get("delta_quality_require_root", True),
-            "delta_quality_min_instances": conf.get("delta_quality_min_instances", 20),
-            "delta_quality_max_parent_lookup_miss": conf.get(
-                "delta_quality_max_parent_lookup_miss", 4
-            ),
-            "delta_quality_adaptive_parent_lookup": conf.get(
-                "delta_quality_adaptive_parent_lookup", True
-            ),
-            "quality_max_unknown_path_drops": conf.get("quality_max_unknown_path_drops", -1),
-            "quality_max_id_mismatch": conf.get("quality_max_id_mismatch", -1),
-            "quality_max_nested_property_drops": conf.get("quality_max_nested_property_drops", -1),
             "gleaning_enabled": conf.get("gleaning_enabled", True),
             "gleaning_max_passes": conf.get("gleaning_max_passes", 1),
             "dense_skeleton_batch_tokens": conf.get("dense_skeleton_batch_tokens", 1024),
@@ -449,11 +409,11 @@ class ExtractionStage(PipelineStage):
         }
         if conf.get("debug"):
             if context.output_manager is not None:
-                staged_config["debug_dir"] = str(context.output_manager.get_debug_dir())
+                dense_config["debug_dir"] = str(context.output_manager.get_debug_dir())
             elif conf.get("output_dir"):
                 from pathlib import Path
 
-                staged_config["debug_dir"] = str(Path(conf["output_dir"]) / "debug")
+                dense_config["debug_dir"] = str(Path(conf["output_dir"]) / "debug")
         backend = cast(Literal["vlm", "llm"], conf["backend"])
         inference = cast(str, conf["inference"])
 
@@ -472,7 +432,6 @@ class ExtractionStage(PipelineStage):
                 processing_mode=processing_mode,
                 backend_name="vlm",
                 extraction_contract=extraction_contract,
-                staged_config=staged_config,
                 model_name=model_config["model"],
                 docling_config=conf["docling_config"],
                 structured_output=bool(conf.get("structured_output", True)),
@@ -493,7 +452,6 @@ class ExtractionStage(PipelineStage):
                 processing_mode=processing_mode,
                 backend_name="llm",
                 extraction_contract=extraction_contract,
-                staged_config=staged_config,
                 llm_client=llm_client,
                 docling_config=conf["docling_config"],
                 structured_output=bool(conf.get("structured_output", True)),
@@ -628,43 +586,10 @@ class ExtractionStage(PipelineStage):
             if context.config.processing_mode == "many-to-one"
             else "direct"
         )
-        staged_config = {
+        dense_config = {
             "structured_output": bool(conf.get("structured_output", True)),
             "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
-            "max_pass_retries": conf.get("staged_pass_retries", 1),
-            "catalog_max_nodes_per_call": conf.get("staged_nodes_fill_cap", 5),
             "parallel_workers": conf.get("parallel_workers", 1),
-            "id_shard_size": conf.get("staged_id_shard_size", 0),
-            "id_identity_only": conf.get("staged_id_identity_only", True),
-            "id_compact_prompt": conf.get("staged_id_compact_prompt", True),
-            "id_auto_shard_threshold": conf.get("staged_id_auto_shard_threshold", 12),
-            "id_shard_min_size": conf.get("staged_id_shard_min_size", 2),
-            "quality_require_root": conf.get("staged_quality_require_root", True),
-            "quality_min_instances": conf.get("staged_quality_min_instances", 1),
-            "quality_max_parent_lookup_miss": conf.get("staged_quality_max_parent_lookup_miss", 0),
-            "id_max_tokens": conf.get("staged_id_max_tokens"),
-            "fill_max_tokens": conf.get("staged_fill_max_tokens"),
-            "llm_batch_token_size": conf.get("llm_batch_token_size", 1024),
-            "delta_normalizer_validate_paths": conf.get("delta_normalizer_validate_paths", True),
-            "delta_normalizer_canonicalize_ids": conf.get(
-                "delta_normalizer_canonicalize_ids", True
-            ),
-            "delta_normalizer_strip_nested_properties": conf.get(
-                "delta_normalizer_strip_nested_properties", True
-            ),
-            "delta_normalizer_attach_provenance": conf.get(
-                "delta_normalizer_attach_provenance", True
-            ),
-            "delta_resolvers_enabled": conf.get("delta_resolvers_enabled", True),
-            "delta_resolvers_mode": conf.get("delta_resolvers_mode", "semantic"),
-            "delta_resolver_fuzzy_threshold": conf.get("delta_resolver_fuzzy_threshold", 0.8),
-            "delta_resolver_semantic_threshold": conf.get("delta_resolver_semantic_threshold", 0.8),
-            "delta_resolver_properties": conf.get("delta_resolver_properties"),
-            "delta_resolver_paths": conf.get("delta_resolver_paths"),
-            "delta_quality_require_root": conf.get("delta_quality_require_root", True),
-            "quality_max_unknown_path_drops": conf.get("quality_max_unknown_path_drops", -1),
-            "quality_max_id_mismatch": conf.get("quality_max_id_mismatch", -1),
-            "quality_max_nested_property_drops": conf.get("quality_max_nested_property_drops", -1),
             "gleaning_enabled": conf.get("gleaning_enabled", True),
             "gleaning_max_passes": conf.get("gleaning_max_passes", 1),
             "dense_skeleton_batch_tokens": conf.get("dense_skeleton_batch_tokens", 1024),
@@ -684,15 +609,15 @@ class ExtractionStage(PipelineStage):
         }
         if conf.get("debug"):
             if context.output_manager is not None:
-                staged_config["debug_dir"] = str(context.output_manager.get_debug_dir())
+                dense_config["debug_dir"] = str(context.output_manager.get_debug_dir())
             elif conf.get("output_dir"):
                 from pathlib import Path
 
-                staged_config["debug_dir"] = str(Path(conf["output_dir"]) / "debug")
+                dense_config["debug_dir"] = str(Path(conf["output_dir"]) / "debug")
         llm_backend = LlmBackend(
             llm_client,
             extraction_contract=extraction_contract,
-            staged_config=staged_config,
+            dense_config=dense_config,
             structured_output=bool(conf.get("structured_output", True)),
             structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
         )
@@ -1009,7 +934,6 @@ class VisualizationStage(PipelineStage):
         # Use generic filenames instead of source-based names
         report_path = output_dir / "report"
         extraction_contract = getattr(context.config, "extraction_contract", None)
-        staged_passes_count = 0
         llm_diagnostics: dict[str, Any] = {}
         if context.trace_data:
             extraction_events = context.trace_data.find_events("extraction_completed")
@@ -1027,13 +951,11 @@ class VisualizationStage(PipelineStage):
                     ):
                         if key in first_meta:
                             llm_diagnostics[key] = first_meta[key]
-            staged_passes_count = len(context.trace_data.find_events("staged_trace_emitted"))
         ReportGenerator().visualize(
             context.knowledge_graph,
             report_path,
             source_model_count=len(context.extracted_models),
             extraction_contract=extraction_contract,
-            staged_passes_count=staged_passes_count,
             llm_diagnostics=llm_diagnostics,
         )
         logger.info(f"Generated markdown report at {report_path}.md")

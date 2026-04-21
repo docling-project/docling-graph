@@ -263,58 +263,13 @@ uv run docling-graph convert small_doc.pdf \
 
 ---
 
-### Staged Extraction Tuning
-
-These flags apply when `--extraction-contract staged` is used in many-to-one mode.
-
-```bash
---staged-tuning {standard|advanced}
---staged-retries INT
---parallel-workers INT
---staged-nodes-fill-cap INT
---staged-id-shard-size INT
-```
-
-- `--staged-tuning`: preset defaults (`standard` or `advanced`).
-- `--staged-retries`: retries per staged pass for invalid JSON responses.
-- `--parallel-workers`: parallel workers for extraction (staged fill pass and delta batch calls).
-- `--staged-nodes-fill-cap`: max node instances per fill-pass call.
-- `--staged-id-shard-size`: max catalog paths per ID-pass call (`0` disables sharding).
-
-ID pass always runs sequentially across shards for stable skeleton assembly.
-
-### Delta Extraction Tuning
-
-These flags apply when `--extraction-contract delta` is used in many-to-one mode (chunking must be enabled). To configure delta resolvers and quality gates interactively, run `docling-graph init` and choose **delta** as the extraction contract; the wizard will prompt for resolver enable/mode and optional quality tweaks (see [init Command](init-command.md#step-3-delta-extraction-tuning-only-when-delta-is-selected)).
-
-```bash
---llm-batch-token-size INT
---parallel-workers INT
---delta-normalizer-validate-paths / --no-delta-normalizer-validate-paths
---delta-normalizer-canonicalize-ids / --no-delta-normalizer-canonicalize-ids
---delta-normalizer-strip-nested-properties / --no-delta-normalizer-strip-nested-properties
---delta-resolvers-enabled / --no-delta-resolvers-enabled
---delta-resolvers-mode {off|fuzzy|semantic|chain}
---delta-resolver-fuzzy-threshold FLOAT
---delta-resolver-semantic-threshold FLOAT
-```
-
-- `--llm-batch-token-size`: max input tokens per delta batch (default: 1024).
-- `--parallel-workers`: parallel workers for delta batch LLM calls.
-- Delta normalizer flags control path validation, ID canonicalization, and nested property stripping.
-- Resolvers optionally merge near-duplicate entities after merge (`fuzzy`, `semantic`, or `chain`).
-
 ### Dense extraction
 
 Use `--extraction-contract dense` for two-phase **skeleton-then-fill** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. Dense-specific options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`) can be set in a config file; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 
-Quality gate options (e.g. `delta_quality_max_parent_lookup_miss`, `delta_quality_require_relationships`) are not CLI flags; set them in `config.yaml` under `defaults` or use the init wizard when selecting delta.
+#### Gleaning (direct and dense)
 
-See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for full options and quality gate settings.
-
-#### Gleaning (direct and delta)
-
-Optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **delta** contracts only (not staged). Enabled by default.
+Optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **dense** contracts. Enabled by default.
 
 ```bash
 --gleaning-enabled / --no-gleaning-enabled
@@ -324,41 +279,27 @@ Optional second-pass extraction ("what did you miss?") to improve recall. Applie
 - `--gleaning-enabled`: run one extra extraction pass and merge additional entities/relations (default: enabled).
 - `--gleaning-max-passes`: max number of gleaning passes when enabled (default: 1).
 
-**Example (delta with gleaning):**
+**Example (dense with gleaning):**
 
 ```bash
 uv run docling-graph convert document.pdf \
     --template "templates.ScholarlyRheologyPaper" \
     --processing-mode many-to-one \
-    --extraction-contract delta \
+    --extraction-contract dense \
+    --use-chunking \
     --gleaning-enabled \
     --gleaning-max-passes 1 \
     --parallel-workers 2
 ```
 
-**Example (basic delta):**
+**Example (basic dense):**
 
 ```bash
 uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --processing-mode many-to-one \
-    --extraction-contract delta \
+    --extraction-contract dense \
     --use-chunking \
-    --llm-batch-token-size 2048 \
-    --parallel-workers 2
-```
-
-**Example (delta with resolvers):**
-
-```bash
-uv run docling-graph convert document.pdf \
-    --template "templates.BillingDocument" \
-    --processing-mode many-to-one \
-    --extraction-contract delta \
-    --use-chunking \
-    --delta-resolvers-enabled \
-    --delta-resolvers-mode fuzzy \
-    --delta-resolver-fuzzy-threshold 0.9 \
     --parallel-workers 2
 ```
 
@@ -386,10 +327,9 @@ through LiteLLM `response_format=json_schema`.
 uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --processing-mode many-to-one \
-    --extraction-contract staged \
-    --parallel-workers 4 \
-    --staged-nodes-fill-cap 12 \
-    --staged-id-shard-size 2
+    --extraction-contract dense \
+    --use-chunking \
+    --parallel-workers 4
 ```
 
 ---

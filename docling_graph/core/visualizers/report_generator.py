@@ -20,7 +20,6 @@ class ReportGenerator:
         source_model_count: int = 1,
         include_samples: bool = True,
         extraction_contract: str | None = None,
-        staged_passes_count: int = 0,
         llm_diagnostics: dict | None = None,
     ) -> None:
         """Generate markdown report for graph.
@@ -30,8 +29,7 @@ class ReportGenerator:
             output_path: Path for output markdown file (extension added if missing).
             source_model_count: Number of source Pydantic models.
             include_samples: Whether to include sample nodes/edges.
-            extraction_contract: Extraction contract used (e.g. 'direct', 'staged').
-            staged_passes_count: Number of staged phases (when contract is staged).
+            extraction_contract: Extraction contract used (e.g. 'direct', 'dense').
 
         Raises:
             ValueError: If graph is empty.
@@ -54,11 +52,10 @@ class ReportGenerator:
             self._create_edge_type_distribution(metadata),
         ]
 
-        if extraction_contract is not None or staged_passes_count > 0:
+        if extraction_contract is not None:
             report_parts.append(
                 self._create_extraction_diagnostics(
                     extraction_contract=extraction_contract,
-                    staged_passes_count=staged_passes_count,
                     llm_diagnostics=llm_diagnostics,
                 )
             )
@@ -74,15 +71,12 @@ class ReportGenerator:
     @staticmethod
     def _create_extraction_diagnostics(
         extraction_contract: str | None = None,
-        staged_passes_count: int = 0,
         llm_diagnostics: dict | None = None,
     ) -> str:
         """Create extraction diagnostics section."""
         lines = ["## Extraction Diagnostics", ""]
         if extraction_contract:
             lines.append(f"- **Extraction contract**: {extraction_contract}")
-        if staged_passes_count > 0:
-            lines.append(f"- **Staged passes**: {staged_passes_count}")
         if llm_diagnostics:
             attempted = llm_diagnostics.get("structured_attempted")
             failed = llm_diagnostics.get("structured_failed")

@@ -23,9 +23,8 @@ docling-graph init
 This launches an interactive wizard that guides you through:
 
 1. **Processing mode** (one-to-one / many-to-one)
-2. **Extraction contract** (direct / staged / delta)
-3. **Delta Extraction Tuning** (only when delta is selected): resolvers (enable + mode) and optional quality gate tweaks
-4. **Backend type** (LLM / VLM)
+2. **Extraction contract** (direct / dense)
+3. **Backend type** (LLM / VLM)
 5. **Inference location** (local / remote; skipped for VLM)
 6. **Docling pipeline** and export options
 7. **Provider and model** selection (by backend/inference)
@@ -55,23 +54,15 @@ Select processing mode (one-to-one, many-to-one) [many-to-one]:
 2. Extraction Contract
  How should LLM extraction prompts/execution be orchestrated?
   • direct: Single-pass best-effort extraction (fastest)
-  • staged: Multi-pass staged extraction for improved small-model quality
-  • delta: Chunk-based graph extraction for long documents (batches → merge → projection)
-Select extraction contract (direct, staged, delta) [direct]:
+  • dense: Two-phase skeleton-then-fill extraction for rich, granular many-to-one results
+Select extraction contract (direct, dense) [direct]:
 ```
 
-### Step 3: Delta Extraction Tuning (only when delta is selected)
+### Step 3: Dense Extraction Notes
 
-If you selected **delta**, the wizard shows a **Delta Extraction Tuning** section:
+If you selected **dense**, the wizard uses the same core setup flow and writes `extraction_contract: dense` into `defaults` in your `config.yaml`.
 
-- **Delta Resolvers** — Enable post-merge duplicate resolution and choose mode (`off`, `fuzzy`, `semantic`, `chain`). Resolvers merge near-duplicate entities after the graph merge.
-- **Delta Quality Gates** — Optionally customize:
-- Max parent lookup misses before failing the quality gate
-- Adaptive parent lookup tolerance
-- Require at least one relationship in the projected graph
-- Require structural attachments (avoid root-only outputs)
-
-These values are written into `defaults` in your `config.yaml`. You can override them later in the config file or via the [convert](convert-command.md) command (where applicable). See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) for full options.
+Dense-specific batching and fill controls are configured in `config.yaml` after initialization. See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md) for full options.
 
 ### Step 4: Backend Type
 
@@ -262,28 +253,6 @@ output:
   directory: outputs
 ```
 
-### Example: Delta extraction with resolvers
-
-When you select **delta** and enable resolvers (and optionally customize quality), your `defaults` will include delta options:
-
-```yaml
-defaults:
-  processing_mode: many-to-one
-  extraction_contract: delta
-  delta_resolvers_enabled: true
-  delta_resolvers_mode: semantic
-  delta_quality_max_parent_lookup_miss: 4
-  delta_quality_adaptive_parent_lookup: true
-  delta_quality_require_relationships: false
-  delta_quality_require_structural_attachments: false
-  backend: llm
-  inference: remote
-  export_format: csv
-# ... docling, models, output
-```
-
-You can then run `docling-graph convert ... --extraction-contract delta` and the config will be used. See [Delta Extraction](../../fundamentals/extraction-process/delta-extraction.md) and [convert Command — Delta Extraction Tuning](convert-command.md#delta-extraction-tuning) for details.
-
 ---
 
 ## Dependency Validation
@@ -395,9 +364,9 @@ docling-graph init
 
 # Follow prompts:
 # 1. Processing mode (e.g. many-to-one)
-# 2. Extraction contract (direct / staged / delta)
-# 3. (If delta) Resolvers and quality tuning
-# 4. Backend (e.g. LLM), inference (e.g. remote)
+# 2. Extraction contract (direct / dense)
+# 3. Backend (e.g. LLM), inference (e.g. remote)
+# 4. Export and output options
 # 5. Docling pipeline and export options
 # 6. Provider and model
 # 7. Export format, output directory

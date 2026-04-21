@@ -142,8 +142,6 @@ config = PipelineConfig(
 For LLM many-to-one extraction you can choose:
 
 - **direct** (default): Single-pass extraction then programmatic merge.
-- **staged**: Catalog → ID pass → fill pass → merge; better for complex nested templates. See [Staged Extraction](staged-extraction.md).
-- **delta**: Chunk → token-bounded batches → flat graph IR → normalize → merge → projection; for long documents and graph-first extraction. Supports optional resolvers and configurable quality gates. Use `docling-graph init` and select **delta** to configure resolvers and quality interactively. See [Delta Extraction](delta-extraction.md).
 - **dense**: Two-phase skeleton-then-fill (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
 
 ---
@@ -231,7 +229,7 @@ from docling_graph.core.extractors import ExtractorFactory
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
-    extraction_contract="direct",  # or "staged" / "delta" for complex or chunk-based extraction
+    extraction_contract="direct",  # or "dense" for chunked skeleton-then-fill extraction
     llm_client=client,
 )
 models, doc = extractor.extract(source, template)
@@ -334,26 +332,17 @@ Deep dive into LLM and VLM extraction backends.
 - LLM backend (text-based)
 - VLM backend (vision-based)
 - Backend selection
-- Extraction contracts (direct, staged, delta, dense)
+- Extraction contracts (direct and dense)
 
 ---
 
-### 4. [Staged Extraction](staged-extraction.md)
-Multi-pass extraction for complex nested templates (ID pass → fill pass → merge).
+### 4. [Dense Extraction](dense-extraction.md)
+Two-phase extraction for chunked many-to-one workflows (skeleton → fill → merge).
 
 **Topics:**
-- When to use staged
-- Tuning (presets, parallel_workers, fill cap, id shard size)
-
----
-
-### 5. [Delta Extraction](delta-extraction.md)
-Chunk-based graph extraction: token-bounded batches → flat graph IR → normalize → merge → projection.
-
-**Topics:**
-- When to use delta
-- Batch planning, IR normalizer, resolvers, quality gate
-- Configuration (llm_batch_token_size, parallel_workers, delta_* options)
+- When to use dense
+- Skeleton and fill phases
+- Configuration (dense_skeleton_batch_tokens, dense_fill_nodes_cap, parallel_workers)
 
 ---
 

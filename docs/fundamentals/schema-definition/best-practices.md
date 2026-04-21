@@ -22,13 +22,6 @@
 - When a field has **different values under different conditions** (e.g. pre-shear rate for low vs high concentration), use `List[ConditionalValue]` (again, define in your template) instead of a scalar so the fill phase can extract all branches with their conditions.
 - See [Advanced patterns: Series and conditional values](advanced-patterns.md#series-and-conditional-values) for examples.
 
-## Delta-specific quality guidance
-
-- Keep node properties flat (primitives or list of primitives).
-- Use path-consistent relationship structures.
-- Design local entities with parent context available in schema.
-- Avoid ambiguous fallback identities by exposing meaningful discriminator fields.
-
 ## Identity and descriptive IDs
 
 - Prefer **descriptive, human-readable** identifiers (e.g. `STUDY-TEMPERATURE-DEPENDENCE`, `Phenomenological fitting`) over bare section labels.
@@ -43,7 +36,7 @@
 
 ## Deduplicating root-level lists (chunked extraction)
 
-In **delta** (and other chunked) extraction, root-level list fields without identity (e.g. `authors`) can receive the same item from multiple batches, so the merged list may contain duplicates.
+In **dense** and other chunked extraction flows, root-level list fields without identity (e.g. `authors`) can receive the same item from multiple batches, so the merged list may contain duplicates.
 
 - Add a **model_validator** (`mode="after"`) on the root model that deduplicates the list by a stable key (e.g. `full_name` for authors: keep first occurrence per normalized name).
 - This keeps the pipeline domain-agnostic; dedup logic lives in the template and applies after validation.

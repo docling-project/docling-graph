@@ -731,7 +731,7 @@ merged = custom_merge(models, Invoice)
 
 Now that you understand model merging:
 
-1. **[Staged Extraction →](staged-extraction.md)** - Multi-pass extraction for complex templates
+1. **[Dense Extraction →](dense-extraction.md)** - Skeleton-then-fill extraction for complex templates
 2. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
 3. **[Extraction Backends →](extraction-backends.md)** - Understand backends
 4. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Optimize consolidation

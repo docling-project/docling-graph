@@ -1,7 +1,7 @@
 """
 Dense extraction orchestrator: Phase 1 (skeleton) and Phase 2 (fill).
 
-Fully autonomous: no imports from contracts.delta or contracts.staged.
+Fully autonomous: no imports from other contracts.
 """
 
 from __future__ import annotations
@@ -58,7 +58,9 @@ def _skeleton_identity_key(
         if ordered:
             return (path, tuple(sorted(ordered, key=lambda x: x[0])))
     norm = tuple(
-        sorted((str(k), canonicalize_identity_for_dedup(k, v)) for k, v in ids.items() if v is not None)
+        sorted(
+            (str(k), canonicalize_identity_for_dedup(k, v)) for k, v in ids.items() if v is not None
+        )
     )
     return (path, norm if norm else (("__key", str(id(node))),))
 
@@ -215,10 +217,7 @@ def merge_filled_into_root(
 def _compute_branch_paths(catalog: NodeCatalog) -> set[str]:
     """Paths that have at least one other path extending them (container/branch nodes)."""
     all_paths = set(catalog.paths())
-    return {
-        p for p in all_paths
-        if any(q != p and q.startswith(p) for q in all_paths)
-    }
+    return {p for p in all_paths if any(q != p and q.startswith(p) for q in all_paths)}
 
 
 def prune_barren_branches(root: dict[str, Any], catalog: NodeCatalog) -> dict[str, Any]:
@@ -270,8 +269,13 @@ def prune_barren_branches(root: dict[str, Any], catalog: NodeCatalog) -> dict[st
                         prune_in_place(item, cs.path)
                 if cs.path in branch_paths:
                     kept = [
-                        x for x in val
-                        if not (isinstance(x, dict) and not has_children(x, cs.path) and is_barren(x, cs.path))
+                        x
+                        for x in val
+                        if not (
+                            isinstance(x, dict)
+                            and not has_children(x, cs.path)
+                            and is_barren(x, cs.path)
+                        )
                     ]
                     obj[fn] = kept
             elif not cs.is_list and isinstance(val, dict):
@@ -326,7 +330,9 @@ class DenseOrchestratorConfig:
             allow_merge_different_ids=bool(res.get("allow_merge_different_ids", False)),
         )
         raw_skeleton_tokens = int(c.get("dense_skeleton_batch_tokens", 1024) or 1024)
-        skeleton_batch_tokens = min(raw_skeleton_tokens, 4096) if raw_skeleton_tokens > 4096 else raw_skeleton_tokens
+        skeleton_batch_tokens = (
+            min(raw_skeleton_tokens, 4096) if raw_skeleton_tokens > 4096 else raw_skeleton_tokens
+        )
         return cls(
             max_pass_retries=int(c.get("max_pass_retries", 1) or 1),
             skeleton_batch_tokens=skeleton_batch_tokens,
@@ -556,8 +562,10 @@ class DenseOrchestrator:
         phase1_elapsed = time.perf_counter() - phase1_start
         merged_skeleton = merge_skeleton_batches(skeleton_results, self._catalog)
         if self._config.resolvers.enabled:
+
             def key_fn(n: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
                 return _skeleton_identity_key(n, spec_by_path)
+
             merged_skeleton, resolver_stats = resolve_skeleton_nodes(
                 merged_skeleton, key_fn, self._config.resolvers
             )
@@ -574,12 +582,20 @@ class DenseOrchestrator:
         if self._config.quality_require_root and path_counts.get("", 0) <= 0:
             logger.warning("Dense Phase 1: no root instance")
             if self._on_trace:
-                self._on_trace({"contract": "dense", "phase1_quality": False, "reason": "missing_root"})
+                self._on_trace(
+                    {"contract": "dense", "phase1_quality": False, "reason": "missing_root"}
+                )
             return None
         if total < self._config.quality_min_instances:
             logger.warning("Dense Phase 1: too few instances (%s)", total)
             if self._on_trace:
-                self._on_trace({"contract": "dense", "phase1_quality": False, "reason": "insufficient_instances"})
+                self._on_trace(
+                    {
+                        "contract": "dense",
+                        "phase1_quality": False,
+                        "reason": "insufficient_instances",
+                    }
+                )
             return None
 
         path_descriptors = skeleton_to_descriptors(merged_skeleton, self._catalog)
@@ -643,7 +659,9 @@ class DenseOrchestrator:
                         p, bi, sanitized = future.result()  # type: ignore[misc]
                         results_by_path.setdefault(p, []).append((bi, sanitized))
                     except Exception as e:
-                        logger.warning("Dense fill job %s batch %s failed: %s", path, batch_index, e)
+                        logger.warning(
+                            "Dense fill job %s batch %s failed: %s", path, batch_index, e
+                        )
             for path, pairs in results_by_path.items():
                 pairs.sort(key=lambda x: x[0])
                 for _bi, sanitized in pairs:
@@ -654,11 +672,13 @@ class DenseOrchestrator:
         if self._config.prune_barren_branches:
             root = prune_barren_branches(root, self._catalog)
         if self._on_trace:
-            self._on_trace({
-                "contract": "dense",
-                "phase1_elapsed": round(phase1_elapsed, 3),
-                "phase2_elapsed": round(phase2_elapsed, 3),
-                "skeleton_nodes": len(merged_skeleton),
-                "path_counts": path_counts,
-            })
+            self._on_trace(
+                {
+                    "contract": "dense",
+                    "phase1_elapsed": round(phase1_elapsed, 3),
+                    "phase2_elapsed": round(phase2_elapsed, 3),
+                    "skeleton_nodes": len(merged_skeleton),
+                    "path_counts": path_counts,
+                }
+            )
         return root

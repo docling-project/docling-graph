@@ -1,6 +1,6 @@
 # Schema Definition
 
-Pydantic templates are the schema contract for all extraction modes (`direct`, `staged`, `delta`).
+Pydantic templates are the schema contract for the supported extraction modes (`direct`, `dense`).
 
 ## Core rules
 
@@ -14,8 +14,7 @@ Pydantic templates are the schema contract for all extraction modes (`direct`, `
 ## Extraction-focused design
 
 - **Direct:** optimize semantic clarity and validation tolerance.
-- **Staged:** optimize ID discovery and parent linkage determinism.
-- **Delta:** optimize path fidelity, flat properties, canonicalized values, and merge-safe identities.
+- **Dense:** optimize identity discovery, parent linkage, and chunk-aware per-entity filling.
 
 ## Recommended reading order
 
@@ -24,6 +23,5 @@ Pydantic templates are the schema contract for all extraction modes (`direct`, `
 3. `field-definitions.md`
 4. `relationships.md`
 5. `best-practices.md`
-6. `staged-extraction-schema.md`
-7. `validation.md`
+6. `validation.md`
 8. `advanced-patterns.md`

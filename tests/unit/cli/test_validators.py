@@ -173,17 +173,13 @@ class TestValidateExtractionContract:
         result = validate_extraction_contract("direct")
         assert result == "direct"
 
-    def test_validate_extraction_contract_staged(self):
-        result = validate_extraction_contract("staged")
-        assert result == "staged"
-
-    def test_validate_extraction_contract_delta(self):
-        result = validate_extraction_contract("delta")
-        assert result == "delta"
+    def test_validate_extraction_contract_dense(self):
+        result = validate_extraction_contract("dense")
+        assert result == "dense"
 
     def test_validate_extraction_contract_case_insensitive(self):
-        result = validate_extraction_contract("STAGED")
-        assert result == "staged"
+        result = validate_extraction_contract("DENSE")
+        assert result == "dense"
 
     def test_validate_extraction_contract_invalid_raises_exit(self):
         with pytest.raises(typer.Exit):

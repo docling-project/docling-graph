@@ -39,7 +39,7 @@ def edge(label: str, default: Any = None, **kwargs: Any) -> Any:
 class Address(BaseModel):
     """
     Represents a physical address (component).
-    In delta extraction, nested address payloads may be flattened.
+    In chunked extraction, nested address payloads may be flattened.
     """
 
     model_config = ConfigDict(is_entity=False, extra="ignore")

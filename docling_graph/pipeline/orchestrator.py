@@ -176,11 +176,6 @@ class PipelineOrchestrator:
                         "extracted_models": len(context.extracted_models)
                         if context.extracted_models
                         else 0,
-                        "staged_passes_count": (
-                            len(context.trace_data.find_events("staged_trace_emitted"))
-                            if context.trace_data is not None
-                            else 0
-                        ),
                     },
                 }
 

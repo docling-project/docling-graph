@@ -487,25 +487,16 @@ def debug_with_trace(source: str):
     if debug_dir.exists():
         expected = [
             "node_catalog.json",
-            "id_pass.json",
-            "fill_pass.json",
-            "edges_pass.json",
+            "dense_catalog.json",
+            "dense_skeleton.json",
+            "dense_fill.json",
             "merged_output.json",
-            "staged_trace.json",
             "trace_data.json",
         ]
         print("Debug artifacts:")
         for name in expected:
             p = debug_dir / name
             print(f"  - {name}: {'ok' if p.exists() else 'missing'}")
-
-        staged_trace_path = debug_dir / "staged_trace.json"
-        if staged_trace_path.exists():
-            with open(staged_trace_path) as f:
-                staged_trace = json.load(f)
-            print("\nStaged timings:", staged_trace.get("timings_seconds", {}))
-            print("Per-path counts:", staged_trace.get("per_path_counts", {}))
-            print("Merge stats:", staged_trace.get("merge_stats", {}))
     
     return context
 

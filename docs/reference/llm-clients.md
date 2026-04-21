@@ -82,27 +82,6 @@ for result in client.get_json_response_stream(
     # Process result in real-time
 ```
 
-**Benefits of Streaming:**
-
-- **Reduced Latency**: Get first results faster without waiting for complete response
-- **Progress Feedback**: Provide real-time updates in interactive applications
-- **Memory Efficiency**: Handle large responses incrementally
-- **Better UX**: Show progress indicators and intermediate results to users
-
-**When to Use Streaming:**
-
-- Interactive applications requiring immediate feedback
-- Processing large documents where partial results are useful
-- Applications with progress indicators or real-time UI updates
-- Real-time data processing pipelines
-
-**When to Use Non-Streaming:**
-
-- Batch processing where latency doesn't matter
-- Simple scripts without UI feedback
-- Cases where complete response is needed before processing
-- Maximum compatibility (all models support non-streaming)
-
 **Implementation Notes:**
 
 The current implementation accumulates the full streaming response before yielding the final parsed result. This provides a foundation for future chunk-by-chunk streaming while maintaining compatibility with the existing JSON parsing and validation pipeline.
