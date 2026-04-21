@@ -2,7 +2,7 @@
 Dense extraction catalog: built from the Pydantic template.
 
 Provides path specs, id_fields, parent_path, and projected fill schemas for Phase 1 (skeleton) and Phase 2 (fill).
-No dependency on delta or staged contracts.
+No dependency on other contracts.
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ def _field_aliases(field_name: str, field_info: Any) -> list[str]:
         values.append(alias)
     validation_alias = getattr(field_info, "validation_alias", None)
     choices = getattr(validation_alias, "choices", None)
-    if isinstance(choices, (tuple, list)):
+    if isinstance(choices, tuple | list):
         for choice in choices:
             if isinstance(choice, str) and choice != field_name:
                 values.append(choice)

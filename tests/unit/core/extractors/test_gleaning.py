@@ -7,7 +7,6 @@ from typing import NoReturn
 import pytest
 
 from docling_graph.core.extractors.gleaning import (
-    build_already_found_summary_delta,
     get_gleaning_prompt_direct,
     merge_gleaned_direct,
     run_gleaning_pass_direct,
@@ -87,61 +86,3 @@ def test_merge_gleaned_direct_custom_merge_options():
     )
     assert merged["title"] == "A"
     assert "First." in merged["summary"] and "Second." in merged["summary"]
-
-
-def test_build_already_found_summary_delta():
-    graph = {
-        "nodes": [
-            {"path": "p", "ids": {"name": "X"}, "properties": {"description": "D1"}},
-        ],
-        "relationships": [
-            {"source_key": "a", "target_key": "b", "label": "L"},
-        ],
-    }
-    summary = build_already_found_summary_delta(graph, max_nodes=10, max_rels=10)
-    assert "path=p" in summary
-    assert "X" in summary
-    assert "a" in summary and "b" in summary
-
-
-def test_build_already_found_summary_delta_uses_source_id_target_id_and_edge_label():
-    """Summary includes rels that use source_id/target_id and edge_label keys."""
-    graph = {
-        "nodes": [{"path": "items[]", "ids": {"id": "1"}, "properties": {}}],
-        "relationships": [
-            {
-                "source_id": "src-1",
-                "target_id": "tgt-2",
-                "edge_label": "LINKS",
-            },
-        ],
-    }
-    summary = build_already_found_summary_delta(graph, max_nodes=5, max_rels=5)
-    assert "src-1" in summary and "tgt-2" in summary
-    assert "LINKS" in summary
-
-
-def test_build_already_found_summary_delta_skips_non_dict_node():
-    """Non-dict entries in nodes are skipped."""
-    graph = {
-        "nodes": ["not a dict", {"path": "p", "ids": {}, "properties": {}}],
-        "relationships": [],
-    }
-    summary = build_already_found_summary_delta(graph)
-    assert "path=p" in summary
-    assert "not a dict" not in summary
-
-
-def test_build_already_found_summary_delta_skips_non_dict_relationship():
-    """Non-dict entries in relationships are skipped (if not isinstance(r, dict): continue)."""
-    graph = {
-        "nodes": [{"path": "p", "ids": {}, "properties": {}}],
-        "relationships": [
-            {"source_key": "a", "target_key": "b", "label": "L"},
-            "not a dict",
-            None,
-        ],
-    }
-    summary = build_already_found_summary_delta(graph, max_rels=10)
-    assert "a" in summary and "b" in summary and "L" in summary
-    assert "not a dict" not in summary

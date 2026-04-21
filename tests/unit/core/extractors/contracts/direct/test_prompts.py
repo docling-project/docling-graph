@@ -5,7 +5,6 @@ Tests the simplified prompt generation for direct extraction:
 - get_extraction_prompt() for standard extraction
 - No capability-based branching (removed)
 - No consolidation prompts (removed)
-- No delta/context-aware prompts (removed)
 """
 
 import pytest
@@ -253,7 +252,6 @@ class TestPromptQuality:
 # - TestGetConsolidationPrompt (get_consolidation_prompt removed)
 # - TestAdaptivePrompting (capability-based prompting removed)
 # - TestChainOfDensity (advanced consolidation removed)
-# - TestContextAwarePrompts (delta extraction removed)
 #
-# These were part of the old delta extraction and capability detection system
+# These were part of the old capability detection system
 # which has been replaced by direct extraction.

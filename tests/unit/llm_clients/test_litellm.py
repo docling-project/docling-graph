@@ -153,8 +153,8 @@ def test_litellm_records_structured_failure_diagnostics(mock_litellm):
 # ============================================================================
 
 
-class MockStreamDelta:
-    """Mock delta object for streaming chunks."""
+class MockStreamPayload:
+    """Mock payload object for streaming chunks."""
 
     def __init__(self, content: str | None) -> None:
         self.content = content
@@ -164,7 +164,7 @@ class MockStreamChoice:
     """Mock choice object for streaming chunks."""
 
     def __init__(self, content: str | None = None, finish_reason: str | None = None) -> None:
-        self.delta = MockStreamDelta(content)
+        self.delta = MockStreamPayload(content)
         self.finish_reason = finish_reason
 
 

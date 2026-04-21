@@ -163,7 +163,7 @@ def test_chunk_text_fallback_hard_splits_long_segment(
     mock_hybrid_chunker_class.return_value = MagicMock()
     chunker = DocumentChunker(chunk_max_tokens=3)
 
-    text = "alpha beta gamma delta epsilon zeta eta theta"
+    text = "alpha beta gamma lambda epsilon zeta eta theta"
     chunks = chunker.chunk_text_fallback(text)
 
     assert len(chunks) >= 3

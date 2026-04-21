@@ -111,7 +111,7 @@ Select fields that:
 2. **Are stable** (don't change frequently)
 3. **Are likely to be present** in extracted data
 
-**Staged and delta extraction:** When using `extraction_contract="staged"` or `"delta"`, the catalog collects **identity examples** from (1) the parent field's list-of-dict examples and (2) the child model's identity fields' scalar `examples`. Provide identity examples either on the parent field (e.g. `studies = Field(examples=[{"study_id": "3.1", ...}])`) or on the entity's ID fields (e.g. `study_id = Field(examples=["3.1", "STUDY-BINDER-MW"])`) so the LLM sees valid-ID formats. Prefer required, short, document-derived ID fields. See [Schema design for staged extraction](staged-extraction-schema.md).
+**Dense extraction:** When using `extraction_contract="dense"`, the catalog collects identity examples from the parent field's list-of-dict examples and the child model's identity fields' scalar `examples`. Provide identity examples either on the parent field (e.g. `studies = Field(examples=[{"study_id": "3.1", ...}])`) or on the entity's ID fields (e.g. `study_id = Field(examples=["3.1", "STUDY-BINDER-MW"])`) so the LLM sees valid ID formats. Prefer required, short, document-derived ID fields.
 
 #### Examples
 
@@ -513,64 +513,6 @@ class Organization(BaseModel):
 ```
 
 **Result:** Same address node is shared across multiple people/organizations.
-
----
-
-## Staged extraction considerations
-
-When using **staged extraction** (`extraction_contract="staged"`):
-
-- **Entities** that should participate in the ID pass must have `graph_id_fields`. Components (`is_entity=False`) do not appear as separate identity paths when `staged_id_identity_only=True`.
-- **Components** are included in the staged catalog only when the relationship uses `edge()` with an `edge_label`. Components without an edge label are not separate catalog nodes.
-- **Parent linkage** in the fill/merge phase uses `(path, id_tuple)` and parent `(parent_path, parent_id_tuple)`. Ensure parent entities have stable, extractable `graph_id_fields` so references resolve and the quality gate (e.g. `staged_quality_max_parent_lookup_miss`) can pass.
-
-For full guidance (identity choices, depth, troubleshooting), see [Schema design for staged extraction](staged-extraction-schema.md).
-
-### Pattern 2: Measurements in Research
-
-**Scenario:** Multiple experiments report the same measurement value.
-
-**Solution:** Make Measurement a component.
-
-```python
-class Measurement(BaseModel):
-    """Component - shared measurement value."""
-    model_config = ConfigDict(is_entity=False)
-    name: str = Field(...)
-    value: float = Field(...)
-    unit: str = Field(...)
-
-class Experiment(BaseModel):
-    """Entity - unique experiment."""
-    model_config = ConfigDict(graph_id_fields=["experiment_id"])
-    # ...
-    measurements: List[Measurement] = Field(default_factory=list)
-```
-
-### Pattern 3: Line Items
-
-**Scenario:** Invoice line items - should each be unique or shared?
-
-**Decision:** Usually **neither** - line items are typically embedded data, not separate nodes.
-
-```python
-class LineItem(BaseModel):
-    """Line item - embedded in invoice, not a separate node."""
-    # No model_config needed - this won't become a node
-    description: str = Field(...)
-    quantity: float = Field(...)
-    unit_price: float = Field(...)
-
-class BillingDocument(BaseModel):
-    """Entity - unique invoice."""
-    model_config = ConfigDict(graph_id_fields=["document_no"])
-    # ...
-    # Use regular Field, not edge() - these are embedded
-    items: List[LineItem] = Field(default_factory=list)
-```
-
-!!! note "Line items as nodes"
-    If you want line items as nodes, use edge() and decide if they're entities or components.
 
 ---
 

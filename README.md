@@ -19,8 +19,8 @@
 [![Rich](https://img.shields.io/badge/Rich-terminal-purple)](https://github.com/Textualize/rich)
 [![vLLM](https://img.shields.io/badge/vLLM-compatible-brightgreen)](https://vllm.ai/)
 [![Ollama](https://img.shields.io/badge/Ollama-compatible-brightgreen)](https://ollama.ai/)
-[![LF AI & Data](https://img.shields.io/badge/LF%20AI%20%26%20Data-003778?logo=linuxfoundation&logoColor=fff&color=0094ff&labelColor=003778)](https://lfaidata.foundation/projects/)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11598/badge)](https://www.bestpractices.dev/projects/11598)
+[![LF AI & Data](https://img.shields.io/badge/LF%20AI%20%26%20Data-003778?logo=linuxfoundation&logoColor=fff&color=0094ff&labelColor=003778)](https://lfaidata.foundation/projects/)
 
 
 
@@ -103,7 +103,7 @@ docling-graph init
 docling-graph convert "https://arxiv.org/pdf/2207.02720" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
     --processing-mode "many-to-one" \
-    --extraction-contract "staged" \
+    --extraction-contract "dense" \
     --debug
 
 # Visualize results
@@ -123,7 +123,7 @@ config = {
     "backend": "llm",
     "inference": "remote",
     "processing_mode": "many-to-one",
-    "extraction_contract": "staged",  # robust for smaller models
+    "extraction_contract": "dense",
     "provider_override": "mistral",
     "model_override": "mistral-medium-latest",
     "structured_output": True,  # default

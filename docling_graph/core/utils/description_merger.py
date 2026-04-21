@@ -5,7 +5,7 @@ Used when the same entity is seen in multiple chunks/documents: add only
 new sentences from the incoming description, then truncate at sentence boundary.
 Optional LLM summarizer: when total length exceeds a threshold, a callable can
 produce one concise summary; fallback to sentence-dedup + truncate on failure.
-Used by dict_merger, delta merge_delta_graphs, and staged merge.
+Used by dict_merger and dense merge.
 """
 
 from __future__ import annotations

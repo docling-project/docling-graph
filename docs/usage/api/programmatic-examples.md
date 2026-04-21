@@ -640,27 +640,6 @@ print("\n✅ Streaming complete!")
 uv run python examples/streaming_extraction.py
 ```
 
-**Benefits:**
-- **Reduced Latency**: Get first results faster
-- **Progress Feedback**: Show real-time updates to users
-- **Better UX**: Display progress indicators during processing
-- **Memory Efficiency**: Handle large responses incrementally
-
-**When to Use Streaming:**
-- Interactive web applications with progress bars
-- Real-time data processing pipelines
-- Applications requiring immediate user feedback
-- Processing large documents where partial results are useful
-
-**When to Use Non-Streaming:**
-- Batch processing where latency doesn't matter
-- Simple scripts without UI feedback
-- Cases where complete response is needed before processing
-
-**See Also:**
-- [Example 14: Streaming Responses](../../examples/scripts/14_streaming_responses.py) - Complete streaming examples
-- [LLM Clients Reference](../../reference/llm-clients.md#streaming-responses) - Streaming API documentation
-
 ---
 
 ## Best Practices

@@ -44,8 +44,7 @@ Each step object includes only:
 - `docling_conversion.artifacts.pages`
 - `data_extraction.artifacts.extractions`
 - `data_extraction.artifacts.fallbacks`
-- `data_extraction.artifacts.staged_traces` (when extraction_contract="staged")
-- `data_extraction.artifacts.delta_trace` / delta debug artifacts (when extraction_contract="delta")
+- `data_extraction.artifacts.dense_traces` and related dense debug artifacts (when extraction_contract="dense")
 - `graph_mapping.artifacts.graph`
 - `pipeline.artifacts.start|finish|failure`
 
