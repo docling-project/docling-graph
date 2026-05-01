@@ -57,6 +57,7 @@ config = PipelineConfig(
 ### When to Use LLM
 
 ✅ **Use LLM when:**
+
 - Documents are primarily text-based
 - Layout is standard (invoices, contracts, reports)
 - You need remote API support
@@ -65,6 +66,7 @@ config = PipelineConfig(
 - You don't have GPU available (use remote)
 
 ❌ **Don't use LLM when:**
+
 - Documents have complex visual layouts
 - Images contain critical information
 - Tables have complex structures

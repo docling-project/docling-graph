@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v1.5.1 (2026-05-01)
+
+### Security
+
+- **CRITICAL**: Fixed Server-Side Request Forgery (SSRF) vulnerability in URL handling (GHSA-fqph-j6v6-jvgx, CVE pending)
+  - Added IP address validation to block access to internal/private networks
+  - Implemented safe redirect handling with validation
+  - Blocked access to cloud metadata endpoints (169.254.169.254)
+  - Prevented access to private IP ranges (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
+  - Prevented access to loopback and link-local addresses
+  - Thanks to Anisto Mejin for responsible disclosure
+
 ## v1.5.0 (2026-04-19)
 
 ### Chores

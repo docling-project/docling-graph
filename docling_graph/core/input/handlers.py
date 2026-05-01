@@ -5,11 +5,14 @@ This module provides handlers that load various input formats and
 normalize them into a consistent internal representation.
 """
 
+import ipaddress
 import json
+import socket
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
+from urllib.parse import urlparse
 
 import requests
 from docling_core.types.doc import DoclingDocument
@@ -203,15 +206,145 @@ class URLInputHandler(InputHandler):
         self.headers = {
             "User-Agent": f"docling-graph/{__version__} (https://github.com/docling-project/docling-graph)"
         }
+        # Maximum number of redirects to follow
+        self.max_redirects = 5
+
+    def _validate_url_safety(self, url: str) -> None:
+        """
+        Validate URL safety by checking the resolved IP address.
+
+        This prevents SSRF attacks by blocking access to:
+        - Private IP addresses (RFC 1918)
+        - Loopback addresses
+        - Link-local addresses
+        - Cloud metadata endpoints
+        - Multicast and reserved addresses
+
+        Args:
+            url: URL to validate
+
+        Raises:
+            ValidationError: If URL resolves to an unsafe IP address
+        """
+        try:
+            parsed = urlparse(url)
+            hostname = parsed.hostname
+
+            if not hostname:
+                raise ValidationError(
+                    f"Invalid URL (cannot extract hostname): {url}",
+                    details={"url": url},
+                )
+
+            # Resolve hostname to IP address
+            ip_str = socket.gethostbyname(hostname)
+            ip_addr = ipaddress.ip_address(ip_str)
+
+            # Explicitly block cloud metadata endpoint (169.254.169.254) FIRST
+            if ip_str == "169.254.169.254":
+                raise ValidationError(
+                    "Access to cloud metadata endpoint is not allowed: 169.254.169.254",
+                    details={
+                        "url": url,
+                        "hostname": hostname,
+                        "resolved_ip": ip_str,
+                        "reason": "Cloud metadata endpoint (AWS, Azure, GCP)",
+                    },
+                )
+
+            # Block loopback addresses (127.0.0.0/8, ::1)
+            if ip_addr.is_loopback:
+                raise ValidationError(
+                    f"Access to loopback addresses is not allowed: {ip_str}",
+                    details={
+                        "url": url,
+                        "hostname": hostname,
+                        "resolved_ip": ip_str,
+                        "reason": "Loopback address",
+                    },
+                )
+
+            # Block link-local addresses (169.254.0.0/16, fe80::/10)
+            if ip_addr.is_link_local:
+                raise ValidationError(
+                    f"Access to link-local addresses is not allowed: {ip_str}",
+                    details={
+                        "url": url,
+                        "hostname": hostname,
+                        "resolved_ip": ip_str,
+                        "reason": "Link-local address",
+                    },
+                )
+
+            # Block multicast addresses
+            if ip_addr.is_multicast:
+                raise ValidationError(
+                    f"Access to multicast addresses is not allowed: {ip_str}",
+                    details={
+                        "url": url,
+                        "hostname": hostname,
+                        "resolved_ip": ip_str,
+                        "reason": "Multicast address",
+                    },
+                )
+
+            # Block reserved addresses
+            if ip_addr.is_reserved:
+                raise ValidationError(
+                    f"Access to reserved IP addresses is not allowed: {ip_str}",
+                    details={
+                        "url": url,
+                        "hostname": hostname,
+                        "resolved_ip": ip_str,
+                        "reason": "Reserved IP address",
+                    },
+                )
+
+            # Block private IP addresses (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
+            # Check this LAST because is_private also returns True for loopback and link-local
+            if ip_addr.is_private:
+                raise ValidationError(
+                    f"Access to private IP addresses is not allowed: {ip_str}",
+                    details={
+                        "url": url,
+                        "hostname": hostname,
+                        "resolved_ip": ip_str,
+                        "reason": "Private IP address (RFC 1918)",
+                    },
+                )
+
+        except socket.gaierror as e:
+            raise ValidationError(
+                f"Failed to resolve hostname: {hostname}",
+                details={
+                    "url": url,
+                    "hostname": hostname,
+                    "error": str(e),
+                },
+            ) from e
+        except ValidationError:
+            # Re-raise validation errors
+            raise
+        except Exception as e:
+            raise ValidationError(
+                f"Error validating URL safety: {url}",
+                details={
+                    "url": url,
+                    "error": str(e),
+                    "type": type(e).__name__,
+                },
+            ) from e
 
     def load(self, source: str) -> Path:
         """
         Download URL content and detect type.
 
         Process:
-        1. Download to temp location with size/timeout limits
-        2. Detect content type from headers or extension
-        3. Return path to downloaded file
+        1. Validate URL safety (prevent SSRF)
+        2. Download to temp location with size/timeout limits
+        3. Handle redirects manually with validation
+        4. Detect content type from headers or extension
+        5. Return path to downloaded file
 
         Args:
             source: URL string
@@ -224,11 +357,59 @@ class URLInputHandler(InputHandler):
             ConfigurationError: If unexpected error occurs
         """
         try:
-            # Make HEAD request first to check size and content type
+            # Validate initial URL safety
+            self._validate_url_safety(source)
+
+            current_url = source
+            redirect_count = 0
+            content_type = None
+
+            # Make HEAD request first to check size, content type, and handle redirects
             try:
+                # Disable automatic redirects to validate each redirect destination
                 head_response = requests.head(
-                    source, timeout=self.timeout, allow_redirects=True, headers=self.headers
+                    current_url, timeout=self.timeout, allow_redirects=False, headers=self.headers
                 )
+
+                # Handle redirects manually with validation
+                while (
+                    head_response.status_code in (301, 302, 303, 307, 308)
+                    and redirect_count < self.max_redirects
+                ):
+                    redirect_count += 1
+
+                    # Get redirect location
+                    redirect_url = head_response.headers.get("Location")
+                    if not redirect_url:
+                        raise ValidationError(
+                            "Redirect response missing Location header",
+                            details={"url": current_url, "status_code": head_response.status_code},
+                        )
+
+                    # Handle relative redirects
+                    if not redirect_url.startswith(("http://", "https://")):
+                        from urllib.parse import urljoin
+
+                        redirect_url = urljoin(current_url, redirect_url)
+
+                    # Validate redirect destination before following
+                    self._validate_url_safety(redirect_url)
+
+                    current_url = redirect_url
+                    head_response = requests.head(
+                        current_url,
+                        timeout=self.timeout,
+                        allow_redirects=False,
+                        headers=self.headers,
+                    )
+
+                # Check if we exceeded max redirects
+                if head_response.status_code in (301, 302, 303, 307, 308):
+                    raise ValidationError(
+                        f"Too many redirects (maximum {self.max_redirects})",
+                        details={"url": source, "max_redirects": self.max_redirects},
+                    )
+
                 content_length = head_response.headers.get("content-length")
                 content_type = head_response.headers.get("content-type", "").lower()
 
@@ -245,11 +426,60 @@ class URLInputHandler(InputHandler):
                             },
                         )
             except requests.RequestException:
-                # HEAD request failed, continue with GET
+                # HEAD request failed, continue with GET (will validate redirects there too)
                 content_type = None
+                current_url = source
 
-            # Download content
-            response = requests.get(source, timeout=self.timeout, stream=True, headers=self.headers)
+            # Download content with manual redirect handling
+            redirect_count = 0
+            response = requests.get(
+                current_url,
+                timeout=self.timeout,
+                stream=True,
+                allow_redirects=False,
+                headers=self.headers,
+            )
+
+            # Handle redirects manually for GET request as well
+            while (
+                response.status_code in (301, 302, 303, 307, 308)
+                and redirect_count < self.max_redirects
+            ):
+                redirect_count += 1
+
+                # Get redirect location
+                redirect_url = response.headers.get("Location")
+                if not redirect_url:
+                    raise ValidationError(
+                        "Redirect response missing Location header",
+                        details={"url": current_url, "status_code": response.status_code},
+                    )
+
+                # Handle relative redirects
+                if not redirect_url.startswith(("http://", "https://")):
+                    from urllib.parse import urljoin
+
+                    redirect_url = urljoin(current_url, redirect_url)
+
+                # Validate redirect destination before following
+                self._validate_url_safety(redirect_url)
+
+                current_url = redirect_url
+                response = requests.get(
+                    current_url,
+                    timeout=self.timeout,
+                    stream=True,
+                    allow_redirects=False,
+                    headers=self.headers,
+                )
+
+            # Check if we exceeded max redirects
+            if response.status_code in (301, 302, 303, 307, 308):
+                raise ValidationError(
+                    f"Too many redirects (maximum {self.max_redirects})",
+                    details={"url": source, "max_redirects": self.max_redirects},
+                )
+
             response.raise_for_status()
 
             # Get content type from response if not from HEAD
@@ -257,7 +487,7 @@ class URLInputHandler(InputHandler):
                 content_type = response.headers.get("content-type", "").lower()
 
             # Determine file extension from content type or URL
-            extension = self._determine_extension(source, content_type)
+            extension = self._determine_extension(current_url, content_type)
 
             # Create temp file with appropriate extension
             temp_file = tempfile.NamedTemporaryFile(mode="wb", suffix=extension, delete=False)

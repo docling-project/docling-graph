@@ -75,6 +75,8 @@ class TestURLValidator:
 
     def test_accepts_valid_https_urls(self):
         """Test that valid HTTPS URLs pass validation."""
+        from unittest.mock import patch
+
         validator = URLValidator()
         valid_urls = [
             "https://example.com",
@@ -86,19 +88,27 @@ class TestURLValidator:
             "https://example.com/file?p1=v1&p2=v2",
             "https://example.com/file#anchor",
         ]
-        for url in valid_urls:
-            validator.validate(url)  # Should not raise
+
+        # Mock DNS resolution to return a public IP address
+        with patch("socket.gethostbyname", return_value="93.184.216.34"):  # example.com's actual IP
+            for url in valid_urls:
+                validator.validate(url)  # Should not raise
 
     def test_accepts_valid_http_urls(self):
         """Test that valid HTTP URLs pass validation."""
+        from unittest.mock import patch
+
         validator = URLValidator()
         valid_urls = [
             "http://example.com",
             "http://example.com/file.txt",
-            "http://192.168.1.1/document",
+            "http://public-server.com/document",
         ]
-        for url in valid_urls:
-            validator.validate(url)  # Should not raise
+
+        # Mock DNS resolution to return a public IP address
+        with patch("socket.gethostbyname", return_value="93.184.216.34"):  # example.com's actual IP
+            for url in valid_urls:
+                validator.validate(url)  # Should not raise
 
     def test_rejects_unsupported_schemes(self):
         """Test that unsupported URL schemes are rejected."""

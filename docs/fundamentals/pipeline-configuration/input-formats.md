@@ -74,6 +74,48 @@ handler = URLInputHandler(
 )
 ```
 
+**Security Considerations**:
+
+!!! warning "SSRF Protection"
+    Docling Graph includes built-in protection against Server-Side Request Forgery (SSRF) attacks when processing URLs. The following security measures are automatically enforced:
+
+**Blocked IP Ranges**:
+- **Private Networks (RFC 1918)**: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`
+- **Loopback Addresses**: `127.0.0.0/8` (localhost)
+- **Link-Local Addresses**: `169.254.0.0/16` (including cloud metadata endpoints like `169.254.169.254`)
+- **Multicast and Reserved Ranges**: `224.0.0.0/4`, `240.0.0.0/4`
+
+**Redirect Protection**:
+- Redirects are validated to ensure they don't point to blocked IP ranges
+- Maximum of 5 redirects allowed to prevent redirect loops
+- Each redirect target is validated before following
+
+**What This Means**:
+
+✅ Public internet URLs work normally<br>
+❌ Internal network resources are blocked (e.g., `http://192.168.1.1/admin`)<br>
+❌ Cloud metadata endpoints are blocked (e.g., `http://169.254.169.254/latest/meta-data/`)<br>
+❌ Localhost access is blocked (e.g., `http://localhost:8080/internal`)
+
+**If You Need Internal URLs**:
+
+If your use case requires accessing internal network resources, consider these alternatives:
+
+1. **Download files manually** and process them as local files:
+   ```python
+   # Download internally, then process
+   config = PipelineConfig(
+       source="/path/to/downloaded/file.pdf",
+       template="templates.billing_document.BillingDocument"
+   )
+   ```
+
+2. **Use network segmentation** to expose only necessary resources through a public endpoint
+
+3. **Implement an allowlist proxy** that validates and forwards requests to approved internal URLs
+
+**Security Advisory**: This protection was added in version 1.5.1 to address GHSA-fqph-j6v6-jvgx. For more information, see the [CHANGELOG](https://github.com/docling-project/docling-graph/blob/main/CHANGELOG.md).
+
 ---
 
 ### Plain text strings (Python API only)
