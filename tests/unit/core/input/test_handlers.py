@@ -436,6 +436,287 @@ class TestURLInputHandler:
         assert "User-Agent" in get_call_kwargs["headers"]
         assert result.exists()
 
+    # ==================== SSRF Protection Tests ====================
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_validates_initial_url_safety(self, mock_get, mock_head, mock_gethostbyname, handler):
+        """Test that initial URL is validated for SSRF before download."""
+        # URL resolves to localhost
+        mock_gethostbyname.return_value = "127.0.0.1"
+
+        with pytest.raises(ValidationError, match="loopback"):
+            handler.load("http://localhost/file.pdf")
+
+        # Should not make any HTTP requests if validation fails
+        mock_head.assert_not_called()
+        mock_get.assert_not_called()
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_blocks_private_ip_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+        """Test that private IP addresses are blocked."""
+        mock_gethostbyname.return_value = "192.168.1.1"
+
+        with pytest.raises(ValidationError, match="private"):
+            handler.load("http://internal.company.local/file.pdf")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_blocks_cloud_metadata_endpoint(self, mock_get, mock_head, mock_gethostbyname, handler):
+        """Test that cloud metadata endpoint (169.254.169.254) is explicitly blocked."""
+        mock_gethostbyname.return_value = "169.254.169.254"
+
+        with pytest.raises(ValidationError, match="metadata"):
+            handler.load("http://metadata.example.com/")
+
+        # Verify error details
+        try:
+            handler.load("http://metadata.example.com/")
+        except ValidationError as e:
+            assert "169.254.169.254" in str(e)
+            assert "Cloud metadata endpoint" in e.details["reason"]
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_blocks_link_local_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+        """Test that link-local addresses are blocked."""
+        mock_gethostbyname.return_value = "169.254.1.1"
+
+        with pytest.raises(ValidationError, match="link-local"):
+            handler.load("http://link-local.test/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_blocks_multicast_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+        """Test that multicast addresses are blocked."""
+        mock_gethostbyname.return_value = "224.0.0.1"
+
+        with pytest.raises(ValidationError, match="multicast"):
+            handler.load("http://multicast.test/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_blocks_reserved_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+        """Test that reserved IP addresses are blocked."""
+        mock_gethostbyname.return_value = "240.0.0.1"
+
+        with pytest.raises(ValidationError, match="reserved"):
+            handler.load("http://reserved.test/")
+
+    @patch("socket.gethostbyname")
+    def test_handles_dns_resolution_failure_in_validation(self, mock_gethostbyname, handler):
+        """Test handling of DNS resolution failures during URL validation."""
+        import socket as sock
+
+        mock_gethostbyname.side_effect = sock.gaierror("Name or service not known")
+
+        with pytest.raises(ValidationError, match="Failed to resolve hostname"):
+            handler.load("http://nonexistent-domain-12345.com/")
+
+    @patch("socket.gethostbyname")
+    def test_handles_invalid_url_without_hostname(self, mock_gethostbyname, handler):
+        """Test handling of invalid URLs without hostname."""
+        # This should fail during URL parsing before DNS lookup
+        with pytest.raises(ValidationError, match="Invalid URL"):
+            handler.load("http:///no-hostname")
+
+    # ==================== Manual Redirect Validation Tests ====================
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_validates_redirect_destination_safety(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
+        """Test that redirect destinations are validated for SSRF."""
+        # Initial URL is safe, redirect goes to private IP
+        mock_gethostbyname.side_effect = ["8.8.8.8", "192.168.1.1"]
+
+        # HEAD returns redirect
+        mock_head_response = Mock()
+        mock_head_response.status_code = 302
+        mock_head_response.headers = {"Location": "http://internal.local/file.pdf"}
+        mock_head.return_value = mock_head_response
+
+        with pytest.raises(ValidationError, match="private"):
+            handler.load("http://public.com/redirect")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_handles_relative_redirect_safely(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
+        """Test that relative redirects are handled and validated."""
+        mock_gethostbyname.return_value = "8.8.8.8"
+
+        # HEAD returns relative redirect
+        mock_head_response1 = Mock()
+        mock_head_response1.status_code = 302
+        mock_head_response1.headers = {"Location": "/new-location/file.pdf"}
+
+        mock_head_response2 = Mock()
+        mock_head_response2.status_code = 200
+        mock_head_response2.headers = {"content-type": "application/pdf"}
+
+        mock_head.side_effect = [mock_head_response1, mock_head_response2]
+
+        # GET request
+        mock_get_response = Mock()
+        mock_get_response.status_code = 200
+        mock_get_response.headers = {"content-type": "application/pdf"}
+        mock_get_response.iter_content = Mock(return_value=[b"pdf content"])
+        mock_get.return_value = mock_get_response
+
+        result = handler.load("http://example.com/old-location")
+        assert result.exists()
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    def test_enforces_max_redirects_in_head_request(self, mock_head, mock_gethostbyname, handler):
+        """Test that maximum redirect limit is enforced in HEAD requests."""
+        mock_gethostbyname.return_value = "8.8.8.8"
+
+        # Create 6 redirects (exceeds limit of 5)
+        redirect_responses = []
+        for i in range(6):
+            response = Mock()
+            response.status_code = 302
+            response.headers = {"Location": f"http://redirect{i + 1}.com/"}
+            redirect_responses.append(response)
+
+        mock_head.side_effect = redirect_responses
+
+        with pytest.raises(ValidationError, match="Too many redirects"):
+            handler.load("http://redirect0.com/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    def test_handles_redirect_without_location_header_in_head(
+        self, mock_head, mock_gethostbyname, handler
+    ):
+        """Test handling of redirect without Location header in HEAD request."""
+        mock_gethostbyname.return_value = "8.8.8.8"
+
+        mock_head_response = Mock()
+        mock_head_response.status_code = 302
+        mock_head_response.headers = {}  # Missing Location header
+        mock_head.return_value = mock_head_response
+
+        with pytest.raises(ValidationError, match="Location header"):
+            handler.load("http://broken-redirect.com/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_validates_redirects_in_get_request(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
+        """Test that GET request redirects are also validated."""
+        # HEAD fails, so GET is used
+        mock_gethostbyname.side_effect = ["8.8.8.8", "8.8.8.8", "192.168.1.1"]
+
+        # HEAD fails
+        import requests
+
+        mock_head.side_effect = requests.RequestException("HEAD failed")
+
+        # GET returns redirect to private IP
+        mock_get_response = Mock()
+        mock_get_response.status_code = 302
+        mock_get_response.headers = {"Location": "http://internal.local/"}
+        mock_get.return_value = mock_get_response
+
+        with pytest.raises(ValidationError, match="private"):
+            handler.load("http://public.com/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_enforces_max_redirects_in_get_request(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
+        """Test that maximum redirect limit is enforced in GET requests."""
+        mock_gethostbyname.return_value = "8.8.8.8"
+
+        # HEAD fails
+        import requests
+
+        mock_head.side_effect = requests.RequestException("HEAD failed")
+
+        # GET has 6 redirects (exceeds limit)
+        redirect_responses = []
+        for i in range(6):
+            response = Mock()
+            response.status_code = 302
+            response.headers = {"Location": f"http://redirect{i + 1}.com/"}
+            redirect_responses.append(response)
+
+        mock_get.side_effect = redirect_responses
+
+        with pytest.raises(ValidationError, match="Too many redirects"):
+            handler.load("http://redirect0.com/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_handles_redirect_without_location_header_in_get(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
+        """Test handling of redirect without Location header in GET request."""
+        mock_gethostbyname.return_value = "8.8.8.8"
+
+        # HEAD fails
+        import requests
+
+        mock_head.side_effect = requests.RequestException("HEAD failed")
+
+        # GET returns redirect without Location
+        mock_get_response = Mock()
+        mock_get_response.status_code = 302
+        mock_get_response.headers = {}  # Missing Location header
+        mock_get.return_value = mock_get_response
+
+        with pytest.raises(ValidationError, match="Location header"):
+            handler.load("http://broken-redirect.com/")
+
+    @patch("socket.gethostbyname")
+    @patch("requests.head")
+    @patch("requests.get")
+    def test_handles_multiple_redirect_status_codes(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
+        """Test handling of various redirect status codes (301, 302, 303, 307, 308)."""
+        mock_gethostbyname.return_value = "8.8.8.8"
+
+        # Test each redirect status code
+        for status_code in [301, 302, 303, 307, 308]:
+            mock_head_response1 = Mock()
+            mock_head_response1.status_code = status_code
+            mock_head_response1.headers = {"Location": "http://example.com/final"}
+
+            mock_head_response2 = Mock()
+            mock_head_response2.status_code = 200
+            mock_head_response2.headers = {"content-type": "text/plain"}
+
+            mock_head.side_effect = [mock_head_response1, mock_head_response2]
+
+            mock_get_response = Mock()
+            mock_get_response.status_code = 200
+            mock_get_response.headers = {"content-type": "text/plain"}
+            mock_get_response.iter_content = Mock(return_value=[b"content"])
+            mock_get.return_value = mock_get_response
+
+            result = handler.load("http://example.com/redirect")
+            assert result.exists()
+
 
 class TestDocumentInputHandler:
     """Test DocumentInputHandler (unified path: file or raw text -> Path for Docling)."""

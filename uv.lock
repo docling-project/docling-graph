@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.10, <4.0"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -1270,7 +1270,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "1.5.0"
+version = "1.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
