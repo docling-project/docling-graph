@@ -54,12 +54,15 @@ class TestURLValidatorIPBlocking:
 
     # ==================== Loopback Address Tests ====================
 
-    @pytest.mark.parametrize("ip_address", [
-        "127.0.0.1",
-        "127.0.0.2",
-        "127.1.1.1",
-        "127.255.255.255",
-    ])
+    @pytest.mark.parametrize(
+        "ip_address",
+        [
+            "127.0.0.1",
+            "127.0.0.2",
+            "127.1.1.1",
+            "127.255.255.255",
+        ],
+    )
     @patch("socket.gethostbyname")
     def test_blocks_loopback_range(self, mock_gethostbyname, validator, ip_address):
         """Test that all loopback addresses (127.0.0.0/8) are blocked."""
@@ -77,17 +80,20 @@ class TestURLValidatorIPBlocking:
 
     # ==================== Private Network Tests ====================
 
-    @pytest.mark.parametrize("ip_address,network", [
-        ("10.0.0.1", "10.0.0.0/8"),
-        ("10.255.255.255", "10.0.0.0/8"),
-        ("10.123.45.67", "10.0.0.0/8"),
-        ("172.16.0.1", "172.16.0.0/12"),
-        ("172.31.255.255", "172.16.0.0/12"),
-        ("172.20.10.5", "172.16.0.0/12"),
-        ("192.168.0.1", "192.168.0.0/16"),
-        ("192.168.255.255", "192.168.0.0/16"),
-        ("192.168.1.100", "192.168.0.0/16"),
-    ])
+    @pytest.mark.parametrize(
+        "ip_address,network",
+        [
+            ("10.0.0.1", "10.0.0.0/8"),
+            ("10.255.255.255", "10.0.0.0/8"),
+            ("10.123.45.67", "10.0.0.0/8"),
+            ("172.16.0.1", "172.16.0.0/12"),
+            ("172.31.255.255", "172.16.0.0/12"),
+            ("172.20.10.5", "172.16.0.0/12"),
+            ("192.168.0.1", "192.168.0.0/16"),
+            ("192.168.255.255", "192.168.0.0/16"),
+            ("192.168.1.100", "192.168.0.0/16"),
+        ],
+    )
     @patch("socket.gethostbyname")
     def test_blocks_private_networks(self, mock_gethostbyname, validator, ip_address, network):
         """Test that private IP addresses (RFC 1918) are blocked."""
@@ -106,11 +112,14 @@ class TestURLValidatorIPBlocking:
 
     # ==================== Link-Local Address Tests ====================
 
-    @pytest.mark.parametrize("ip_address", [
-        "169.254.0.1",
-        "169.254.255.255",
-        "169.254.100.50",
-    ])
+    @pytest.mark.parametrize(
+        "ip_address",
+        [
+            "169.254.0.1",
+            "169.254.255.255",
+            "169.254.100.50",
+        ],
+    )
     @patch("socket.gethostbyname")
     def test_blocks_link_local_addresses(self, mock_gethostbyname, validator, ip_address):
         """Test that link-local addresses (169.254.0.0/16) are blocked."""
@@ -163,11 +172,14 @@ class TestURLValidatorIPBlocking:
         with pytest.raises(ValidationError, match="loopback"):
             validator.validate("http://[::1]/")
 
-    @pytest.mark.parametrize("ipv6_address", [
-        "fe80::1",
-        "fe80::dead:beef",
-        "fe80::1234:5678:90ab:cdef",
-    ])
+    @pytest.mark.parametrize(
+        "ipv6_address",
+        [
+            "fe80::1",
+            "fe80::dead:beef",
+            "fe80::1234:5678:90ab:cdef",
+        ],
+    )
     @patch("socket.gethostbyname")
     def test_blocks_ipv6_link_local(self, mock_gethostbyname, validator, ipv6_address):
         """Test that IPv6 link-local addresses (fe80::/10) are blocked."""
@@ -178,11 +190,14 @@ class TestURLValidatorIPBlocking:
 
     # ==================== Multicast Address Tests ====================
 
-    @pytest.mark.parametrize("ip_address", [
-        "224.0.0.1",
-        "239.255.255.255",
-        "230.1.2.3",
-    ])
+    @pytest.mark.parametrize(
+        "ip_address",
+        [
+            "224.0.0.1",
+            "239.255.255.255",
+            "230.1.2.3",
+        ],
+    )
     @patch("socket.gethostbyname")
     def test_blocks_multicast_addresses(self, mock_gethostbyname, validator, ip_address):
         """Test that multicast addresses are blocked."""
@@ -193,11 +208,14 @@ class TestURLValidatorIPBlocking:
 
     # ==================== Reserved Address Tests ====================
 
-    @pytest.mark.parametrize("ip_address", [
-        "0.0.0.0",
-        "240.0.0.1",
-        "255.255.255.255",
-    ])
+    @pytest.mark.parametrize(
+        "ip_address",
+        [
+            "0.0.0.0",
+            "240.0.0.1",
+            "255.255.255.255",
+        ],
+    )
     @patch("socket.gethostbyname")
     def test_blocks_reserved_addresses(self, mock_gethostbyname, validator, ip_address):
         """Test that reserved IP addresses are blocked."""
@@ -208,15 +226,20 @@ class TestURLValidatorIPBlocking:
 
     # ==================== Public IP Tests (Should Pass) ====================
 
-    @pytest.mark.parametrize("ip_address,description", [
-        ("8.8.8.8", "Google DNS"),
-        ("1.1.1.1", "Cloudflare DNS"),
-        ("93.184.216.34", "example.com"),
-        ("151.101.1.140", "Reddit"),
-        ("13.107.42.14", "Microsoft"),
-    ])
+    @pytest.mark.parametrize(
+        "ip_address,description",
+        [
+            ("8.8.8.8", "Google DNS"),
+            ("1.1.1.1", "Cloudflare DNS"),
+            ("93.184.216.34", "example.com"),
+            ("151.101.1.140", "Reddit"),
+            ("13.107.42.14", "Microsoft"),
+        ],
+    )
     @patch("socket.gethostbyname")
-    def test_allows_legitimate_public_ips(self, mock_gethostbyname, validator, ip_address, description):
+    def test_allows_legitimate_public_ips(
+        self, mock_gethostbyname, validator, ip_address, description
+    ):
         """Test that legitimate public IP addresses are allowed."""
         mock_gethostbyname.return_value = ip_address
 
@@ -279,7 +302,9 @@ class TestURLInputHandlerRedirectSecurity:
     @patch("socket.gethostbyname")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_redirect_to_private_network(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_redirect_to_private_network(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
         """Test that redirects to private networks are blocked."""
         # Initial URL resolves to public IP, redirect resolves to private IP
         mock_gethostbyname.side_effect = ["8.8.8.8", "192.168.1.1"]
@@ -296,11 +321,18 @@ class TestURLInputHandlerRedirectSecurity:
     @patch("socket.gethostbyname")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_redirect_to_metadata_endpoint(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_redirect_to_metadata_endpoint(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
         """Test that redirects to cloud metadata endpoints are blocked (PoC from security report)."""
         # Initial URL resolves to public IP, redirect resolves to metadata endpoint
         # Need to provide enough values for all DNS lookups (initial + redirect validation)
-        mock_gethostbyname.side_effect = ["1.2.3.4", "169.254.169.254", "1.2.3.4", "169.254.169.254"]
+        mock_gethostbyname.side_effect = [
+            "1.2.3.4",
+            "169.254.169.254",
+            "1.2.3.4",
+            "169.254.169.254",
+        ]
 
         # HEAD request returns redirect to metadata endpoint
         mock_head_response = Mock()
@@ -337,7 +369,9 @@ class TestURLInputHandlerRedirectSecurity:
     @patch("socket.gethostbyname")
     @patch("requests.head")
     @patch("requests.get")
-    def test_allows_legitimate_redirect_to_public_url(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_allows_legitimate_redirect_to_public_url(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
         """Test that legitimate redirects to public URLs work correctly."""
         # Both URLs resolve to public IPs
         mock_gethostbyname.side_effect = ["93.184.216.34", "151.101.1.140"]
@@ -379,7 +413,7 @@ class TestURLInputHandlerRedirectSecurity:
         for i in range(6):
             response = Mock()
             response.status_code = 302
-            response.headers = {"Location": f"http://redirect{i+1}.com/"}
+            response.headers = {"Location": f"http://redirect{i + 1}.com/"}
             redirect_responses.append(response)
 
         mock_head.side_effect = redirect_responses
@@ -399,7 +433,7 @@ class TestURLInputHandlerRedirectSecurity:
         for i in range(5):
             response = Mock()
             response.status_code = 302
-            response.headers = {"Location": f"http://redirect{i+1}.com/"}
+            response.headers = {"Location": f"http://redirect{i + 1}.com/"}
             redirect_responses.append(response)
 
         # Final response is success
@@ -437,7 +471,14 @@ class TestURLInputHandlerRedirectSecurity:
         response_b.status_code = 302
         response_b.headers = {"Location": "http://site-a.com/"}
 
-        mock_head.side_effect = [response_a, response_b, response_a, response_b, response_a, response_b]
+        mock_head.side_effect = [
+            response_a,
+            response_b,
+            response_a,
+            response_b,
+            response_a,
+            response_b,
+        ]
 
         with pytest.raises(ValidationError, match="Too many redirects"):
             handler.load("http://site-a.com/")
@@ -511,7 +552,9 @@ class TestURLInputHandlerRedirectSecurity:
     @patch("socket.gethostbyname")
     @patch("requests.head")
     @patch("requests.get")
-    def test_validates_redirects_in_both_head_and_get(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_validates_redirects_in_both_head_and_get(
+        self, mock_get, mock_head, mock_gethostbyname, handler
+    ):
         """Test that both HEAD and GET requests validate redirects."""
         # HEAD succeeds, but GET has a redirect to internal IP
         mock_gethostbyname.side_effect = ["8.8.8.8", "8.8.8.8", "192.168.1.1"]
@@ -562,7 +605,12 @@ class TestSSRFIntegrationScenarios:
         # Attacker's server resolves to public IP (use a truly public IP)
         # Redirect target resolves to metadata endpoint
         # Need to provide enough values for all DNS lookups
-        mock_gethostbyname.side_effect = ["8.8.8.8", "169.254.169.254", "8.8.8.8", "169.254.169.254"]
+        mock_gethostbyname.side_effect = [
+            "8.8.8.8",
+            "169.254.169.254",
+            "8.8.8.8",
+            "169.254.169.254",
+        ]
 
         # Attacker's server returns redirect
         mock_head_response = Mock()
@@ -631,15 +679,20 @@ class TestSSRFIntegrationScenarios:
 
     # ==================== Various Attack Vectors ====================
 
-    @pytest.mark.parametrize("attack_url,expected_error", [
-        ("http://127.0.0.1/", "loopback"),
-        ("http://localhost/", "loopback"),
-        ("http://[::1]/", "loopback"),
-        ("http://0.0.0.0/", "reserved"),
-        ("http://169.254.169.254/", "metadata"),
-    ])
+    @pytest.mark.parametrize(
+        "attack_url,expected_error",
+        [
+            ("http://127.0.0.1/", "loopback"),
+            ("http://localhost/", "loopback"),
+            ("http://[::1]/", "loopback"),
+            ("http://0.0.0.0/", "reserved"),
+            ("http://169.254.169.254/", "metadata"),
+        ],
+    )
     @patch("socket.gethostbyname")
-    def test_various_direct_attack_vectors(self, mock_gethostbyname, validator, attack_url, expected_error):
+    def test_various_direct_attack_vectors(
+        self, mock_gethostbyname, validator, attack_url, expected_error
+    ):
         """Test various direct attack vectors are blocked."""
         # Extract IP from URL for mocking
         if "127.0.0.1" in attack_url:
@@ -744,7 +797,9 @@ class TestSSRFErrorMessages:
             validator.validate("http://metadata.local/")
         except ValidationError as e:
             assert "reason" in e.details
-            assert "metadata" in e.details["reason"].lower() or "cloud" in e.details["reason"].lower()
+            assert (
+                "metadata" in e.details["reason"].lower() or "cloud" in e.details["reason"].lower()
+            )
 
     @patch("socket.gethostbyname")
     def test_error_message_includes_rfc_reference(self, mock_gethostbyname, validator):
