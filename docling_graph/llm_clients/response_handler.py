@@ -62,6 +62,17 @@ class ResponseHandler:
                 f"{client_name} returned empty response", details={"raw_response": raw_response}
             )
 
+        # Fast path: well-formed JSON (the normal case with structured output)
+        # skips the character-level cleaning passes entirely.
+        try:
+            parsed = json.loads(raw_response)
+        except json.JSONDecodeError:
+            pass
+        else:
+            if truncated:
+                ResponseHandler._warn_truncation(client_name, max_tokens, recovered=True)
+            return ResponseHandler._validate_structure(parsed, client_name)
+
         # Clean response
         content = ResponseHandler._clean_response(raw_response, aggressive_clean)
 

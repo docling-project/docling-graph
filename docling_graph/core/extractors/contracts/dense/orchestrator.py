@@ -39,6 +39,10 @@ from .resolvers import DenseResolverConfig, resolve_skeleton_nodes
 
 logger = logging.getLogger(__name__)
 
+# Max times a truncated skeleton batch may be halved before keeping the partial result.
+# Batches are already small (a few chunks), so a depth of 4 fully isolates pathological chunks.
+_MAX_SKELETON_SPLIT_DEPTH = 4
+
 
 def _skeleton_identity_key(
     node: dict[str, Any],
@@ -126,13 +130,25 @@ def merge_skeleton_batches(
     batch_results: list[list[dict[str, Any]]],
     catalog: NodeCatalog,
 ) -> list[dict[str, Any]]:
+    """Dedupe skeleton nodes across batches, accumulating every source batch index.
+
+    The union of source batches is kept so Phase 2 can scope its fill context to
+    the document regions where the node was actually observed.
+    """
     spec_by_path = {s.path: s for s in catalog.nodes}
     by_key: dict[tuple[Any, ...], dict[str, Any]] = {}
     for batch in batch_results:
         for node in batch:
             key = _skeleton_identity_key(node, spec_by_path)
-            if key not in by_key:
-                by_key[key] = dict(node)
+            source_idx = node.get("_source_batch_index")
+            merged = by_key.get(key)
+            if merged is None:
+                merged = dict(node)
+                merged.pop("_source_batch_index", None)
+                merged["_source_batch_indexes"] = []
+                by_key[key] = merged
+            if isinstance(source_idx, int) and source_idx not in merged["_source_batch_indexes"]:
+                merged["_source_batch_indexes"].append(source_idx)
     return list(by_key.values())
 
 
@@ -146,6 +162,9 @@ def skeleton_to_descriptors(
         ids = node.get("ids") or {}
         parent = node.get("parent")
         desc = {"path": path, "ids": dict(ids), "parent": parent}
+        source_indexes = node.get("_source_batch_indexes")
+        if isinstance(source_indexes, list) and source_indexes:
+            desc["_source_batch_indexes"] = list(source_indexes)
         path_descriptors.setdefault(path, []).append(desc)
     return path_descriptors
 
@@ -316,6 +335,9 @@ class DenseOrchestratorConfig:
     quality_require_root: bool = True
     quality_min_instances: int = 1
     prune_barren_branches: bool = False
+    # "scoped": fill prompts only include the skeleton batches where the node was
+    # observed (plus the document head); "full": always send the whole document.
+    fill_context_mode: str = "scoped"
     resolvers: DenseResolverConfig = field(default_factory=DenseResolverConfig)
 
     @classmethod
@@ -333,6 +355,9 @@ class DenseOrchestratorConfig:
         skeleton_batch_tokens = (
             min(raw_skeleton_tokens, 4096) if raw_skeleton_tokens > 4096 else raw_skeleton_tokens
         )
+        fill_context_mode = str(c.get("dense_fill_context", "scoped") or "scoped").lower()
+        if fill_context_mode not in ("scoped", "full"):
+            fill_context_mode = "scoped"
         return cls(
             max_pass_retries=int(c.get("max_pass_retries", 1) or 1),
             skeleton_batch_tokens=skeleton_batch_tokens,
@@ -341,6 +366,7 @@ class DenseOrchestratorConfig:
             quality_require_root=bool(c.get("dense_quality_require_root", True)),
             quality_min_instances=max(0, int(c.get("dense_quality_min_instances", 1) or 1)),
             prune_barren_branches=bool(c.get("dense_prune_barren_branches", False)),
+            fill_context_mode=fill_context_mode,
             resolvers=resolvers,
         )
 
@@ -370,6 +396,66 @@ class DenseOrchestrator:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, default=str)
 
+    def _call_skeleton_batch(
+        self,
+        batch_idx: int,
+        batch: list[tuple[int, str, int]],
+        total_batches: int,
+        catalog_block: str,
+        allowed_paths: set[str],
+        global_context: str | None,
+        semantic_guide: str | None,
+        schema_json: str,
+        context: str,
+        already_found_str: str | None,
+    ) -> tuple[list[dict[str, Any]], bool]:
+        """Run the LLM for one skeleton batch.
+
+        Returns (normalized_nodes, truncated) where truncated is True if the model
+        hit its output limit (so the caller may split the batch and retry).
+        """
+        batch_md = format_batch_markdown(batch)
+        prompt = get_skeleton_batch_prompt(
+            batch_markdown=batch_md,
+            catalog_block=catalog_block,
+            batch_index=batch_idx,
+            total_batches=total_batches,
+            allowed_paths=self._catalog.paths(),
+            global_context=global_context,
+            already_found=already_found_str,
+            semantic_guide=semantic_guide,
+        )
+        truncated = False
+        for attempt in range(self._config.max_pass_retries + 1):
+            diag: dict[str, Any] = {}
+            out = self._llm(
+                prompt=prompt,
+                schema_json=schema_json,
+                context=f"{context}_dense_skeleton_{batch_idx}",
+                response_top_level="object",
+                response_schema_name="dense_skeleton",
+                _diagnostics_out=diag,
+            )
+            if diag.get("truncated"):
+                truncated = True
+            if isinstance(out, dict) and "nodes" in out:
+                try:
+                    validated = DenseSkeletonGraph.model_validate(out)
+                    normalized_batch = []
+                    for n in validated.nodes:
+                        raw = n.model_dump()
+                        norm = normalize_skeleton_node(
+                            raw, allowed_paths, source_batch_index=batch_idx
+                        )
+                        if norm is not None:
+                            normalized_batch.append(norm)
+                    return normalized_batch, truncated
+                except Exception as e:
+                    logger.warning("Dense skeleton batch %s validation: %s", batch_idx, e)
+            if attempt == self._config.max_pass_retries:
+                return [], truncated
+        return [], truncated
+
     def _run_one_skeleton_batch(
         self,
         batch_idx: int,
@@ -383,44 +469,92 @@ class DenseOrchestrator:
         context: str,
         spec_by_path: dict[str, NodeSpec],
         already_found_str: str | None,
+        _depth: int = 0,
     ) -> tuple[int, list[dict[str, Any]]]:
-        """Run one skeleton batch; returns (batch_idx, normalized_batch_list). Uses already_found_str=None for parallel mode."""
-        batch_md = format_batch_markdown(batch)
-        prompt = get_skeleton_batch_prompt(
-            batch_markdown=batch_md,
-            catalog_block=catalog_block,
-            batch_index=batch_idx,
-            total_batches=total_batches,
-            allowed_paths=self._catalog.paths(),
-            global_context=global_context,
-            already_found=already_found_str,
-            semantic_guide=semantic_guide,
+        """Run one skeleton batch; returns (batch_idx, normalized_batch_list).
+
+        If the model truncates its output and the batch holds more than one chunk,
+        the batch is split in half and each half is retried (domain-agnostic recovery
+        for documents too entity-dense to fit one skeleton response in the model's
+        output budget). Sub-batches keep the same batch_idx so fill-context provenance
+        still points at the original batch text. Uses already_found_str=None in
+        parallel mode.
+        """
+        nodes, truncated = self._call_skeleton_batch(
+            batch_idx,
+            batch,
+            total_batches,
+            catalog_block,
+            allowed_paths,
+            global_context,
+            semantic_guide,
+            schema_json,
+            context,
+            already_found_str,
         )
-        for attempt in range(self._config.max_pass_retries + 1):
-            out = self._llm(
-                prompt=prompt,
-                schema_json=schema_json,
-                context=f"{context}_dense_skeleton_{batch_idx}",
-                response_top_level="object",
-                response_schema_name="dense_skeleton",
+        if truncated and len(batch) > 1 and _depth < _MAX_SKELETON_SPLIT_DEPTH:
+            mid = len(batch) // 2
+            logger.warning(
+                "Dense skeleton batch %s truncated (%s chunks); splitting into %s + %s and retrying",
+                batch_idx,
+                len(batch),
+                mid,
+                len(batch) - mid,
             )
-            if isinstance(out, dict) and "nodes" in out:
-                try:
-                    validated = DenseSkeletonGraph.model_validate(out)
-                    normalized_batch = []
-                    for n in validated.nodes:
-                        raw = n.model_dump()
-                        norm = normalize_skeleton_node(
-                            raw, allowed_paths, source_batch_index=batch_idx
-                        )
-                        if norm is not None:
-                            normalized_batch.append(norm)
-                    return (batch_idx, normalized_batch)
-                except Exception as e:
-                    logger.warning("Dense skeleton batch %s validation: %s", batch_idx, e)
-            if attempt == self._config.max_pass_retries:
-                return (batch_idx, [])
-        return (batch_idx, [])
+            merged: list[dict[str, Any]] = []
+            for sub in (batch[:mid], batch[mid:]):
+                _, sub_nodes = self._run_one_skeleton_batch(
+                    batch_idx,
+                    sub,
+                    total_batches,
+                    catalog_block,
+                    allowed_paths,
+                    global_context,
+                    semantic_guide,
+                    schema_json,
+                    context,
+                    spec_by_path,
+                    already_found_str,
+                    _depth + 1,
+                )
+                merged.extend(sub_nodes)
+            return (batch_idx, merged)
+        return (batch_idx, nodes)
+
+    def _build_fill_context(
+        self,
+        path: str,
+        batch_descriptors: list[dict[str, Any]],
+        batch_texts: list[str],
+        full_markdown: str,
+        global_head: str,
+    ) -> str:
+        """Markdown context for one fill batch.
+
+        In "scoped" mode, only the skeleton batches where the instances were
+        observed are included (plus the document head for shared context),
+        which keeps Phase 2 token cost proportional to the entities being
+        filled instead of resending the whole document for every batch.
+        The root instance and nodes without provenance always get the full
+        document, as does any scoped context that would not actually shrink it.
+        """
+        if self._config.fill_context_mode != "scoped" or path == "":
+            return full_markdown
+        indexes: set[int] = set()
+        for desc in batch_descriptors:
+            for idx in desc.get("_source_batch_indexes") or []:
+                if isinstance(idx, int) and 0 <= idx < len(batch_texts):
+                    indexes.add(idx)
+        if not indexes:
+            return full_markdown
+        parts: list[str] = []
+        if global_head and 0 not in indexes:
+            parts.append(global_head)
+        parts.extend(batch_texts[i] for i in sorted(indexes))
+        scoped = "\n\n".join(parts)
+        if len(scoped) >= len(full_markdown):
+            return full_markdown
+        return scoped
 
     def _run_one_fill_batch(
         self,
@@ -429,12 +563,12 @@ class DenseOrchestrator:
         batch_descriptors: list[dict[str, Any]],
         batch_index: int,
         sub_schema: str,
-        full_markdown: str,
+        fill_markdown: str,
         context: str,
     ) -> tuple[str, int, list[dict[str, Any]]]:
         """Run one fill batch; returns (path, batch_index, sanitized_list)."""
         prompt = get_fill_batch_prompt(
-            markdown=full_markdown,
+            markdown=fill_markdown,
             path=path,
             spec=spec,
             descriptors=batch_descriptors,
@@ -457,7 +591,15 @@ class DenseOrchestrator:
         elif isinstance(out, list):
             items = out
         else:
-            items = [{}] * len(batch_descriptors)
+            items = []
+        # Exactly one filled object per requested instance: pad short responses
+        # with empty objects (ids are restored from descriptors during sanitize)
+        # so skeleton nodes are never silently dropped, and discard extras that
+        # have no matching descriptor (they carry no usable parent linkage).
+        if len(items) < len(batch_descriptors):
+            items = [*items, *([{}] * (len(batch_descriptors) - len(items)))]
+        elif len(items) > len(batch_descriptors):
+            items = items[: len(batch_descriptors)]
         model = get_model_for_path(self._template, path)
         sanitized = _sanitize_filled(items, batch_descriptors, spec, model)
         return (path, batch_index, sanitized)
@@ -603,8 +745,12 @@ class DenseOrchestrator:
         fill_paths = [p for p in bottom_up_path_order(self._catalog) if path_descriptors.get(p)]
         phase2_start = time.perf_counter()
 
-        # Build flat list of fill jobs: (path, spec, batch_descriptors, batch_index, sub_schema)
-        fill_jobs: list[tuple[str, NodeSpec, list[dict[str, Any]], int, str]] = []
+        batch_texts = [format_batch_markdown(batch) for batch in batches]
+        global_head = chunks[0][:2000] if chunks and isinstance(chunks[0], str) else ""
+
+        # Build flat list of fill jobs:
+        # (path, spec, batch_descriptors, batch_index, sub_schema, fill_markdown)
+        fill_jobs: list[tuple[str, NodeSpec, list[dict[str, Any]], int, str, str]] = []
         for path in fill_paths:
             descriptors = path_descriptors[path]
             spec = spec_by_path.get(path)
@@ -616,17 +762,22 @@ class DenseOrchestrator:
                 for i in range(0, len(descriptors), self._config.fill_nodes_cap)
             ]
             for batch_index, batch_descriptors in enumerate(fill_batches):
-                fill_jobs.append((path, spec, batch_descriptors, batch_index, sub_schema))
+                fill_markdown = self._build_fill_context(
+                    path, batch_descriptors, batch_texts, full_markdown, global_head
+                )
+                fill_jobs.append(
+                    (path, spec, batch_descriptors, batch_index, sub_schema, fill_markdown)
+                )
 
         if workers <= 1 or len(fill_jobs) <= 1:
-            for path, spec, batch_descriptors, _bi, sub_schema in fill_jobs:
+            for path, spec, batch_descriptors, _bi, sub_schema, fill_markdown in fill_jobs:
                 _p, _bi, sanitized = self._run_one_fill_batch(
                     path=path,
                     spec=spec,
                     batch_descriptors=batch_descriptors,
                     batch_index=_bi,
                     sub_schema=sub_schema,
-                    full_markdown=full_markdown,
+                    fill_markdown=fill_markdown,
                     context=context,
                 )
                 path_filled.setdefault(path, []).extend(sanitized)
@@ -648,10 +799,10 @@ class DenseOrchestrator:
                         batch_descriptors=batch_descriptors,
                         batch_index=batch_index,
                         sub_schema=sub_schema,
-                        full_markdown=full_markdown,
+                        fill_markdown=fill_markdown,
                         context=context,
                     ): (path, batch_index)
-                    for path, spec, batch_descriptors, batch_index, sub_schema in fill_jobs
+                    for path, spec, batch_descriptors, batch_index, sub_schema, fill_markdown in fill_jobs
                 }
                 for future in as_completed(fill_futures):  # type: ignore[assignment]
                     path, batch_index = fill_futures[future]  # type: ignore[index]

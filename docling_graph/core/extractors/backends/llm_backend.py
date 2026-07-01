@@ -1101,6 +1101,9 @@ class LlmBackend:
                     self.last_call_diagnostics["fallback_error_class"] = client_diag.get(
                         "fallback_error_class"
                     )
+                self.last_call_diagnostics["truncated"] = bool(
+                    self.last_call_diagnostics.get("truncated") or client_diag.get("truncated")
+                )
                 for passthrough_key in ("provider", "model"):
                     if passthrough_key in client_diag:
                         self.last_call_diagnostics[passthrough_key] = client_diag[passthrough_key]
@@ -1110,6 +1113,8 @@ class LlmBackend:
         except Exception as e:
             details = getattr(e, "details", {}) if isinstance(e, ClientError) else {}
             truncated = bool(details.get("truncated")) if isinstance(details, dict) else False
+            if _diagnostics_out is not None and truncated:
+                _diagnostics_out["truncated"] = True
             if truncated and self._retry_on_truncation:
                 context_max = call_max_tokens
                 if (
@@ -1243,70 +1248,6 @@ class LlmBackend:
             template=template,
             trace_data=trace_data,
         )
-
-    def _repair_json(self, raw_text: str) -> str:
-        """
-        Repair common JSON malformations from small LLMs.
-
-        Applies the following fixes:
-        1. Remove invalid control characters (except newlines, tabs, carriage returns)
-        2. Remove trailing commas before closing brackets/braces
-        3. Balance unmatched braces and brackets
-
-        Args:
-            raw_text: Raw JSON text from LLM
-
-        Returns:
-            Repaired JSON text
-
-        Examples:
-            >>> backend._repair_json('{"key": "value",}')
-            '{"key": "value"}'
-            >>> backend._repair_json('{"key": "value"')
-            '{"key": "value"}'
-        """
-        # Step 1: Remove invalid control characters (keep \n, \t, \r)
-        # Remove control chars in range 0x00-0x1F except \n (0x0A), \t (0x09), \r (0x0D)
-        repaired = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", raw_text)
-
-        # Step 2: Remove trailing commas before closing brackets
-        # Match comma followed by optional whitespace and closing bracket/brace
-        repaired = re.sub(r",(\s*[}\]])", r"\1", repaired)
-
-        # Step 3: Balance unmatched braces and brackets
-        # Count opening and closing braces/brackets
-        open_braces = repaired.count("{")
-        close_braces = repaired.count("}")
-        open_brackets = repaired.count("[")
-        close_brackets = repaired.count("]")
-
-        # Add missing closing braces
-        if open_braces > close_braces:
-            repaired += "}" * (open_braces - close_braces)
-
-        # Add missing closing brackets
-        if open_brackets > close_brackets:
-            repaired += "]" * (open_brackets - close_brackets)
-
-        # Remove extra closing braces (trim from end)
-        if close_braces > open_braces:
-            excess = close_braces - open_braces
-            # Remove excess closing braces from the end
-            for _ in range(excess):
-                repaired = repaired.rstrip()
-                if repaired.endswith("}"):
-                    repaired = repaired[:-1]
-
-        # Remove extra closing brackets (trim from end)
-        if close_brackets > open_brackets:
-            excess = close_brackets - open_brackets
-            # Remove excess closing brackets from the end
-            for _ in range(excess):
-                repaired = repaired.rstrip()
-                if repaired.endswith("]"):
-                    repaired = repaired[:-1]
-
-        return repaired
 
     def extract_from_markdown(
         self,

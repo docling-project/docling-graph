@@ -466,3 +466,61 @@ class TestStageInterface:
         for stage in stages:
             assert hasattr(stage, "execute")
             assert callable(stage.execute)
+
+
+class TestExtractionStageDoclingDocumentInput:
+    """DoclingDocument inputs must go through the strategy contract path."""
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_docling_document_uses_extract_from_document(self, mock_init_client, mock_factory):
+        from pydantic import BaseModel
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract_from_document.return_value = ([TestModel(name="X")], Mock())
+        mock_factory.return_value = mock_extractor
+
+        config = PipelineConfig(
+            source="doc.json", template=TestModel, backend="llm", inference="local"
+        )
+        mock_document = Mock()
+        context = PipelineContext(config=config, template=TestModel)
+        context.docling_document = mock_document
+        context.input_metadata = {"input_type": "docling_document"}
+
+        stage = ExtractionStage()
+        result = stage.execute(context)
+
+        mock_extractor.extract_from_document.assert_called_once_with(mock_document, TestModel)
+        mock_extractor.extract.assert_not_called()
+        assert len(result.extracted_models) == 1
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_docling_document_no_models_raises(self, mock_init_client, mock_factory):
+        from pydantic import BaseModel
+
+        from docling_graph.exceptions import ExtractionError
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract_from_document.return_value = ([], None)
+        mock_factory.return_value = mock_extractor
+
+        config = PipelineConfig(
+            source="doc.json", template=TestModel, backend="llm", inference="local"
+        )
+        context = PipelineContext(config=config, template=TestModel)
+        context.docling_document = Mock()
+        context.input_metadata = {"input_type": "docling_document"}
+
+        stage = ExtractionStage()
+        with pytest.raises(ExtractionError):
+            stage.execute(context)

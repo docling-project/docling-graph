@@ -44,6 +44,7 @@ def _resolve_cli_settings(
     export_format: str | None,
     docling_pipeline: str | None,
     chunk_max_tokens: int | None,
+    parallel_workers: int | None,
     dense_resolvers_enabled: bool | None,
     dense_resolvers_mode: str | None,
     dense_resolvers_fuzzy_threshold: float | None,
@@ -86,6 +87,16 @@ def _resolve_cli_settings(
         "chunk_max_tokens": (
             chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
         ),
+        "parallel_workers": (
+            parallel_workers if parallel_workers is not None else defaults.get("parallel_workers")
+        ),
+        "dense_skeleton_batch_tokens": int(
+            defaults.get("dense_skeleton_batch_tokens", 1024) or 1024
+        ),
+        "dense_fill_nodes_cap": int(defaults.get("dense_fill_nodes_cap", 5) or 5),
+        "dense_fill_context": str(defaults.get("dense_fill_context", "scoped") or "scoped"),
+        "dense_quality_require_root": bool(defaults.get("dense_quality_require_root", True)),
+        "dense_quality_min_instances": int(defaults.get("dense_quality_min_instances", 1) or 1),
         "dense_resolvers_enabled": (
             dense_resolvers_enabled
             if dense_resolvers_enabled is not None
@@ -223,13 +234,6 @@ def convert_command(
         typer.Option(
             "--chunk-max-tokens",
             help="Max tokens per chunk when chunking is used (default: 512).",
-        ),
-    ] = None,
-    llm_batch_token_size: Annotated[
-        int | None,
-        typer.Option(
-            "--llm-batch-token-size",
-            help="Max total chunk tokens per batch. Does not set LLM output limit (default: 1024).",
         ),
     ] = None,
     parallel_workers: Annotated[
@@ -401,6 +405,7 @@ def convert_command(
             export_format=export_format,
             docling_pipeline=docling_pipeline,
             chunk_max_tokens=chunk_max_tokens,
+            parallel_workers=parallel_workers,
             dense_resolvers_enabled=dense_resolvers_enabled,
             dense_resolvers_mode=dense_resolvers_mode,
             dense_resolvers_fuzzy_threshold=dense_resolvers_fuzzy_threshold,
@@ -484,7 +489,11 @@ def convert_command(
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
     if extraction_contract_val == "dense":
         rich_print("[yellow][DenseTuning][/yellow]")
-        rich_print("  • Skeleton batch tokens / fill nodes cap: from config or defaults")
+        rich_print(
+            f"  • Skeleton batch tokens: [cyan]{settings['dense_skeleton_batch_tokens']}[/cyan], "
+            f"fill nodes cap: [cyan]{settings['dense_fill_nodes_cap']}[/cyan], "
+            f"fill context: [cyan]{settings['dense_fill_context']}[/cyan]"
+        )
         rich_print(
             f"  • Resolvers: [cyan]enabled={final_dense_resolvers_enabled}, mode={final_dense_resolvers_mode}[/cyan]"
         )
@@ -526,8 +535,14 @@ def convert_command(
         structured_sparse_check=final_structured_sparse_check,
         debug=debug,
         chunk_max_tokens=final_chunk_max_tokens,
+        parallel_workers=settings["parallel_workers"],
         gleaning_enabled=final_gleaning_enabled,
         gleaning_max_passes=final_gleaning_max_passes,
+        dense_skeleton_batch_tokens=settings["dense_skeleton_batch_tokens"],
+        dense_fill_nodes_cap=settings["dense_fill_nodes_cap"],
+        dense_fill_context=settings["dense_fill_context"],
+        dense_quality_require_root=settings["dense_quality_require_root"],
+        dense_quality_min_instances=settings["dense_quality_min_instances"],
         dense_resolvers_enabled=final_dense_resolvers_enabled,
         dense_resolvers_mode=final_dense_resolvers_mode,
         dense_resolvers_fuzzy_threshold=final_dense_resolvers_fuzzy_threshold,

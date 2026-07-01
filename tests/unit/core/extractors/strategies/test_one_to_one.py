@@ -120,3 +120,43 @@ class TestOneToOneStrategyExtract:
 
         assert isinstance(models, list)
         assert len(models) > 0
+
+
+class TestExtractFromDocument:
+    """Test page-by-page extraction from a pre-converted DoclingDocument."""
+
+    @patch("docling_graph.core.extractors.strategies.one_to_one.is_llm_backend")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.DocumentProcessor")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.get_backend_type")
+    def test_extract_from_document_processes_pages(
+        self, mock_get_type, mock_doc_proc, mock_is_llm, mock_llm_backend
+    ):
+        """extract_from_document skips conversion and extracts each page."""
+        mock_get_type.return_value = "llm"
+        mock_is_llm.return_value = True
+        mock_doc_proc.return_value.extract_page_markdowns.return_value = [
+            "page one md",
+            "page two md",
+        ]
+
+        strategy = OneToOneStrategy(backend=mock_llm_backend)
+        models, document = strategy.extract_from_document("PreloadedDoc", SampleModel)
+
+        mock_doc_proc.return_value.convert_to_docling_doc.assert_not_called()
+        mock_doc_proc.return_value.extract_page_markdowns.assert_called_once_with("PreloadedDoc")
+        assert len(models) == 2
+        assert document == "PreloadedDoc"
+
+    @patch("docling_graph.core.extractors.strategies.one_to_one.is_llm_backend")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.DocumentProcessor")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.get_backend_type")
+    def test_extract_from_document_rejects_non_llm_backend(
+        self, mock_get_type, mock_doc_proc, mock_is_llm, mock_vlm_backend
+    ):
+        """Non-LLM backends cannot consume a pre-converted DoclingDocument."""
+        mock_get_type.return_value = "vlm"
+        mock_is_llm.return_value = False
+
+        strategy = OneToOneStrategy(backend=mock_vlm_backend)
+        with pytest.raises(TypeError):
+            strategy.extract_from_document("PreloadedDoc", SampleModel)

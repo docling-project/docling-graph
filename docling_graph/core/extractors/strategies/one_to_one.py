@@ -85,6 +85,14 @@ class OneToOneStrategy(BaseExtractor):
         models = backend.extract_from_document(source, template)
         return models, None
 
+    def extract_from_document(
+        self, document: DoclingDocument, template: Type[BaseModel]
+    ) -> Tuple[List[BaseModel], DoclingDocument | None]:
+        """Extract page-by-page from a pre-converted DoclingDocument (no file conversion)."""
+        if not is_llm_backend(self.backend):
+            raise TypeError("Pre-converted DoclingDocument input requires the LLM backend")
+        return self._extract_pages(self.backend, document, template, 0.0)
+
     def _extract_with_llm(
         self, backend: TextExtractionBackendProtocol, source: str, template: Type[BaseModel]
     ) -> Tuple[List[BaseModel], DoclingDocument | None]:
@@ -94,6 +102,18 @@ class OneToOneStrategy(BaseExtractor):
         conversion_started_at = time.time()
         document = self.doc_processor.convert_to_docling_doc(source)
         conversion_runtime_seconds = time.time() - conversion_started_at
+        return self._extract_pages(backend, document, template, conversion_runtime_seconds)
+
+    def _extract_pages(
+        self,
+        backend: TextExtractionBackendProtocol,
+        document: DoclingDocument,
+        template: Type[BaseModel],
+        conversion_runtime_seconds: float,
+    ) -> Tuple[List[BaseModel], DoclingDocument | None]:
+        """Process each page of a DoclingDocument independently."""
+        import time
+
         page_markdown_started_at = time.time()
         page_markdowns = self.doc_processor.extract_page_markdowns(document)
         conversion_runtime_seconds += time.time() - page_markdown_started_at

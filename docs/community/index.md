@@ -280,7 +280,7 @@ uv run mkdocs build
 docling-graph/
 ├── docling_graph/           # Source code
 │   ├── __init__.py
-│   ├── pipeline.py
+│   ├── pipeline/
 │   ├── config.py
 │   ├── protocols.py
 │   ├── exceptions.py

@@ -82,6 +82,9 @@ class LiteLLMClient:
         )
         self.last_call_diagnostics["raw_response"] = raw_response
         truncated = self._check_truncation(metadata)
+        # Record truncation even when partial JSON is recovered, so callers (e.g. the
+        # dense orchestrator) can react to dropped content rather than silently keeping it.
+        self.last_call_diagnostics["truncated"] = truncated
         parsed = ResponseHandler.parse_json_response(
             raw_response,
             self.__class__.__name__,
@@ -272,6 +275,9 @@ class LiteLLMClient:
             "temperature": gen.temperature,
             "max_tokens": max_tokens,
             "timeout": self.timeout,
+            # LiteLLM retries transient failures (rate limits, timeouts, 5xx)
+            # with backoff; without this, reliability.max_retries was ignored.
+            "num_retries": self._reliability.max_retries,
             "drop_params": True,
         }
         if structured_output:
@@ -329,6 +335,7 @@ class LiteLLMClient:
                         "headers",
                         "organization",
                         "timeout",
+                        "num_retries",
                         "drop_params",
                         "response_format",
                     }
