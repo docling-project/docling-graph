@@ -19,11 +19,13 @@ def test_create_llm_many_to_one(mock_strategy, mock_backend):
         backend_name="llm",
         llm_client=mock_llm_client,
         docling_config="ocr",
+        dense_config={"parallel_workers": 2},
     )
 
     mock_backend.assert_called_once_with(
         llm_client=mock_llm_client,
         extraction_contract="direct",
+        dense_config={"parallel_workers": 2},
         structured_output=True,
         structured_sparse_check=True,
     )
@@ -61,6 +63,7 @@ def test_create_one_to_one(mock_strategy, mock_backend):
     mock_backend.assert_called_once_with(
         llm_client=mock_llm_client,
         extraction_contract="direct",
+        dense_config=None,
         structured_output=True,
         structured_sparse_check=True,
     )

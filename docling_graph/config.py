@@ -179,6 +179,30 @@ class PipelineConfig(BaseModel):
         default=False,
         description="If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches).",
     )
+    dense_skeleton_batch_tokens: int = Field(
+        default=1024,
+        description="Max tokens per dense Phase 1 (skeleton) chunk batch.",
+    )
+    dense_fill_nodes_cap: int = Field(
+        default=5,
+        description="Max node instances per dense Phase 2 (fill) LLM call.",
+    )
+    dense_quality_require_root: bool = Field(
+        default=True,
+        description="Reject dense skeletons that have no root instance.",
+    )
+    dense_quality_min_instances: int = Field(
+        default=1,
+        description="Minimum skeleton instances required to accept dense Phase 1 output.",
+    )
+    dense_fill_context: Literal["scoped", "full"] = Field(
+        default="scoped",
+        description=(
+            "Document context sent with each dense fill call: 'scoped' sends only the "
+            "skeleton batches where the node was observed (plus document head); "
+            "'full' always sends the whole document."
+        ),
+    )
     # Export settings (with defaults)
     export_format: Literal["csv", "cypher"] = Field(default="csv")
     export_docling: bool = Field(default=True)
@@ -264,6 +288,11 @@ class PipelineConfig(BaseModel):
             "dense_resolvers_semantic_threshold": self.dense_resolvers_semantic_threshold,
             "dense_resolvers_allow_merge_different_ids": self.dense_resolvers_allow_merge_different_ids,
             "dense_prune_barren_branches": self.dense_prune_barren_branches,
+            "dense_skeleton_batch_tokens": self.dense_skeleton_batch_tokens,
+            "dense_fill_nodes_cap": self.dense_fill_nodes_cap,
+            "dense_quality_require_root": self.dense_quality_require_root,
+            "dense_quality_min_instances": self.dense_quality_min_instances,
+            "dense_fill_context": self.dense_fill_context,
             "export_format": self.export_format,
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
@@ -308,6 +337,9 @@ class PipelineConfig(BaseModel):
                 "dense_resolvers_semantic_threshold": default_config.dense_resolvers_semantic_threshold,
                 "dense_resolvers_allow_merge_different_ids": default_config.dense_resolvers_allow_merge_different_ids,
                 "dense_prune_barren_branches": default_config.dense_prune_barren_branches,
+                "dense_skeleton_batch_tokens": default_config.dense_skeleton_batch_tokens,
+                "dense_fill_nodes_cap": default_config.dense_fill_nodes_cap,
+                "dense_fill_context": default_config.dense_fill_context,
             },
             "docling": {
                 "pipeline": default_config.docling_config,

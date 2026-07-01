@@ -238,3 +238,32 @@ class TestDirectExtraction:
 
         assert results == []
         assert doc is mock_doc
+
+
+class TestExtractFromDocument:
+    """Test extraction from a pre-converted DoclingDocument."""
+
+    def test_extract_from_document_uses_contract_path(self, mock_llm_backend, patch_deps):
+        """extract_from_document skips conversion and runs the direct contract."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        results, document = strategy.extract_from_document("PreloadedDoc", MockTemplate)
+
+        mock_dp.return_value.convert_to_docling_doc.assert_not_called()
+        mock_dp.return_value.extract_full_markdown.assert_called_once_with("PreloadedDoc")
+        assert len(results) == 1
+        assert document == "PreloadedDoc"
+
+    def test_extract_from_document_rejects_vlm_backend(self, mock_vlm_backend, patch_deps):
+        """VLM backends need a source file, so DoclingDocument input must raise."""
+        from docling_graph.exceptions import ExtractionError
+
+        _, _, mock_is_llm, mock_is_vlm = patch_deps
+        mock_is_llm.return_value = False
+        mock_is_vlm.return_value = True
+
+        strategy = ManyToOneStrategy(backend=mock_vlm_backend)
+        with pytest.raises(ExtractionError):
+            strategy.extract_from_document("PreloadedDoc", MockTemplate)

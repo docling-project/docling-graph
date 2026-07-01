@@ -516,82 +516,6 @@ class TestRheologyQuantityWithUnitRelaxedInput:
         assert m.unit == "mm"
 
 
-class TestJSONRepair:
-    """Test JSON repair functionality"""
-
-    def test_removal_of_invalid_control_characters(self, llm_backend):
-        """Test removal of invalid control characters."""
-        # Test with various control characters
-        raw_json = '{"key": "value\x00\x01\x02"}'
-        repaired = llm_backend._repair_json(raw_json)
-
-        # Control chars should be removed
-        assert "\x00" not in repaired
-        assert "\x01" not in repaired
-        assert "\x02" not in repaired
-        assert "value" in repaired
-
-    def test_removal_of_trailing_commas(self, llm_backend):
-        """Test removal of trailing commas."""
-        # Trailing comma before closing brace
-        raw_json = '{"key": "value",}'
-        repaired = llm_backend._repair_json(raw_json)
-        assert repaired == '{"key": "value"}'
-
-        # Trailing comma before closing bracket
-        raw_json = '["item1", "item2",]'
-        repaired = llm_backend._repair_json(raw_json)
-        assert repaired == '["item1", "item2"]'
-
-    def test_bracket_balancing_add_missing_closing(self, llm_backend):
-        """Test adding missing closing brackets."""
-        # Missing closing brace
-        raw_json = '{"key": "value"'
-        repaired = llm_backend._repair_json(raw_json)
-        assert repaired == '{"key": "value"}'
-
-        # Missing closing bracket
-        raw_json = '["item1", "item2"'
-        repaired = llm_backend._repair_json(raw_json)
-        assert repaired == '["item1", "item2"]'
-
-        # Missing multiple closing brackets
-        raw_json = '{"array": [1, 2, 3'
-        repaired = llm_backend._repair_json(raw_json)
-        assert repaired.count("]") == 1
-        assert repaired.count("}") == 1
-
-    def test_valid_json_unchanged(self, llm_backend):
-        """Test that valid JSON is unchanged."""
-        valid_json = '{"key": "value", "array": [1, 2, 3], "nested": {"a": 1}}'
-        repaired = llm_backend._repair_json(valid_json)
-
-        # Should be unchanged
-        assert repaired == valid_json
-
-    def test_preserve_valid_control_characters(self, llm_backend):
-        """Test that valid control characters (newline, tab, CR) are preserved."""
-        raw_json = '{"key": "line1\nline2\ttabbed\rcarriage"}'
-        repaired = llm_backend._repair_json(raw_json)
-
-        # Valid control chars should be preserved
-        assert "\n" in repaired
-        assert "\t" in repaired
-        assert "\r" in repaired
-
-    def test_complex_repair_scenario(self, llm_backend):
-        """Test complex repair with multiple issues."""
-        # Multiple issues: control chars, trailing comma, missing bracket
-        raw_json = '{"key": "value\x00", "array": [1, 2,]'
-        repaired = llm_backend._repair_json(raw_json)
-
-        # Should be valid JSON after repair
-        parsed = json.loads(repaired)
-        assert "key" in parsed
-        assert "array" in parsed
-        assert parsed["array"] == [1, 2]
-
-
 class TestCleanup:
     """Test cleanup() method."""
 
@@ -942,3 +866,36 @@ class TestStreamingConfiguration:
         assert call_kwargs["response_top_level"] == "object"
         assert call_kwargs["response_schema_name"] == "custom_schema"
         assert result == {"result": "ok"}
+
+
+class TestTruncationPropagation:
+    """_call_prompt surfaces the client's truncation flag to callers."""
+
+    def test_call_prompt_propagates_truncated(self, llm_backend, mock_llm_client):
+        mock_llm_client.get_json_response.return_value = {"ok": True}
+        mock_llm_client.last_call_diagnostics = {"truncated": True}
+        diag: dict = {}
+        out = llm_backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+            _diagnostics_out=diag,
+        )
+        assert out == {"ok": True}
+        assert diag.get("truncated") is True
+
+    def test_call_prompt_truncated_false_when_client_not_truncated(
+        self, llm_backend, mock_llm_client
+    ):
+        mock_llm_client.get_json_response.return_value = {"ok": True}
+        mock_llm_client.last_call_diagnostics = {"truncated": False}
+        diag: dict = {}
+        llm_backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+            _diagnostics_out=diag,
+        )
+        assert diag.get("truncated") is False

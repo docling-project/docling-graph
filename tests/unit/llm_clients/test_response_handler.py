@@ -180,3 +180,21 @@ class TestResponseHandler:
         raw = '{"nom": "text\\u\n0009\\u\t0009"}'
         response = ResponseHandler.parse_json_response(raw, "TestClient")
         assert response == {"nom": "text\t\t"}
+
+
+class TestFastPath:
+    """Well-formed JSON must bypass the character-level cleaning passes."""
+
+    def test_valid_json_skips_cleaning(self):
+        from unittest.mock import patch as _patch
+
+        raw = '{"a": 1, "b": ["x", "y"]}'
+        with _patch.object(ResponseHandler, "_clean_response") as mock_clean:
+            result = ResponseHandler.parse_json_response(raw, "TestClient")
+        mock_clean.assert_not_called()
+        assert result == {"a": 1, "b": ["x", "y"]}
+
+    def test_markdown_wrapped_json_still_parsed(self):
+        raw = 'Some text\n```json\n{"a": 1}\n```'
+        result = ResponseHandler.parse_json_response(raw, "TestClient")
+        assert result == {"a": 1}

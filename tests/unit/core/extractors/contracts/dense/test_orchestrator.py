@@ -174,3 +174,308 @@ def test_prune_barren_branches_removes_barren_branch_keeps_non_barren():
     assert len(out["studies"]) == 1
     assert out["studies"][0]["study_id"] == "S2"
     assert out["studies"][0]["objective"] == "Real study"
+
+
+def test_merge_skeleton_batches_accumulates_source_batches():
+    """The same node seen in several batches keeps the union of source batch indexes."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_skeleton_batches
+
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=["invoice_number"]),
+        ]
+    )
+    node_a = {
+        "path": "",
+        "ids": {"invoice_number": "INV-1"},
+        "parent": None,
+        "_source_batch_index": 0,
+    }
+    node_b = {
+        "path": "",
+        "ids": {"invoice_number": "INV-1"},
+        "parent": None,
+        "_source_batch_index": 2,
+    }
+    merged = merge_skeleton_batches([[node_a], [node_b]], catalog)
+    assert len(merged) == 1
+    assert merged[0]["_source_batch_indexes"] == [0, 2]
+    assert "_source_batch_index" not in merged[0]
+
+
+def _make_orchestrator(fill_context_mode: str) -> DenseOrchestrator:
+    config = DenseOrchestratorConfig(fill_context_mode=fill_context_mode)
+    return DenseOrchestrator(
+        llm_call_fn=lambda **kwargs: None,
+        template=SampleInvoice,
+        config=config,
+    )
+
+
+def test_build_fill_context_scoped_uses_only_source_batches():
+    """Scoped fill context contains the node's source batches plus the document head."""
+    orch = _make_orchestrator("scoped")
+    batch_texts = ["BATCH-ZERO " * 50, "BATCH-ONE " * 50, "BATCH-TWO " * 50]
+    full_markdown = "\n\n".join(batch_texts)
+    descriptors = [{"path": "items[]", "ids": {}, "_source_batch_indexes": [1]}]
+    ctx = orch._build_fill_context("items[]", descriptors, batch_texts, full_markdown, "HEAD")
+    assert "BATCH-ONE" in ctx
+    assert "BATCH-TWO" not in ctx
+    assert ctx.startswith("HEAD")
+    assert len(ctx) < len(full_markdown)
+
+
+def test_build_fill_context_root_and_full_mode_use_full_markdown():
+    """Root path and full mode always receive the whole document."""
+    batch_texts = ["A" * 100, "B" * 100]
+    full_markdown = "\n\n".join(batch_texts)
+    descriptors = [{"path": "", "ids": {}, "_source_batch_indexes": [1]}]
+    scoped = _make_orchestrator("scoped")
+    assert (
+        scoped._build_fill_context("", descriptors, batch_texts, full_markdown, "H")
+        == full_markdown
+    )
+    full = _make_orchestrator("full")
+    assert (
+        full._build_fill_context("items[]", descriptors, batch_texts, full_markdown, "H")
+        == full_markdown
+    )
+
+
+def test_build_fill_context_without_provenance_falls_back_to_full():
+    """Descriptors without source batch info get the full document."""
+    orch = _make_orchestrator("scoped")
+    batch_texts = ["A" * 100, "B" * 100]
+    full_markdown = "\n\n".join(batch_texts)
+    descriptors = [{"path": "items[]", "ids": {}}]
+    assert (
+        orch._build_fill_context("items[]", descriptors, batch_texts, full_markdown, "H")
+        == full_markdown
+    )
+
+
+def test_dense_config_from_dict_parses_fill_context():
+    """dense_fill_context is parsed and invalid values fall back to scoped."""
+    assert (
+        DenseOrchestratorConfig.from_dict({"dense_fill_context": "full"}).fill_context_mode
+        == "full"
+    )
+    assert DenseOrchestratorConfig.from_dict({}).fill_context_mode == "scoped"
+    assert (
+        DenseOrchestratorConfig.from_dict({"dense_fill_context": "bogus"}).fill_context_mode
+        == "scoped"
+    )
+
+
+def test_fill_pads_missing_items_so_skeleton_instances_survive():
+    """When the fill LLM returns fewer items than instances, missing ones keep their ids."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    skeleton_response = {
+        "nodes": [
+            {"path": "", "ids": {"company_name": "Acme"}, "parent": None},
+            {
+                "path": "employees[]",
+                "ids": {"email": "a@acme.com"},
+                "parent": {"path": "", "ids": {"company_name": "Acme"}},
+            },
+            {
+                "path": "employees[]",
+                "ids": {"email": "b@acme.com"},
+                "parent": {"path": "", "ids": {"company_name": "Acme"}},
+            },
+        ]
+    }
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        if "dense_skeleton" in context:
+            return skeleton_response
+        if "dense_fill_employees[]" in context:
+            # Only one of the two requested instances comes back.
+            return {
+                "items": [
+                    {"email": "a@acme.com", "first_name": "Alice", "last_name": "A"},
+                ]
+            }
+        if "dense_fill" in context:
+            return {"items": [{"company_name": "Acme", "industry": "Tools", "founded_year": 1999}]}
+        return None
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    root = orch.run(
+        chunks=["Acme employs Alice and Bob."],
+        chunk_metadata=[{"token_count": 10}],
+        full_markdown="Acme employs Alice and Bob.",
+        context="test",
+    )
+    assert root is not None
+    employees = root.get("employees") or []
+    emails = {e.get("email") for e in employees}
+    assert emails == {"a@acme.com", "b@acme.com"}
+
+
+def _company_skeleton_args() -> tuple[Any, set[str], dict[str, Any]]:
+    from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    catalog = build_node_catalog(SampleCompany)
+    allowed = set(catalog.paths())
+    spec_by_path = {s.path: s for s in catalog.nodes}
+    return SampleCompany, allowed, spec_by_path
+
+
+def test_skeleton_batch_splits_on_truncation_and_recovers_nodes():
+    """A truncated multi-chunk skeleton batch is split so dropped nodes are recovered."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        user = prompt["user"]
+        n_chunks = user.count("--- CHUNK")
+        if n_chunks >= 2:
+            # Full batch overflows the model output budget: only the first node survives.
+            if _diagnostics_out is not None:
+                _diagnostics_out["truncated"] = True
+            return {
+                "nodes": [
+                    {
+                        "path": "employees[]",
+                        "ids": {"email": "alice@x.com"},
+                        "parent": {"path": "", "ids": {"company_name": "Acme"}},
+                    }
+                ]
+            }
+        # Single-chunk sub-batches fit and each returns its own node.
+        if "bob" in user.lower():
+            return {
+                "nodes": [
+                    {
+                        "path": "employees[]",
+                        "ids": {"email": "bob@x.com"},
+                        "parent": {"path": "", "ids": {"company_name": "Acme"}},
+                    }
+                ]
+            }
+        return {
+            "nodes": [
+                {
+                    "path": "employees[]",
+                    "ids": {"email": "alice@x.com"},
+                    "parent": {"path": "", "ids": {"company_name": "Acme"}},
+                }
+            ]
+        }
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    batch = [(0, "Alice email alice@x.com", 40), (1, "Bob email bob@x.com", 40)]
+    _, nodes = orch._run_one_skeleton_batch(
+        batch_idx=0,
+        batch=batch,
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+        already_found_str=None,
+    )
+    emails = {n["ids"].get("email") for n in nodes}
+    assert emails == {"alice@x.com", "bob@x.com"}
+
+
+def test_skeleton_single_chunk_truncation_does_not_split():
+    """A single-chunk batch cannot be split further; the partial result is kept once."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    calls = []
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        calls.append(context)
+        if _diagnostics_out is not None:
+            _diagnostics_out["truncated"] = True
+        return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    batch = [(0, "single chunk only", 40)]
+    _, nodes = orch._run_one_skeleton_batch(
+        batch_idx=0,
+        batch=batch,
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+        already_found_str=None,
+    )
+    # one LLM call (max_pass_retries default 1 -> one validated result, no split)
+    assert len(calls) == 1
+    assert len(nodes) == 1
+
+
+def test_skeleton_no_split_when_not_truncated():
+    """A non-truncated multi-chunk batch is not split."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    calls = []
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        calls.append(context)
+        return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    batch = [(0, "chunk a", 40), (1, "chunk b", 40)]
+    orch._run_one_skeleton_batch(
+        batch_idx=0,
+        batch=batch,
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+        already_found_str=None,
+    )
+    assert len(calls) == 1

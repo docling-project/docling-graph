@@ -131,3 +131,52 @@ def test_skeleton_semantic_guide_omits_non_identity_properties():
     assert "total_amount" not in guide
     assert "vendor_name" not in guide
     assert "invoice_number" in guide
+
+
+def test_fill_prompt_lists_every_instance_id():
+    """Phase 2 fill prompt must list all instance ids, since the response is matched by position."""
+    from docling_graph.core.extractors.contracts.dense.prompts import get_fill_batch_prompt
+
+    spec = NodeSpec(
+        path="items[]",
+        node_type="Item",
+        id_fields=["item_id"],
+        parent_path="",
+        field_name="items",
+        is_list=True,
+    )
+    descriptors = [{"path": "items[]", "ids": {"item_id": f"IT-{i}"}} for i in range(7)]
+    prompt = get_fill_batch_prompt(
+        markdown="doc",
+        path="items[]",
+        spec=spec,
+        descriptors=descriptors,
+        projected_schema_json="{}",
+    )
+    user = prompt["user"]
+    for i in range(7):
+        assert f"IT-{i}" in user
+    assert "... and" not in user
+    assert "(7 instances)" in user
+
+
+def test_prompts_contain_no_internal_fix_labels():
+    """Internal change-tracking labels must never leak into LLM prompts."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_fill_batch_prompt,
+        get_skeleton_batch_prompt,
+    )
+
+    skeleton = get_skeleton_batch_prompt(
+        batch_markdown="text",
+        catalog_block='- "" (Root) ids=[]',
+        batch_index=0,
+        total_batches=1,
+        allowed_paths=[""],
+    )
+    spec = NodeSpec(path="", node_type="Root")
+    fill = get_fill_batch_prompt(
+        markdown="doc", path="", spec=spec, descriptors=[{"ids": {}}], projected_schema_json="{}"
+    )
+    for text in (skeleton["system"], skeleton["user"], fill["system"], fill["user"]):
+        assert "Fix 1." not in text and "Fix 2." not in text

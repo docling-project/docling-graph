@@ -86,6 +86,7 @@ Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extra
 |-------|------|---------|-------------|
 | `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
 | `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
+| `dense_fill_context` | `"scoped"` or `"full"` | `"scoped"` | Document context per fill call: scoped batches where the node was observed, or the full document. |
 | `dense_quality_require_root` | `bool` | `True` | Require at least one root instance after Phase 1. |
 | `dense_quality_min_instances` | `int` | `1` | Minimum skeleton node count after Phase 1. |
 | `dense_prune_barren_branches` | `bool` | `False` | If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches). |
@@ -98,6 +99,7 @@ Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extra
 |-------|------|---------|-------------|
 | `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
 | `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
+| `dense_fill_context` | `"scoped"` or `"full"` | `"scoped"` | Document context per fill call: scoped batches where the node was observed, or the full document. |
 | `dense_quality_require_root` | `bool` | `True` | Require at least one root instance after Phase 1. |
 | `dense_quality_min_instances` | `int` | `1` | Minimum skeleton node count after Phase 1. |
 | `dense_prune_barren_branches` | `bool` | `False` | If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches). |

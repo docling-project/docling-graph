@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 EXCLUDED_EXPORTED_STEPS = {"docling_export", "graph_export", "visualization"}
 STAGE_EXPORT_NAME_ALIASES = {
@@ -40,16 +43,19 @@ class EventTrace:
     _next_sequence: int = 0
 
     def emit(self, event_type: str, stage: str, payload: dict[str, Any] | None = None) -> None:
-        self.events.append(
-            TraceEvent(
-                sequence=self._next_sequence,
-                timestamp=time.time(),
-                stage=stage,
-                event_type=event_type,
-                payload=payload or {},
-            )
+        event = TraceEvent(
+            sequence=self._next_sequence,
+            timestamp=time.time(),
+            stage=stage,
+            event_type=event_type,
+            payload=payload or {},
         )
+        self.events.append(event)
         self._next_sequence += 1
+        # Surface failure events in the log so they are visible without opening the trace export.
+        if "failed" in event_type or "error" in event_type:
+            error_details = (payload or {}).get("error", "Unknown error")
+            logger.error("[%s] %s: %s", stage, event_type, error_details)
 
     def find_events(self, event_type: str) -> list[TraceEvent]:
         return [e for e in self.events if e.event_type == event_type]

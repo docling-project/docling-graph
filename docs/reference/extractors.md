@@ -344,7 +344,7 @@ extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
     extraction_contract="direct",  # or "dense" (LLM + many-to-one only)
-    dense_config=None,             # optional: dense_skeleton_batch_tokens, dense_fill_nodes_cap, parallel_workers
+    dense_config=None,             # optional: dense_skeleton_batch_tokens, dense_fill_nodes_cap, dense_fill_context, parallel_workers
     llm_client=client,
     docling_config="ocr",
 )
