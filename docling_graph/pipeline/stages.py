@@ -226,16 +226,6 @@ class _NoOpValidator:
         pass
 
 
-class _PassThroughHandler:
-    """Pass-through handler for types handled by existing pipeline."""
-
-    def load(self, source: Any) -> Any:
-        # For PDF/Image, just return the source path as-is
-        # The existing document processor will handle it
-        # Metadata is built separately by _build_metadata()
-        return source
-
-
 class TemplateLoadingStage(PipelineStage):
     """Load and validate Pydantic template."""
 
@@ -406,6 +396,7 @@ class ExtractionStage(PipelineStage):
                 ),
             },
             "dense_prune_barren_branches": conf.get("dense_prune_barren_branches", False),
+            "dense_fill_context": conf.get("dense_fill_context", "scoped"),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -458,6 +449,7 @@ class ExtractionStage(PipelineStage):
                 structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
                 use_chunking=bool(conf.get("use_chunking", True)),
                 chunk_max_tokens=conf.get("chunk_max_tokens"),
+                dense_config=dense_config,
             )
 
     @staticmethod
@@ -504,169 +496,13 @@ class ExtractionStage(PipelineStage):
         )
         return client_class(model_config=effective_config)
 
-    def _extract_from_text(self, context: PipelineContext) -> List[Any]:
-        """
-        Extract from text-based inputs (plain text, .txt, .md).
-
-        Uses a single LLM call for direct extraction.
-
-        Args:
-            context: Pipeline context with normalized text
-
-        Returns:
-            List of extracted Pydantic models
-
-        Raises:
-            ExtractionError: If extraction fails
-        """
-        if not context.normalized_source:
-            input_type = (
-                context.input_metadata.get("input_type") if context.input_metadata else "unknown"
-            )
-            raise ExtractionError(
-                "No normalized text content available",
-                details={"input_type": input_type},
-            )
-
-        # Only LLM backend supports text extraction
-        conf = context.config.to_dict()
-        backend = cast(Literal["vlm", "llm"], conf["backend"])
-
-        if backend == "vlm":
-            input_type = (
-                context.input_metadata.get("input_type") if context.input_metadata else "unknown"
-            )
-            raise ExtractionError(
-                "VLM backend does not support text-only inputs. Use LLM backend instead.",
-                details={
-                    "backend": backend,
-                    "input_type": input_type,
-                },
-            )
-
-        # Type assertions for mypy
-        if not isinstance(context.normalized_source, str):
-            raise ExtractionError(
-                "Normalized source must be a string for text extraction",
-                details={"type": type(context.normalized_source).__name__},
-            )
-        if context.template is None:
-            raise ExtractionError(
-                "Template is required for extraction",
-                details={"template": None},
-            )
-
-        logger.info(f"[{self.name()}] Extracting from text using LLM backend (direct extraction)")
-
-        # Initialize LLM client
-        inference = cast(str, conf["inference"])
-
-        model_config = self._get_model_config(
-            conf["models"],
-            backend,
-            inference,
-            conf.get("model_override"),
-            conf.get("provider_override"),
-        )
-
-        if context.config.llm_client is not None:
-            llm_client = context.config.llm_client
-        else:
-            llm_client = self._initialize_llm_client(
-                model_config["provider"],
-                model_config["model"],
-                context.config.llm_overrides,
-            )
-
-        # Import LlmBackend here to avoid circular imports
-        from ..core.extractors.backends.llm_backend import LlmBackend
-
-        extraction_contract = (
-            context.config.extraction_contract
-            if context.config.processing_mode == "many-to-one"
-            else "direct"
-        )
-        dense_config = {
-            "structured_output": bool(conf.get("structured_output", True)),
-            "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
-            "parallel_workers": conf.get("parallel_workers", 1),
-            "gleaning_enabled": conf.get("gleaning_enabled", True),
-            "gleaning_max_passes": conf.get("gleaning_max_passes", 1),
-            "dense_skeleton_batch_tokens": conf.get("dense_skeleton_batch_tokens", 1024),
-            "dense_fill_nodes_cap": conf.get("dense_fill_nodes_cap", 5),
-            "dense_quality_require_root": conf.get("dense_quality_require_root", True),
-            "dense_quality_min_instances": conf.get("dense_quality_min_instances", 1),
-            "dense_resolvers": {
-                "enabled": conf.get("dense_resolvers_enabled", False),
-                "mode": conf.get("dense_resolvers_mode", "off"),
-                "fuzzy_threshold": conf.get("dense_resolvers_fuzzy_threshold", 0.8),
-                "semantic_threshold": conf.get("dense_resolvers_semantic_threshold", 0.8),
-                "allow_merge_different_ids": conf.get(
-                    "dense_resolvers_allow_merge_different_ids", False
-                ),
-            },
-            "dense_prune_barren_branches": conf.get("dense_prune_barren_branches", False),
-        }
-        if conf.get("debug"):
-            if context.output_manager is not None:
-                dense_config["debug_dir"] = str(context.output_manager.get_debug_dir())
-            elif conf.get("output_dir"):
-                from pathlib import Path
-
-                dense_config["debug_dir"] = str(Path(conf["output_dir"]) / "debug")
-        llm_backend = LlmBackend(
-            llm_client,
-            extraction_contract=extraction_contract,
-            dense_config=dense_config,
-            structured_output=bool(conf.get("structured_output", True)),
-            structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
-        )
-        if context.trace_data is not None:
-            llm_backend.trace_data = context.trace_data
-
-        start_time = time.time()
-        extracted_model = llm_backend.extract_from_markdown(
-            markdown=context.normalized_source,
-            template=context.template,
-            context="text input",
-            is_partial=False,
-        )
-        extraction_time = time.time() - start_time
-
-        if context.trace_data is not None:
-            extraction_metadata: dict[str, Any] = {}
-            backend_diag = getattr(llm_backend, "last_call_diagnostics", None)
-            if isinstance(backend_diag, dict) and backend_diag:
-                extraction_metadata.update(backend_diag)
-            context.trace_data.emit(
-                "extraction_completed",
-                "extraction",
-                {
-                    "extraction_id": 0,
-                    "source_type": "chunk",
-                    "source_id": 0,
-                    "parsed_model": extracted_model,
-                    "extraction_time": extraction_time,
-                    "error": None,
-                    "metadata": extraction_metadata,
-                },
-            )
-
-        if not extracted_model:
-            raise ExtractionError(
-                "Failed to extract data from text input",
-                details={"text_length": len(context.normalized_source)},
-            )
-
-        return [extracted_model]
-
     def _extract_from_docling_document(self, context: PipelineContext) -> List[Any]:
         """
         Extract from pre-loaded DoclingDocument.
 
-        For DoclingDocument inputs, we use the extractor's internal methods
-        to process the already-parsed document. This allows reprocessing of
-        DoclingDocuments with different templates.
+        Delegates to the extractor strategy's extract_from_document() so the
+        configured processing mode and extraction contract (including dense
+        chunked extraction) apply to pre-converted documents as well.
 
         Args:
             context: Pipeline context with DoclingDocument
@@ -685,78 +521,38 @@ class ExtractionStage(PipelineStage):
 
         logger.info(f"[{self.name()}] Extracting from pre-loaded DoclingDocument")
 
-        # Create extractor if not already created
         if not context.extractor:
             logger.info(f"[{self.name()}] Creating extractor for DoclingDocument...")
             context.extractor = self._create_extractor(context)
         if context.trace_data and hasattr(context.extractor, "trace_data"):
             context.extractor.trace_data = context.trace_data
 
-        # Get the document processor and backend from the extractor
-        doc_processor = getattr(context.extractor, "doc_processor", None)
-        backend = getattr(context.extractor, "backend", None)
-
-        if not doc_processor:
+        extract_from_document = getattr(context.extractor, "extract_from_document", None)
+        if not callable(extract_from_document):
             raise ExtractionError(
-                "Extractor does not have a document processor",
-                details={"extractor_type": type(context.extractor).__name__},
-            )
-
-        if not backend:
-            raise ExtractionError(
-                "Extractor does not have a backend",
+                "Extractor does not support pre-converted DoclingDocument input",
                 details={"extractor_type": type(context.extractor).__name__},
             )
 
         try:
-            # Convert entire document to markdown and extract in a single call
-            logger.info(f"[{self.name()}] Converting DoclingDocument to markdown")
-            markdown_text = context.docling_document.export_to_markdown()
-
-            # Emit one docling_conversion event so the step appears in trace (conversion was pre-done)
-            if context.trace_data:
-                context.trace_data.emit(
-                    "page_markdown_extracted",
-                    "extraction",
-                    {
-                        "page_number": 1,
-                        "text_content": markdown_text or "",
-                        "metadata": {"source": "docling_document"},
-                    },
-                )
-
-            extracted_model = backend.extract_from_markdown(
-                markdown=markdown_text,
-                template=context.template,
-                context="DoclingDocument",
-                is_partial=False,
-            )
-
-            if not extracted_model:
-                raise ExtractionError(
-                    "Failed to extract data from DoclingDocument",
-                    details={"markdown_length": len(markdown_text)},
-                )
-
-            extracted_models = [extracted_model]
-
-            if not extracted_models:
-                raise ExtractionError(
-                    "No models extracted from DoclingDocument",
-                    details={"input_type": "docling_document"},
-                )
-
-            logger.info(
-                f"[{self.name()}] Extracted {len(extracted_models)} items from DoclingDocument"
-            )
-            return extracted_models
-
+            extracted_models, _ = extract_from_document(context.docling_document, context.template)
+        except ExtractionError:
+            raise
         except Exception as e:
             logger.error(f"[{self.name()}] Error extracting from DoclingDocument: {e}")
             raise ExtractionError(
                 f"Failed to extract from DoclingDocument: {e!s}",
                 details={"input_type": "docling_document", "error": str(e)},
             ) from e
+
+        if not extracted_models:
+            raise ExtractionError(
+                "No models extracted from DoclingDocument",
+                details={"input_type": "docling_document"},
+            )
+
+        logger.info(f"[{self.name()}] Extracted {len(extracted_models)} items from DoclingDocument")
+        return extracted_models
 
 
 class DoclingExportStage(PipelineStage):

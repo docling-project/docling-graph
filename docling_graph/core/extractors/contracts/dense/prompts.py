@@ -46,7 +46,8 @@ def get_skeleton_batch_prompt(
         "When identifying entities from the schema, you must extract both localized and global objects: "
         "(1) Localized entities: items tied to distinct identifiers in the text (e.g. specific section headers, figures, tables, or line items). Create separate, distinct instances for each identifier found. "
         "(2) Global / shared entities: singleton items that apply broadly across the document or serve as shared references for other nodes (e.g. overarching policies, global configurations, or general methodologies). Extract these global entities even if they lack a specific localized identifier or label. "
-        "Do not ignore an entity just because it lacks a distinct sub-label; if the schema defines it and the text describes it, it must be included in the skeleton.\n\n"
+        "Do not ignore an entity just because it lacks a distinct sub-label; if the schema defines it and the text describes it, it must be included in the skeleton. "
+        "Each data row of a table is a separate entity instance; document-level metadata (titles, dates, totals, summary rows) is not.\n\n"
         "Rules:\n"
         "1. Use ONLY the catalog paths listed. Each node must have: path, ids (identifier values from the document), and parent (path + ids of parent, or null for root).\n"
         "2. For every node except the root, you **MUST** provide the ancestry array. This array must list the exact {path, ids} of every ancestor from the root down to the immediate parent. Do not use the parent field alone; you must prove the lineage via ancestry. Root nodes have empty ancestry or omit ancestry.\n"
@@ -54,7 +55,8 @@ def get_skeleton_batch_prompt(
         "4. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance. Parent must reference the parent path and its ids.\n"
         '5. Output valid JSON only: {"nodes": [{"path": "...", "ids": {...}, "parent": null|{"path": "...", "ids": {...}}, "ancestry": [...]}]}. Do not include a "properties" field.\n'
         '6. Root path is "" (empty string); its parent must be null.\n'
-        "7. When identifying container nodes (nodes that have children with identity fields, e.g. Dataset with Curves), create separate instances if the contained data comes from distinct sources (e.g. different Figure numbers, different Tables) or represents distinct conditions. If child identifiers differ (e.g. Figure 2a vs Figure 7c), create separate parent instances so each logical group has its own container."
+        "7. When identifying container nodes (nodes that have children with identity fields, e.g. Dataset with Curves), create separate instances if the contained data comes from distinct sources (e.g. different Figure numbers, different Tables) or represents distinct conditions. If child identifiers differ (e.g. Figure 2a vs Figure 7c), create separate parent instances so each logical group has its own container.\n"
+        "8. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments."
     )
     user_prompt = f"[Batch {batch_index + 1}/{total_batches}]\n\n"
     if already_found:
@@ -90,17 +92,18 @@ def get_fill_batch_prompt(
 ) -> dict[str, str]:
     """Build system and user prompts for one fill (Phase 2) batch."""
     n = len(descriptors)
-    preview = [d.get("ids") or {} for d in descriptors[:5]]
-    instances_preview = json.dumps(preview, indent=2, default=str)
-    if n > 5:
-        instances_preview += f"\n... and {n - 5} more"
+    # Every instance id must be listed: the response is matched back to
+    # descriptors by position, so the LLM needs the complete ordered list.
+    instances_preview = json.dumps([d.get("ids") or {} for d in descriptors], indent=2, default=str)
     system_prompt = (
         "You are a precise extraction assistant. For each of the given node instances, "
         "fill all fields from the document according to the JSON schema. "
         'Return a single JSON object with key "items" containing an array of filled objects, one per instance in the same order. '
         'Return the filled objects in the exact order they were requested: the first item in "items" must correspond to the first instance identifier, the second to the second, and so on. '
         "Use the document to extract real values; do not invent data. "
-        "Preserve identifier values (ids) in each object when the schema includes them."
+        "Preserve identifier values (ids) in each object when the schema includes them. "
+        "Assign each value to the exact schema field it belongs to; never place fragments of one field into another (e.g. address parts into a name field). "
+        "Omit values that are not present in the document rather than guessing."
     )
     user_prompt = (
         "=== DOCUMENT ===\n"

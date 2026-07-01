@@ -96,7 +96,7 @@ run_pipeline(config)  # or config.run()
 | `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **dense** contracts. |
 | `gleaning_max_passes` | `int` | `1` | Max number of gleaning passes when `gleaning_enabled` is True (1 = one extra pass). |
 
-For **dense** extraction, additional options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`, `parallel_workers`, `dense_quality_require_root`, `dense_quality_min_instances`) can be set via a config dict or YAML `defaults`; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
+For **dense** extraction, additional options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`, `dense_fill_context`, `parallel_workers`, `dense_quality_require_root`, `dense_quality_min_instances`) can be set via a config dict or YAML `defaults`; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 
 ### Debug Settings
 

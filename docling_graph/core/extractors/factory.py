@@ -2,7 +2,7 @@
 Factory for creating extractors based on configuration.
 """
 
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
 from rich import print as rich_print
 
@@ -29,6 +29,7 @@ class ExtractorFactory:
         docling_config: str = "ocr",
         use_chunking: bool = True,
         chunk_max_tokens: int | None = None,
+        dense_config: dict[str, Any] | None = None,
     ) -> BaseExtractor:
         """
         Create an extractor based on configuration.
@@ -40,6 +41,8 @@ class ExtractorFactory:
             model_name (str): Model name for VLM (optional)
             llm_client (LLMClientProtocol): LLM client instance (optional)
             docling_config (str): Docling pipeline configuration ('ocr' or 'vision')
+            dense_config (dict): Dense/gleaning runtime settings forwarded to LlmBackend
+                (batch tokens, fill cap, workers, resolvers, debug_dir, ...)
 
         Returns:
             BaseExtractor: Configured extractor instance.
@@ -66,6 +69,7 @@ class ExtractorFactory:
                 LlmBackend(
                     llm_client=llm_client,
                     extraction_contract=effective_contract,
+                    dense_config=dense_config,
                     structured_output=structured_output,
                     structured_sparse_check=structured_sparse_check,
                 ),

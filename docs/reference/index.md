@@ -92,7 +92,7 @@ LiteLLM-backed client for all LLM calls.
 ```
 docling_graph/
 ├── __init__.py              # Public API exports
-├── pipeline.py              # run_pipeline()
+├── pipeline/                # run_pipeline(), stages, orchestrator
 ├── config.py                # PipelineConfig
 ├── protocols.py             # Protocol definitions
 ├── exceptions.py            # Exception hierarchy

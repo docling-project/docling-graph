@@ -506,3 +506,64 @@ def test_litellm_client_streaming_from_config():
     config_stream.streaming = True
     client_stream = LiteLLMClient(model_config=config_stream)
     assert client_stream.streaming is True
+
+
+@patch("docling_graph.llm_clients.litellm.litellm")
+def test_litellm_client_passes_reliability_retries(mock_litellm):
+    """reliability.max_retries must reach LiteLLM as num_retries."""
+    mock_litellm.get_supported_openai_params.return_value = None
+    mock_litellm.completion.return_value = {
+        "model": "mistral/mistral-large-latest",
+        "choices": [{"message": {"content": '{"ok": true}'}, "finish_reason": "stop"}],
+    }
+
+    config = _make_effective_config()
+    config.reliability.max_retries = 3
+    client = LiteLLMClient(model_config=config)
+    client.get_json_response(prompt="Extract", schema_json="{}")
+
+    request = mock_litellm.completion.call_args.kwargs
+    assert request["num_retries"] == 3
+
+
+@patch("docling_graph.llm_clients.litellm.litellm")
+def test_litellm_client_keeps_num_retries_after_param_filter(mock_litellm):
+    """num_retries survives the supported-params filtering (it is a LiteLLM arg, not an OpenAI one)."""
+    mock_litellm.get_supported_openai_params.return_value = ["model", "messages", "temperature"]
+    mock_litellm.completion.return_value = {
+        "model": "mistral/mistral-large-latest",
+        "choices": [{"message": {"content": '{"ok": true}'}, "finish_reason": "stop"}],
+    }
+
+    config = _make_effective_config()
+    config.reliability.max_retries = 2
+    client = LiteLLMClient(model_config=config)
+    client.get_json_response(prompt="Extract", schema_json="{}")
+
+    request = mock_litellm.completion.call_args.kwargs
+    assert request["num_retries"] == 2
+
+
+@patch("docling_graph.llm_clients.litellm.litellm")
+def test_litellm_records_truncation_in_diagnostics(mock_litellm):
+    """finish_reason='length' is surfaced as last_call_diagnostics['truncated']."""
+    mock_litellm.get_supported_openai_params.return_value = None
+    mock_litellm.completion.return_value = {
+        "model": "mistral/mistral-large-latest",
+        "choices": [{"message": {"content": '{"ok": true}'}, "finish_reason": "length"}],
+    }
+    client = LiteLLMClient(model_config=_make_effective_config())
+    client.get_json_response(prompt="Extract", schema_json="{}")
+    assert client.last_call_diagnostics["truncated"] is True
+
+
+@patch("docling_graph.llm_clients.litellm.litellm")
+def test_litellm_not_truncated_when_finish_stop(mock_litellm):
+    mock_litellm.get_supported_openai_params.return_value = None
+    mock_litellm.completion.return_value = {
+        "model": "mistral/mistral-large-latest",
+        "choices": [{"message": {"content": '{"ok": true}'}, "finish_reason": "stop"}],
+    }
+    client = LiteLLMClient(model_config=_make_effective_config())
+    client.get_json_response(prompt="Extract", schema_json="{}")
+    assert client.last_call_diagnostics["truncated"] is False

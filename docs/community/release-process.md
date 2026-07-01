@@ -181,7 +181,7 @@ Make all necessary breaking changes on this branch:
 
 ```bash
 # Make changes
-vim docling_graph/pipeline.py
+vim docling_graph/pipeline/orchestrator.py
 
 # Commit with clear messages
 git commit -m "feat!: change run_pipeline signature
