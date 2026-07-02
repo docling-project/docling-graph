@@ -697,6 +697,50 @@ def test_merge_filled_rescues_idless_orphans_into_shared_bucket():
     assert {e["exp_id"] for e in bucket["experiments"]} == {"E1", "E2"}
 
 
+def test_merge_filled_distinct_siblings_with_value_as_key_ids_do_not_collapse():
+    """Siblings whose ids use the value as the key (a small-model shape error,
+    e.g. {"Alpha": "alpha"} instead of {"study_id": "Alpha"}) must stay distinct
+    parents so each keeps its own children — not collapse onto the last sibling.
+    Regression for _canonical_lookup_key lacking the raw-id fallback that
+    _skeleton_identity_key uses, which silently misattached every child.
+    """
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _linkage_catalog()
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha"}, {"study_id": "Beta"}],
+        "studies[].experiments[]": [{"exp_id": "E1"}, {"exp_id": "E2"}],
+    }
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        # Malformed: identifier value emitted as the key (no "study_id" key).
+        "studies[]": [
+            _desc("studies[]", {"Alpha": "Alpha"}, {"path": "", "ids": {}}),
+            _desc("studies[]", {"Beta": "Beta"}, {"path": "", "ids": {}}),
+        ],
+        "studies[].experiments[]": [
+            _desc(
+                "studies[].experiments[]",
+                {"exp_id": "E1"},
+                {"path": "studies[]", "ids": {"Alpha": "alpha"}},
+            ),
+            _desc(
+                "studies[].experiments[]",
+                {"exp_id": "E2"},
+                {"path": "studies[]", "ids": {"Beta": "beta"}},
+            ),
+        ],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    assert stats["dropped"] == 0
+    studies = {s["study_id"]: s for s in root["studies"]}
+    # Each study keeps its own experiment; nothing collapses onto the last sibling.
+    assert [e["exp_id"] for e in studies["Alpha"].get("experiments", [])] == ["E1"]
+    assert [e["exp_id"] for e in studies["Beta"].get("experiments", [])] == ["E2"]
+
+
 def test_skeleton_batch_keeps_valid_nodes_when_some_entries_invalid():
     """Malformed entries (e.g. echoed schema fragments) are skipped, not the whole batch."""
     template_cls, allowed, _spec_by_path = _company_skeleton_args()
