@@ -416,16 +416,14 @@ class ResponseHandler:
             rich_print(f"[yellow]Warning:[/yellow] {client_name} returned non-dict JSON, wrapping")
             return {"result": parsed}
 
-        # Warn about empty responses, but not for valid skeleton-shaped empty batches
-        # (nodes list only for dense skeleton; nodes/relationships both lists for graph IR)
+        # Warn about empty responses, but never for list-envelope shapes
+        # ({"nodes": []}, {"items": []}, {"merges": []}): an empty list there
+        # is a legitimate "found nothing" answer, not a malformed response.
         if not parsed:
             rich_print(f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON")
         else:
-            is_graph_ir_shape = isinstance(parsed.get("nodes"), list) and isinstance(
-                parsed.get("relationships"), list
-            )
-            is_skeleton_shape = isinstance(parsed.get("nodes"), list)
-            if not is_graph_ir_shape and not is_skeleton_shape and not any(parsed.values()):
+            is_list_envelope = all(isinstance(v, list) for v in parsed.values())
+            if not is_list_envelope and not any(parsed.values()):
                 rich_print(
                     f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON"
                 )

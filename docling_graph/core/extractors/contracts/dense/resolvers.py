@@ -1,5 +1,10 @@
 """
-Optional post-merge resolvers for dense skeleton nodes (fuzzy/semantic dedup).
+Fuzzy post-merge resolver for dense skeleton nodes.
+
+Used only by the "aggressive" dedupe mode: merges skeleton nodes on the same
+path whose identifier strings are near-identical (OCR noise, casing, ligature
+splits). The similarity threshold is internal — it is a property of how OCR
+noise looks, not something users should tune per run.
 
 Fully autonomous: no imports from other contracts.
 """
@@ -7,22 +12,22 @@ Fully autonomous: no imports from other contracts.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+import re
 from difflib import SequenceMatcher
 from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 
+# Similarity above which two same-path identifier strings are considered the
+# same real-world entity (OCR noise: dropped accents, punctuation, spacing).
+_FUZZY_MERGE_THRESHOLD = 0.9
 
-@dataclass
-class DenseResolverConfig:
-    """Settings for optional post-merge skeleton resolvers."""
+_DIGIT_RUNS = re.compile(r"\d+")
 
-    enabled: bool = False
-    mode: str = "off"  # off | fuzzy | semantic | chain
-    fuzzy_threshold: float = 0.8
-    semantic_threshold: float = 0.8
-    allow_merge_different_ids: bool = False
+
+def _digit_signature(text: str) -> tuple[str, ...]:
+    """Ordered digit runs in an identifier ("LFP_20vol" -> ("20",))."""
+    return tuple(_DIGIT_RUNS.findall(text))
 
 
 def _concat_ids(node: dict[str, Any]) -> str:
@@ -44,75 +49,6 @@ def _fuzzy_similarity(a: str, b: str) -> float:
         return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
 
-def _semantic_similarity(a: str, b: str) -> tuple[float, str | None]:
-    if not a or not b:
-        return 0.0, None
-    try:
-        import spacy
-
-        nlp = spacy.blank("en")
-        doc_a = nlp(a)
-        doc_b = nlp(b)
-        if not doc_a.vector_norm or not doc_b.vector_norm:
-            raise ValueError("spaCy model has no vectors")
-        return float(doc_a.similarity(doc_b)), None
-    except Exception as exc:
-        set_a = {t for t in a.lower().split() if t}
-        set_b = {t for t in b.lower().split() if t}
-        if not set_a or not set_b:
-            return 0.0, f"semantic_fallback:{type(exc).__name__}"
-        score = len(set_a & set_b) / len(set_a | set_b)
-        return score, f"semantic_fallback:{type(exc).__name__}"
-
-
-def _can_merge_with_ids(
-    left: dict[str, Any],
-    right: dict[str, Any],
-    allow_merge_different_ids: bool,
-) -> bool:
-    """If both have non-empty distinct ids and allow_merge_different_ids is False, do not merge."""
-    if allow_merge_different_ids:
-        return True
-    left_ids = left.get("ids") or {}
-    right_ids = right.get("ids") or {}
-    if not isinstance(left_ids, dict) or not isinstance(right_ids, dict):
-        return True
-    left_vals = tuple(sorted(str(v) for v in left_ids.values() if v is not None))
-    right_vals = tuple(sorted(str(v) for v in right_ids.values() if v is not None))
-    if not left_vals or not right_vals:
-        return True
-    return left_vals == right_vals
-
-
-def _compute_merge_decision(
-    left: dict[str, Any],
-    right: dict[str, Any],
-    config: DenseResolverConfig,
-    mode: str,
-) -> tuple[bool, float, str]:
-    """Return (should_merge, score, resolver_kind)."""
-    text_left = _concat_ids(left)
-    text_right = _concat_ids(right)
-    if not text_left or not text_right:
-        return False, 0.0, ""
-
-    if mode in ("fuzzy", "chain"):
-        score = _fuzzy_similarity(text_left, text_right)
-        if score >= float(config.fuzzy_threshold):
-            return True, score, "fuzzy"
-
-    if mode in ("semantic", "chain"):
-        semantic_score, fallback = _semantic_similarity(text_left, text_right)
-        if semantic_score >= float(config.semantic_threshold):
-            return True, semantic_score, "semantic"
-        if fallback and mode in ("semantic", "chain"):
-            fuzzy_score = _fuzzy_similarity(text_left, text_right)
-            if fuzzy_score >= float(config.fuzzy_threshold):
-                return True, fuzzy_score, "fuzzy"
-
-    return False, 0.0, ""
-
-
 def _parent_key(parent: dict[str, Any] | None, key_fn: Callable[[dict], Any]) -> Any | None:
     """Return the identity key for a parent dict, or None if no parent."""
     if parent is None or not isinstance(parent, dict):
@@ -123,16 +59,13 @@ def _parent_key(parent: dict[str, Any] | None, key_fn: Callable[[dict], Any]) ->
 def resolve_skeleton_nodes(
     skeleton_nodes: list[dict[str, Any]],
     key_fn: Callable[[dict[str, Any]], Any],
-    config: DenseResolverConfig,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """
-    Optionally merge skeleton nodes that refer to the same entity (fuzzy/semantic).
-    Returns (resolved_nodes, stats). Performs a full parent remapping pass so no node is orphaned.
-    """
-    mode = (config.mode or "off").lower()
-    if not config.enabled or mode == "off":
-        return skeleton_nodes, {"enabled": False, "mode": mode, "merged_count": 0}
+    Merge same-path skeleton nodes with near-identical identifier strings.
 
+    Returns (resolved_nodes, stats). Performs a full parent remapping pass so
+    no node is orphaned by a merge.
+    """
     nodes = [dict(n) for n in skeleton_nodes]
     removed_indexes: set[int] = set()
     id_remap: dict[Any, dict[str, Any]] = {}  # dropped_key -> chosen node's ids
@@ -143,23 +76,30 @@ def resolve_skeleton_nodes(
             continue
         path = str(left.get("path") or "")
         left_key = key_fn(left)
+        left_text = _concat_ids(left)
+        if not left_text:
+            continue
         for j in range(i + 1, len(nodes)):
             if j in removed_indexes:
                 continue
             right = nodes[j]
             if str(right.get("path") or "") != path:
                 continue
-            if not _can_merge_with_ids(left, right, config.allow_merge_different_ids):
-                continue
             right_key = key_fn(right)
             if left_key == right_key:
                 continue
-            should_merge, _score, _kind = _compute_merge_decision(left, right, config, mode)
-            if not should_merge:
+            right_text = _concat_ids(right)
+            if not right_text:
                 continue
-            right_ids = right.get("ids") or {}
-            if isinstance(right_ids, dict):
-                id_remap[right_key] = dict(left.get("ids") or {})
+            # Numbers are precise discriminators: "20vol" vs "30vol" or
+            # "Article 5" vs "Article 6" are distinct entities no matter how
+            # similar the surrounding text. A false merge destroys data; a
+            # kept duplicate is merely redundant.
+            if _digit_signature(left_text) != _digit_signature(right_text):
+                continue
+            if _fuzzy_similarity(left_text, right_text) < _FUZZY_MERGE_THRESHOLD:
+                continue
+            id_remap[right_key] = dict(left.get("ids") or {})
             removed_indexes.add(j)
             merged_count += 1
 
@@ -177,9 +117,5 @@ def resolve_skeleton_nodes(
                     "ids": id_remap[pkey],
                 }
 
-    stats = {
-        "enabled": True,
-        "mode": mode,
-        "merged_count": merged_count,
-    }
+    stats = {"merged_count": merged_count}
     return kept_nodes, stats

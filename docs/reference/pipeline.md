@@ -361,8 +361,7 @@ The `metadata.json` file contains pipeline configuration, results, and performan
       "inference": "remote",
       "model": "mistral-small-latest",
       "provider": "mistral",
-      "use_chunking": true,
-      "max_batch_size": 1
+      "use_chunking": true
     }
   },
   "processing_time_seconds": 15.42,

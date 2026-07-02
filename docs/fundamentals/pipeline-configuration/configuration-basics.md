@@ -456,7 +456,6 @@ PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    max_batch_size=1,
     
     # Export defaults
     export_format="csv",

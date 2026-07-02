@@ -45,16 +45,13 @@ def _resolve_cli_settings(
     docling_pipeline: str | None,
     chunk_max_tokens: int | None,
     parallel_workers: int | None,
-    dense_resolvers_enabled: bool | None,
-    dense_resolvers_mode: str | None,
-    dense_resolvers_fuzzy_threshold: float | None,
-    dense_resolvers_semantic_threshold: float | None,
-    dense_resolvers_allow_merge_different_ids: bool | None,
-    dense_prune_barren_branches: bool | None,
+    dense_skeleton_batch_tokens: int | None,
+    dense_fill_nodes_cap: int | None,
+    dense_fill_context: str | None,
+    dense_dedupe: str | None,
     schema_enforced_llm: bool | None,
     structured_sparse_check: bool | None,
-    gleaning_enabled: bool,
-    gleaning_max_passes: int | None,
+    gleaning_enabled: bool | None,
     export_docling_json: bool,
     export_markdown: bool,
     export_per_page: bool,
@@ -67,13 +64,19 @@ def _resolve_cli_settings(
     export_format_val = export_format or defaults.get("export_format", "csv")
     docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
 
-    final_dense_resolvers_mode = (
-        dense_resolvers_mode
-        if dense_resolvers_mode is not None
-        else defaults.get("dense_resolvers_mode", "off")
-    )
-    if final_dense_resolvers_mode not in ("off", "fuzzy", "semantic", "chain"):
-        final_dense_resolvers_mode = "off"
+    final_dense_dedupe = str(
+        dense_dedupe if dense_dedupe is not None else defaults.get("dense_dedupe", "standard")
+    ).lower()
+    if final_dense_dedupe not in ("off", "standard", "aggressive"):
+        final_dense_dedupe = "standard"
+
+    final_dense_fill_context = str(
+        dense_fill_context
+        if dense_fill_context is not None
+        else defaults.get("dense_fill_context", "scoped")
+    ).lower()
+    if final_dense_fill_context not in ("scoped", "full"):
+        final_dense_fill_context = "scoped"
 
     docling_export_settings = docling_cfg.get("export", {})
 
@@ -91,39 +94,17 @@ def _resolve_cli_settings(
             parallel_workers if parallel_workers is not None else defaults.get("parallel_workers")
         ),
         "dense_skeleton_batch_tokens": int(
-            defaults.get("dense_skeleton_batch_tokens", 1024) or 1024
+            dense_skeleton_batch_tokens
+            if dense_skeleton_batch_tokens is not None
+            else defaults.get("dense_skeleton_batch_tokens", 1024) or 1024
         ),
-        "dense_fill_nodes_cap": int(defaults.get("dense_fill_nodes_cap", 5) or 5),
-        "dense_fill_context": str(defaults.get("dense_fill_context", "scoped") or "scoped"),
-        "dense_skeleton_reconciliation": bool(defaults.get("dense_skeleton_reconciliation", True)),
-        "dense_quality_require_root": bool(defaults.get("dense_quality_require_root", True)),
-        "dense_quality_min_instances": int(defaults.get("dense_quality_min_instances", 1) or 1),
-        "dense_resolvers_enabled": (
-            dense_resolvers_enabled
-            if dense_resolvers_enabled is not None
-            else bool(defaults.get("dense_resolvers_enabled", False))
+        "dense_fill_nodes_cap": int(
+            dense_fill_nodes_cap
+            if dense_fill_nodes_cap is not None
+            else defaults.get("dense_fill_nodes_cap", 5) or 5
         ),
-        "dense_resolvers_mode": final_dense_resolvers_mode,
-        "dense_resolvers_fuzzy_threshold": (
-            dense_resolvers_fuzzy_threshold
-            if dense_resolvers_fuzzy_threshold is not None
-            else float(defaults.get("dense_resolvers_fuzzy_threshold", 0.8))
-        ),
-        "dense_resolvers_semantic_threshold": (
-            dense_resolvers_semantic_threshold
-            if dense_resolvers_semantic_threshold is not None
-            else float(defaults.get("dense_resolvers_semantic_threshold", 0.8))
-        ),
-        "dense_resolvers_allow_merge_different_ids": (
-            dense_resolvers_allow_merge_different_ids
-            if dense_resolvers_allow_merge_different_ids is not None
-            else bool(defaults.get("dense_resolvers_allow_merge_different_ids", False))
-        ),
-        "dense_prune_barren_branches": (
-            dense_prune_barren_branches
-            if dense_prune_barren_branches is not None
-            else bool(defaults.get("dense_prune_barren_branches", False))
-        ),
+        "dense_fill_context": final_dense_fill_context,
+        "dense_dedupe": final_dense_dedupe,
         "structured_output": (
             schema_enforced_llm
             if schema_enforced_llm is not None
@@ -134,11 +115,10 @@ def _resolve_cli_settings(
             if structured_sparse_check is not None
             else bool(defaults.get("structured_sparse_check", True))
         ),
-        "gleaning_enabled": gleaning_enabled or bool(defaults.get("gleaning_enabled", True)),
-        "gleaning_max_passes": (
-            gleaning_max_passes
-            if gleaning_max_passes is not None
-            else int(defaults.get("gleaning_max_passes", 1) or 1)
+        "gleaning_enabled": (
+            gleaning_enabled
+            if gleaning_enabled is not None
+            else bool(defaults.get("gleaning_enabled", True))
         ),
         "export_docling_json": (
             export_docling_json
@@ -244,46 +224,32 @@ def convert_command(
             help="Parallel workers for extraction.",
         ),
     ] = None,
-    dense_resolvers_enabled: Annotated[
-        bool | None,
+    dense_skeleton_batch_tokens: Annotated[
+        int | None,
         typer.Option(
-            "--dense-resolvers-enabled/--no-dense-resolvers-enabled",
-            help="Enable optional post-merge dense duplicate resolvers (fuzzy/semantic merge).",
+            "--dense-skeleton-batch-tokens",
+            help="Max tokens per dense Phase 1 (skeleton) chunk batch (default: 1024).",
         ),
     ] = None,
-    dense_resolvers_mode: Annotated[
+    dense_fill_nodes_cap: Annotated[
+        int | None,
+        typer.Option(
+            "--dense-fill-nodes-cap",
+            help="Max node instances per dense Phase 2 (fill) LLM call (default: 5).",
+        ),
+    ] = None,
+    dense_fill_context: Annotated[
         str | None,
         typer.Option(
-            "--dense-resolvers-mode",
-            help="Dense resolver mode: off | fuzzy | semantic | chain.",
+            "--dense-fill-context",
+            help="Document context per dense fill call: scoped | full (default: scoped).",
         ),
     ] = None,
-    dense_resolvers_fuzzy_threshold: Annotated[
-        float | None,
+    dense_dedupe: Annotated[
+        str | None,
         typer.Option(
-            "--dense-resolvers-fuzzy-threshold",
-            help="Dense fuzzy resolver similarity threshold.",
-        ),
-    ] = None,
-    dense_resolvers_semantic_threshold: Annotated[
-        float | None,
-        typer.Option(
-            "--dense-resolvers-semantic-threshold",
-            help="Dense semantic resolver similarity threshold.",
-        ),
-    ] = None,
-    dense_resolvers_allow_merge_different_ids: Annotated[
-        bool | None,
-        typer.Option(
-            "--dense-resolvers-allow-merge-different-ids/--no-dense-resolvers-allow-merge-different-ids",
-            help="Allow dense resolver to merge nodes with different non-empty ids.",
-        ),
-    ] = None,
-    dense_prune_barren_branches: Annotated[
-        bool | None,
-        typer.Option(
-            "--dense-prune-barren-branches/--no-dense-prune-barren-branches",
-            help="Remove dense skeleton nodes that have no filled children and no scalar data (barren branches).",
+            "--dense-dedupe",
+            help="Skeleton dedupe intensity: off | standard | aggressive (default: standard).",
         ),
     ] = None,
     # Docling export options
@@ -363,17 +329,10 @@ def convert_command(
         bool, typer.Option("--reverse-edges", "-r", help="Create bidirectional edges.")
     ] = False,
     gleaning_enabled: Annotated[
-        bool,
+        bool | None,
         typer.Option(
-            "--gleaning-enabled/--no-gleaning-enabled",
-            help="Run optional second-pass extraction to improve recall (direct contract). Default: enabled.",
-        ),
-    ] = True,
-    gleaning_max_passes: Annotated[
-        int | None,
-        typer.Option(
-            "--gleaning-max-passes",
-            help="Max gleaning passes when gleaning is enabled (default: 1).",
+            "--gleaning/--no-gleaning",
+            help="Run a second-pass extraction to improve recall (direct contract). Default: enabled.",
         ),
     ] = None,
 ) -> None:
@@ -407,16 +366,13 @@ def convert_command(
             docling_pipeline=docling_pipeline,
             chunk_max_tokens=chunk_max_tokens,
             parallel_workers=parallel_workers,
-            dense_resolvers_enabled=dense_resolvers_enabled,
-            dense_resolvers_mode=dense_resolvers_mode,
-            dense_resolvers_fuzzy_threshold=dense_resolvers_fuzzy_threshold,
-            dense_resolvers_semantic_threshold=dense_resolvers_semantic_threshold,
-            dense_resolvers_allow_merge_different_ids=dense_resolvers_allow_merge_different_ids,
-            dense_prune_barren_branches=dense_prune_barren_branches,
+            dense_skeleton_batch_tokens=dense_skeleton_batch_tokens,
+            dense_fill_nodes_cap=dense_fill_nodes_cap,
+            dense_fill_context=dense_fill_context,
+            dense_dedupe=dense_dedupe,
             schema_enforced_llm=schema_enforced_llm,
             structured_sparse_check=structured_sparse_check,
             gleaning_enabled=gleaning_enabled,
-            gleaning_max_passes=gleaning_max_passes,
             export_docling_json=export_docling_json,
             export_markdown=export_markdown,
             export_per_page=export_per_page,
@@ -430,18 +386,9 @@ def convert_command(
     export_format_val = settings["export_format"]
     docling_pipeline_val = settings["docling_pipeline"]
     final_chunk_max_tokens = settings["chunk_max_tokens"]
-    final_dense_resolvers_enabled = settings["dense_resolvers_enabled"]
-    final_dense_resolvers_mode = settings["dense_resolvers_mode"]
-    final_dense_resolvers_fuzzy_threshold = settings["dense_resolvers_fuzzy_threshold"]
-    final_dense_resolvers_semantic_threshold = settings["dense_resolvers_semantic_threshold"]
-    final_dense_resolvers_allow_merge_different_ids = settings[
-        "dense_resolvers_allow_merge_different_ids"
-    ]
-    final_dense_prune_barren_branches = settings["dense_prune_barren_branches"]
     final_structured_output = settings["structured_output"]
     final_structured_sparse_check = settings["structured_sparse_check"]
     final_gleaning_enabled = settings["gleaning_enabled"]
-    final_gleaning_max_passes = settings["gleaning_max_passes"]
     final_export_docling_json = settings["export_docling_json"]
     final_export_markdown = settings["export_markdown"]
     final_export_per_page = settings["export_per_page"]
@@ -482,10 +429,8 @@ def convert_command(
     rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
-    if extraction_contract_val in ("direct", "dense"):
-        rich_print(
-            f"  • Gleaning: [cyan]enabled={final_gleaning_enabled}, max_passes={final_gleaning_max_passes}[/cyan]"
-        )
+    if extraction_contract_val == "direct":
+        rich_print(f"  • Gleaning: [cyan]{final_gleaning_enabled}[/cyan]")
     if final_chunk_max_tokens is not None:
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
     if extraction_contract_val == "dense":
@@ -495,9 +440,7 @@ def convert_command(
             f"fill nodes cap: [cyan]{settings['dense_fill_nodes_cap']}[/cyan], "
             f"fill context: [cyan]{settings['dense_fill_context']}[/cyan]"
         )
-        rich_print(
-            f"  • Resolvers: [cyan]enabled={final_dense_resolvers_enabled}, mode={final_dense_resolvers_mode}[/cyan]"
-        )
+        rich_print(f"  • Dedupe: [cyan]{settings['dense_dedupe']}[/cyan]")
 
     # Build typed config
     logger.debug("Building PipelineConfig object")
@@ -538,19 +481,10 @@ def convert_command(
         chunk_max_tokens=final_chunk_max_tokens,
         parallel_workers=settings["parallel_workers"],
         gleaning_enabled=final_gleaning_enabled,
-        gleaning_max_passes=final_gleaning_max_passes,
         dense_skeleton_batch_tokens=settings["dense_skeleton_batch_tokens"],
         dense_fill_nodes_cap=settings["dense_fill_nodes_cap"],
         dense_fill_context=settings["dense_fill_context"],
-        dense_skeleton_reconciliation=settings["dense_skeleton_reconciliation"],
-        dense_quality_require_root=settings["dense_quality_require_root"],
-        dense_quality_min_instances=settings["dense_quality_min_instances"],
-        dense_resolvers_enabled=final_dense_resolvers_enabled,
-        dense_resolvers_mode=final_dense_resolvers_mode,
-        dense_resolvers_fuzzy_threshold=final_dense_resolvers_fuzzy_threshold,
-        dense_resolvers_semantic_threshold=final_dense_resolvers_semantic_threshold,
-        dense_resolvers_allow_merge_different_ids=final_dense_resolvers_allow_merge_different_ids,
-        dense_prune_barren_branches=final_dense_prune_barren_branches,
+        dense_dedupe=settings["dense_dedupe"],
         export_format=export_format_val,
         export_docling=True,
         export_docling_json=final_export_docling_json,

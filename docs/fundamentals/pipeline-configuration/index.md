@@ -169,9 +169,9 @@ PipelineConfig
 │   └── output_dir: Path
 │
 └── Advanced Settings
-    ├── max_batch_size: int
+    ├── parallel_workers: int
     ├── reverse_edges: bool
-    └── chunker_config: dict
+    └── chunk_max_tokens: int
 ```
 
 ---
@@ -278,8 +278,7 @@ PipelineConfig(
     export_markdown=True,
     export_per_page_markdown=False,
     reverse_edges=False,
-    output_dir="outputs",
-    max_batch_size=1
+    output_dir="outputs"
 )
 ```
 

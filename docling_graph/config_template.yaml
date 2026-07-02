@@ -1,5 +1,7 @@
 # Docling-Graph Configuration File
-# This file defines default settings and model configurations
+# This file defines default settings and model configurations.
+# Generated defaults mirror PipelineConfig (the single source of truth);
+# `docling-graph init` writes an up-to-date copy of this file.
 
 # Default settings (can be overridden via CLI flags)
 defaults:
@@ -12,16 +14,15 @@ defaults:
   structured_sparse_check: true # true | false (auto-fallback when structured result looks sparse)
   # Max tokens per chunk when chunking is used (null = use default 512)
   chunk_max_tokens: null
-  # Max total input tokens sent per LLM call in dense skeleton batching
-  llm_batch_token_size: 1024
-  parallel_workers: null         # parallel workers for dense extraction
-  quality_max_unknown_path_drops: -1  # -1 disables this gate
-  quality_max_id_mismatch: -1         # -1 disables this gate
-  quality_max_nested_property_drops: -1  # -1 disables this gate
-  dense_skeleton_batch_tokens: 1024
-  dense_fill_nodes_cap: 5
-  dense_quality_require_root: true
-  max_pass_retries: 1
+  # Parallel workers for extraction (null = sequential)
+  parallel_workers: null
+  # Direct contract: one optional "what did you miss?" second pass
+  gleaning_enabled: true
+  # Dense contract tuning
+  dense_skeleton_batch_tokens: 1024  # max input tokens per Phase 1 skeleton batch
+  dense_fill_nodes_cap: 5            # max node instances per Phase 2 fill call
+  dense_fill_context: scoped         # scoped | full (document context per fill call)
+  dense_dedupe: standard             # off | standard | aggressive (skeleton dedupe intensity)
 
 # Docling pipeline configuration
 docling:
@@ -80,8 +81,3 @@ output:
   # Directory for all outputs (graphs, JSON, reports, visualizations)
   # Note: the CLI flag --output-dir overrides this at runtime
   directory: "outputs"
-
-  # Optional toggles for downstream tools (not required by pipeline)
-  # Set to false if you want to skip generating visualization or markdown reports
-  create_visualizations: true
-  create_markdown: true
