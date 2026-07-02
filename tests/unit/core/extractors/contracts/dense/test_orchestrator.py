@@ -1038,3 +1038,45 @@ def test_fill_schema_hoists_defs_to_wrapper_root():
     schema = captured["schema"]
     assert "Ref" in schema.get("$defs", {})
     assert "$defs" not in schema["properties"]["items"]["items"]
+
+
+def test_strip_mislabeled_root_ids_clears_prose_number_field():
+    """A root *_number field holding multi-word digit-free prose is cleared."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        strip_mislabeled_root_ids,
+    )
+
+    nodes = [
+        {"path": "", "ids": {"document_number": "Zylker PC Builds"}, "parent": None},
+        {"path": "items[]", "ids": {"line_no": "Some Long Label"}, "parent": {"path": ""}},
+    ]
+    out = strip_mislabeled_root_ids(nodes)
+    # Root mis-capture cleared...
+    assert "document_number" not in out[0]["ids"]
+    # ...but non-root nodes are never touched (parent linkage must stay intact).
+    assert out[1]["ids"]["line_no"] == "Some Long Label"
+
+
+def test_strip_mislabeled_root_ids_keeps_real_identifiers():
+    """Digit-bearing, single-token, or non-number-named ids are preserved."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        strip_mislabeled_root_ids,
+    )
+
+    nodes = [
+        {
+            "path": "",
+            "ids": {
+                "invoice_number": "INV-2024-001",  # has digits -> keep
+                "reference_no": "Contract",  # single token -> keep
+                "vendor_name": "Zylker PC Builds",  # not a number field -> keep
+            },
+            "parent": None,
+        }
+    ]
+    out = strip_mislabeled_root_ids(nodes)
+    assert out[0]["ids"] == {
+        "invoice_number": "INV-2024-001",
+        "reference_no": "Contract",
+        "vendor_name": "Zylker PC Builds",
+    }

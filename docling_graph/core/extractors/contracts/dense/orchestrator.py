@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import threading
 import time
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
@@ -45,6 +46,39 @@ logger = logging.getLogger(__name__)
 # Max times a truncated skeleton batch may be halved before keeping the partial result.
 # Batches are already small (a few chunks), so a depth of 4 fully isolates pathological chunks.
 _MAX_SKELETON_SPLIT_DEPTH = 4
+
+# Id fields whose name promises a numeric/code identifier (document_number, ref_no,
+# invoice number...). On sparse documents a small model, lacking a real number,
+# often grabs a prominent brand/title string for these — a mis-capture the fill
+# phase then locks in via id restoration. Cleared as an invariant so fill can
+# leave the field empty instead.
+_NUMERIC_ID_FIELD = re.compile(r"(^|_)(number|no|num|ref|reference)(_|$)", re.IGNORECASE)
+
+
+def strip_mislabeled_root_ids(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Clear root id values that contradict their field-name semantics.
+
+    A field named like a number that holds multi-word, digit-free prose (e.g.
+    ``document_number = "Zylker PC Builds"``) is almost certainly a mis-capture,
+    not an identifier. Clearing it in place lets Phase 2 re-derive the value or
+    leave it empty rather than propagating a wrong id from the root singleton.
+    Conservative by design: only the root (path "") is touched, and only fields
+    whose name promises a number are checked, so alphabetic codes and named
+    entities elsewhere are never disturbed.
+    """
+    for node in nodes:
+        if (node.get("path") or "") != "":
+            continue
+        ids = node.get("ids")
+        if not isinstance(ids, dict):
+            continue
+        for field_name, value in list(ids.items()):
+            if not isinstance(value, str) or not _NUMERIC_ID_FIELD.search(field_name):
+                continue
+            text = value.strip()
+            if text and not any(ch.isdigit() for ch in text) and len(text.split()) >= 2:
+                ids.pop(field_name, None)
+    return nodes
 
 
 def _skeleton_identity_key(
@@ -1112,6 +1146,9 @@ class DenseOrchestrator:
             merged_skeleton, reconciliation_merged = self._run_skeleton_reconciliation(
                 merged_skeleton, spec_by_path, context
             )
+        # Invariant: drop root ids that contradict their field-name semantics so a
+        # sparse-document mis-capture is not locked in by Phase 2 id restoration.
+        merged_skeleton = strip_mislabeled_root_ids(merged_skeleton)
         if self._debug_dir:
             self._write_debug("dense_skeleton_graph.json", {"nodes": merged_skeleton})
 
