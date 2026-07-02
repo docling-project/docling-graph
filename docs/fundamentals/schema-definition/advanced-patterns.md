@@ -616,13 +616,13 @@ class DateRange(BaseModel):
 ```python
 # --- Person Entity ---
 class Person(BaseModel):
-    """Person entity (unique by name and date of birth)."""
+    """Person entity (unique by last name and date of birth)."""
     model_config = ConfigDict(
-        graph_id_fields=["first_name", "last_name", "date_of_birth"]
+        graph_id_fields=["last_name", "date_of_birth"]
     )
     
     first_name: Optional[str] = Field(None)
-    last_name: Optional[str] = Field(None)
+    last_name: str = Field(...)
     date_of_birth: Optional[date] = Field(None)
     
     contact: Optional[ContactInfo] = Field(None)

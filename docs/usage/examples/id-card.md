@@ -83,9 +83,10 @@ class Address(BaseModel):
 class Person(BaseModel):
     """Person entity with unique identification."""
     
-    # Graph ID: Unique by name + date of birth
+    # Graph ID: last name + date of birth (given_names stays out —
+    # list-valued ids drift across extraction batches)
     model_config = ConfigDict(
-        graph_id_fields=["given_names", "last_name", "date_of_birth"]
+        graph_id_fields=["last_name", "date_of_birth"]
     )
     
     given_names: List[str] | None = Field(
@@ -285,9 +286,10 @@ date_of_birth: date | None = Field(
 ### 2. Graph ID Configuration
 
 ```python
-# Person uniquely identified by name + DOB
+# Person uniquely identified by last name + DOB
+# (scalar fields only — never list-valued fields as identity)
 model_config = ConfigDict(
-    graph_id_fields=["given_names", "last_name", "date_of_birth"]
+    graph_id_fields=["last_name", "date_of_birth"]
 )
 
 # Same person in multiple documents = same node

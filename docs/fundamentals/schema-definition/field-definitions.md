@@ -12,16 +12,21 @@ Field definitions are the main quality lever for extraction consistency.
 
 ## Identity fields
 
-- Identity fields in `graph_id_fields` should be required and concise.
-- Avoid long free text as identity (`description`, `resume`, paragraph fields).
-- Include 2-5 examples for each identity field.
+- Identity fields in `graph_id_fields` must be **required, scalar, and concise** — one field ideal, two maximum.
+- Never use list-valued fields or enums as identity: their surface forms drift between extraction batches and break parent linkage.
+- Avoid long free text as identity (`description`, `resume`, paragraph fields) — long ids inflate skeleton output (truncation pressure) and cannot be reconciled as aliases.
+- Ids must be **copyable verbatim** from the document; never instruct fallback generation (`'ITEM-1'`) — invented ids never match across batches.
+- Put distinguishing **digits in the id** (`Batch-20vol`): ids differing in any digit run are protected from fuzzy merging.
+- Name id fields honestly: `*_number` / `*_no` / `ref_*` fields must hold values that contain digits (a pipeline invariant clears prose from them at the root); use `name` / `title` when the identity is a name.
+- Include 2-5 short, document-derived examples for each identity field — in dense extraction these examples are the only id guidance Phase 1 sees.
 - For local identities (for example line indexes), add context fields in schema to disambiguate.
 
 ## Optionality guidance
 
-- Required for identity and structural anchor fields.
-- Optional for sparse enrichments that may not exist in source documents.
-- Avoid optional identity fields in dense extraction, where stable catalog identity is important for merge and linkage.
+- **Required = identity, nothing else.** The fill phase pads short responses and restores ids from the skeleton, but a required non-identity field makes every partial instance fail validation — an all-or-nothing loss that small models hit constantly.
+- Optional (`| None`, `default_factory=list`) or defaulted for every property field.
+- Never make identity fields optional: children referencing id-less parents lose sibling attribution.
+- Don't restate global prompt rules per field ("omit if absent", "never use N/A", "copy digits verbatim") — the extraction prompts enforce these pipeline-wide, and field descriptions are paid for on every fill call.
 
 ## Description style
 
