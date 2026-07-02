@@ -256,12 +256,36 @@ def skeleton_to_descriptors(
 
 
 def _canonical_lookup_key(path: str, spec: NodeSpec, ids: dict[str, Any]) -> tuple[Any, ...]:
-    if not spec.id_fields:
-        return (path, ())
-    normalized = tuple(
-        sorted((f, canonicalize_identity_for_dedup(f, ids.get(f))) for f in spec.id_fields)
-    )
-    return (path, normalized)
+    """Parent-attachment identity key. Mirrors _skeleton_identity_key so that
+    dedup and attachment agree on what counts as the same entity.
+
+    Uses the declared id_fields when at least one is present. When NONE are
+    present — e.g. a small model emitted the identifier value as the key
+    (``{"ESSENTIELLE": "essentielle"}`` instead of ``{"nom": "ESSENTIELLE"}``) —
+    it falls back to the node's raw ids. Without the fallback, every sibling
+    that lacks its declared id fields collapses onto a single key
+    (``(path, (("nom", ""),))``), so the lookup keeps only the last one and every
+    child attaches to the wrong sibling while the merge reports a false exact hit.
+    """
+    ids = ids or {}
+    if spec.id_fields:
+        ordered = tuple(
+            (f, canonicalize_identity_for_dedup(f, ids.get(f)))
+            for f in spec.id_fields
+            if ids.get(f) is not None
+        )
+        if ordered:
+            return (path, tuple(sorted(ordered, key=lambda x: x[0])))
+        fallback = tuple(
+            sorted(
+                (str(k), canonicalize_identity_for_dedup(k, v))
+                for k, v in ids.items()
+                if v is not None
+            )
+        )
+        if fallback:
+            return (path, fallback)
+    return (path, ())
 
 
 def _canonical_id_text(ids: dict[str, Any]) -> str:
