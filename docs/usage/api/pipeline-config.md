@@ -92,11 +92,9 @@ run_pipeline(config)  # or config.run()
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `max_batch_size` | `int` | `1` | Maximum batch size |
-| `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **dense** contracts. |
-| `gleaning_max_passes` | `int` | `1` | Max number of gleaning passes when `gleaning_enabled` is True (1 = one extra pass). |
+| `gleaning_enabled` | `bool` | `True` | Run one optional second-pass extraction ("what did you miss?") to improve recall on the **direct** contract. |
 
-For **dense** extraction, additional options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`, `dense_fill_context`, `parallel_workers`, `dense_quality_require_root`, `dense_quality_min_instances`) can be set via a config dict or YAML `defaults`; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
+For **dense** extraction, additional options (`dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`, `dense_fill_context`, `dense_dedupe`, `parallel_workers`) can be set directly on `PipelineConfig`, via a config dict, or via YAML `defaults`; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 
 ### Debug Settings
 
@@ -289,9 +287,8 @@ config = PipelineConfig(
     use_chunking=True,
     dense_skeleton_batch_tokens=1024,
     dense_fill_nodes_cap=5,
+    dense_dedupe="standard",  # off | standard | aggressive
     parallel_workers=2,
-    gleaning_enabled=True,  # Set False to disable optional second-pass recall boost
-    gleaning_max_passes=1,
 )
 
 run_pipeline(config)

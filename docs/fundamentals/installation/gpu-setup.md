@@ -295,11 +295,11 @@ RuntimeError: CUDA out of memory
        --use-chunking
    ```
 
-3. **Reduce batch size**:
+3. **Reduce chunk size**:
    ```python
    config = PipelineConfig(
-       max_batch_size=1,  # Process one chunk at a time
-       use_chunking=True
+       use_chunking=True,
+       chunk_max_tokens=512,  # Smaller chunks per LLM call
    )
    ```
 

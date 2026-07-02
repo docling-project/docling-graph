@@ -147,7 +147,6 @@ def test_orchestrator_parallel_workers_returns_non_null_root():
         parallel_workers=2,
         skeleton_batch_tokens=50,
         fill_nodes_cap=5,
-        quality_min_instances=1,
     )
     orch = DenseOrchestrator(
         llm_call_fn=mock_llm,
@@ -666,15 +665,15 @@ def test_merge_filled_creates_placeholder_parent_for_unmatched_reference():
     assert stats["dropped"] == 0
 
 
-def test_merge_filled_counts_dropped_when_parent_unresolvable():
-    """A child with no parent ids and several candidate parents is dropped and counted."""
+def test_merge_filled_rescues_idless_orphans_into_shared_bucket():
+    """Children with no parent ids and ambiguous candidates land in a shared bucket parent."""
     from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
 
     catalog = _linkage_catalog()
     path_filled = {
         "": [{"title": "T"}],
         "studies[]": [{"study_id": "Alpha-Study"}, {"study_id": "Beta-Study"}],
-        "studies[].experiments[]": [{"exp_id": "E1"}],
+        "studies[].experiments[]": [{"exp_id": "E1"}, {"exp_id": "E2"}],
     }
     path_descriptors = {
         "": [_desc("", {"title": "T"}, None)],
@@ -684,11 +683,18 @@ def test_merge_filled_counts_dropped_when_parent_unresolvable():
         ],
         "studies[].experiments[]": [
             _desc("studies[].experiments[]", {"exp_id": "E1"}, None),
+            _desc("studies[].experiments[]", {"exp_id": "E2"}, None),
         ],
     }
     stats: dict[str, int] = {}
-    merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
-    assert stats["dropped"] == 1
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    assert stats["dropped"] == 0
+    # First orphan creates the bucket; the second reuses it via the lookup hit.
+    assert stats["recovered_bucket"] == 1
+    assert stats["attached_exact"] >= 1
+    bucket = root["studies"][2]
+    assert "study_id" not in bucket
+    assert {e["exp_id"] for e in bucket["experiments"]} == {"E1", "E2"}
 
 
 def test_skeleton_batch_keeps_valid_nodes_when_some_entries_invalid():
@@ -927,3 +933,108 @@ def test_run_stats_published_after_run():
     assert stats["truncation_count"] == 0
     assert stats["split_count"] == 0
     assert "retention_pct" in stats
+
+
+def test_dense_config_from_dict_parses_dedupe_mode():
+    """dense_dedupe maps to dedupe_mode with a safe default for invalid values."""
+    assert DenseOrchestratorConfig.from_dict({"dense_dedupe": "off"}).dedupe_mode == "off"
+    assert (
+        DenseOrchestratorConfig.from_dict({"dense_dedupe": "aggressive"}).dedupe_mode
+        == "aggressive"
+    )
+    assert DenseOrchestratorConfig.from_dict({}).dedupe_mode == "standard"
+    assert DenseOrchestratorConfig.from_dict({"dense_dedupe": "bogus"}).dedupe_mode == "standard"
+
+
+def _run_dedupe_mode(mode: str) -> list[str]:
+    """Run a two-employee SampleCompany extraction; return the LLM contexts seen."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    calls: list[str] = []
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        calls.append(context)
+        if "dense_skeleton" in context:
+            return {
+                "nodes": [
+                    {"i": 1, "path": "", "ids": {"company_name": "Acme"}},
+                    {"i": 2, "path": "employees[]", "ids": {"email": "a@x.com"}, "p": 1},
+                    {"i": 3, "path": "employees[]", "ids": {"email": "b@x.com"}, "p": 1},
+                ]
+            }
+        if "dense_reconcile" in context:
+            return {"merges": []}
+        if "dense_fill" in context:
+            return {"items": []}
+        return None
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(dedupe_mode=mode),
+    )
+    orch.run(
+        chunks=["doc"],
+        chunk_metadata=[{"token_count": 5}],
+        full_markdown="doc",
+        context="t",
+    )
+    return calls
+
+
+def test_dedupe_off_skips_reconciliation_llm_call():
+    """dedupe_mode='off' must not spend an LLM call on reconciliation; 'standard' does."""
+    assert not any("dense_reconcile" in c for c in _run_dedupe_mode("off"))
+    assert any("dense_reconcile" in c for c in _run_dedupe_mode("standard"))
+
+
+def test_fill_schema_hoists_defs_to_wrapper_root():
+    """The wrapped fill schema must keep $ref pointers valid (defs hoisted to root)."""
+    import json
+
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    captured: dict[str, Any] = {}
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        if "dense_fill" in context:
+            captured["schema"] = json.loads(schema_json)
+        return {"items": []}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec = next(s for s in orch._catalog.nodes if s.path == "employees[]")
+    sub_schema = json.dumps(
+        {
+            "type": "object",
+            "properties": {"boss": {"$ref": "#/$defs/Ref"}},
+            "$defs": {"Ref": {"type": "string"}},
+        }
+    )
+    orch._run_one_fill_batch(
+        path="employees[]",
+        spec=spec,
+        batch_descriptors=[{"ids": {"email": "a@x.com"}}],
+        batch_index=0,
+        sub_schema=sub_schema,
+        fill_markdown="doc",
+        context="t",
+    )
+    schema = captured["schema"]
+    assert "Ref" in schema.get("$defs", {})
+    assert "$defs" not in schema["properties"]["items"]["items"]

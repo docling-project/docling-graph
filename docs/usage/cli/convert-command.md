@@ -265,21 +265,26 @@ uv run docling-graph convert small_doc.pdf \
 
 ### Dense extraction
 
-Use `--extraction-contract dense` for two-phase **skeleton-then-fill** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. Dense-specific options (e.g. `dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`) can be set in a config file; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
+Use `--extraction-contract dense` for two-phase **skeleton-then-fill** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 
-#### Gleaning (direct and dense)
-
-Optional second-pass extraction ("what did you miss?") to improve recall. Applies to **direct** and **dense** contracts. Enabled by default.
+Dense options map 1:1 to CLI flags:
 
 ```bash
---gleaning-enabled / --no-gleaning-enabled
---gleaning-max-passes INT
+--dense-skeleton-batch-tokens INT   # max tokens per Phase 1 skeleton batch (default: 1024)
+--dense-fill-nodes-cap INT          # max node instances per Phase 2 fill call (default: 5)
+--dense-fill-context [scoped|full]  # document context per fill call (default: scoped)
+--dense-dedupe [off|standard|aggressive]  # skeleton dedupe intensity (default: standard)
 ```
 
-- `--gleaning-enabled`: run one extra extraction pass and merge additional entities/relations (default: enabled).
-- `--gleaning-max-passes`: max number of gleaning passes when enabled (default: 1).
+#### Gleaning (direct contract)
 
-**Example (dense with gleaning):**
+Optional second-pass extraction ("what did you miss?") to improve recall on the **direct** contract. Enabled by default.
+
+```bash
+--gleaning / --no-gleaning
+```
+
+**Example (dense with tuned batching):**
 
 ```bash
 uv run docling-graph convert document.pdf \
@@ -287,8 +292,7 @@ uv run docling-graph convert document.pdf \
     --processing-mode many-to-one \
     --extraction-contract dense \
     --use-chunking \
-    --gleaning-enabled \
-    --gleaning-max-passes 1 \
+    --dense-dedupe aggressive \
     --parallel-workers 2
 ```
 

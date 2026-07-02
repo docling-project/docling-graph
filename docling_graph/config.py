@@ -137,7 +137,6 @@ class PipelineConfig(BaseModel):
     debug: bool = Field(
         default=False, description="Enable debug artifacts (controlled by --debug flag)"
     )
-    max_batch_size: int = 1
 
     # Parallel workers for extraction
     parallel_workers: int | None = Field(
@@ -145,40 +144,15 @@ class PipelineConfig(BaseModel):
         description="Parallel workers for extraction.",
     )
 
-    # Gleaning settings (for direct contract)
+    # Gleaning (direct contract): one optional "what did you miss?" pass.
     gleaning_enabled: bool = Field(
         default=True,
-        description="Run optional second-pass extraction (what did you miss?) for direct contract.",
+        description="Run a second-pass extraction (what did you miss?) for the direct contract.",
     )
-    gleaning_max_passes: int = Field(
-        default=1,
-        description="Max gleaning passes (1 = one extra pass). Used when gleaning_enabled is True.",
-    )
-    # Dense contract: optional post-merge fuzzy/semantic resolvers
-    dense_resolvers_enabled: bool = Field(
-        default=False,
-        description="Enable optional post-merge dense duplicate resolvers (fuzzy/semantic merge).",
-    )
-    dense_resolvers_mode: Literal["off", "fuzzy", "semantic", "chain"] = Field(
-        default="off",
-        description="Dense resolver mode: off | fuzzy | semantic | chain.",
-    )
-    dense_resolvers_fuzzy_threshold: float = Field(
-        default=0.8,
-        description="Similarity threshold for dense fuzzy post-merge dedup.",
-    )
-    dense_resolvers_semantic_threshold: float = Field(
-        default=0.8,
-        description="Similarity threshold for dense semantic post-merge dedup.",
-    )
-    dense_resolvers_allow_merge_different_ids: bool = Field(
-        default=False,
-        description="If True, allow dense resolver to merge nodes with different non-empty ids.",
-    )
-    dense_prune_barren_branches: bool = Field(
-        default=False,
-        description="If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches).",
-    )
+
+    # Dense contract tuning: sizing knobs plus one intent-driven dedupe mode.
+    # Mandatory cleanup (root singleton, barren-branch pruning, quality gate)
+    # are pipeline invariants and intentionally not configurable.
     dense_skeleton_batch_tokens: int = Field(
         default=1024,
         description="Max tokens per dense Phase 1 (skeleton) chunk batch.",
@@ -186,14 +160,6 @@ class PipelineConfig(BaseModel):
     dense_fill_nodes_cap: int = Field(
         default=5,
         description="Max node instances per dense Phase 2 (fill) LLM call.",
-    )
-    dense_quality_require_root: bool = Field(
-        default=True,
-        description="Reject dense skeletons that have no root instance.",
-    )
-    dense_quality_min_instances: int = Field(
-        default=1,
-        description="Minimum skeleton instances required to accept dense Phase 1 output.",
     )
     dense_fill_context: Literal["scoped", "full"] = Field(
         default="scoped",
@@ -203,11 +169,14 @@ class PipelineConfig(BaseModel):
             "'full' always sends the whole document."
         ),
     )
-    dense_skeleton_reconciliation: bool = Field(
-        default=True,
+    dense_dedupe: Literal["off", "standard", "aggressive"] = Field(
+        default="standard",
         description=(
-            "Run one id-space LLM call after skeleton merge that collapses same-entity "
-            "aliases discovered at different granularities across batches."
+            "Skeleton dedupe intensity. 'off': exact canonical-id dedup only. "
+            "'standard': adds one id-space LLM reconciliation call that collapses "
+            "same-entity aliases found at different granularities. 'aggressive': "
+            "also merges near-identical same-path identifier strings (OCR noise); "
+            "similarity thresholds are handled internally."
         ),
     )
     # Export settings (with defaults)
@@ -288,19 +257,10 @@ class PipelineConfig(BaseModel):
             "provider_override": self.provider_override,
             "parallel_workers": self.parallel_workers,
             "gleaning_enabled": self.gleaning_enabled,
-            "gleaning_max_passes": self.gleaning_max_passes,
-            "dense_resolvers_enabled": self.dense_resolvers_enabled,
-            "dense_resolvers_mode": self.dense_resolvers_mode,
-            "dense_resolvers_fuzzy_threshold": self.dense_resolvers_fuzzy_threshold,
-            "dense_resolvers_semantic_threshold": self.dense_resolvers_semantic_threshold,
-            "dense_resolvers_allow_merge_different_ids": self.dense_resolvers_allow_merge_different_ids,
-            "dense_prune_barren_branches": self.dense_prune_barren_branches,
             "dense_skeleton_batch_tokens": self.dense_skeleton_batch_tokens,
             "dense_fill_nodes_cap": self.dense_fill_nodes_cap,
-            "dense_quality_require_root": self.dense_quality_require_root,
-            "dense_quality_min_instances": self.dense_quality_min_instances,
             "dense_fill_context": self.dense_fill_context,
-            "dense_skeleton_reconciliation": self.dense_skeleton_reconciliation,
+            "dense_dedupe": self.dense_dedupe,
             "export_format": self.export_format,
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
@@ -339,16 +299,11 @@ class PipelineConfig(BaseModel):
                 "structured_output": default_config.structured_output,
                 "structured_sparse_check": default_config.structured_sparse_check,
                 "parallel_workers": default_config.parallel_workers,
-                "dense_resolvers_enabled": default_config.dense_resolvers_enabled,
-                "dense_resolvers_mode": default_config.dense_resolvers_mode,
-                "dense_resolvers_fuzzy_threshold": default_config.dense_resolvers_fuzzy_threshold,
-                "dense_resolvers_semantic_threshold": default_config.dense_resolvers_semantic_threshold,
-                "dense_resolvers_allow_merge_different_ids": default_config.dense_resolvers_allow_merge_different_ids,
-                "dense_prune_barren_branches": default_config.dense_prune_barren_branches,
+                "gleaning_enabled": default_config.gleaning_enabled,
                 "dense_skeleton_batch_tokens": default_config.dense_skeleton_batch_tokens,
                 "dense_fill_nodes_cap": default_config.dense_fill_nodes_cap,
                 "dense_fill_context": default_config.dense_fill_context,
-                "dense_skeleton_reconciliation": default_config.dense_skeleton_reconciliation,
+                "dense_dedupe": default_config.dense_dedupe,
             },
             "docling": {
                 "pipeline": default_config.docling_config,

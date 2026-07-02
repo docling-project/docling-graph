@@ -356,7 +356,7 @@ config = PipelineConfig(
     
     # Many-to-one specific settings
     use_chunking=True,  # Enable chunking for large docs
-    max_batch_size=5  # Process chunks in batches
+    chunk_max_tokens=512  # Max tokens per chunk
 )
 ```
 

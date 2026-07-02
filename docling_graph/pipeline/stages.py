@@ -381,23 +381,10 @@ class ExtractionStage(PipelineStage):
             "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
             "parallel_workers": conf.get("parallel_workers", 1),
             "gleaning_enabled": conf.get("gleaning_enabled", True),
-            "gleaning_max_passes": conf.get("gleaning_max_passes", 1),
             "dense_skeleton_batch_tokens": conf.get("dense_skeleton_batch_tokens", 1024),
             "dense_fill_nodes_cap": conf.get("dense_fill_nodes_cap", 5),
-            "dense_quality_require_root": conf.get("dense_quality_require_root", True),
-            "dense_quality_min_instances": conf.get("dense_quality_min_instances", 1),
-            "dense_resolvers": {
-                "enabled": conf.get("dense_resolvers_enabled", False),
-                "mode": conf.get("dense_resolvers_mode", "off"),
-                "fuzzy_threshold": conf.get("dense_resolvers_fuzzy_threshold", 0.8),
-                "semantic_threshold": conf.get("dense_resolvers_semantic_threshold", 0.8),
-                "allow_merge_different_ids": conf.get(
-                    "dense_resolvers_allow_merge_different_ids", False
-                ),
-            },
-            "dense_prune_barren_branches": conf.get("dense_prune_barren_branches", False),
             "dense_fill_context": conf.get("dense_fill_context", "scoped"),
-            "dense_skeleton_reconciliation": conf.get("dense_skeleton_reconciliation", True),
+            "dense_dedupe": conf.get("dense_dedupe", "standard"),
         }
         if conf.get("debug"):
             if context.output_manager is not None:

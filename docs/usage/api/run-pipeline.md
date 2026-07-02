@@ -106,8 +106,8 @@ context = run_pipeline(config)
 | `extraction_contract` | `str` | `"direct"` | Extraction contract: `"direct"` or `"dense"` (see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md)) |
 | `docling_config` | `str` | `"ocr"` | Docling pipeline: `"ocr"` or `"vision"` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `gleaning_enabled` | `bool` | `True` | Run optional second-pass extraction to improve recall. |
-| `gleaning_max_passes` | `int` | `1` | Max gleaning passes when gleaning is enabled. |
+| `gleaning_enabled` | `bool` | `True` | Run one optional second-pass extraction to improve recall (direct contract). |
+| `dense_dedupe` | `str` | `"standard"` | Dense skeleton dedupe intensity: `"off"`, `"standard"`, or `"aggressive"`. |
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports (None=auto: CLI=True, API=False) |
 | `export_format` | `str` | `"csv"` | Export format: `"csv"` or `"cypher"` |
 | `model_override` | `str` | `None` | Override model name |

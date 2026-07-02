@@ -35,7 +35,6 @@ config = PipelineConfig(
     use_chunking: bool = True,
     chunk_max_tokens: int | None = None,
     debug: bool = False,
-    max_batch_size: int = 1,
     dump_to_disk: bool | None = None,
     export_format: Literal["csv", "cypher"] = "csv",
     export_docling: bool = True,
@@ -76,7 +75,7 @@ config = PipelineConfig(
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking) |
 | `debug` | `bool` | `False` | Enable debug artifacts |
-| `max_batch_size` | `int` | `1` | Maximum batch size |
+| `parallel_workers` | `int` or `None` | `None` | Parallel workers for extraction |
 
 #### Dense extraction (skeleton-then-fill)
 
@@ -87,35 +86,15 @@ Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extra
 | `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
 | `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
 | `dense_fill_context` | `"scoped"` or `"full"` | `"scoped"` | Document context per fill call: scoped batches where the node was observed, or the full document. |
-| `dense_skeleton_reconciliation` | `bool` | `True` | One id-space LLM call after skeleton merge that collapses same-entity aliases (granularity dedup). |
-| `dense_quality_require_root` | `bool` | `True` | Require at least one root instance after Phase 1. |
-| `dense_quality_min_instances` | `int` | `1` | Minimum skeleton node count after Phase 1. |
-| `dense_prune_barren_branches` | `bool` | `False` | If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches). |
+| `dense_dedupe` | `"off"`, `"standard"` or `"aggressive"` | `"standard"` | Skeleton dedupe intensity. `off`: exact canonical-id dedup only. `standard`: adds one id-space LLM reconciliation call that collapses same-entity aliases found at different granularities. `aggressive`: also merges near-identical same-path identifier strings (OCR noise); similarity thresholds are handled internally, and identifiers that differ numerically never merge. |
 
-#### Dense extraction (skeleton-then-fill)
+Mandatory cleanup — root singleton collapse, barren-branch pruning, and the root-required quality gate — are pipeline invariants and not configurable.
 
-Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extraction_contract="dense"` and `use_chunking=True`.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
-| `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
-| `dense_fill_context` | `"scoped"` or `"full"` | `"scoped"` | Document context per fill call: scoped batches where the node was observed, or the full document. |
-| `dense_skeleton_reconciliation` | `bool` | `True` | One id-space LLM call after skeleton merge that collapses same-entity aliases (granularity dedup). |
-| `dense_quality_require_root` | `bool` | `True` | Require at least one root instance after Phase 1. |
-| `dense_quality_min_instances` | `int` | `1` | Minimum skeleton node count after Phase 1. |
-| `dense_prune_barren_branches` | `bool` | `False` | If True, remove dense skeleton nodes that have no filled children and no scalar data (barren branches). |
-
-`parallel_workers` and `max_pass_retries` are also used by dense.
-
-#### Gleaning (direct and dense)
-
-Optional second-pass extraction to improve recall. Applies to **direct** and **dense** contracts.
+#### Gleaning (direct contract)
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `gleaning_enabled` | `bool` | `True` | Run one extra extraction pass ("what did you miss?") and merge additional entities/relations. |
-| `gleaning_max_passes` | `int` | `1` | Max number of gleaning passes when `gleaning_enabled` is True. |
 
 #### Export Configuration
 
@@ -476,7 +455,6 @@ config = PipelineConfig(
     processing_mode="many-to-one",
     docling_config="ocr",
     use_chunking=True,
-    max_batch_size=5,
     
     # Export
     export_format="csv",
