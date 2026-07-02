@@ -1,4 +1,13 @@
-"""Pydantic models for dense extraction Phase 1 (skeleton) LLM output."""
+"""Pydantic models for dense extraction Phase 1 (skeleton) LLM output.
+
+The skeleton contract uses batch-local integer handles: each node carries a
+handle ``i`` and references its parent by ``p`` (the parent's handle in the
+same response). Copying a one-or-two digit integer is far more reliable for
+small models than re-writing parent identifier strings, and it removes the
+repeated {path, ids} parent/ancestry objects that used to dominate output
+tokens. Handles are resolved to (path, ids) parent references immediately
+after parsing; across batches, nodes are still linked by canonical ids.
+"""
 
 from __future__ import annotations
 
@@ -13,8 +22,19 @@ def _coerce_ids_to_str(value: Any) -> dict[str, str]:
     return {k: str(v) for k, v in value.items()}
 
 
+def _coerce_handle(value: Any) -> int | None:
+    """Accept integer handles emitted as strings (e.g. '2')."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.strip().lstrip("-").isdigit():
+        return int(value.strip())
+    return None
+
+
 class DenseParentRef(BaseModel):
-    """Parent reference in skeleton output."""
+    """Explicit parent reference; tolerated fallback when a model emits one instead of a handle."""
 
     path: str = ""
     ids: dict[str, str] = Field(default_factory=dict)
@@ -26,12 +46,18 @@ class DenseParentRef(BaseModel):
 
 
 class DenseSkeletonNode(BaseModel):
-    """Skeleton node: path, ids, parent, optional ancestry. No properties."""
+    """Skeleton node: handle ``i``, catalog path, short ids, parent handle ``p``."""
 
+    i: int | None = None
     path: str
     ids: dict[str, str] = Field(default_factory=dict)
+    p: int | None = None
     parent: DenseParentRef | None = None
-    ancestry: list[DenseParentRef] | None = None
+
+    @field_validator("i", "p", mode="before")
+    @classmethod
+    def _handles_to_int(cls, v: Any) -> int | None:
+        return _coerce_handle(v)
 
     @field_validator("parent", mode="before")
     @classmethod
@@ -40,24 +66,11 @@ class DenseSkeletonNode(BaseModel):
             return None
         if isinstance(v, str):
             return {"path": v.strip() or "", "ids": {}}
-        return v
+        if isinstance(v, dict):
+            return v
+        return None
 
     @field_validator("ids", mode="before")
     @classmethod
     def _ids_to_str(cls, v: Any) -> dict[str, str]:
         return _coerce_ids_to_str(v) if isinstance(v, dict) else {}
-
-    @field_validator("ancestry", mode="before")
-    @classmethod
-    def _ancestry_to_list(cls, v: Any) -> list[dict[str, Any]] | None:
-        if v is None:
-            return None
-        if isinstance(v, list):
-            return v
-        return None
-
-
-class DenseSkeletonGraph(BaseModel):
-    """Phase 1 LLM output: list of skeleton nodes."""
-
-    nodes: list[DenseSkeletonNode] = Field(default_factory=list)

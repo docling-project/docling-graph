@@ -397,6 +397,7 @@ class ExtractionStage(PipelineStage):
             },
             "dense_prune_barren_branches": conf.get("dense_prune_barren_branches", False),
             "dense_fill_context": conf.get("dense_fill_context", "scoped"),
+            "dense_skeleton_reconciliation": conf.get("dense_skeleton_reconciliation", True),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -747,12 +748,15 @@ class VisualizationStage(PipelineStage):
                     ):
                         if key in first_meta:
                             llm_diagnostics[key] = first_meta[key]
+        extraction_backend = getattr(context.extractor, "backend", None)
+        dense_stats = getattr(extraction_backend, "last_dense_stats", None)
         ReportGenerator().visualize(
             context.knowledge_graph,
             report_path,
             source_model_count=len(context.extracted_models),
             extraction_contract=extraction_contract,
             llm_diagnostics=llm_diagnostics,
+            dense_stats=dense_stats if isinstance(dense_stats, dict) and dense_stats else None,
         )
         logger.info(f"Generated markdown report at {report_path}.md")
 

@@ -261,38 +261,37 @@ def build_skeleton_semantic_guide(catalog: NodeCatalog) -> str:
 
 
 def skeleton_output_schema(allowed_paths: list[str]) -> dict[str, Any]:
-    """JSON schema for Phase 1 skeleton LLM output: nodes with path, ids, parent, optional ancestry."""
-    parent_ref = {
-        "type": "object",
-        "properties": {
-            "path": {"type": "string"},
-            "ids": {"type": "object", "additionalProperties": {"type": "string"}},
-        },
-    }
+    """JSON schema for Phase 1 skeleton LLM output.
+
+    Compact handle-based format: each node has an integer handle ``i`` and
+    references its parent by the parent's handle ``p`` within the same
+    response. No repeated parent objects, no ancestry arrays.
+    """
     return {
         "type": "object",
-        "description": "Skeleton: node instances with path, ids, parent, and ancestry. No properties.",
+        "description": "Skeleton: entity instances with integer handles. No property values.",
         "properties": {
             "nodes": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "path": {"type": "string", "enum": allowed_paths},
-                        "ids": {"type": "object", "additionalProperties": {"type": "string"}},
-                        "parent": {
-                            "oneOf": [
-                                {"type": "null"},
-                                parent_ref,
-                            ]
+                        "i": {
+                            "type": "integer",
+                            "description": "Handle: sequential integer, unique in this response.",
                         },
-                        "ancestry": {
-                            "type": "array",
-                            "description": "Full lineage from root to immediate parent (each element: path, ids).",
-                            "items": parent_ref,
+                        "path": {"type": "string", "enum": allowed_paths},
+                        "ids": {
+                            "type": "object",
+                            "additionalProperties": {"type": "string"},
+                            "description": "Short identifier labels copied verbatim from the document.",
+                        },
+                        "p": {
+                            "type": ["integer", "null"],
+                            "description": "Handle (i) of the parent node in this response; null for the root.",
                         },
                     },
-                    "required": ["path", "ids"],
+                    "required": ["i", "path", "ids"],
                 },
             }
         },

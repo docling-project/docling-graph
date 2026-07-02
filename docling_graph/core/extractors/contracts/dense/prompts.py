@@ -49,14 +49,13 @@ def get_skeleton_batch_prompt(
         "Do not ignore an entity just because it lacks a distinct sub-label; if the schema defines it and the text describes it, it must be included in the skeleton. "
         "Each data row of a table is a separate entity instance; document-level metadata (titles, dates, totals, summary rows) is not.\n\n"
         "Rules:\n"
-        "1. Use ONLY the catalog paths listed. Each node must have: path, ids (identifier values from the document), and parent (path + ids of parent, or null for root).\n"
-        "2. For every node except the root, you **MUST** provide the ancestry array. This array must list the exact {path, ids} of every ancestor from the root down to the immediate parent. Do not use the parent field alone; you must prove the lineage via ancestry. Root nodes have empty ancestry or omit ancestry.\n"
-        "3. Set ids from the document: figure labels, table rows, section titles that name entities (e.g. FIG-4, Sample A, Protocol 1). Do not use generic section/chapter titles as identities for localized entities. For global/singleton entities (e.g. one protocol or one setup for the whole document), use a short descriptive id from the text or section (e.g. Materials and Methods, General Protocol) or ids={} if the schema allows; ensure at least one root and such singletons are still emitted.\n"
-        "4. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance. Parent must reference the parent path and its ids.\n"
-        '5. Output valid JSON only: {"nodes": [{"path": "...", "ids": {...}, "parent": null|{"path": "...", "ids": {...}}, "ancestry": [...]}]}. Do not include a "properties" field.\n'
-        '6. Root path is "" (empty string); its parent must be null.\n'
-        "7. When identifying container nodes (nodes that have children with identity fields, e.g. Dataset with Curves), create separate instances if the contained data comes from distinct sources (e.g. different Figure numbers, different Tables) or represents distinct conditions. If child identifiers differ (e.g. Figure 2a vs Figure 7c), create separate parent instances so each logical group has its own container.\n"
-        "8. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments."
+        '1. Use ONLY the catalog paths listed. Each node has exactly: "i" (its handle: a sequential integer starting at 1, unique in this response), "path", "ids" (identifier values from the document), and "p" (the handle of its parent node in this response; omit or null for the root).\n'
+        '2. Emit the root (path "", no parent) exactly once, first. Every other node\'s "p" must reference the handle of a node in this same response whose path is its parent path in the catalog. If a parent entity appears in ALREADY EXTRACTED but not in this response, re-emit that parent here with the same ids so its children can reference it; duplicates are merged automatically.\n'
+        "3. ids values are short labels copied verbatim from the document — a code, number, or name of at most a few words, never a sentence or description. Use figure labels, table rows, section titles that name entities (e.g. FIG-4, Sample A, Protocol 1). Do not use generic section/chapter titles as identities for localized entities. For global/singleton entities (e.g. one protocol or one setup for the whole document), use a short descriptive id from the text or section (e.g. General Protocol) or ids={} if the schema allows; ensure at least one root and such singletons are still emitted.\n"
+        "4. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance.\n"
+        '5. Output valid JSON only: {"nodes": [{"i": 1, "path": "", "ids": {}}, {"i": 2, "path": "...", "ids": {"...": "..."}, "p": 1}]}. No other fields.\n'
+        "6. When identifying container nodes (nodes that have children with identity fields, e.g. Dataset with Curves), create separate instances if the contained data comes from distinct sources (e.g. different Figure numbers, different Tables) or represents distinct conditions. If child identifiers differ (e.g. Figure 2a vs Figure 7c), create separate parent instances so each logical group has its own container.\n"
+        "7. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments."
     )
     user_prompt = f"[Batch {batch_index + 1}/{total_batches}]\n\n"
     if already_found:
@@ -64,7 +63,8 @@ def get_skeleton_batch_prompt(
             "=== ALREADY EXTRACTED (do not duplicate) ===\n"
             f"{already_found}\n"
             "=== END ===\n\n"
-            "Extract ADDITIONAL node instances not already listed above.\n\n"
+            "Extract ADDITIONAL node instances not already listed above "
+            "(re-emit a listed parent only when a new child needs to reference it).\n\n"
         )
     if global_context:
         user_prompt += f"=== DOCUMENT CONTEXT ===\n{global_context}\n=== END ===\n\n"
@@ -78,8 +78,65 @@ def get_skeleton_batch_prompt(
     )
     if semantic_guide:
         user_prompt += f"=== SEMANTIC FIELD GUIDANCE ===\n{semantic_guide}\n=== END ===\n\n"
-    user_prompt += 'List every distinct entity instance in this batch. Return JSON: {"nodes": [...]} with each node having path, ids, and parent only.'
+    user_prompt += 'List every distinct entity instance in this batch. Return JSON: {"nodes": [...]} with each node having i, path, ids, and p only.'
     return {"system": system_prompt, "user": user_prompt}
+
+
+def get_skeleton_reconciliation_prompt(
+    instances_by_path: dict[str, list[dict[str, Any]]],
+) -> dict[str, str]:
+    """Build prompts for the post-merge skeleton reconciliation pass.
+
+    Pure id-space: the LLM sees only per-path instance identifier lists (no
+    document) and returns groups of instances that are aliases of the same
+    real-world entity at different granularities.
+    """
+    system_prompt = (
+        "You deduplicate entity instance lists extracted from one document. "
+        "For each path you receive the numbered identifier sets of the discovered instances. "
+        "Group instances ONLY when they clearly refer to the SAME real-world entity — "
+        "typically a generic or shorthand alias alongside its more specific form. "
+        "NEVER group instances that differ by any parameter, quantity, concentration, condition, "
+        "date, version, figure/table number, or index: those are distinct entities. "
+        "When in doubt, do not merge. Groups must stay within one path. "
+        'For each group, "keep" is the number of the most specific instance and "merge" lists the '
+        "numbers of its aliases. "
+        'Return JSON only: {"merges": [{"path": "...", "keep": 0, "merge": [1, 2]}]}. '
+        'Return {"merges": []} when nothing should be merged.'
+    )
+    blocks: list[str] = []
+    for path, instances in instances_by_path.items():
+        lines = [f"=== PATH {path} ==="]
+        for idx, ids in enumerate(instances):
+            lines.append(f"{idx}: {json.dumps(ids, ensure_ascii=False, default=str)}")
+        blocks.append("\n".join(lines))
+    user_prompt = (
+        "\n\n".join(blocks)
+        + '\n\nIdentify alias groups. Return JSON: {"merges": [...]} (empty list if none).'
+    )
+    return {"system": system_prompt, "user": user_prompt}
+
+
+def reconciliation_output_schema() -> dict[str, Any]:
+    """JSON schema for the reconciliation pass output."""
+    return {
+        "type": "object",
+        "properties": {
+            "merges": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string"},
+                        "keep": {"type": "integer"},
+                        "merge": {"type": "array", "items": {"type": "integer"}},
+                    },
+                    "required": ["path", "keep", "merge"],
+                },
+            }
+        },
+        "required": ["merges"],
+    }
 
 
 def get_fill_batch_prompt(
@@ -103,6 +160,8 @@ def get_fill_batch_prompt(
         "Use the document to extract real values; do not invent data. "
         "Preserve identifier values (ids) in each object when the schema includes them. "
         "Assign each value to the exact schema field it belongs to; never place fragments of one field into another (e.g. address parts into a name field). "
+        "Copy numeric values digit-for-digit from the document; never compute, round, or aggregate them. "
+        "Values from table summary rows (totals, subtotals) belong to document-level fields, never to row-level instances. "
         "Omit values that are not present in the document rather than guessing."
     )
     user_prompt = (

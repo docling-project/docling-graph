@@ -21,6 +21,7 @@ class ReportGenerator:
         include_samples: bool = True,
         extraction_contract: str | None = None,
         llm_diagnostics: dict | None = None,
+        dense_stats: dict | None = None,
     ) -> None:
         """Generate markdown report for graph.
 
@@ -30,6 +31,9 @@ class ReportGenerator:
             source_model_count: Number of source Pydantic models.
             include_samples: Whether to include sample nodes/edges.
             extraction_contract: Extraction contract used (e.g. 'direct', 'dense').
+            llm_diagnostics: Structured-output diagnostics from the LLM backend.
+            dense_stats: Per-run dense observability counters (skeleton size,
+                truncation/split counts, orphan rescue stats, retention).
 
         Raises:
             ValueError: If graph is empty.
@@ -59,6 +63,9 @@ class ReportGenerator:
                     llm_diagnostics=llm_diagnostics,
                 )
             )
+
+        if dense_stats:
+            report_parts.append(self._create_dense_stats(dense_stats))
 
         if include_samples:
             report_parts.append(self._create_sample_nodes(graph))
@@ -92,6 +99,27 @@ class ReportGenerator:
                 lines.append(f"- **Fallback trigger**: {error_cls}")
         if len(lines) == 2:
             return "\n".join([*lines, "*No extraction diagnostics available.*"])
+        return "\n".join(lines)
+
+    @staticmethod
+    def _create_dense_stats(dense_stats: dict) -> str:
+        """Create dense run-statistics section (Phase 1/2 health per run)."""
+        labels = {
+            "skeleton_nodes": "Skeleton nodes discovered",
+            "truncation_count": "Truncated LLM responses",
+            "split_count": "Skeleton batch splits",
+            "reconciliation_merged": "Alias instances reconciled",
+            "merge_recovered": "Drifted parent links recovered",
+            "merge_orphans_dropped": "Instances dropped (unresolvable parent)",
+            "retention_pct": "Skeleton retention (%)",
+            "quality_gate_failure": "Quality gate failure",
+        }
+        lines = ["## Dense Extraction Statistics", ""]
+        for key, label in labels.items():
+            if key in dense_stats:
+                lines.append(f"- **{label}**: {dense_stats[key]}")
+        if len(lines) == 2:
+            return "\n".join([*lines, "*No dense statistics available.*"])
         return "\n".join(lines)
 
     def validate_graph(self, graph: nx.DiGraph) -> bool:

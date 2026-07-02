@@ -235,3 +235,37 @@ def test_streaming_config_with_other_overrides(_info, _max_tokens):
     assert effective.streaming is True
     assert effective.generation.temperature == 0.5
     assert effective.reliability.timeout_s == 60
+
+
+class TestMaxModelLenProbe:
+    """Local OpenAI-compatible servers are probed for their true context window."""
+
+    def _clear_cache(self) -> None:
+        from docling_graph.llm_clients import config as cfg_mod
+
+        cfg_mod._PROBED_MAX_MODEL_LEN_CACHE.clear()
+
+    def test_probe_reads_max_model_len(self):
+        from unittest.mock import MagicMock, patch
+
+        from docling_graph.llm_clients.config import _probe_openai_compatible_max_model_len
+
+        self._clear_cache()
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {"data": [{"id": "m", "max_model_len": 32768}]}
+        with patch("httpx.get", return_value=response) as mock_get:
+            result = _probe_openai_compatible_max_model_len("http://localhost:8000/v1", "key")
+        assert result == 32768
+        assert mock_get.call_args.args[0] == "http://localhost:8000/v1/models"
+
+    def test_probe_failure_returns_none_and_is_cached(self):
+        from unittest.mock import patch
+
+        from docling_graph.llm_clients.config import _probe_openai_compatible_max_model_len
+
+        self._clear_cache()
+        with patch("httpx.get", side_effect=OSError("refused")) as mock_get:
+            assert _probe_openai_compatible_max_model_len("http://down:1/v1", None) is None
+            assert _probe_openai_compatible_max_model_len("http://down:1/v1", None) is None
+        assert mock_get.call_count == 1

@@ -267,3 +267,43 @@ class TestExtractFromDocument:
         strategy = ManyToOneStrategy(backend=mock_vlm_backend)
         with pytest.raises(ExtractionError):
             strategy.extract_from_document("PreloadedDoc", MockTemplate)
+
+
+class TestDenseFallback:
+    """Dense returning no model must actually fall back to direct extraction."""
+
+    @patch("docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_document")
+    def test_dense_none_falls_back_to_direct(self, mock_dense, patch_deps):
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dense.return_value = (None, 0.1)
+
+        backend = MagicMock()
+        backend.__class__.__name__ = "MockLlmBackend"
+        backend.extract_from_chunk_batches = MagicMock()
+        backend.extract_from_markdown = MagicMock(return_value=MockTemplate(name="direct", value=1))
+
+        strategy = ManyToOneStrategy(backend=backend, extraction_contract="dense")
+        models, _document = strategy.extract("doc.pdf", MockTemplate)
+
+        mock_dense.assert_called_once()
+        backend.extract_from_markdown.assert_called_once()
+        assert len(models) == 1
+        assert models[0].name == "direct"
+
+    @patch("docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_document")
+    def test_dense_success_skips_direct(self, mock_dense, patch_deps):
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dense.return_value = (MockTemplate(name="dense", value=2), 0.1)
+
+        backend = MagicMock()
+        backend.__class__.__name__ = "MockLlmBackend"
+        backend.extract_from_chunk_batches = MagicMock()
+        backend.extract_from_markdown = MagicMock()
+
+        strategy = ManyToOneStrategy(backend=backend, extraction_contract="dense")
+        models, _document = strategy.extract("doc.pdf", MockTemplate)
+
+        backend.extract_from_markdown.assert_not_called()
+        assert models[0].name == "dense"

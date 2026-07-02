@@ -161,6 +161,21 @@ class PipelineOrchestrator:
                     resolved_provider=actual_provider,
                 )
 
+                results: Dict[str, Any] = {
+                    "nodes": context.graph_metadata.node_count if context.graph_metadata else 0,
+                    "edges": context.graph_metadata.edge_count if context.graph_metadata else 0,
+                    "extracted_models": len(context.extracted_models)
+                    if context.extracted_models
+                    else 0,
+                }
+                # Dense extraction observability: skeleton size, truncation and
+                # split counts, orphan-rescue stats, retention — so quality
+                # regressions are visible per run without debug artifacts.
+                extraction_backend = getattr(context.extractor, "backend", None)
+                dense_stats = getattr(extraction_backend, "last_dense_stats", None)
+                if isinstance(dense_stats, dict) and dense_stats:
+                    results["dense"] = dense_stats
+
                 metadata = {
                     "pipeline_version": __version__,
                     "timestamp": datetime.now().isoformat(),
@@ -170,13 +185,7 @@ class PipelineOrchestrator:
                     },
                     "config": full_config,
                     "processing_time_seconds": round(pipeline_processing_time, 2),
-                    "results": {
-                        "nodes": context.graph_metadata.node_count if context.graph_metadata else 0,
-                        "edges": context.graph_metadata.edge_count if context.graph_metadata else 0,
-                        "extracted_models": len(context.extracted_models)
-                        if context.extracted_models
-                        else 0,
-                    },
+                    "results": results,
                 }
 
                 context.output_manager.save_metadata(metadata)

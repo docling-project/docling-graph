@@ -76,3 +76,25 @@ class TestEventTrace:
             assert "started_at" not in step
             assert "finished_at" not in step
             assert "events" not in step
+
+
+class TestFailureLogging:
+    """Only genuine failure events reach the error log."""
+
+    def test_informational_error_named_event_not_logged(self, caplog):
+        import logging
+
+        trace = EventTrace()
+        with caplog.at_level(logging.ERROR, logger="docling_graph.pipeline.trace"):
+            trace.emit(
+                "validation_error_raw_data", "extraction", {"context": "doc", "raw_data": {}}
+            )
+        assert caplog.records == []
+
+    def test_failed_event_is_logged(self, caplog):
+        import logging
+
+        trace = EventTrace()
+        with caplog.at_level(logging.ERROR, logger="docling_graph.pipeline.trace"):
+            trace.emit("extraction_failed", "extraction", {"error": "boom"})
+        assert any("boom" in r.getMessage() for r in caplog.records)

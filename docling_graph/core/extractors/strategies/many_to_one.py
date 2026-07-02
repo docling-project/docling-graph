@@ -277,7 +277,10 @@ class ManyToOneStrategy(BaseExtractor):
                 if model:
                     logger.info("Dense text extraction successful")
                     return [model], None
-                return [], None
+                logger.warning(
+                    "Dense text extraction returned no model; falling back to direct extraction"
+                )
+                # Fall through to the direct single-call path below.
             start_time = time.time()
             model = backend.extract_from_markdown(
                 markdown=text,
@@ -414,7 +417,7 @@ class ManyToOneStrategy(BaseExtractor):
                 logger.warning(
                     "Dense extraction returned no model; falling back to direct extraction"
                 )
-                return [], document
+                # Fall through to the direct single-call path below.
 
             start_time = time.time()
             model = backend.extract_from_markdown(

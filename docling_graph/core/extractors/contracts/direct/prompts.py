@@ -49,6 +49,8 @@ _EXTRACTION_INSTRUCTIONS = (
     "objects, output an object with numeric_value and unit (if known), or text_value.\n"
     "10. When the schema has value or quantity fields, also extract numeric values from "
     "tables, figure captions, and result sections.\n"
+    "11. Copy numeric values digit-for-digit from the text; never compute, round, or "
+    "aggregate them.\n"
 )
 
 

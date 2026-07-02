@@ -95,6 +95,7 @@ def _resolve_cli_settings(
         ),
         "dense_fill_nodes_cap": int(defaults.get("dense_fill_nodes_cap", 5) or 5),
         "dense_fill_context": str(defaults.get("dense_fill_context", "scoped") or "scoped"),
+        "dense_skeleton_reconciliation": bool(defaults.get("dense_skeleton_reconciliation", True)),
         "dense_quality_require_root": bool(defaults.get("dense_quality_require_root", True)),
         "dense_quality_min_instances": int(defaults.get("dense_quality_min_instances", 1) or 1),
         "dense_resolvers_enabled": (
@@ -541,6 +542,7 @@ def convert_command(
         dense_skeleton_batch_tokens=settings["dense_skeleton_batch_tokens"],
         dense_fill_nodes_cap=settings["dense_fill_nodes_cap"],
         dense_fill_context=settings["dense_fill_context"],
+        dense_skeleton_reconciliation=settings["dense_skeleton_reconciliation"],
         dense_quality_require_root=settings["dense_quality_require_root"],
         dense_quality_min_instances=settings["dense_quality_min_instances"],
         dense_resolvers_enabled=final_dense_resolvers_enabled,
