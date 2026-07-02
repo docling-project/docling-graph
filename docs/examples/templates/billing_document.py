@@ -182,33 +182,35 @@ class Party(BaseModel):
 class Item(BaseModel):
     """
     Item entity representing a product or service.
-    Uniquely identified by item_code (required) and name (optional fallback).
-    At least one of item_code or name must be provided.
+    Uniquely identified by name, copied verbatim from the document.
+    item_code is an optional secondary reference: real codes are often absent,
+    and an identity field must never be invented (fabricated codes like 'ITEM-1'
+    never match across extraction batches and break deduplication).
     """
 
-    model_config = ConfigDict(graph_id_fields=["item_code"], extra="ignore", populate_by_name=True)
+    model_config = ConfigDict(graph_id_fields=["name"], extra="ignore", populate_by_name=True)
 
-    item_code: str = Field(
+    name: str = Field(
         ...,
-        validation_alias=AliasChoices("item_code", "itemCode", "sku", "product_code"),
         description=(
-            "Item identifier, SKU, or product code (required for uniqueness). "
-            "LOOK FOR: 'Item Code', 'SKU', 'Product Code', 'Article No', 'Référence' in line items. "
-            "EXTRACT: If not present, use item name or generate from line number (e.g., 'ITEM-1'). "
-            "EXAMPLES: 'SKU-12345', 'PROD-ABC-001', 'ART-789', 'ITEM-1'"
-        ),
-        examples=["SKU-12345", "PROD-ABC-001", "ART-789", "ITEM-1"],
-    )
-
-    name: str | None = Field(
-        None,
-        description=(
-            "Item name or description. "
+            "Item name as printed in the document (identity field). "
             "LOOK FOR: 'Item', 'Product', 'Description', 'Service' columns in line item table. "
-            "EXTRACT: Full product/service description. "
+            "EXTRACT: The product/service name verbatim; never invent or number items. "
             "EXAMPLES: 'Professional Consulting Services', 'Laptop Computer - Model XYZ'"
         ),
         examples=["Professional Consulting Services", "Laptop Computer - Model XYZ"],
+    )
+
+    item_code: str | None = Field(
+        None,
+        validation_alias=AliasChoices("item_code", "itemCode", "sku", "product_code"),
+        description=(
+            "Item identifier, SKU, or product code when the document prints one. "
+            "LOOK FOR: 'Item Code', 'SKU', 'Product Code', 'Article No', 'Référence' in line items. "
+            "EXTRACT: Exactly as printed; omit when absent — never generate a code. "
+            "EXAMPLES: 'SKU-12345', 'PROD-ABC-001', 'ART-789'"
+        ),
+        examples=["SKU-12345", "PROD-ABC-001", "ART-789"],
     )
 
     category: str | None = Field(
@@ -258,10 +260,8 @@ class Tax(BaseModel):
         description=(
             "WHAT: Amount on which tax is calculated (tax base). "
             "EXTRACT: Numeric value only (e.g., 1000.00, 500.50). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Taxable Amount', 'Base', 'Net Amount' in tax breakdown. "
             "EXAMPLES: 1000.00, 500.50. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1000.00, 500.50],
     )
@@ -271,10 +271,8 @@ class Tax(BaseModel):
         description=(
             "WHAT: Calculated tax amount. "
             "EXTRACT: Numeric value only (e.g., 200.00, 100.10). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Tax Amount', 'VAT Amount', 'Tax' column in totals or tax breakdown. "
             "EXAMPLES: 200.00, 100.10. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[200.00, 100.10],
     )
@@ -335,10 +333,8 @@ class LineItem(BaseModel):
         description=(
             "WHAT: Quantity ordered or delivered. "
             "EXTRACT: Numeric value only (e.g., 1.0, 10.5, 28.0). "
-            "NEVER extract names, text, units, or dates into this field. "
             "LOOK FOR: 'Quantity', 'Qty', 'Quantité', 'Menge' column in line items. "
             "EXAMPLES: 1.0, 10.5, 28.0, 100.0. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1.0, 10.5, 28.0, 100.0],
     )
@@ -360,10 +356,8 @@ class LineItem(BaseModel):
         description=(
             "WHAT: Price per unit (excluding tax). "
             "EXTRACT: Numeric value only (e.g., 100.00, 25.50). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Unit Price', 'Price', 'Rate', 'Prix Unitaire' column in line items. "
             "EXAMPLES: 100.00, 25.50, 1500.00. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[100.00, 25.50, 1500.00],
     )
@@ -384,10 +378,8 @@ class LineItem(BaseModel):
         description=(
             "WHAT: Total amount for this line (quantity x unit_price - discount). "
             "EXTRACT: Numeric value only (e.g., 1000.00, 500.50). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Total', 'Amount', 'Line Total' column (usually last column in line items). "
             "EXAMPLES: 1000.00, 500.50, 2500.00. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1000.00, 500.50, 2500.00],
     )
@@ -402,7 +394,6 @@ class LineItem(BaseModel):
             "NEVER return as an array. "
             "LOOK FOR: Item details in line item description or separate item columns. "
             "EXAMPLES: {'item_code': 'SKU-12345', 'name': 'Laptop Computer'}. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
     )
 
@@ -511,7 +502,6 @@ class Delivery(BaseModel):
             "EXTRACT: In ISO format (YYYY-MM-DD). Parse natural language dates. "
             "LOOK FOR: 'Delivery Date', 'Ship Date', 'Date de Livraison' labels in delivery section. "
             "EXAMPLES: 2024-01-20, 2024-02-15. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=["2024-01-20", "2024-02-15"],
     )
@@ -621,7 +611,6 @@ class BillingDocument(BaseModel):
             "EXTRACT: In ISO format (YYYY-MM-DD). Parse natural language dates. "
             "LOOK FOR: 'Date', 'Issue Date', 'Invoice Date', 'Date d'Émission' labels in document header. "
             "EXAMPLES: 2024-01-15, 2024-02-20. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=["2024-01-15", "2024-02-20"],
     )
@@ -633,7 +622,6 @@ class BillingDocument(BaseModel):
             "EXTRACT: In ISO format (YYYY-MM-DD). Parse natural language dates. "
             "LOOK FOR: 'Due Date', 'Payment Due', 'Date d'Échéance' labels in header or payment section. "
             "EXAMPLES: 2024-02-15, 2024-03-20. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=["2024-02-15", "2024-03-20"],
     )
@@ -656,10 +644,8 @@ class BillingDocument(BaseModel):
         description=(
             "WHAT: Subtotal before tax and discounts. "
             "EXTRACT: Numeric value only (e.g., 1000.00, 5000.50). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Subtotal', 'Net Total', 'Total HT' labels in totals section. "
             "EXAMPLES: 1000.00, 5000.50. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1000.00, 5000.50],
     )
@@ -669,10 +655,8 @@ class BillingDocument(BaseModel):
         description=(
             "WHAT: Total discount amount applied. "
             "EXTRACT: Numeric value only (e.g., 100.00, 50.00). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Discount', 'Remise', 'Descuento' labels in totals section. "
             "EXAMPLES: 100.00, 50.00. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[100.00, 50.00],
     )
@@ -693,10 +677,8 @@ class BillingDocument(BaseModel):
         description=(
             "WHAT: Final total amount due (including tax). "
             "EXTRACT: Numeric value only (e.g., 1200.00, 6000.60). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Total', 'Grand Total', 'Amount Due', 'Total TTC' labels (usually largest/bold number in totals). "
             "EXAMPLES: 1200.00, 6000.60. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[1200.00, 6000.60],
     )
@@ -706,10 +688,8 @@ class BillingDocument(BaseModel):
         description=(
             "WHAT: Amount already paid (if any). "
             "EXTRACT: Numeric value only (e.g., 500.00, 1000.00). "
-            "NEVER extract names, text, or dates into this field. "
             "LOOK FOR: 'Paid', 'Amount Paid', 'Prepaid', 'Acompte' labels in totals section. "
             "EXAMPLES: 500.00, 1000.00. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[500.00, 1000.00],
     )
@@ -719,10 +699,8 @@ class BillingDocument(BaseModel):
         description=(
             "WHAT: Remaining balance due after payments. "
             "EXTRACT: Numeric value only (e.g., 700.00, 5000.60). "
-            "NEVER extract names, text, postal codes, or dates into this field. "
             "LOOK FOR: 'Balance Due', 'Amount Due', 'Solde', 'Restant à Payer' labels in totals section. "
             "EXAMPLES: 700.00, 5000.60. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
         examples=[700.00, 5000.60],
     )
@@ -764,7 +742,6 @@ class BillingDocument(BaseModel):
             "PRESERVE ROLE: 'To:', 'Bill To:', 'Customer:' indicates buyer. "
             "LOOK FOR: 'Bill To', 'Customer', 'Buyer', 'Client' section (often left side or below header). "
             "EXAMPLES: {'name': 'Tech Solutions Inc', 'city': 'London'}. "
-            "If not found in document, OMIT this field entirely. NEVER use placeholder values like 'N/A' or 'Not specified'."
         ),
     )
 

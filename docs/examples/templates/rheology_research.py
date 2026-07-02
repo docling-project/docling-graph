@@ -100,10 +100,11 @@ class SeriesDefinition(BaseModel):
         examples=["φ", "Solid Loading", "Temperature"],
     )
     variable_values: List[Union[float, str]] = Field(
-        ...,
+        default_factory=list,
         description=(
             "The distinct values in the series, in order. "
-            "EXTRACT: List every value mentioned (e.g. 0.10, 0.15, 0.20, …, 0.29)."
+            "EXTRACT: List every value mentioned (e.g. 0.10, 0.15, 0.20, …, 0.29). "
+            "Leave empty when the document only gives a range (use range_min/range_max)."
         ),
     )
     range_min: float | None = Field(
@@ -617,12 +618,15 @@ class SlurryComponent(BaseModel):
     """
     Component in battery slurry formulation.
     Combines role, material identity, and amount.
-    Uniquely identified by role and material name.
+    Uniquely identified by material name alone: a single short verbatim id
+    survives batch merges and parent linkage far better than a multi-field
+    identity that includes an enum with varying surface forms.
     """
 
-    model_config = ConfigDict(graph_id_fields=["component_role", "material_name"])
+    model_config = ConfigDict(graph_id_fields=["material_name"])
 
     component_role: ComponentRole = Field(
+        ComponentRole.OTHER,
         description=(
             "Role of this component. "
             "LOOK FOR: 'active material', 'binder', 'conductive additive'. "
@@ -677,11 +681,12 @@ class SlurryComponent(BaseModel):
             "Particle size info (D50, median, mean diameter, etc.). "
             "LOOK FOR: 'D50', 'particle size', 'median of X nm', 'mean particle size of X', "
             "'particle size of X', 'diameter'. "
-            "EXTRACT: As quantity (numeric_value + unit) or text_value. "
-            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}, "
-            "'median of 130 nm' -> numeric_value 0.13, unit 'µm', or text_value 'median 130 nm'"
+            "EXTRACT: Copy the number and unit exactly as written in the document "
+            "(e.g. 'median of 130 nm' -> numeric_value 130, unit 'nm'). "
+            "Never convert units or rescale values. "
+            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}"
         ),
-        examples=[{"name": "D50", "numeric_value": 0.13, "unit": "µm"}],
+        examples=[{"name": "D50", "numeric_value": 130.0, "unit": "nm"}],
     )
 
     molecular_weight: QuantityWithUnit | None = Field(
@@ -973,7 +978,8 @@ class SweepParameters(BaseModel):
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    x_axis_quantity: str = Field(
+    x_axis_quantity: str | None = Field(
+        None,
         description=(
             "Quantity varied on x-axis. "
             "LOOK FOR: 'shear rate', 'stress', 'frequency'. "
@@ -1150,7 +1156,8 @@ class DerivedQuantity(BaseModel):
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    name: str = Field(
+    name: str | None = Field(
+        None,
         description="Name of quantity (e.g., Yield stress).",
         examples=["Yield stress", "Zero-shear viscosity"],
     )
@@ -1179,7 +1186,8 @@ class ModelFit(BaseModel):
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    model_family: str = Field(
+    model_family: str | None = Field(
+        None,
         description="Name of model (Herschel-Bulkley, Power law).",
         examples=["Herschel-Bulkley", "Power law"],
     )
