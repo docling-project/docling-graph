@@ -997,3 +997,49 @@ class TestTruncationRetryPreservesMode:
         assert retry_kwargs["structured_output"] is False
         # ...and must keep the schema embedded in the prompt, like the original call.
         assert "TARGET SCHEMA" in retry_kwargs["prompt"]["user"]
+
+
+class TestLargeDirectDocHint:
+    """Direct extraction hints toward dense when the document dwarfs the budget."""
+
+    def test_large_direct_doc_emits_hint_once(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="direct")
+        gen = MagicMock()
+        gen.max_tokens = 4096
+        mock_llm_client._generation = gen
+        big = "x" * 60000  # ~60k chars >> 4096*4*2 = ~32k capacity
+
+        with patch.object(backend, "_log_warning") as warn:
+            backend._maybe_hint_dense_for_large_direct(big)
+            backend._maybe_hint_dense_for_large_direct(big)
+        assert warn.call_count == 1
+        assert "dense" in warn.call_args[0][0]
+
+    def test_small_direct_doc_no_hint(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="direct")
+        gen = MagicMock()
+        gen.max_tokens = 4096
+        mock_llm_client._generation = gen
+        with patch.object(backend, "_log_warning") as warn:
+            backend._maybe_hint_dense_for_large_direct("x" * 5000)
+        assert warn.call_count == 0
+
+    def test_dense_contract_never_hints(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        gen = MagicMock()
+        gen.max_tokens = 4096
+        mock_llm_client._generation = gen
+        with patch.object(backend, "_log_warning") as warn:
+            backend._maybe_hint_dense_for_large_direct("x" * 60000)
+        assert warn.call_count == 0
+
+    def test_output_budget_falls_back_to_default(self, mock_llm_client):
+        from docling_graph.llm_clients.config import _DEFAULT_MAX_OUTPUT_TOKENS
+
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="direct")
+        mock_llm_client._generation = None
+        if hasattr(mock_llm_client, "max_tokens"):
+            del mock_llm_client.max_tokens
+        if hasattr(mock_llm_client, "_max_output_tokens"):
+            del mock_llm_client._max_output_tokens
+        assert backend._estimated_output_token_budget() == _DEFAULT_MAX_OUTPUT_TOKENS

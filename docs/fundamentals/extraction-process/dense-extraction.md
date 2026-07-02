@@ -18,6 +18,8 @@ Set `extraction_contract="dense"` in your config or use `--extraction-contract d
 - **Direct**: Flat or simple templates; single-pass extraction.
 - **Dense**: Complex or long documents where you need strong structure discovery plus rich per-entity data.
 
+> **Large documents:** a direct extraction returns the whole result in one LLM response, so a document much larger than the model's output budget will truncate no matter how the prompt is tuned. When this is detected on a direct run, the backend prints a one-time hint suggesting `extraction_contract="dense"`, which splits the work across many calls.
+
 ---
 
 ## How It Works
@@ -74,7 +76,7 @@ All options can be set in Python via `PipelineConfig` or a config dict; each has
 | `dense_dedupe` | `"standard"` | Skeleton dedupe intensity: `off` (exact dedup only), `standard` (adds the id-space reconciliation LLM call), `aggressive` (also fuzzy-merges OCR-noise id variants; internal thresholds, numeric differences never merge). |
 | `parallel_workers` | `1` | When > 1, Phase 1 skeleton batches and Phase 2 fill batches run in parallel to reduce wall-clock time. |
 
-Mandatory cleanup steps are **invariants** with no config surface: root singleton collapse, the root-required quality gate, barren-branch pruning, and identity restoration from skeleton ids always run.
+Mandatory cleanup steps are **invariants** with no config surface: root singleton collapse, the root-required quality gate, barren-branch pruning, identity restoration from skeleton ids, and root-id semantic validation always run. The last clears a root identifier whose field name promises a number (e.g. `document_number`) but which holds multi-word, digit-free prose — a sparse-document mis-capture where the model grabbed a brand or title for lack of a real number — so Phase 2 can leave it empty instead of locking in the wrong value.
 
 Every dense run writes its health counters to `metadata.json` (`results.dense`) and the markdown report (**Dense Extraction Statistics**): skeleton nodes discovered, truncated responses, batch splits, reconciled aliases, recovered/dropped parent links, and skeleton retention %. Regressions in these failure modes are therefore visible per run without debugging. With `debug=True`, artifacts such as `dense_skeleton_graph.json`, `dense_merge_stats.json` and `dense_run_stats.json` are written to the debug directory.
 
