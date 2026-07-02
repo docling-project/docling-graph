@@ -55,12 +55,19 @@ class LlmBackend:
         self.structured_sparse_check = structured_sparse_check
         self.trace_data: Any = None  # Set by strategy when config.debug is True
         self.last_call_diagnostics: dict[str, Any] = {}
+        # Per-run dense observability (skeleton_nodes, truncation/split counts,
+        # merge/orphan stats); surfaced in metadata.json and the report.
+        self.last_dense_stats: dict[str, Any] = {}
         self._retry_on_truncation = bool(self._dense_config_raw.get("retry_on_truncation", True))
         self._truncation_retry_multiplier = max(
             1.0,
             float(self._dense_config_raw.get("truncation_retry_max_tokens_multiplier", 2.0)),
         )
         self._truncation_retry_cap = 32768
+        # Escalating max_tokens is pointless once a bigger budget has also
+        # truncated (degenerate/oversized output); learned per run so later
+        # calls skip the wasted retry and go straight to batch splitting.
+        self._escalation_futile = False
 
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
@@ -931,17 +938,33 @@ class LlmBackend:
         return None
 
     def _retry_max_tokens_for_truncation(self, context_max: int | None = None) -> int | None:
-        """Compute max_tokens for one retry after truncation (current * multiplier, cap 32k)."""
-        if not self._retry_on_truncation:
+        """Compute max_tokens for one retry after truncation, or None to skip escalation.
+
+        The ceiling is honest rather than a blind constant: never beyond half
+        the model's context window (probed from the provider/server when
+        available), and escalation stays disabled for the rest of the run once
+        it has proven futile.
+        """
+        if not self._retry_on_truncation or self._escalation_futile:
             return None
         current = context_max or self._get_client_max_tokens()
         if current is None:
             return None
-        retry_max = min(
-            int(current * self._truncation_retry_multiplier),
-            self._truncation_retry_cap,
-        )
+        ceiling = self._truncation_retry_cap
+        client_context = getattr(self.client, "context_limit", None)
+        if isinstance(client_context, int) and client_context > 0:
+            ceiling = min(ceiling, max(current, client_context // 2))
+        retry_max = min(int(current * self._truncation_retry_multiplier), ceiling)
         return retry_max if retry_max > current else None
+
+    def _mark_escalation_futile(self, attempted_max_tokens: int) -> None:
+        """Stop escalating max_tokens for the rest of the run once it proved futile."""
+        if not self._escalation_futile:
+            self._escalation_futile = True
+            self._log_warning(
+                f"Output still truncated at max_tokens={attempted_max_tokens}; disabling "
+                "max_tokens escalation for this run (truncated batches are split instead)."
+            )
 
     def _call_with_optional_max_tokens(
         self,
@@ -1136,9 +1159,21 @@ class LlmBackend:
                             response_top_level=response_top_level,
                             response_schema_name=response_schema_name,
                         )
+                        retry_diag = getattr(self.client, "last_call_diagnostics", None)
+                        if isinstance(retry_diag, dict) and retry_diag.get("truncated"):
+                            self._mark_escalation_futile(retry_max)
+                            if _diagnostics_out is not None:
+                                _diagnostics_out["truncated"] = True
                         if parsed_json:
                             return parsed_json
                     except Exception as retry_e:
+                        retry_details = (
+                            getattr(retry_e, "details", {})
+                            if isinstance(retry_e, ClientError)
+                            else {}
+                        )
+                        if isinstance(retry_details, dict) and retry_details.get("truncated"):
+                            self._mark_escalation_futile(retry_max)
                         self._log_error(f"Retry after truncation failed for {context}", retry_e)
             self._log_error(f"Error during LLM call for {context}", e)
             return None
@@ -1172,16 +1207,10 @@ class LlmBackend:
             return None
         if not parsed_json:
             return None
-        schema_dict = self._get_schema_dict(template)
-        if self.structured_sparse_check and self._is_sparse_structured_result(
-            parsed_json,
-            schema_dict,
-            "\n".join(chunks),
-        ):
-            self._log_warning(
-                f"Extraction appears sparse for {context}; falling back to direct extraction."
-            )
-            return None
+        # No sparse veto here: dense has its own Phase 1 quality gate, and a
+        # sparse-but-valid dense result is always better than discarding it.
+        # (The schema-leaf sparsity heuristic penalizes large templates with
+        # many optional fields and was designed for direct structured output.)
         return self._validate_extraction(parsed_json, template, context)
 
     def _extract_with_dense_contract(
@@ -1238,7 +1267,7 @@ class LlmBackend:
                 **kwargs,
             )
 
-        return run_dense_orchestrator(
+        root, run_stats = run_dense_orchestrator(
             llm_call_fn=_dense_llm,
             dense_config_raw=self._dense_config_raw,
             chunks=chunks,
@@ -1248,6 +1277,8 @@ class LlmBackend:
             template=template,
             trace_data=trace_data,
         )
+        self.last_dense_stats = run_stats
+        return root
 
     def extract_from_markdown(
         self,

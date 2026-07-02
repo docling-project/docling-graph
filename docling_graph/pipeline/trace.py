@@ -52,10 +52,12 @@ class EventTrace:
         )
         self.events.append(event)
         self._next_sequence += 1
-        # Surface failure events in the log so they are visible without opening the trace export.
-        if "failed" in event_type or "error" in event_type:
-            error_details = (payload or {}).get("error", "Unknown error")
-            logger.error("[%s] %s: %s", stage, event_type, error_details)
+        # Surface genuine failure events in the log so they are visible without
+        # opening the trace export. Informational events whose *name* merely
+        # contains "error" (e.g. validation_error_raw_data) are not failures.
+        error_details = (payload or {}).get("error")
+        if event_type.endswith("_failed") or error_details:
+            logger.error("[%s] %s: %s", stage, event_type, error_details or "Unknown error")
 
     def find_events(self, event_type: str) -> list[TraceEvent]:
         return [e for e in self.events if e.event_type == event_type]

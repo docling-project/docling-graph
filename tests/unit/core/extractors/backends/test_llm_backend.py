@@ -899,3 +899,73 @@ class TestTruncationPropagation:
             _diagnostics_out=diag,
         )
         assert diag.get("truncated") is False
+
+
+class TestChunkBatchesKeepsSparseResult:
+    """extract_from_chunk_batches must not discard sparse-but-valid dense output."""
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_sparse_dense_result_is_validated_not_discarded(self, mock_orch, mock_llm_client):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="dense",
+            structured_sparse_check=True,
+        )
+        mock_orch.return_value = ({"f1": "only one value"}, {"skeleton_nodes": 1})
+        chunks = ["word " * 200]  # long document, sparse fill
+
+        result = backend.extract_from_chunk_batches(
+            chunks=chunks, chunk_metadata=None, template=LargeTemplate
+        )
+
+        assert result is not None
+        assert result.f1 == "only one value"
+
+
+class TestHonestOutputBudget:
+    """Truncation escalation is bounded by real context and learned futility."""
+
+    def test_escalation_ceiling_uses_client_context_limit(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.context_limit = 6000
+        # current 4000 * 2.0 = 8000, but ceiling is context // 2 = 3000 -> capped at max(current, 3000)
+        retry = backend._retry_max_tokens_for_truncation(4000)
+        assert retry is None  # ceiling (4000) not above current
+
+        mock_llm_client.context_limit = 32000
+        retry = backend._retry_max_tokens_for_truncation(4000)
+        assert retry == 8000  # 4000 * 2 within ceiling 16000
+
+    def test_escalation_disabled_after_marked_futile(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.context_limit = 64000
+        assert backend._retry_max_tokens_for_truncation(4000) == 8000
+        backend._mark_escalation_futile(8000)
+        assert backend._retry_max_tokens_for_truncation(4000) is None
+
+    def test_truncated_escalation_retry_marks_futility(self, mock_llm_client):
+        """A retry that still truncates disables escalation for the rest of the run."""
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.context_limit = 64000
+        generation = MagicMock()
+        generation.max_tokens = 4000
+        mock_llm_client._generation = generation
+
+        first_error = ClientError("truncated", details={"truncated": True, "max_tokens": 4000})
+        # First call raises (truncated); retry succeeds but is itself truncated.
+        mock_llm_client.get_json_response.side_effect = [first_error, {"nodes": []}]
+        mock_llm_client.last_call_diagnostics = {"truncated": True}
+
+        diag: dict = {}
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+            _diagnostics_out=diag,
+        )
+        assert out == {"nodes": []}
+        assert backend._escalation_futile is True
+        assert diag.get("truncated") is True
+        # Subsequent truncations skip the escalation retry entirely.
+        assert backend._retry_max_tokens_for_truncation(4000) is None
