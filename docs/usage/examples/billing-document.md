@@ -97,7 +97,7 @@ class Party(BaseModel):
 ```python
 class LineItem(BaseModel):
     """Line item with embedded price and quantity."""
-    model_config = ConfigDict(graph_id_fields=["line_number", "item_code"])
+    model_config = ConfigDict(graph_id_fields=["line_number"])
     
     line_number: str  # Line position
     description: str | None

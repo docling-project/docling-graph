@@ -121,25 +121,24 @@ class Organization(BaseModel):
     model_config = ConfigDict(graph_id_fields=["name"])
     name: str = Field(...)
 
-# Multi-field ID
+# Multi-field ID (two fields maximum — see caution below)
 class Person(BaseModel):
     model_config = ConfigDict(
-        graph_id_fields=["first_name", "last_name", "date_of_birth"]
+        graph_id_fields=["last_name", "date_of_birth"]
     )
-    first_name: Optional[str] = Field(...)
-    last_name: Optional[str] = Field(...)
+    last_name: str = Field(...)
     date_of_birth: Optional[date] = Field(...)
 
-# Complex ID
+# ANTI-PATTERN: a value object promoted to entity with a sprawling identity.
+# A measurement has no stable identity — make it a component instead:
 class Measurement(BaseModel):
-    model_config = ConfigDict(
-        graph_id_fields=["name", "text_value", "numeric_value", "unit"]
-    )
-    name: str = Field(...)
-    text_value: Optional[str] = Field(None)
+    model_config = ConfigDict(is_entity=False)
+    name: Optional[str] = Field(None)
     numeric_value: Optional[float] = Field(None)
     unit: Optional[str] = Field(None)
 ```
+
+> **Caution (dense extraction):** keep identity to **one scalar field, two at most**. Every extra id field is another value the LLM must reproduce exactly when a child references its parent, so wide identities multiply orphaned links. Never use list-valued fields or enums as identity — their surface forms drift between batches.
 
 ### Entity Examples
 
@@ -467,9 +466,11 @@ class IDCard(BaseModel):
     document_number: str = Field(...)
 
 # ENTITY: Person (unique individual)
+# given_names stays OUT of the identity: list-valued ids stringify
+# inconsistently across extraction batches and break parent linkage.
 class Person(BaseModel):
     model_config = ConfigDict(
-        graph_id_fields=["given_names", "last_name", "date_of_birth"]
+        graph_id_fields=["last_name", "date_of_birth"]
     )
     given_names: List[str] = Field(...)
     last_name: str = Field(...)
