@@ -201,3 +201,34 @@ class TestReportGeneratorOutput:
         content = output_path.read_text()
         assert "## Extraction Diagnostics" in content
         assert "dense" in content
+
+
+class TestDenseStatsSection:
+    """Dense run statistics render into the report when provided."""
+
+    def test_dense_stats_section_rendered(self, tmp_path):
+        import networkx as nx
+
+        from docling_graph.core.visualizers.report_generator import ReportGenerator
+
+        graph = nx.DiGraph()
+        graph.add_node("A", id="A", label="Thing", type="entity", name="a")
+        out = tmp_path / "report.md"
+        ReportGenerator().visualize(
+            graph,
+            out,
+            extraction_contract="dense",
+            dense_stats={
+                "skeleton_nodes": 12,
+                "truncation_count": 1,
+                "split_count": 2,
+                "reconciliation_merged": 3,
+                "merge_recovered": 4,
+                "merge_orphans_dropped": 0,
+                "retention_pct": 100.0,
+            },
+        )
+        text = out.read_text(encoding="utf-8")
+        assert "## Dense Extraction Statistics" in text
+        assert "**Skeleton nodes discovered**: 12" in text
+        assert "**Skeleton retention (%)**: 100.0" in text

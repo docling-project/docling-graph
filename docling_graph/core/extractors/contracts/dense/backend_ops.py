@@ -22,11 +22,15 @@ def run_dense_orchestrator(
     context: str,
     template: type[BaseModel] | None,
     trace_data: Any,
-) -> dict | list | None:
-    """Run Dense orchestrator (Phase 1 skeleton + Phase 2 fill)."""
+) -> tuple[dict | list | None, dict[str, Any]]:
+    """Run Dense orchestrator (Phase 1 skeleton + Phase 2 fill).
+
+    Returns (root, run_stats) where run_stats carries the per-run observability
+    counters (skeleton_nodes, truncation_count, split_count, merge stats, ...).
+    """
     if template is None:
         logger.warning("Dense extraction requires a template; skipping.")
-        return None
+        return None, {}
     if full_markdown is None or not full_markdown.strip():
         full_markdown = "\n\n".join(chunks) if chunks else ""
     debug_dir = dense_config_raw.get("debug_dir") or ""
@@ -44,9 +48,10 @@ def run_dense_orchestrator(
         on_trace=_on_trace if trace_data is not None else None,
     )
     logger.info("[DenseExtraction] Starting dense extraction (skeleton + fill)")
-    return orchestrator.run(
+    root = orchestrator.run(
         chunks=chunks,
         chunk_metadata=chunk_metadata,
         full_markdown=full_markdown,
         context=context,
     )
+    return root, orchestrator.last_run_stats

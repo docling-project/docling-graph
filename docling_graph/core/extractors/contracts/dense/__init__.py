@@ -8,13 +8,12 @@ from .catalog import (
     build_projected_fill_schema,
     get_model_for_path,
 )
-from .models import DenseSkeletonGraph, DenseSkeletonNode
+from .models import DenseSkeletonNode
 from .orchestrator import DenseOrchestrator, DenseOrchestratorConfig
 
 __all__ = [
     "DenseOrchestrator",
     "DenseOrchestratorConfig",
-    "DenseSkeletonGraph",
     "DenseSkeletonNode",
     "NodeCatalog",
     "NodeSpec",

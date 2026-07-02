@@ -96,8 +96,8 @@ def test_build_skeleton_catalog_block():
     assert "item_id" in block
 
 
-def test_skeleton_prompt_requires_ancestry_for_non_root():
-    """Phase 1 system prompt must require ancestry array for every non-root node."""
+def test_skeleton_prompt_uses_integer_handles_not_ancestry():
+    """Phase 1 prompt requires the compact handle contract (i/p), never ancestry arrays."""
     result = get_skeleton_batch_prompt(
         batch_markdown="Chunk content",
         catalog_block='- "" (Root) ids=[]',
@@ -106,8 +106,12 @@ def test_skeleton_prompt_requires_ancestry_for_non_root():
         allowed_paths=[""],
     )
     system = result["system"]
-    assert "MUST" in system and "ancestry" in system
-    assert "prove the lineage via ancestry" in system
+    assert '"i"' in system and '"p"' in system
+    assert "handle" in system
+    assert "ancestry" not in system
+    # Token discipline: ids must be short verbatim labels, never sentences.
+    assert "copied verbatim" in system
+    assert "never a sentence" in system
 
 
 def test_skeleton_prompt_includes_scope_boundary():
@@ -180,3 +184,34 @@ def test_prompts_contain_no_internal_fix_labels():
     )
     for text in (skeleton["system"], skeleton["user"], fill["system"], fill["user"]):
         assert "Fix 1." not in text and "Fix 2." not in text
+
+
+def test_fill_prompt_includes_precision_primitives():
+    """Fill prompt carries the generic numeric- and summary-row precision rules."""
+    from docling_graph.core.extractors.contracts.dense.prompts import get_fill_batch_prompt
+
+    spec = NodeSpec(path="", node_type="Root")
+    prompt = get_fill_batch_prompt(
+        markdown="doc", path="", spec=spec, descriptors=[{"ids": {}}], projected_schema_json="{}"
+    )
+    system = prompt["system"]
+    assert "digit-for-digit" in system
+    assert "never compute" in system
+    assert "summary rows" in system
+
+
+def test_reconciliation_prompt_is_conservative_and_id_space_only():
+    """Reconciliation prompt lists ids per path and forbids merging parameter variants."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_reconciliation_prompt,
+    )
+
+    prompt = get_skeleton_reconciliation_prompt(
+        {"batches[]": [{"batch_id": "LFP slurry"}, {"batch_id": "LFP_20vol"}]}
+    )
+    system = prompt["system"]
+    user = prompt["user"]
+    assert "NEVER group instances that differ by any parameter" in system
+    assert "When in doubt, do not merge" in system
+    assert "=== PATH batches[] ===" in user
+    assert "LFP slurry" in user and "LFP_20vol" in user

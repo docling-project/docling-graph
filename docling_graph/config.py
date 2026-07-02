@@ -203,6 +203,13 @@ class PipelineConfig(BaseModel):
             "'full' always sends the whole document."
         ),
     )
+    dense_skeleton_reconciliation: bool = Field(
+        default=True,
+        description=(
+            "Run one id-space LLM call after skeleton merge that collapses same-entity "
+            "aliases discovered at different granularities across batches."
+        ),
+    )
     # Export settings (with defaults)
     export_format: Literal["csv", "cypher"] = Field(default="csv")
     export_docling: bool = Field(default=True)
@@ -293,6 +300,7 @@ class PipelineConfig(BaseModel):
             "dense_quality_require_root": self.dense_quality_require_root,
             "dense_quality_min_instances": self.dense_quality_min_instances,
             "dense_fill_context": self.dense_fill_context,
+            "dense_skeleton_reconciliation": self.dense_skeleton_reconciliation,
             "export_format": self.export_format,
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
@@ -340,6 +348,7 @@ class PipelineConfig(BaseModel):
                 "dense_skeleton_batch_tokens": default_config.dense_skeleton_batch_tokens,
                 "dense_fill_nodes_cap": default_config.dense_fill_nodes_cap,
                 "dense_fill_context": default_config.dense_fill_context,
+                "dense_skeleton_reconciliation": default_config.dense_skeleton_reconciliation,
             },
             "docling": {
                 "pipeline": default_config.docling_config,

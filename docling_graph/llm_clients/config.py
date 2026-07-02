@@ -466,6 +466,39 @@ def _resolve_connection(
     )
 
 
+_PROBED_MAX_MODEL_LEN_CACHE: dict[str, int | None] = {}
+
+
+def _probe_openai_compatible_max_model_len(base_url: str, api_key: str | None) -> int | None:
+    """Best-effort probe of an OpenAI-compatible /models endpoint for the true context window.
+
+    Local servers (e.g. vLLM) report ``max_model_len`` per model, while LiteLLM
+    has no metadata for such deployments. This keeps output-budget decisions
+    honest without any per-model user configuration. Never raises; results
+    (including failures) are cached per base_url.
+    """
+    if base_url in _PROBED_MAX_MODEL_LEN_CACHE:
+        return _PROBED_MAX_MODEL_LEN_CACHE[base_url]
+    result: int | None = None
+    try:
+        import httpx
+
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        response = httpx.get(base_url.rstrip("/") + "/models", headers=headers, timeout=3.0)
+        if response.status_code == 200:
+            for item in response.json().get("data") or []:
+                value = item.get("max_model_len")
+                if isinstance(value, int) and value > 0:
+                    result = value
+                    break
+    except Exception:
+        result = None
+    if result:
+        logger.info("Probed max_model_len=%s from %s", result, base_url)
+    _PROBED_MAX_MODEL_LEN_CACHE[base_url] = result
+    return result
+
+
 def _resolve_context_limit(litellm_model: str, override: int | None = None) -> int:
     """
     Resolve context limit for a model.
@@ -568,6 +601,20 @@ def resolve_effective_model_config(
 
     # Use overrides or LiteLLM defaults (no registry lookup)
     context_limit = _resolve_context_limit(litellm_model, overrides.context_limit)
+    # Local OpenAI-compatible deployments (vLLM & co.) are unknown to LiteLLM;
+    # probe the server itself for the true context window so the backend's
+    # truncation handling works with an honest budget instead of a default.
+    if (
+        overrides.context_limit is None
+        and not _get_litellm_max_tokens(litellm_model)
+        and connection.base_url
+    ):
+        probed = _probe_openai_compatible_max_model_len(
+            connection.base_url,
+            connection.api_key.get_secret_value() if connection.api_key else None,
+        )
+        if probed:
+            context_limit = probed
     max_output_tokens = _resolve_max_output_tokens(litellm_model, overrides.max_output_tokens)
 
     generation = _merge_generation(GenerationDefaults(), overrides.generation)
