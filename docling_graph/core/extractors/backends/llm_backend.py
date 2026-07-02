@@ -896,7 +896,6 @@ class LlmBackend:
                 and template is not None
                 and isinstance(parsed_json, dict)
                 and self._dense_config_raw.get("gleaning_enabled")
-                and int(self._dense_config_raw.get("gleaning_max_passes", 1) or 1) >= 1
             ):
 
                 def _gleaning_llm_call(prompt_dict: dict) -> dict | list | None:
@@ -1148,16 +1147,33 @@ class LlmBackend:
                     context_max = int(details["max_tokens"])
                 retry_max = self._retry_max_tokens_for_truncation(context_max)
                 if retry_max is not None:
+                    # The retry must replicate the mode of the call that
+                    # truncated: silently switching a legacy-only caller (dense)
+                    # to API structured output would change the contract
+                    # mid-call and can hard-fail on grammar-validating servers.
+                    retry_legacy = structured_output_override is False
+                    retry_prompt = prompt
+                    if retry_legacy:
+                        retry_prompt = {
+                            "system": prompt["system"],
+                            "user": (
+                                prompt["user"]
+                                + "\n\n=== TARGET SCHEMA ===\n"
+                                + schema_json
+                                + "\n=== END SCHEMA ===\n\n"
+                            ),
+                        }
                     try:
                         self._log_warning(
                             f"Retrying truncated call for {context} with max_tokens={retry_max}"
                         )
                         parsed_json = self._call_with_optional_max_tokens(
-                            prompt=prompt,
+                            prompt=retry_prompt,
                             schema_json=schema_json,
                             max_tokens=retry_max,
                             response_top_level=response_top_level,
                             response_schema_name=response_schema_name,
+                            structured_output_override=False if retry_legacy else None,
                         )
                         retry_diag = getattr(self.client, "last_call_diagnostics", None)
                         if isinstance(retry_diag, dict) and retry_diag.get("truncated"):

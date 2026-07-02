@@ -701,7 +701,7 @@ class TestDirectExtractionTraceAndDiagnostics:
         backend = LlmBackend(
             llm_client=mock_llm_client,
             extraction_contract="direct",
-            dense_config={"gleaning_enabled": True, "gleaning_max_passes": 1},
+            dense_config={"gleaning_enabled": True},
         )
         mock_get_prompt.return_value = {"system": "s", "user": "u"}
         mock_llm_client.get_json_response.side_effect = [
@@ -969,3 +969,31 @@ class TestHonestOutputBudget:
         assert diag.get("truncated") is True
         # Subsequent truncations skip the escalation retry entirely.
         assert backend._retry_max_tokens_for_truncation(4000) is None
+
+
+class TestTruncationRetryPreservesMode:
+    """The truncation retry must replicate the mode of the call that truncated."""
+
+    def test_legacy_only_retry_stays_legacy(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.context_limit = 64000
+        generation = MagicMock()
+        generation.max_tokens = 4000
+        mock_llm_client._generation = generation
+
+        first_error = ClientError("truncated", details={"truncated": True, "max_tokens": 4000})
+        mock_llm_client.get_json_response.side_effect = [first_error, {"nodes": []}]
+        mock_llm_client.last_call_diagnostics = {"truncated": False}
+
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            '{"type": "object"}',
+            "ctx",
+            structured_output_override=False,
+        )
+        assert out == {"nodes": []}
+        retry_kwargs = mock_llm_client.get_json_response.call_args.kwargs
+        # Retry must not silently switch to API structured output...
+        assert retry_kwargs["structured_output"] is False
+        # ...and must keep the schema embedded in the prompt, like the original call.
+        assert "TARGET SCHEMA" in retry_kwargs["prompt"]["user"]

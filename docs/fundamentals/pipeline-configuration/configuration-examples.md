@@ -850,12 +850,12 @@ if stats["node_count"] == 0:
 
 **Solution:**
 ```python
-# Use chunking and smaller batch sizes
+# Use chunking with smaller chunks
 config = PipelineConfig(
     source="large_document.pdf",
     template="templates.BillingDocument",
-    use_chunking=True,  # Enable chunking
-    max_batch_size=1,   # Smaller batches
+    use_chunking=True,      # Enable chunking
+    chunk_max_tokens=512,   # Smaller chunks
     backend="llm",
     inference="remote"  # Use remote to save memory
 )

@@ -160,8 +160,8 @@ def test_structured_sparse_check_can_be_disabled(mock_load_config, mock_run_pipe
 
 @patch("docling_graph.cli.commands.convert.run_pipeline")
 @patch("docling_graph.cli.commands.convert.load_config")
-def test_gleaning_enabled_and_max_passes_passed_to_config(mock_load_config, mock_run_pipeline):
-    """--gleaning-enabled and --gleaning-max-passes are passed to PipelineConfig."""
+def test_gleaning_and_dedupe_passed_to_config(mock_load_config, mock_run_pipeline):
+    """--gleaning and --dense-dedupe are passed to PipelineConfig."""
     mock_load_config.return_value = {
         "defaults": {
             "backend": "llm",
@@ -181,7 +181,7 @@ def test_gleaning_enabled_and_max_passes_passed_to_config(mock_load_config, mock
                 source="doc.pdf",
                 template="templates.Foo",
                 gleaning_enabled=True,
-                gleaning_max_passes=2,
+                dense_dedupe="aggressive",
                 output_dir=Path("out"),
             )
         except typer.Exit:
@@ -189,7 +189,7 @@ def test_gleaning_enabled_and_max_passes_passed_to_config(mock_load_config, mock
     mock_run_pipeline.assert_called_once()
     cfg = mock_run_pipeline.call_args[0][0]
     assert cfg.gleaning_enabled is True
-    assert cfg.gleaning_max_passes == 2
+    assert cfg.dense_dedupe == "aggressive"
 
 
 def _base_config() -> dict[str, Any]:
@@ -223,7 +223,6 @@ def test_cli_overrides_passed_to_config(mock_load_config, mock_run_pipeline):
                 template="templates.Foo",
                 output_dir=Path("out"),
                 chunk_max_tokens=256,
-                gleaning_max_passes=2,
                 export_docling_json=False,
                 export_markdown=False,
                 export_per_page=True,
@@ -233,10 +232,56 @@ def test_cli_overrides_passed_to_config(mock_load_config, mock_run_pipeline):
     mock_run_pipeline.assert_called_once()
     cfg = mock_run_pipeline.call_args[0][0]
     assert cfg.chunk_max_tokens == 256
-    assert cfg.gleaning_max_passes == 2
+    assert cfg.dense_dedupe == "standard"
     assert cfg.export_docling_json is False
     assert cfg.export_markdown is False
     assert cfg.export_per_page_markdown is True
+
+
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_no_gleaning_flag_overrides_config_default(mock_load_config, mock_run_pipeline):
+    """--no-gleaning must win over a truthy config-file default."""
+    config = _base_config()
+    config["defaults"]["gleaning_enabled"] = True
+    mock_load_config.return_value = config
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        mock_detector.detect.return_value = MagicMock(value="file")
+        try:
+            convert_command(
+                source="doc.pdf",
+                template="templates.Foo",
+                gleaning_enabled=False,
+                output_dir=Path("out"),
+            )
+        except typer.Exit:
+            pass
+    cfg = mock_run_pipeline.call_args[0][0]
+    assert cfg.gleaning_enabled is False
+
+
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_dense_sizing_flags_passed_to_config(mock_load_config, mock_run_pipeline):
+    """Dense sizing/context flags map 1:1 onto PipelineConfig fields."""
+    mock_load_config.return_value = _base_config()
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        mock_detector.detect.return_value = MagicMock(value="file")
+        try:
+            convert_command(
+                source="doc.pdf",
+                template="templates.Foo",
+                dense_skeleton_batch_tokens=2048,
+                dense_fill_nodes_cap=8,
+                dense_fill_context="full",
+                output_dir=Path("out"),
+            )
+        except typer.Exit:
+            pass
+    cfg = mock_run_pipeline.call_args[0][0]
+    assert cfg.dense_skeleton_batch_tokens == 2048
+    assert cfg.dense_fill_nodes_cap == 8
+    assert cfg.dense_fill_context == "full"
 
 
 @patch("docling_graph.cli.commands.convert.run_pipeline")

@@ -38,7 +38,7 @@ from .prompts import (
     get_skeleton_reconciliation_prompt,
     reconciliation_output_schema,
 )
-from .resolvers import DenseResolverConfig, resolve_skeleton_nodes
+from .resolvers import resolve_skeleton_nodes
 
 logger = logging.getLogger(__name__)
 
@@ -333,8 +333,9 @@ def merge_filled_into_root(
     (path, ids) lookup silently drops entire subtrees. Resolution ladder per
     instance: exact id match -> unique parent instance -> unique fuzzy
     (canonical containment) id match -> id-only placeholder parent created up
-    the chain. Only instances that survive none of these are dropped, and
-    every recovery/drop is counted in stats_out.
+    the chain -> shared id-less bucket parent (when the reference carries no
+    usable ids at all, e.g. a dangling handle). Only instances that survive
+    none of these are dropped, and every recovery/drop is counted in stats_out.
     """
     root: dict[str, Any] = {}
     spec_by_path = {s.path: s for s in catalog.nodes}
@@ -344,6 +345,7 @@ def merge_filled_into_root(
         "recovered_single_parent": 0,
         "recovered_fuzzy": 0,
         "recovered_placeholder": 0,
+        "recovered_bucket": 0,
         "dropped": 0,
     }
     for spec in catalog.nodes:
@@ -386,25 +388,29 @@ def merge_filled_into_root(
         if fuzzy_match is not None:
             lookup[key] = fuzzy_match
             return fuzzy_match, "fuzzy"
-        # Last resort: materialize an id-only parent so the subtree survives.
-        if depth >= 3:
+        # Last resort: materialize a parent so the subtree survives. With usable
+        # ids this is an id-only placeholder; without any (dangling handle,
+        # wrong-level ids) it degrades to a shared id-less bucket for the path,
+        # which is reused by every sibling orphan via the lookup registration.
+        # The recursion strictly walks the finite catalog parent chain, so it
+        # always terminates at the root; the depth guard is pure paranoia.
+        if depth >= 8:
             return None, ""
         placeholder = {
             f: parent_ids[f] for f in parent_spec.id_fields if parent_ids.get(f) not in (None, "")
         }
-        if not placeholder:
-            return None, ""
         grand_obj, _how = _resolve_parent(parent_spec.parent_path, {}, depth + 1)
         if grand_obj is None:
             return None, ""
         _attach(grand_obj, parent_spec, placeholder)
         lookup[key] = placeholder
-        return placeholder, "placeholder"
+        return placeholder, ("placeholder" if placeholder else "bucket")
 
     _how_to_stat = {
         "single": "recovered_single_parent",
         "fuzzy": "recovered_fuzzy",
         "placeholder": "recovered_placeholder",
+        "bucket": "recovered_bucket",
     }
 
     for spec in catalog.nodes:
@@ -581,32 +587,31 @@ def _sanitize_filled(
 
 @dataclass
 class DenseOrchestratorConfig:
+    """Runtime settings for dense extraction.
+
+    Deliberately small: sizing knobs (batch tokens, fill cap, workers), the
+    fill-context mode, and one intent-driven dedupe mode. Cleanup steps that
+    are mandatory for a sound graph (root singleton, barren-branch pruning,
+    the quality gate) are pipeline invariants, not options.
+    """
+
     max_pass_retries: int = 1
     skeleton_batch_tokens: int = 1024
     fill_nodes_cap: int = 5
     parallel_workers: int = 1
-    quality_require_root: bool = True
-    quality_min_instances: int = 1
-    prune_barren_branches: bool = False
     # "scoped": fill prompts only include the skeleton batches where the node was
     # observed (plus the document head); "full": always send the whole document.
     fill_context_mode: str = "scoped"
-    # One id-space LLM call after skeleton merge that collapses same-entity
-    # aliases discovered at different granularities across batches.
-    skeleton_reconciliation: bool = True
-    resolvers: DenseResolverConfig = field(default_factory=DenseResolverConfig)
+    # "off": exact canonical-id dedup only.
+    # "standard": + one id-space LLM reconciliation call that collapses
+    #             same-entity aliases found at different granularities.
+    # "aggressive": + fuzzy string merge of near-identical same-path ids
+    #               (OCR noise, casing); threshold handled internally.
+    dedupe_mode: str = "standard"
 
     @classmethod
     def from_dict(cls, config: dict[str, Any] | None) -> DenseOrchestratorConfig:
         c = config or {}
-        res = c.get("dense_resolvers") or {}
-        resolvers = DenseResolverConfig(
-            enabled=bool(res.get("enabled", False)),
-            mode=str(res.get("mode", "off")).lower(),
-            fuzzy_threshold=float(res.get("fuzzy_threshold", 0.8) or 0.8),
-            semantic_threshold=float(res.get("semantic_threshold", 0.8) or 0.8),
-            allow_merge_different_ids=bool(res.get("allow_merge_different_ids", False)),
-        )
         raw_skeleton_tokens = int(c.get("dense_skeleton_batch_tokens", 1024) or 1024)
         skeleton_batch_tokens = (
             min(raw_skeleton_tokens, 4096) if raw_skeleton_tokens > 4096 else raw_skeleton_tokens
@@ -614,18 +619,15 @@ class DenseOrchestratorConfig:
         fill_context_mode = str(c.get("dense_fill_context", "scoped") or "scoped").lower()
         if fill_context_mode not in ("scoped", "full"):
             fill_context_mode = "scoped"
-        skeleton_reconciliation = bool(c.get("dense_skeleton_reconciliation", True))
+        dedupe_mode = str(c.get("dense_dedupe", "standard") or "standard").lower()
+        if dedupe_mode not in ("off", "standard", "aggressive"):
+            dedupe_mode = "standard"
         return cls(
-            max_pass_retries=int(c.get("max_pass_retries", 1) or 1),
             skeleton_batch_tokens=skeleton_batch_tokens,
             fill_nodes_cap=int(c.get("dense_fill_nodes_cap", 5) or 5),
             parallel_workers=max(1, int(c.get("parallel_workers", 1) or 1)),
-            quality_require_root=bool(c.get("dense_quality_require_root", True)),
-            quality_min_instances=max(0, int(c.get("dense_quality_min_instances", 1) or 1)),
-            prune_barren_branches=bool(c.get("dense_prune_barren_branches", False)),
             fill_context_mode=fill_context_mode,
-            skeleton_reconciliation=skeleton_reconciliation,
-            resolvers=resolvers,
+            dedupe_mode=dedupe_mode,
         )
 
 
@@ -929,11 +931,18 @@ class DenseOrchestrator:
             descriptors=batch_descriptors,
             projected_schema_json=sub_schema,
         )
-        wrapped_schema = {
+        # Hoist $defs to the wrapper root: the sub-schema's $ref pointers are
+        # root-relative (#/$defs/...), so nesting it unchanged would leave them
+        # dangling — invalid JSON schema that grammar-validating providers reject.
+        sub_schema_dict = json.loads(sub_schema)
+        hoisted_defs = sub_schema_dict.pop("$defs", None)
+        wrapped_schema: dict[str, Any] = {
             "type": "object",
-            "properties": {"items": {"type": "array", "items": json.loads(sub_schema)}},
+            "properties": {"items": {"type": "array", "items": sub_schema_dict}},
             "required": ["items"],
         }
+        if hoisted_defs:
+            wrapped_schema["$defs"] = hoisted_defs
         fill_diag: dict[str, Any] = {}
         out = self._llm(
             prompt=prompt,
@@ -1090,18 +1099,16 @@ class DenseOrchestrator:
         )
         phase1_elapsed = time.perf_counter() - phase1_start
         merged_skeleton = merge_skeleton_batches(skeleton_results, self._catalog)
-        if self._config.resolvers.enabled:
+        if self._config.dedupe_mode == "aggressive":
 
             def key_fn(n: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
                 return _skeleton_identity_key(n, spec_by_path)
 
-            merged_skeleton, resolver_stats = resolve_skeleton_nodes(
-                merged_skeleton, key_fn, self._config.resolvers
-            )
+            merged_skeleton, resolver_stats = resolve_skeleton_nodes(merged_skeleton, key_fn)
             if self._on_trace and resolver_stats.get("merged_count", 0) > 0:
                 self._on_trace({"contract": "dense", "phase1_resolvers": resolver_stats})
         reconciliation_merged = 0
-        if self._config.skeleton_reconciliation and len(merged_skeleton) > 1:
+        if self._config.dedupe_mode != "off" and len(merged_skeleton) > 1:
             merged_skeleton, reconciliation_merged = self._run_skeleton_reconciliation(
                 merged_skeleton, spec_by_path, context
             )
@@ -1113,27 +1120,15 @@ class DenseOrchestrator:
             p = n.get("path") or ""
             path_counts[p] = path_counts.get(p, 0) + 1
         total = len(merged_skeleton)
-        if self._config.quality_require_root and path_counts.get("", 0) <= 0:
-            logger.warning("Dense Phase 1: no root instance")
-            self._finalize_run_stats(total, reconciliation_merged, {}, gate_failure="missing_root")
+        # Quality gate (invariant): a usable skeleton needs a root instance.
+        # Without one there is nothing to attach the graph to, and the direct
+        # fallback in the strategy is the better path.
+        if path_counts.get("", 0) <= 0 or total < 1:
+            reason = "missing_root" if total >= 1 else "empty_skeleton"
+            logger.warning("Dense Phase 1 quality gate failed: %s", reason)
+            self._finalize_run_stats(total, reconciliation_merged, {}, gate_failure=reason)
             if self._on_trace:
-                self._on_trace(
-                    {"contract": "dense", "phase1_quality": False, "reason": "missing_root"}
-                )
-            return None
-        if total < self._config.quality_min_instances:
-            logger.warning("Dense Phase 1: too few instances (%s)", total)
-            self._finalize_run_stats(
-                total, reconciliation_merged, {}, gate_failure="insufficient_instances"
-            )
-            if self._on_trace:
-                self._on_trace(
-                    {
-                        "contract": "dense",
-                        "phase1_quality": False,
-                        "reason": "insufficient_instances",
-                    }
-                )
+                self._on_trace({"contract": "dense", "phase1_quality": False, "reason": reason})
             return None
 
         path_descriptors = skeleton_to_descriptors(merged_skeleton, self._catalog)
@@ -1219,8 +1214,10 @@ class DenseOrchestrator:
         root = merge_filled_into_root(
             path_filled, path_descriptors, self._catalog, stats_out=merge_stats
         )
-        if self._config.prune_barren_branches:
-            root = prune_barren_branches(root, self._catalog)
+        # Invariant: id-only childless branch nodes are skeleton noise that the
+        # fill could not substantiate; they are always pruned. Rescue buckets
+        # and placeholders keep their children and therefore always survive.
+        root = prune_barren_branches(root, self._catalog)
         self._finalize_run_stats(len(merged_skeleton), reconciliation_merged, merge_stats)
         if self._debug_dir:
             self._write_debug("dense_merge_stats.json", merge_stats)

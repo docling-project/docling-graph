@@ -378,7 +378,7 @@ config = PipelineConfig(
     
     # LLM-specific
     use_chunking=True,  # Split large documents
-    max_batch_size=5  # Process multiple chunks
+    chunk_max_tokens=512  # Max tokens per chunk
 )
 ```
 

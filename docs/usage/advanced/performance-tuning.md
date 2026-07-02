@@ -121,9 +121,9 @@ All providers now use a **95% threshold** by default. This provides an optimal b
 
 **Note**: You can override the threshold programmatically if needed (see [Batch Processing](../../fundamentals/extraction-process/batch-processing.md)).
 
-### Batch size and dense extraction
+### Batching and dense extraction
 
-`max_batch_size` is available in the config for metadata and future use. For many-to-one LLM extraction, batching is controlled by:
+For many-to-one LLM extraction, batching is controlled by:
 
 - **Chunking** plus **dense extraction** when `extraction_contract="dense"`: chunk splitting, Phase 1 skeleton batching (`dense_skeleton_batch_tokens`), then Phase 2 fill batching (`dense_fill_nodes_cap`). See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md).
 
