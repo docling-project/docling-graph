@@ -215,3 +215,23 @@ def test_reconciliation_prompt_is_conservative_and_id_space_only():
     assert "When in doubt, do not merge" in system
     assert "=== PATH batches[] ===" in user
     assert "LFP slurry" in user and "LFP_20vol" in user
+
+
+def test_skeleton_prompt_prefers_specific_names_over_generic_labels():
+    """Rule 3a steers the model to proper names over generic/positional labels."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_batch_prompt,
+    )
+
+    prompt = get_skeleton_batch_prompt(
+        batch_markdown="doc",
+        catalog_block='- "" (Root) ids=[]',
+        batch_index=0,
+        total_batches=1,
+        allowed_paths=[""],
+    )
+    system = prompt["system"]
+    assert "most specific proper name" in system
+    assert "ESSENTIELLE" in system
+    # It must explicitly reject the generic/positional fallback labels.
+    assert "Offer 1" in system or "Offre" in system

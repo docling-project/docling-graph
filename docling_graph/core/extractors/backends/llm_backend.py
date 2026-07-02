@@ -19,12 +19,21 @@ from pydantic import BaseModel, ValidationError
 from rich import print as rich_print
 
 from ....exceptions import ClientError
+from ....llm_clients.config import _DEFAULT_MAX_OUTPUT_TOKENS
 from ....protocols import LLMClientProtocol
 from ..contracts import direct
 from ..contracts.dense.backend_ops import run_dense_orchestrator
 from ..gleaning import merge_gleaned_direct, run_gleaning_pass_direct
 
 logger = logging.getLogger(__name__)
+
+# Rough chars-per-token for gauging whether a direct single-call extraction can
+# fit its output. A structured response cannot represent a document much larger
+# than its own output budget; when the input dwarfs that budget the call will
+# truncate, and dense (skeleton-then-fill) is the right contract instead.
+_CHARS_PER_TOKEN = 4
+# Warn once the input exceeds this multiple of the output character capacity.
+_DIRECT_OVERFLOW_RATIO = 2.0
 
 
 class LlmBackend:
@@ -68,6 +77,8 @@ class LlmBackend:
         # truncated (degenerate/oversized output); learned per run so later
         # calls skip the wasted retry and go straight to batch splitting.
         self._escalation_futile = False
+        # Emit the "document too large for direct extraction" hint at most once.
+        self._dense_hint_emitted = False
 
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
@@ -936,6 +947,42 @@ class LlmBackend:
             return int(max_tok)
         return None
 
+    def _estimated_output_token_budget(self) -> int:
+        """Best-effort output-token budget for the current model.
+
+        Falls back through the configured generation cap, the client's resolved
+        max output tokens, and finally the library default so a number is always
+        available for sizing heuristics.
+        """
+        budget = self._get_client_max_tokens()
+        if not isinstance(budget, int) or budget <= 0:
+            budget = getattr(self.client, "_max_output_tokens", None)
+        if not isinstance(budget, int) or budget <= 0:
+            budget = _DEFAULT_MAX_OUTPUT_TOKENS
+        return budget
+
+    def _maybe_hint_dense_for_large_direct(self, markdown: str) -> None:
+        """Warn (once) when a direct single call cannot plausibly fit its output.
+
+        A direct extraction returns the whole result in one response, so a
+        document much larger than the model's output budget will truncate no
+        matter how the prompt is tuned. Dense splits the work across many calls,
+        so it is the right contract for large documents — surfaced as a hint
+        rather than an automatic switch to keep the user in control.
+        """
+        if self.extraction_contract == "dense" or self._dense_hint_emitted:
+            return
+        budget_tokens = self._estimated_output_token_budget()
+        output_char_capacity = budget_tokens * _CHARS_PER_TOKEN
+        if len(markdown) > output_char_capacity * _DIRECT_OVERFLOW_RATIO:
+            self._dense_hint_emitted = True
+            self._log_warning(
+                f"Document is {len(markdown)} chars but the model's output budget is only "
+                f"~{budget_tokens} tokens (~{output_char_capacity} chars); a single-call direct "
+                "extraction is likely to truncate and lose data. Consider extraction_contract="
+                '"dense" (skeleton-then-fill) for large documents.'
+            )
+
     def _retry_max_tokens_for_truncation(self, context_max: int | None = None) -> int | None:
         """Compute max_tokens for one retry after truncation, or None to skip escalation.
 
@@ -1329,6 +1376,11 @@ class LlmBackend:
         if not markdown or len(markdown.strip()) == 0:
             self._log_error(f"Markdown is empty for {context}. Cannot proceed.")
             return None
+
+        # For direct full-document extraction, warn if the document is too large
+        # to fit a single response and suggest the dense contract instead.
+        if not is_partial:
+            self._maybe_hint_dense_for_large_direct(markdown)
 
         # Get cached schema JSON
         schema_json = self._get_schema_json(template)
