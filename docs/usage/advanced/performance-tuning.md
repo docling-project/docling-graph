@@ -6,6 +6,7 @@
 Optimize docling-graph pipeline performance for speed, memory efficiency, and resource utilization.
 
 **Prerequisites:**
+
 - Understanding of [Pipeline Configuration](../../fundamentals/pipeline-configuration/index.md)
 - Familiarity with [Extraction Process](../../fundamentals/extraction-process/index.md)
 - Basic knowledge of system resources
@@ -116,6 +117,7 @@ All providers now use a **95% threshold** by default. This provides an optimal b
 - **Consistency**: Same behavior across all providers
 
 **Performance Impact:**
+
 - Higher threshold (0.95-0.98) = Fewer API calls = Faster processing
 - Lower threshold (0.80-0.90) = More aggressive merging = Fewer batches but less optimal fit
 
@@ -452,6 +454,7 @@ config = PipelineConfig(
 3. **Final Polish** (Turn 3): Ensure completeness and accuracy
 
 **Performance Impact:**
+
 - **Token Usage**: 3x more tokens than standard consolidation
 - **Time**: 3x longer processing time
 - **Quality**: Significantly better for complex documents
@@ -549,16 +552,19 @@ uv run python -m pstats profile.stats
 ### Typical Processing Times
 
 **Small Document (1-5 pages):**
+
 - VLM Local: 5-15 seconds
 - LLM Local: 10-30 seconds
 - LLM Remote: 15-45 seconds
 
 **Medium Document (10-20 pages):**
+
 - VLM Local: 30-60 seconds
 - LLM Local: 1-3 minutes
 - LLM Remote: 2-5 minutes
 
 **Large Document (50+ pages):**
+
 - VLM Local: 2-5 minutes
 - LLM Local: 5-15 minutes
 - LLM Remote: 10-30 minutes

@@ -83,6 +83,17 @@ Target: Organization_AcmeCorp
 
 This represents: "Document INV001 was issued by Acme Corp"
 
+### Provenance
+
+**Provenance** (data grounding) is a deterministic link from a graph node back to the source chunk(s) and page(s) it came from — computed entirely from pipeline bookkeeping, never from the LLM. Enabled by default, it adds a `__provenance__` attribute to every entity node:
+
+```python
+node_data["__provenance__"]
+# {"document_id": "...", "match": "verbatim", "chunks": [2], "pages": [1]}
+```
+
+A full ledger (`provenance.json`) with the underlying chunk text is also written, so any node can be traced back to its exact source snippet. See [Data Grounding & Provenance](../fundamentals/graph-management/provenance.md).
+
 ### Graph
 
 A **graph** is the complete network of nodes and edges representing your extracted knowledge.
@@ -308,7 +319,7 @@ Paper_AdvancedAI
 
 ### Cypher
 - **Purpose**: Neo4j script execution
-- **Files**: `document_graph.cypher`
+- **Files**: `graph.cypher`
 - **Best For**: Development and incremental updates
 
 ### JSON
@@ -320,6 +331,11 @@ Paper_AdvancedAI
 - **Purpose**: Interactive visualization
 - **Files**: `graph.html`
 - **Best For**: Exploration and presentation
+
+### Provenance Ledger
+- **Purpose**: Deterministic node-to-source grounding
+- **Files**: `provenance.json`
+- **Best For**: Auditing, citation, RAG grounding
 
 ## Next Steps
 

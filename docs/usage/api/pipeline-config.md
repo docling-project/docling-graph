@@ -6,6 +6,7 @@
 `PipelineConfig` is a **type-safe configuration class** built with Pydantic that provides validation, defaults, and IDE autocomplete for pipeline configuration.
 
 **Key Features:**
+
 - Type validation
 - Default values
 - IDE autocomplete
@@ -93,6 +94,7 @@ run_pipeline(config)  # or config.run()
 |-----------|------|---------|-------------|
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `gleaning_enabled` | `bool` | `True` | Run one optional second-pass extraction ("what did you miss?") to improve recall on the **direct** contract. |
+| `provenance` | `Literal["off", "standard", "detailed"]` | `"standard"` | Deterministic node-to-source grounding (`__provenance__` node attribute + `provenance.json`). Applies to both `direct` and `dense`. See [Data Grounding & Provenance](../../fundamentals/graph-management/provenance.md). |
 
 For **dense** extraction, additional options (`dense_skeleton_batch_tokens`, `dense_fill_nodes_cap`, `dense_fill_context`, `dense_dedupe`, `parallel_workers`) can be set directly on `PipelineConfig`, via a config dict, or via YAML `defaults`; see [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 

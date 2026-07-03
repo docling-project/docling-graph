@@ -6,6 +6,7 @@
 Guide for contributing to docling-graph development.
 
 **What's Included:**
+
 - Contributing guidelines
 - Development setup
 - Code standards

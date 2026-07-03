@@ -6,7 +6,9 @@
 **Knowledge Graph Management** covers converting extracted Pydantic models into graph structures, exporting to various formats, and visualizing the results.
 
 **What you'll learn:**
+
 - Graph conversion from Pydantic models
+- Data grounding: tracing nodes back to source chunks and pages
 - Export formats (CSV, Cypher, JSON)
 - Visualization techniques
 - Graph analysis and statistics
@@ -40,7 +42,25 @@ print(f"Edges: {metadata.edge_count}")
 
 ---
 
-### 2. Export Formats
+### 2. Data Grounding & Provenance
+
+Trace every graph node back to the source chunk(s) and page(s) it came from — fully deterministic, no LLM involvement:
+
+```python
+graph = context.knowledge_graph
+node_data = graph.nodes["Invoice_a1b2c3"]
+
+print(node_data["__provenance__"])
+# {"document_id": "...", "match": "verbatim", "chunks": [2], "pages": [1]}
+```
+
+Enabled by default (`provenance="standard"`); a full ledger with chunk text is also written to `provenance.json`.
+
+**Learn more:** [Data Grounding & Provenance →](provenance.md)
+
+---
+
+### 3. Export Formats
 
 Export graphs in multiple formats:
 
@@ -58,7 +78,7 @@ CypherExporter().export(graph, output_file)
 
 ---
 
-### 3. Visualization
+### 4. Visualization
 
 Generate interactive visualizations:
 
@@ -73,7 +93,7 @@ visualizer.save_cytoscape_graph(graph, "graph.html")
 
 ---
 
-### 4. Neo4j Integration
+### 5. Neo4j Integration
 
 Import graphs into Neo4j:
 
@@ -162,6 +182,7 @@ run_pipeline(config)
 Learn how Pydantic models are converted to NetworkX graphs.
 
 **Topics:**
+
 - Node creation
 - Edge generation
 - Node ID registry
@@ -170,10 +191,23 @@ Learn how Pydantic models are converted to NetworkX graphs.
 
 ---
 
-### 2. [Export Formats](export-formats.md)
+### 2. [Data Grounding & Provenance](provenance.md)
+Trace every graph node back to its source chunk(s) and page(s), fully deterministically.
+
+**Topics:**
+
+- The `__provenance__` node attribute
+- `provenance.json` ledger and chunk index
+- Verbatim vs. approximate vs. document-scope grounding
+- Dense vs. direct contract differences
+
+---
+
+### 3. [Export Formats](export-formats.md)
 Understand different export formats and when to use them.
 
 **Topics:**
+
 - CSV export (nodes and edges)
 - Cypher export (Neo4j)
 - JSON export (programmatic)
@@ -181,10 +215,11 @@ Understand different export formats and when to use them.
 
 ---
 
-### 3. [Visualization](visualization.md)
+### 4. [Visualization](visualization.md)
 Generate interactive visualizations of your knowledge graphs.
 
 **Topics:**
+
 - Interactive HTML graphs
 - Markdown reports
 - Graph statistics
@@ -192,10 +227,11 @@ Generate interactive visualizations of your knowledge graphs.
 
 ---
 
-### 4. [Neo4j Integration](neo4j-integration.md)
+### 5. [Neo4j Integration](neo4j-integration.md)
 Import and query graphs in Neo4j database.
 
 **Topics:**
+
 - Cypher import
 - Neo4j setup
 - Query examples
@@ -203,10 +239,11 @@ Import and query graphs in Neo4j database.
 
 ---
 
-### 5. [Graph Analysis](graph-analysis.md)
+### 6. [Graph Analysis](graph-analysis.md)
 Analyze graph structure and statistics.
 
 **Topics:**
+
 - Node and edge counts
 - Graph metrics
 - Connectivity analysis
@@ -214,10 +251,11 @@ Analyze graph structure and statistics.
 
 ---
 
-### 6. Advanced Topics
+### 7. Advanced Topics
 Advanced graph management techniques covered in other sections.
 
 **See also:**
+
 - [Custom Exporters](../../usage/advanced/custom-exporters.md)
 - [Performance Tuning](../../usage/advanced/performance-tuning.md)
 - [Graph Analysis](graph-analysis.md)
@@ -353,6 +391,7 @@ outputs/
 ```
 
 **Features:**
+
 - Zoom and pan
 - Node inspection
 - Search functionality

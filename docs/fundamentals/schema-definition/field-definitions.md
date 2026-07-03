@@ -49,6 +49,7 @@ currency_code: str = Field(
 For fields that are often missed (e.g. protocol parameters, axis labels), add short “where to look” hints so the LLM searches the right part of the document:
 
 - **Methods section:** e.g. *“Look in Methods for ‘pre-shear’, ‘equilibration’, ‘gap’; extract values even if they appear mid-paragraph.”*
+
 - **Figure captions / axis labels:** e.g. *“Look in figure captions and axis labels for the quantity name.”*
 
 These hints improve extraction of explicit numbers and reduce empty shells when the schema has many optional fields.
@@ -58,6 +59,7 @@ These hints improve extraction of explicit numbers and reduce empty shells when 
 When an enum is used (e.g. geometry type, test mode), document synonyms and discourage overuse of “Other”:
 
 - In the **Field description**, list common document phrases that map to each value, e.g. *“Map ‘parallel plate’, ‘parallel disk’, or ‘plate-plate’ to ‘Plate-Plate’. Do not use Other when the text matches a known type.”*
+
 - Optionally add a `mode="before"` field validator that maps frequent phrases (e.g. string containing “parallel” and “plate”) to the correct enum member before calling a generic enum normalizer.
 
 This reduces “Other” when the document clearly states a known type in different wording.

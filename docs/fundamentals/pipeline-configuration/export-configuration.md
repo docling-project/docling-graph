@@ -6,6 +6,7 @@
 Export configuration controls how Docling Graph outputs extracted data and knowledge graphs. Multiple export formats are supported, allowing you to integrate with various downstream tools and databases.
 
 **In this guide:**
+
 - Export formats (CSV, Cypher, JSON)
 - Output directory structure
 - Format-specific options
@@ -76,6 +77,7 @@ org_acme,LOCATED_AT,addr_123
 ### When to Use CSV
 
 ✅ **Use CSV when:**
+
 - Analyzing data in Excel/spreadsheets
 - Importing into SQL databases
 - Need human-readable format
@@ -83,6 +85,7 @@ org_acme,LOCATED_AT,addr_123
 - Creating reports
 
 ❌ **Don't use CSV when:**
+
 - Need direct Neo4j import
 - Want programmatic access
 - Require nested structures
@@ -136,6 +139,7 @@ CREATE (a)-[:LOCATED_AT]->(b)
 ### When to Use Cypher
 
 ✅ **Use Cypher when:**
+
 - Importing into Neo4j
 - Building graph databases
 - Need graph queries
@@ -143,6 +147,7 @@ CREATE (a)-[:LOCATED_AT]->(b)
 - Performing graph analytics
 
 ❌ **Don't use Cypher when:**
+
 - Not using Neo4j
 - Need tabular format
 - Want simple data analysis
@@ -227,6 +232,7 @@ outputs/
 ### When to Use JSON
 
 ✅ **Use JSON when:**
+
 - Building APIs
 - Programmatic processing
 - Need nested structures
@@ -384,6 +390,7 @@ print(f"Node types: {stats['node_types']}")
 Always generated: `outputs/visualization.html`
 
 **Features:**
+
 - Interactive graph visualization
 - Node and edge inspection
 - Zoom and pan
@@ -403,6 +410,7 @@ start outputs/visualization.html  # Windows
 Always generated: `outputs/report.md`
 
 **Contains:**
+
 - Extraction summary
 - Graph statistics
 - Node and edge counts

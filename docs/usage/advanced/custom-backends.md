@@ -6,6 +6,7 @@
 Create custom extraction backends to integrate specialized models, APIs, or processing logic into the docling-graph pipeline.
 
 **Prerequisites:**
+
 - Understanding of [Extraction Process](../../fundamentals/extraction-process/index.md)
 - Familiarity with [Python API](../api/index.md)
 - Knowledge of Pydantic models

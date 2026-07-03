@@ -6,10 +6,10 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 
 | Path | Description |
 |------|-------------|
-| `docs/examples/scripts/` | Python example scripts (01–13) |
+| `docs/examples/scripts/` | Python example scripts (01–15) |
 | `docs/examples/templates/` | Pydantic templates (e.g. `billing_document.py`, `rheology_research.py`) |
 
-## Example Scripts (01–13)
+## Example Scripts (01–15)
 
 ### Getting Started
 
@@ -31,6 +31,10 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 10. **`10_provider_configs.py`** — OpenAI, Mistral, Gemini, WatsonX
 11. **`12_custom_llm_client.py`** — Custom LLM client (bring your own URL) with full pipeline
 12. **`14_streaming_responses.py`** — Streaming LLM responses for real-time processing and progress feedback
+
+### Data Grounding
+
+13. **`15_provenance_grounding.py`** — Trace extracted nodes back to source chunks and pages via `__provenance__` and `provenance.json`
 
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).
 

@@ -6,6 +6,7 @@
 This guide covers advanced Pydantic patterns for complex document structures, reusable components, and sophisticated validation scenarios. These patterns are drawn from production templates across multiple domains.
 
 **In this guide:**
+
 - Series and conditional values (dense extraction)
 - Flexible measurement models
 - Nested list patterns with edges

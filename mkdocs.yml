@@ -119,11 +119,13 @@ nav:
       - Document Conversion: fundamentals/extraction-process/document-conversion.md
       - Chunking Strategies: fundamentals/extraction-process/chunking-strategies.md
       - Extraction Backends: fundamentals/extraction-process/extraction-backends.md
+      - Dense Extraction: fundamentals/extraction-process/dense-extraction.md
       - Model Merging: fundamentals/extraction-process/model-merging.md
       - Batch Processing: fundamentals/extraction-process/batch-processing.md
     - Graph Management:
       - Overview: fundamentals/graph-management/index.md
       - Graph Conversion: fundamentals/graph-management/graph-conversion.md
+      - Data Grounding & Provenance: fundamentals/graph-management/provenance.md
       - Graph Analysis: fundamentals/graph-management/graph-analysis.md
       - Export Formats: fundamentals/graph-management/export-formats.md
       - Visualization: fundamentals/graph-management/visualization.md
@@ -174,6 +176,7 @@ nav:
     - Converters: reference/converters.md
     - Extractors: reference/extractors.md
     - Exporters: reference/exporters.md
+    - Provenance: reference/provenance.md
     - LLM Clients: reference/llm-clients.md
   
   - Community:

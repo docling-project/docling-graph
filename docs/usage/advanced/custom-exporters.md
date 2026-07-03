@@ -6,6 +6,7 @@
 Create custom exporters to output knowledge graphs in specialized formats for your specific use case or database system.
 
 **Prerequisites:**
+
 - Understanding of [Graph Management](../../fundamentals/graph-management/index.md)
 - Familiarity with NetworkX graphs
 - Knowledge of target output format

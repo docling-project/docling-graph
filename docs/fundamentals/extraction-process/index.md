@@ -6,6 +6,7 @@
 The **Extraction Process** is the core of Docling Graph, transforming raw documents into structured knowledge graphs through a multi-stage pipeline. This section explains each stage in detail.
 
 **What you'll learn:**
+
 - How documents are converted to structured format
 - Intelligent chunking strategies
 - Extraction backends (LLM vs VLM)
@@ -23,6 +24,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 **Purpose:** Convert PDF/images to structured Docling format
 
 **Process:**
+
 - OCR or Vision pipeline
 - Layout analysis
 - Table extraction
@@ -39,6 +41,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 **Purpose:** Split document into optimal chunks for LLM processing
 
 **Process:**
+
 - Structure-aware splitting
 - Token counting
 - Semantic boundaries
@@ -55,6 +58,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 **Purpose:** Extract structured data using LLM/VLM
 
 **Process:**
+
 - Backend selection (LLM/VLM)
 - Batch processing
 - Schema validation
@@ -71,6 +75,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 **Purpose:** Consolidate multiple extractions into single model
 
 **Process:**
+
 - Programmatic merging
 - LLM consolidation (optional)
 - Conflict resolution
@@ -97,6 +102,7 @@ config = PipelineConfig(
 ```
 
 **Process:**
+
 1. Convert entire document
 2. Chunk intelligently
 3. Extract from each chunk
@@ -119,6 +125,7 @@ config = PipelineConfig(
 ```
 
 **Process:**
+
 1. Convert entire document
 2. Extract from each page
 3. Return separate models
@@ -307,6 +314,7 @@ except PipelineError as e:
 Learn how documents are converted to structured format using Docling pipelines.
 
 **Topics:**
+
 - OCR vs Vision pipelines
 - Layout analysis
 - Table extraction
@@ -318,6 +326,7 @@ Learn how documents are converted to structured format using Docling pipelines.
 Understand intelligent document chunking for optimal LLM processing.
 
 **Topics:**
+
 - Structure-aware chunking
 - Token management
 - Semantic boundaries
@@ -329,6 +338,7 @@ Understand intelligent document chunking for optimal LLM processing.
 Deep dive into LLM and VLM extraction backends.
 
 **Topics:**
+
 - LLM backend (text-based)
 - VLM backend (vision-based)
 - Backend selection
@@ -337,28 +347,21 @@ Deep dive into LLM and VLM extraction backends.
 ---
 
 ### 4. [Dense Extraction](dense-extraction.md)
-Two-phase extraction for chunked many-to-one workflows (skeleton → fill → merge).
+Two-phase extraction for chunked many-to-one workflows (skeleton → fill).
 
 **Topics:**
+
 - When to use dense
 - Skeleton and fill phases
 - Configuration (dense_skeleton_batch_tokens, dense_fill_nodes_cap, parallel_workers)
 
 ---
 
-### 6. [Dense Extraction](dense-extraction.md)
-Two-phase skeleton-then-fill: Phase 1 discovers all entity instances per path; Phase 2 fills each with full schema data from the document.
-
-**Topics:**
-- When to use dense (granular structure + rich data)
-- Configuration (dense_skeleton_batch_tokens, dense_fill_nodes_cap, quality gate)
-
----
-
-### 7. [Model Merging](model-merging.md)
+### 5. [Model Merging](model-merging.md)
 Learn how multiple extractions are consolidated into single models.
 
 **Topics:**
+
 - Programmatic merging
 - LLM consolidation
 - Conflict resolution
@@ -366,25 +369,15 @@ Learn how multiple extractions are consolidated into single models.
 
 ---
 
-### 8. [Batch Processing](batch-processing.md)
+### 6. [Batch Processing](batch-processing.md)
 Optimize extraction with intelligent batching.
 
 **Topics:**
+
 - Chunk batching
 - Context window management
 - Adaptive batch sizing
 - Performance tuning
-
----
-
-### 9. Pipeline Orchestration
-Understand how pipeline stages are coordinated through the extraction process.
-
-**Topics:**
-- Stage execution
-- Context management
-- Error handling
-- Resource cleanup
 
 ---
 

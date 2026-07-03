@@ -6,6 +6,7 @@
 Docling settings control how documents are converted before extraction. Docling Graph uses the Docling library to convert PDFs and images into structured formats (markdown or JSON) that can be processed by LLMs or VLMs.
 
 **In this guide:**
+
 - OCR vs Vision pipeline
 - Export options
 - Pipeline selection
@@ -54,6 +55,7 @@ config = PipelineConfig(
 ### When to Use OCR
 
 ✅ **Use OCR when:**
+
 - Documents are text-heavy
 - Layout is standard (invoices, contracts, reports)
 - Speed is important
@@ -62,6 +64,7 @@ config = PipelineConfig(
 - Cost efficiency is a priority
 
 ❌ **Don't use OCR when:**
+
 - Documents have complex visual layouts
 - Tables have intricate structures
 - Handwriting needs processing
@@ -71,16 +74,19 @@ config = PipelineConfig(
 ### OCR Advantages
 
 1. **Fast Processing**
+
    - Quick text extraction
    - No GPU required
    - Efficient for batch processing
 
 2. **Good Accuracy**
+
    - Excellent for standard documents
    - Reliable text extraction
    - Handles most layouts well
 
 3. **Low Resource Usage**
+
    - CPU-only processing
    - Lower memory requirements
    - No special hardware needed
@@ -88,11 +94,13 @@ config = PipelineConfig(
 ### OCR Limitations
 
 1. **Layout Challenges**
+
    - May struggle with complex tables
    - Can miss visual relationships
    - Limited understanding of structure
 
 2. **Quality Dependent**
+
    - Poor scans reduce accuracy
    - Handwriting not well supported
    - Image quality matters
@@ -124,6 +132,7 @@ config = PipelineConfig(
 ### When to Use Vision
 
 ✅ **Use Vision when:**
+
 - Documents have complex layouts
 - Tables have intricate structures
 - Visual relationships are important
@@ -132,6 +141,7 @@ config = PipelineConfig(
 - GPU is available
 
 ❌ **Don't use Vision when:**
+
 - Documents are simple text
 - Speed is critical
 - GPU is not available
@@ -141,18 +151,21 @@ config = PipelineConfig(
 ### Vision Advantages
 
 1. **Visual Understanding**
+
    - Processes layout and structure
    - Understands visual relationships
    - Handles complex tables
    - Better with forms
 
 2. **Higher Accuracy**
+
    - Best for complex documents
    - Understands context visually
    - Fewer extraction errors
    - Better table handling
 
 3. **Robust to Quality**
+
    - Handles poor scans better
    - Works with handwriting
    - Processes images directly
@@ -160,12 +173,14 @@ config = PipelineConfig(
 ### Vision Limitations
 
 1. **Resource Intensive**
+
    - Requires GPU
    - Higher memory usage
    - Slower processing
    - More expensive hardware
 
 2. **Setup Complexity**
+
    - GPU drivers required
    - Model downloads needed
    - More configuration
@@ -212,6 +227,7 @@ export_docling_json=True  # Default
 **Output:** `outputs/docling_document.json`
 
 **Contains:**
+
 - Document metadata
 - Layout information
 - Tables and figures
@@ -229,6 +245,7 @@ export_markdown=True  # Default
 **Output:** `outputs/document.md`
 
 **Best for:**
+
 - Human-readable output
 - Documentation
 - Text analysis
@@ -245,6 +262,7 @@ export_per_page_markdown=False  # Default
 **Output:** `outputs/pages/page_001.md`, `page_002.md`, etc.
 
 **Best for:**
+
 - Page-by-page analysis
 - One-to-one processing
 - Page-level debugging

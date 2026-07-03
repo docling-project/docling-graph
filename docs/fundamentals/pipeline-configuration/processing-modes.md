@@ -6,6 +6,7 @@
 Processing modes determine how Docling Graph handles multi-page documents. The choice between **one-to-one** and **many-to-one** modes significantly affects extraction results and graph structure.
 
 **In this guide:**
+
 - One-to-one vs many-to-one comparison
 - When to use each mode
 - Graph structure differences
@@ -55,6 +56,7 @@ config = PipelineConfig(
 ### When to Use One-to-One
 
 ✅ **Use one-to-one when:**
+
 - Each page is an independent document (e.g., batch of invoices)
 - Pages have different structures
 - You need page-level granularity
@@ -62,6 +64,7 @@ config = PipelineConfig(
 - You want to track which page data came from
 
 ❌ **Don't use one-to-one when:**
+
 - Document is a single entity spanning multiple pages
 - Pages are continuation of same content
 - You need document-wide context
@@ -164,6 +167,7 @@ config = PipelineConfig(
 ### When to Use Many-to-One
 
 ✅ **Use many-to-one when:**
+
 - Document is a single entity (e.g., one invoice spanning multiple pages)
 - Pages are continuation of same content
 - You need document-wide context
@@ -171,6 +175,7 @@ config = PipelineConfig(
 - Document has cross-page relationships
 
 ❌ **Don't use many-to-one when:**
+
 - Each page is independent
 - Pages have different structures
 - You need page-level tracking

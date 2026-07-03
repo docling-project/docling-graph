@@ -6,6 +6,7 @@
 **Graph conversion** transforms Pydantic models into NetworkX directed graphs, creating nodes for entities and edges for relationships. This is the foundation of knowledge graph creation.
 
 **In this guide:**
+
 - Conversion process
 - Node and edge creation
 - Node ID registry
@@ -27,7 +28,7 @@
 ### Basic Usage
 
 ```python
-from docling_graph.core.converters import GraphConverter
+from docling_graph.core import GraphConverter
 
 # Create converter
 converter = GraphConverter()
@@ -41,7 +42,7 @@ print(f"Created graph with {metadata.node_count} nodes and {metadata.edge_count}
 ### With Configuration
 
 ```python
-from docling_graph.core.converters import GraphConverter
+from docling_graph.core import GraphConverter
 
 converter = GraphConverter(
     add_reverse_edges=False,  # Don't create bidirectional edges
@@ -85,9 +86,12 @@ class Address(BaseModel):
     "type": "entity",
     "__class__": "Organization",
     "name": "Acme Corp",
-    "address": None  # Reference to nested entity
+    "address": None,  # Reference to nested entity
+    "__provenance__": {"document_id": "...", "match": "verbatim", "chunks": [2], "pages": [1]},
 }
 ```
+
+`__provenance__` is added by the [data-grounding binder](provenance.md) when `provenance` is not `"off"` (the default). Being a dunder attribute, it can never collide with a template field. See [Data Grounding & Provenance](provenance.md).
 
 ---
 
@@ -153,23 +157,28 @@ assert id1 == id2  # True
 
 ### ID Generation
 
+The registry's `get_node_id()` derives an ID from a content fingerprint — a `blake2b` hash of the model's identity fields, truncated to 16 hex characters — and formats it as `"{ClassName}_{fingerprint}"`:
+
+- **Entities** (have `graph_id_fields` in `model_config`): the fingerprint is computed from those fields only, so two instances with the same identity field values always get the same ID regardless of other differing fields.
+- **Components** (`is_entity=False`, no `graph_id_fields`): the fingerprint is computed from *all* non-empty scalar fields, so identical components are deduplicated by content.
+
+This logic is internal to `NodeIDRegistry` — to change how a model's identity is derived, set `graph_id_fields` on that model's `model_config` rather than subclassing the registry (see [Key Concepts: Node ID Generation](../../introduction/key-concepts.md#node-id-generation)).
+
+---
+
+## Provenance Binding
+
+`pydantic_list_to_graph()` accepts an optional `provenance_binder` — a callable that annotates each node with a `__provenance__` attribute after edges are created but **before** automatic cleanup, so that when cleanup merges duplicate nodes, their provenance views are unioned rather than one being lost.
+
 ```python
-def generate_node_id(model: BaseModel) -> str:
-    """Generate deterministic node ID."""
-    class_name = model.__class__.__name__.lower()
-    
-    # Use stable fields for identity
-    stable_fields = {
-        k: v for k, v in model.model_dump().items()
-        if k not in {"id", "__class__"} and v is not None
-    }
-    
-    # Create content hash
-    content = json.dumps(stable_fields, sort_keys=True)
-    hash_suffix = hashlib.blake2b(content.encode()).hexdigest()[:8]
-    
-    return f"{class_name}_{hash_suffix}"
+def pydantic_list_to_graph(
+    self,
+    model_instances: list[BaseModel],
+    provenance_binder: Callable[[nx.DiGraph, list[BaseModel]], None] | None = None,
+) -> tuple[nx.DiGraph, GraphMetadata]:
 ```
+
+The pipeline builds this closure automatically (using the **same** `NodeIDRegistry` instance the converter uses, so binding can never disagree on node IDs) whenever `provenance` is not `"off"`; `GraphConverter` itself has no dependency on the provenance module. See [Data Grounding & Provenance](provenance.md) for what the binder does and the resulting node attribute shape.
 
 ---
 
@@ -243,7 +252,7 @@ print(f"Removed {graph.number_of_nodes() - cleaned_graph.number_of_nodes()} phan
 ### 📍 Basic Conversion
 
 ```python
-from docling_graph.core.converters import GraphConverter
+from docling_graph.core import GraphConverter
 from my_templates import BillingDocument, Organization, LineItem
 
 # Create sample models
@@ -271,7 +280,7 @@ print(f"Node types: {metadata.node_types}")
 ### 📍 With Reverse Edges
 
 ```python
-from docling_graph.core.converters import GraphConverter
+from docling_graph.core import GraphConverter
 
 # Create bidirectional edges
 converter = GraphConverter(add_reverse_edges=True)
@@ -286,7 +295,8 @@ print(f"Total edges (with reverse): {metadata.edge_count}")
 ### 📍 Shared Registry for Batches
 
 ```python
-from docling_graph.core.converters import GraphConverter, NodeIDRegistry
+from docling_graph.core import GraphConverter
+from docling_graph.core.converters.node_id_registry import NodeIDRegistry
 
 # Create shared registry
 registry = NodeIDRegistry()
@@ -305,18 +315,21 @@ print(f"Registry has {registry.get_stats()['total_entities']} unique entities")
 
 ### 📍 Custom Configuration
 
+`add_reverse_edges` and `validate_graph` are set directly on `GraphConverter` — they are read from these constructor arguments, not from the `config` object's matching-named fields:
+
 ```python
-from docling_graph.core.converters import GraphConverter, GraphConfig
+from docling_graph.core import GraphConverter
 
-# Create custom config
-config = GraphConfig(
-    add_reverse_edges=True,
-    validate_graph=True,
-    node_id_prefix="doc_"
-)
-
-converter = GraphConverter(config=config)
+converter = GraphConverter(add_reverse_edges=True, validate_graph=True)
 graph, metadata = converter.pydantic_list_to_graph(models)
+```
+
+`GraphConfig` itself mainly carries fixed internal constants (`NODE_ID_HASH_LENGTH`, `MAX_STRING_LENGTH`, `TRUNCATE_SUFFIX`); pass a custom instance only if you need to override those:
+
+```python
+from docling_graph.core import GraphConverter, GraphConfig
+
+converter = GraphConverter(config=GraphConfig(), add_reverse_edges=True)
 ```
 
 ---
@@ -325,16 +338,19 @@ graph, metadata = converter.pydantic_list_to_graph(models)
 
 ### Metadata Structure
 
+`GraphMetadata` is a frozen Pydantic model (`docling_graph.core.converters.models`), not a plain dataclass:
+
 ```python
-@dataclass
-class GraphMetadata:
+class GraphMetadata(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
     node_count: int
     edge_count: int
-    node_types: Dict[str, int]
-    edge_types: Dict[str, int]
-    avg_degree: float
-    density: float
-    source_model_count: int
+    node_types: Dict[str, int] = {}
+    edge_types: Dict[str, int] = {}
+    created_at: datetime = ...  # defaults to now(), UTC
+    source_models: int
+    average_degree: float | None = None
 ```
 
 ### Using Metadata
@@ -345,8 +361,9 @@ graph, metadata = converter.pydantic_list_to_graph(models)
 print(f"Graph Statistics:")
 print(f"  Nodes: {metadata.node_count}")
 print(f"  Edges: {metadata.edge_count}")
-print(f"  Density: {metadata.density:.2f}")
-print(f"  Avg degree: {metadata.avg_degree:.2f}")
+print(f"  Source models: {metadata.source_models}")
+if metadata.average_degree is not None:
+    print(f"  Avg degree: {metadata.average_degree:.2f}")
 
 print(f"\nNode Types:")
 for node_type, count in metadata.node_types.items():
@@ -373,21 +390,21 @@ graph, metadata = converter.pydantic_list_to_graph(models)
 # Useful for graph traversal in both directions
 ```
 
-### Custom Node IDs
+### Custom Node Identity
 
-Provide custom node ID logic:
+`NodeIDRegistry` has no public subclass hook for ID generation — identity is controlled entirely by `graph_id_fields` on the model's `model_config` (see [ID Generation](#id-generation) above), not by overriding registry internals:
 
 ```python
-from docling_graph.core.converters import NodeIDRegistry
+from pydantic import BaseModel
 
-class CustomRegistry(NodeIDRegistry):
-    def generate_node_id(self, model: BaseModel) -> str:
-        # Custom ID generation
-        return f"custom_{model.__class__.__name__}_{hash(model)}"
+class Invoice(BaseModel):
+    model_config = {"graph_id_fields": ["invoice_number"]}  # drives the ID fingerprint
 
-registry = CustomRegistry()
-converter = GraphConverter(registry=registry)
+    invoice_number: str
+    total: float
 ```
+
+To share ID assignment across separate `GraphConverter` calls (e.g. batch runs), pass the **same** `NodeIDRegistry` instance — see [Shared Registry for Batches](#shared-registry-for-batches) above.
 
 ---
 
@@ -418,8 +435,8 @@ converter = GraphConverter(
 
 graph, metadata = converter.pydantic_list_to_graph(models)
 
-# Clear registry after conversion
-converter.registry.clear()
+# NodeIDRegistry has no in-place reset; start a new one (and a new
+# GraphConverter) for the next, unrelated document instead of reusing it.
 ```
 
 ---
@@ -511,6 +528,7 @@ converter = GraphConverter(validate_graph=False)
 
 Now that you understand graph conversion:
 
-1. **[Export Formats →](export-formats.md)** - Export graphs to CSV, Cypher, JSON
-2. **[Visualization →](visualization.md)** - Visualize your graphs
-3. **[Neo4j Integration →](neo4j-integration.md)** - Import into Neo4j
+1. **[Data Grounding & Provenance →](provenance.md)** - Trace nodes back to source chunks and pages
+2. **[Export Formats →](export-formats.md)** - Export graphs to CSV, Cypher, JSON
+3. **[Visualization →](visualization.md)** - Visualize your graphs
+4. **[Neo4j Integration →](neo4j-integration.md)** - Import into Neo4j

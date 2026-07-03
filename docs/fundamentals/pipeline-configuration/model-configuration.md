@@ -6,6 +6,7 @@
 Model configuration determines which AI model processes your documents. Docling Graph supports multiple providers for both local and remote inference, giving you flexibility in choosing the right model for your needs.
 
 **In this guide:**
+
 - Local vs remote inference
 - Supported providers and models
 - Model selection strategies
@@ -79,6 +80,7 @@ uv run python -m vllm.entrypoints.openai.api_server \
 ```
 
 **Supported Models:**
+
 - `ibm-granite/granite-4.0-1b` (default, fast)
 - `ibm-granite/granite-4.0-3b` (balanced)
 - `meta-llama/Llama-3.1-8B` (high quality)
@@ -108,6 +110,7 @@ ollama pull llama3.1:8b
 ```
 
 **Supported Models:**
+
 - `llama3.1:8b` (recommended)
 - `mistral:7b`
 - `mixtral:8x7b`
@@ -156,6 +159,7 @@ config = PipelineConfig(
 ```
 
 **Supported Models:**
+
 - `numind/NuExtract-2.0-8B` (default, recommended)
 - `numind/NuExtract-2.0-2B` (faster, less accurate)
 
@@ -164,17 +168,20 @@ config = PipelineConfig(
 #### Hardware Requirements
 
 **Minimum (CPU only):**
+
 - 16GB RAM
 - 50GB disk space
 - Slow processing
 
 **Recommended (GPU):**
+
 - NVIDIA GPU with 8GB+ VRAM
 - 32GB RAM
 - 100GB disk space
 - CUDA 12.1+
 
 **Optimal (GPU):**
+
 - NVIDIA GPU with 24GB+ VRAM (RTX 4090, A100)
 - 64GB RAM
 - 200GB SSD
@@ -242,11 +249,13 @@ export OPENAI_API_KEY="your-api-key"
 ```
 
 **Supported Models:**
+
 - `gpt-4-turbo` (recommended, best quality)
 - `gpt-4` (high quality)
 - `gpt-3.5-turbo` (fast, economical)
 
 **Pricing (approximate):**
+
 - GPT-4 Turbo: $0.01/1K input tokens, $0.03/1K output tokens
 - GPT-3.5 Turbo: $0.0005/1K input tokens, $0.0015/1K output tokens
 
@@ -271,11 +280,13 @@ export MISTRAL_API_KEY="your-api-key"
 ```
 
 **Supported Models:**
+
 - `mistral-small-latest` (default, economical)
 - `mistral-medium-latest` (balanced)
 - `mistral-large-latest` (highest quality)
 
 **Pricing (approximate):**
+
 - Small: $0.001/1K tokens
 - Medium: $0.0027/1K tokens
 - Large: $0.008/1K tokens
@@ -301,10 +312,12 @@ export GEMINI_API_KEY="your-api-key"
 ```
 
 **Supported Models:**
+
 - `gemini-2.5-flash` (default, fast)
 - `gemini-2.0-pro` (high quality)
 
 **Pricing (approximate):**
+
 - Flash: $0.00025/1K input tokens, $0.00075/1K output tokens
 - Pro: $0.00125/1K input tokens, $0.005/1K output tokens
 

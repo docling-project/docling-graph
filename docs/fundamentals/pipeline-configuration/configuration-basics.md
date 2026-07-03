@@ -6,6 +6,7 @@
 The `PipelineConfig` class is the foundation of Docling Graph configuration. It provides type-safe, validated configuration for all pipeline operations. This guide covers the fundamentals of creating and using pipeline configurations.
 
 **In this guide:**
+
 - PipelineConfig structure
 - Required vs optional settings
 - Creating configurations
@@ -73,6 +74,7 @@ config = PipelineConfig(
 ```
 
 **Supported formats:**
+
 - PDF documents
 - Images (PNG, JPG, JPEG)
 - DOCX files
@@ -95,6 +97,7 @@ config = PipelineConfig(
 ```
 
 **Template must:**
+
 - Be a valid Pydantic BaseModel
 - Have proper `model_config` (graph_id_fields or is_entity)
 - Include the `edge()` helper function

@@ -6,6 +6,7 @@
 Validators ensure data quality and consistency in your extracted data. Pydantic provides powerful validation mechanisms that can transform, normalize, and validate field values before they're stored in your knowledge graph.
 
 **In this guide:**
+
 - Field validators for single-field validation
 - Model validators for cross-field validation
 - Pre-validators for data transformation
@@ -72,6 +73,7 @@ def normalize_email(cls, v: Any) -> Any:
 ```
 
 **Use cases:**
+
 - Normalizing strings (lowercase, strip whitespace)
 - Converting types (string to list)
 - Parsing complex formats
@@ -178,6 +180,7 @@ def validate_currency_format(cls, v: Any) -> Any:
 ```
 
 **Use cases:**
+
 - Validating format constraints
 - Checking value ranges
 - Enforcing business rules
@@ -762,6 +765,7 @@ def validate_positive(cls, v: Any) -> Any:
 ```
 
 **What happens:**
+
 - LLM extracts: `allowance_total: -258.12` (negative because it's a discount)
 - Validator rejects: "Monetary amount must be non-negative"
 - **Result:** Entire extraction fails, losing ALL extracted data
@@ -799,6 +803,7 @@ def coerce_positive(cls, v: Any) -> Any:
 ```
 
 **Benefits:**
+
 - ✅ Extraction succeeds even with "invalid" data
 - ✅ Data quality issues are logged for review
 - ✅ 99% correct data is preserved instead of lost
@@ -809,16 +814,19 @@ def coerce_positive(cls, v: Any) -> Any:
 Use lenient validators for:
 
 1. **Semantic Variations**
+
    - Negative amounts for discounts/allowances
    - Lowercase currency codes (normalize to uppercase)
    - Different date formats (parse and normalize)
 
 2. **Common LLM Mistakes**
+
    - Missing spaces in addresses
    - Wrong case in enums
    - Currency symbols instead of codes
 
 3. **Non-Critical Validation**
+
    - Format preferences (3-letter currency codes)
    - Range constraints (quantity > 0)
    - Pattern matching (email format)
@@ -828,11 +836,13 @@ Use lenient validators for:
 Use strict validators only for:
 
 1. **Critical Data Integrity**
+
    - Required fields that must be present
    - Type safety (must be a number, not a string)
    - Business rules that cannot be violated
 
 2. **Security Concerns**
+
    - SQL injection prevention
    - Path traversal prevention
    - XSS prevention
@@ -930,6 +940,7 @@ def coerce_positive(cls, v: Any) -> Any:
 ```
 
 **Log Levels:**
+
 - `logger.info()` - Normal coercion (e.g., lowercase → uppercase)
 - `logger.warning()` - Data quality issues (e.g., negative → positive)
 - `logger.error()` - Serious issues that couldn't be fixed

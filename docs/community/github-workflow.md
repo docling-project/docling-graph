@@ -317,6 +317,7 @@ Steps to reproduce the behavior.
 What you expected to happen.
 
 **Environment**
+
 - OS: [e.g., Ubuntu 22.04]
 - Python: [e.g., 3.10.12]
 - docling-graph: [e.g., v1.2.0]

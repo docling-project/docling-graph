@@ -6,6 +6,7 @@
 This guide provides **complete, real-world configuration examples** for common use cases. Each example includes full configuration, expected outputs, and integration patterns.
 
 **In this guide:**
+
 - Production-ready configurations
 - Common use case patterns
 - Integration examples
@@ -93,6 +94,7 @@ dev_outputs/
 ### When to Use
 
 ✅ **Use for:**
+
 - Template development
 - Quick testing
 - Debugging extraction
@@ -181,6 +183,7 @@ subprocess.run([
 ### When to Use
 
 ✅ **Use for:**
+
 - Production deployments
 - High reliability needs
 - Scalable processing
@@ -251,6 +254,7 @@ high_accuracy_outputs/
 ### When to Use
 
 ✅ **Use for:**
+
 - Complex layouts
 - Visual elements
 - High accuracy needs
@@ -335,6 +339,7 @@ batch_outputs/
 ### When to Use
 
 ✅ **Use for:**
+
 - Multiple documents
 - Automated workflows
 - Scheduled processing
@@ -413,6 +418,7 @@ class ResearchPaper(BaseModel):
 ### When to Use
 
 ✅ **Use for:**
+
 - Academic papers
 - Literature reviews
 - Citation extraction
@@ -517,6 +523,7 @@ invoices.to_csv("accounting_import.csv", index=False)
 ### When to Use
 
 ✅ **Use for:**
+
 - Invoice processing
 - Accounting automation
 - Financial data extraction
@@ -594,6 +601,7 @@ class ApplicationForm(BaseModel):
 ### When to Use
 
 ✅ **Use for:**
+
 - Application forms
 - Registration forms
 - Survey responses
@@ -639,6 +647,7 @@ run_pipeline(config)
 ### When to Use
 
 ✅ **Use for:**
+
 - International documents
 - Multi-language contracts
 - Global operations

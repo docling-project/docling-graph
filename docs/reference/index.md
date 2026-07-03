@@ -6,6 +6,7 @@
 Complete API reference for docling-graph modules, classes, and functions.
 
 **What's Included:**
+
 - Pipeline API
 - Configuration classes
 - Protocol definitions
@@ -80,6 +81,13 @@ Graph export formats.
 - `JSONExporter` - JSON format
 - `DoclingExporter` - Docling documents
 
+**[Provenance](provenance.md)**  
+Deterministic node-to-source grounding.
+
+- `ProvenanceLedger`, `NodeProvenance`, `ChunkRecord` - Ledger models
+- `bind_provenance()` - Binds `__provenance__` onto graph nodes
+- `locate_values()` - Verbatim identifier locator
+
 **[LLM Clients](llm-clients.md)**  
 LiteLLM-backed client for all LLM calls.
 
@@ -101,6 +109,7 @@ docling_graph/
 │   ├── converters/          # Graph conversion
 │   ├── extractors/          # Extraction strategies
 │   ├── exporters/           # Export formats
+│   ├── provenance/          # Data grounding (deterministic node-to-source)
 │   └── visualizers/         # Visualization
 │
 ├── llm_clients/             # LLM integrations
@@ -369,7 +378,8 @@ except ExtractionError as e:
 5. **[Converters →](converters.md)** - Graph conversion
 6. **[Extractors →](extractors.md)** - Extraction strategies
 7. **[Exporters →](exporters.md)** - Export formats
-8. **[LLM Clients →](llm-clients.md)** - LLM integrations
+8. **[Provenance →](provenance.md)** - Data grounding
+9. **[LLM Clients →](llm-clients.md)** - LLM integrations
 
 ---
 

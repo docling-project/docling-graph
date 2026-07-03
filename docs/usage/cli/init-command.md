@@ -273,6 +273,7 @@ Run: pip install docling-graph
 ```
 
 **Dependencies:**
+
 - `pip install docling-graph` installs the package with LiteLLM and all core runtime dependencies. If you installed from source, use `uv sync` instead.
 
 ---
@@ -485,6 +486,7 @@ Interactive mode not available. Using default configuration.
 ```
 
 **Solution:**
+
 - Running in non-interactive environment (CI/CD)
 - Default configuration will be used
 - Manually edit `config.yaml` if needed
@@ -514,6 +516,7 @@ Error creating config: Invalid backend type
 ```
 
 **Solution:**
+
 - Restart `init` command
 - Choose valid options (llm/vlm)
 - Check for typos in manual edits

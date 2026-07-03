@@ -6,6 +6,7 @@
 Test Pydantic templates, custom backends, and pipeline configurations to ensure reliable extraction and graph generation.
 
 **Prerequisites:**
+
 - Understanding of [Schema Definition](../../fundamentals/schema-definition/index.md)
 - Familiarity with [Python API](../api/index.md)
 - Basic pytest knowledge

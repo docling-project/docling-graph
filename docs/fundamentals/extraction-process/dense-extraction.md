@@ -24,19 +24,27 @@ Set `extraction_contract="dense"` in your config or use `--extraction-contract d
 
 ## How It Works
 
-1. **Phase 1 (Skeleton)** — Chunks are packed into token-bounded batches. For each batch, the LLM is asked to **identify every distinct entity** per catalog path using a compact **handle contract**: each node is `{"i": <handle>, "path": ..., "ids": {...}, "p": <parent handle>}`, where `i` is a batch-local integer and `p` references the parent node's handle in the same response (no property values, no repeated parent objects). Copying a one-digit integer is far more reliable for small models than re-writing parent identifier strings, and it removes the repeated ancestry objects that used to dominate output tokens (and cause truncation). Identifier values must be **short labels copied verbatim from the document** — never sentences. Phase 1 includes a **scope boundary**: extract only entities that are the primary subject, direct output, or original creation of the document; do not extract external references, cited works, or third-party entities mentioned for context. Phase 1 uses a **skeleton-only** semantic guide (paths and identity fields only), so the LLM cannot see or emit other template properties. Handles are resolved to (path, ids) parent references immediately after parsing; results are then merged across batches with deduplication by (path, identity). Output: a merged skeleton graph (nodes with correct hierarchy and identities; properties empty).
+### Architecture
 
-   **Truncation resilience** — If a skeleton batch is too entity-dense to fit one response within the model's output budget (common on small local models with a low output cap), the model's output is truncated and nodes are lost. When this is detected, one retry with a larger output budget is attempted — bounded by the model's true context window, which is probed automatically from LiteLLM metadata or the local server's `/models` endpoint (e.g. vLLM's `max_model_len`), never configured by the user. If the larger budget also truncates, escalation is disabled for the rest of the run and the batch is **split in half and each half retried** (recursively, down to single chunks), so the dropped nodes are recovered. This is fully domain-agnostic and needs no per-model tuning; it is the primary safeguard that keeps large or deeply-nested documents from silently losing entities or failing the quality gate.
+--8<-- "docs/assets/flowcharts/dense_extraction.md"
 
-   **Small-model robustness** — Skeleton responses are validated **per node**: malformed entries (e.g. echoed schema fragments from very small models) are skipped and counted, while valid nodes in the same batch are kept. Model-emitted paths that drop the `[]` list markers are canonicalized against the catalog instead of being discarded. The root (path `""`) is a singleton by definition, so paraphrased root identifiers across batches are collapsed into a single root node.
+1. **Phase 1 (Skeleton)** — Chunks are packed into token-bounded batches. For each batch, the LLM is asked to **identify every distinct entity** per catalog path using a compact **handle contract**: each node is
 
-   **Skeleton dedupe (`dense_dedupe`)** — After batch merge, duplicate skeleton nodes are collapsed. `off`: exact canonical-id dedup only. `standard` (default): adds one cheap id-space LLM call (no document content) that reviews the per-path instance lists and proposes alias groups — instances that refer to the same real-world entity at different granularities (e.g. a generic "LFP slurry batch" alongside the specific "LFP_20vol_5wtPVDF_4wtCB"). Aliases are merged into the most specific instance; the prompt explicitly forbids merging instances that differ by any parameter, quantity, condition, date, or index, and invalid responses are ignored, so this pass can only merge, never lose nodes. `aggressive`: also fuzzy-merges near-identical same-path identifier strings (OCR noise such as dropped accents or spacing); the similarity threshold is internal, and identifiers that differ in any digit run never merge.
+    - **Truncation resilience** — If a skeleton batch is too entity-dense to fit one response within the model's output budget (common on small local models with a low output cap), the model's output is truncated and nodes are lost. When this is detected, one retry with a larger output budget is attempted—bounded by the model's true context window, which is probed automatically from LiteLLM metadata or the local server's `/models` endpoint (e.g. vLLM's `max_model_len`), never configured by the user. If the larger budget also truncates, escalation is disabled for the rest of the run and the batch is **split in half and each half retried** (recursively, down to single chunks), so the dropped nodes are recovered. This is fully domain-agnostic and needs no per-model tuning; it is the primary safeguard that keeps large or deeply nested documents from silently losing entities or failing the quality gate.
 
-2. **Quality gate** — After Phase 1, the pipeline requires a non-empty skeleton with at least one root instance. This is an invariant, not an option. If the gate fails, dense returns `None` and the strategy falls back to a direct single-call extraction of the full document. A sparse-but-valid dense result is always kept (there is no sparsity veto on dense output; dense relies on this gate instead).
+    - **Small-model robustness** — Skeleton responses are validated **per node**: malformed entries (e.g. echoed schema fragments from very small models) are skipped and counted, while valid nodes in the same batch are kept. Model-emitted paths that drop the `[]` list markers are canonicalized against the catalog instead of being discarded. The root (path `""`) is a singleton by definition, so paraphrased root identifiers across batches are collapsed into a single root node.
 
-3. **Phase 2 (Flesh)** — The skeleton is converted to per-path **descriptors** (path, ids, parent). Paths are processed in **bottom-up** order. For each path, descriptors are batched (up to `dense_fill_nodes_cap` per call). The LLM receives a **scoped document context** (by default, the skeleton batches where the instances were observed plus the document head; the root instance always gets the full document — set `dense_fill_context="full"` to always send everything) and the complete list of instance identifiers; it returns one filled object per instance, in order, according to the projected schema for that path. Short responses are padded so skeleton instances are never silently dropped, and identity values already captured by the skeleton are restored whenever the fill response omits them or returns something unusable (null, empty string, nested object). Filled objects are merged into a template-shaped root by attaching each object to its parent via descriptor linkage. Because LLMs drift on parent identifiers, the merge applies a **rescue ladder** per instance: exact id match → unique parent instance → unique fuzzy (canonical containment) id match → id-only placeholder parent materialized up the chain. Instances whose parent ids are entirely empty are rescued into a shared id-less bucket parent rather than dropped. After merge, branch nodes with no filled children and no scalar data (barren branches) are pruned — an invariant, not an option. Recoveries and drops are counted, logged, and written to `dense_merge_stats.json` in debug mode.
+    - **Skeleton dedupe (`dense_dedupe`)** — After batch merge, duplicate skeleton nodes are collapsed.
 
-4. **Output** — A single template-shaped dict (validated to your Pydantic model as with other contracts).
+        - `off`: exact canonical-id dedup only.
+        - `standard` (default): adds one cheap id-space LLM call (no document content) that reviews the per-path instance lists and proposes alias groups—instances that refer to the same real-world entity at different granularities (e.g. a generic `"LFP slurry batch"` alongside the specific `"LFP_20vol_5wtPVDF_4wtCB"`). Aliases are merged into the most specific instance. The prompt explicitly forbids merging instances that differ by any parameter, quantity, condition, date, or index, and invalid responses are ignored, so this pass can only merge, never lose nodes.
+        - `aggressive`: also fuzzy-merges near-identical same-path identifier strings (OCR noise such as dropped accents or spacing). The similarity threshold is internal, and identifiers that differ in any digit run never merge.
+
+2. **Quality gate** — After Phase 1, the pipeline requires a non-empty skeleton with at least one root instance. This is an invariant, not an option. If the gate fails, `dense` returns `None` and the strategy falls back to a direct single-call extraction of the full document. A sparse-but-valid dense result is always kept (there is no sparsity veto on dense output; dense relies on this gate instead).
+
+3. **Phase 2 (Fill)** — The skeleton is converted to per-path **descriptors** (path, ids, parent). Paths are processed in **bottom-up** order. For each path, descriptors are batched (up to `dense_fill_nodes_cap` per call). The LLM receives a **scoped document context** (by default, the skeleton batches where the instances were observed plus the document head; the root instance always gets the full document — set `dense_fill_context="full"` to always send everything) and the complete list of instance identifiers; it returns one filled object per instance, in order, according to the projected schema for that path. Short responses are padded so skeleton instances are never silently dropped, and identity values already captured by the skeleton are restored whenever the fill response omits them or returns something unusable (null, empty string, nested object). Filled objects are merged into a template-shaped root by attaching each object to its parent via descriptor linkage. Because LLMs drift on parent identifiers, the merge applies a **rescue ladder** per instance: exact id match → unique parent instance → unique fuzzy (canonical containment) id match → id-only placeholder parent materialized up the chain. Instances whose parent ids are entirely empty are rescued into a shared id-less bucket parent rather than dropped. After merge, branch nodes with no filled children and no scalar data (barren branches) are pruned — an invariant, not an option. Recoveries and drops are counted, logged, and written to `dense_merge_stats.json` in debug mode.
+
+4. **Output** — A single template-shaped dict (validated to your Pydantic model as with other contracts).y
 
 ---
 
@@ -80,6 +88,10 @@ Mandatory cleanup steps are **invariants** with no config surface: root singleto
 
 Every dense run writes its health counters to `metadata.json` (`results.dense`) and the markdown report (**Dense Extraction Statistics**): skeleton nodes discovered, truncated responses, batch splits, reconciled aliases, recovered/dropped parent links, and skeleton retention %. Regressions in these failure modes are therefore visible per run without debugging. With `debug=True`, artifacts such as `dense_skeleton_graph.json`, `dense_merge_stats.json` and `dense_run_stats.json` are written to the debug directory.
 
+### Provenance
+
+Dense is the contract with the richest [grounding](../graph-management/provenance.md): the skeleton phase's per-batch bookkeeping lets every extracted node be traced back to the chunk(s) it was observed in, and — when its final identifier appears verbatim in the document — to an exact chunk and page. This is fully deterministic and adds no prompt or output-schema overhead; it is controlled by the separate top-level `provenance` setting (default `"standard"`), not by any dense-specific option. See [Data Grounding & Provenance](../graph-management/provenance.md) for the full picture, including how it differs for the direct contract.
+
 ### Performance
 
 For long documents, set `parallel_workers` (e.g. 2–4) so that Phase 1 skeleton batches and Phase 2 fill batches run in parallel; this reduces wall-clock time without changing merge logic or output quality. **Chunk and batch sizing:** Both **chunk size** (`chunk_max_tokens`, e.g. 512–1024 per chunk) and **dense_skeleton_batch_tokens** (e.g. 1024–2048) determine how many Phase 1 batches you get. If the chunker produces one huge chunk for the whole document, you will get only one batch no matter how low you set `dense_skeleton_batch_tokens`. Set a strict max tokens per chunk so the document splits into many chunks; then the batch token limit groups those chunks into multiple batches. The options `dense_fill_nodes_cap` and `dense_skeleton_batch_tokens` trade off the number of LLM calls vs tokens per call (fewer, larger batches mean fewer calls but more tokens per request). **Fill context:** with the default `dense_fill_context="scoped"`, each Phase 2 call sends only the document regions where the node was observed instead of the whole document; on long documents this cuts Phase 2 token volume by an order of magnitude. Use `dense_fill_context="full"` if your entities are described far away from where they are first mentioned.
@@ -119,13 +131,22 @@ uv run docling-graph convert document.pdf \
 
 ## Trace and debugging
 
-When dense runs, the pipeline can emit trace data (e.g. via `trace_data`) containing:
+When dense runs, the pipeline emits a `dense_trace_emitted` trace event (see [Trace Data Debugging](../../usage/advanced/trace-data-debugging.md)) containing:
 
 - `contract: "dense"`
 - `phase1_elapsed`, `phase2_elapsed` (seconds)
 - `skeleton_nodes`, `path_counts`
+- `merge_stats`, `run_stats` (the same counters written to `metadata.json` and the report)
 
-With `debug=True`, the debug directory may contain `dense_skeleton_graph.json` (merged Phase 1 nodes).
+With `debug=True`, the debug directory (`outputs/{document}_{timestamp}/debug/`) contains:
+
+| File | Contents |
+|------|----------|
+| `dense_skeleton_graph.json` | Merged Phase 1 skeleton nodes (paths + identities, no property values) |
+| `dense_merge_stats.json` | Phase 2 merge-into-root stats: attached/recovered/dropped instance counts |
+| `dense_run_stats.json` | The same run-level counters surfaced in `metadata.json` `results.dense` |
+| `dense_provenance.json` | The full provenance ledger for the run (present when `provenance` is not `"off"`; see [Data Grounding & Provenance](../graph-management/provenance.md)) |
+| `trace_data.json` | The full step-by-step pipeline trace |
 
 ---
 
@@ -134,4 +155,5 @@ With `debug=True`, the debug directory may contain `dense_skeleton_graph.json` (
 - [Extraction Backends](extraction-backends.md) — LLM vs VLM and contracts
 - [Pipeline Configuration](../pipeline-configuration/configuration-basics.md) — Core runtime settings
 - [Schema Definition](../schema-definition/index.md) — Template design guidance
+- [Data Grounding & Provenance](../graph-management/provenance.md) — tracing nodes back to source chunks and pages
 - [Configuration reference](../../reference/config.md)

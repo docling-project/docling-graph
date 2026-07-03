@@ -6,6 +6,7 @@
 The `inspect` command creates **interactive HTML visualizations** of your knowledge graphs that open in your browser.
 
 **Key Features:**
+
 - Interactive node/edge exploration
 - CSV and JSON import
 - Self-contained HTML output
@@ -207,6 +208,7 @@ uv run docling-graph inspect outputs/ \
 ### Node Exploration
 
 **Click on a node to:**
+
 - View node properties
 - Highlight connected edges
 - See relationship details
@@ -215,6 +217,7 @@ uv run docling-graph inspect outputs/ \
 ### Edge Exploration
 
 **Click on an edge to:**
+
 - View relationship type
 - See source and target nodes
 - View edge properties
@@ -222,6 +225,7 @@ uv run docling-graph inspect outputs/ \
 ### Graph Navigation
 
 **Controls:**
+
 - **Zoom:** Mouse wheel or pinch
 - **Pan:** Click and drag
 - **Reset:** Double-click background
@@ -230,6 +234,7 @@ uv run docling-graph inspect outputs/ \
 ### Layout Options
 
 **Available layouts:**
+
 - **Force-directed:** Automatic positioning
 - **Hierarchical:** Top-down structure
 - **Circular:** Nodes in a circle
@@ -274,6 +279,7 @@ uv run docling-graph inspect outputs/
 ```
 
 **Checks:**
+
 - Directory exists
 - `nodes.csv` exists
 - `edges.csv` exists
@@ -292,6 +298,7 @@ uv run docling-graph inspect graph.json --format json
 ```
 
 **Checks:**
+
 - File exists
 - File has `.json` extension
 - Valid JSON format
@@ -466,12 +473,14 @@ cat qa_output/markdown_report.md
 ### When to Use inspect
 
 ✅ **Use inspect for:**
+
 - Quick visualization during development
 - Sharing results with non-technical users
 - Small to medium graphs (<1000 nodes)
 - No database setup required
 
 ❌ **Use Neo4j for:**
+
 - Large graphs (>1000 nodes)
 - Complex queries
 - Production deployments

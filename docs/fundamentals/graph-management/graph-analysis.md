@@ -6,6 +6,7 @@
 **Graph analysis** helps you understand the structure, quality, and characteristics of your knowledge graphs through metrics, statistics, and validation.
 
 **In this guide:**
+
 - Graph metrics
 - Quality checks
 - Connectivity analysis

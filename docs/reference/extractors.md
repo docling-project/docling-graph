@@ -8,42 +8,41 @@ Document extraction strategies and backends.
 **Module:** `docling_graph.core.extractors`
 
 !!! tip "Recent Improvements"
-    - **Model Capability Detection**: Automatic tier detection and adaptive prompting
-    - **Chain of Density**: Multi-turn consolidation for ADVANCED tier models
-    - **Zero Data Loss**: Returns partial models instead of empty results on failures
-    - **Real Tokenizers**: Accurate token counting with 20% safety margins
-    - **Enhanced GPU Cleanup**: Better memory management for VLM backends
+    - **Zero Data Loss**: Many-to-one returns partial models instead of empty results when merge fails
+    - **Enhanced GPU Cleanup**: Model-to-CPU transfer, CUDA cache clearing, and multi-GPU support for VLM backends
 
 ---
 
 ## Extraction Strategies
 
-### OneToOne
+### OneToOneStrategy
 
-Per-page extraction strategy.
+Per-page extraction strategy. Each page is processed independently.
 
 ```python
-class OneToOne(ExtractorProtocol):
-    """Extract data from each page separately."""
-    
-    def __init__(self, backend: Backend):
-        """Initialize with backend."""
-        self.backend = backend
-    
-    def extract(
-        self,
-        source: str,
-        template: Type[BaseModel]
-    ) -> List[BaseModel]:
+class OneToOneStrategy(BaseExtractor):
+    """Extracts one model per page/item using Protocol-based type checking."""
+
+    def __init__(self, backend: Backend, docling_config: str = "default") -> None:
         """
-        Extract from each page.
-        
+        Args:
+            backend: VlmBackend or LlmBackend instance.
+            docling_config: Docling pipeline configuration ('ocr' or 'vision').
+        """
+
+    def extract(
+        self, source: str, template: Type[BaseModel]
+    ) -> Tuple[List[BaseModel], DoclingDocument | None]:
+        """
         Returns:
-            List of models (one per page)
+            Tuple of (models, docling_document):
+            - models: one Pydantic model per page.
+            - docling_document: the converted document, or None on failure.
         """
 ```
 
 **Use Cases:**
+
 - Multi-page documents with independent content
 - Page-level analysis
 - Parallel processing
@@ -51,72 +50,86 @@ class OneToOne(ExtractorProtocol):
 **Example:**
 
 ```python
-from docling_graph.core.extractors import OneToOne
-from docling_graph.core.extractors.backends import LLMBackend
+from docling_graph.core.extractors import OneToOneStrategy
+from docling_graph.core.extractors.backends.llm_backend import LlmBackend
+from docling_graph.llm_clients import get_client
+from docling_graph.llm_clients.config import resolve_effective_model_config
 
-backend = LLMBackend(model="llama-3.1-8b")
-extractor = OneToOne(backend=backend)
+effective = resolve_effective_model_config("ollama", "llama3.1:8b")
+client = get_client("ollama")(model_config=effective)
+backend = LlmBackend(llm_client=client)
 
-results = extractor.extract("document.pdf", MyTemplate)
+extractor = OneToOneStrategy(backend=backend, docling_config="ocr")
+results, docling_document = extractor.extract("document.pdf", MyTemplate)
 print(f"Extracted {len(results)} pages")
 ```
 
 ---
 
-### ManyToOne
+### ManyToOneStrategy
 
-Consolidated extraction strategy with zero data loss.
+Extracts one consolidated model from an entire document.
 
 ```python
-class ManyToOne(ExtractorProtocol):
-    """Extract and consolidate data from entire document."""
-    
+class ManyToOneStrategy(BaseExtractor):
+    """Extracts one consolidated model from an entire document."""
+
     def __init__(
         self,
         backend: Backend,
+        docling_config: str = "ocr",
+        extraction_contract: str = "direct",
         use_chunking: bool = True,
-    ):
-        """Initialize with backend and options."""
-        self.backend = backend
-        self.use_chunking = use_chunking
-    
-    def extract(
-        self,
-        source: str,
-        template: Type[BaseModel]
-    ) -> List[BaseModel]:
+        chunk_max_tokens: int | None = None,
+    ) -> None:
         """
-        Extract and consolidate.
-        
+        Args:
+            backend: VlmBackend or LlmBackend instance.
+            docling_config: Docling pipeline configuration ('ocr' or 'vision').
+            extraction_contract: 'direct' or 'dense' (LLM backend only).
+            use_chunking: Enable document chunking (required for 'dense').
+            chunk_max_tokens: Max tokens per chunk when chunking is used.
+        """
+
+    def extract(
+        self, source: str, template: Type[BaseModel]
+    ) -> Tuple[List[BaseModel], DoclingDocument | None]:
+        """
         Returns:
-            List with single consolidated model (success)
-            or multiple partial models (merge failure - zero data loss)
+            Tuple of (models, docling_document):
+            - models: single-element list with the merged model on success;
+              multiple partial models if consolidation fails (zero data loss);
+              empty list on total failure.
+            - docling_document: the converted document, or None on failure.
         """
 ```
 
 **Use Cases:**
+
 - Single entity across document
 - Consolidated information
 - Summary extraction
 
 **Features:**
-- **Zero Data Loss**: Returns partial models if consolidation fails
-- **Consolidation**: Programmatic merge of chunk results
-- **Schema-Aware Chunking**: Dynamically adjusts chunk size based on schema
+
+- **Zero Data Loss**: Returns all partial models if consolidation fails, instead of discarding data
+- **Contract-driven**: `extraction_contract="direct"` (single call) or `"dense"` (two-phase skeleton-then-fill; see [Dense Extraction](../fundamentals/extraction-process/dense-extraction.md))
+- **Chunking**: `use_chunking=True` splits large documents via `DocumentChunker` before extraction
 
 **Example:**
 
 ```python
-from docling_graph.core.extractors import ManyToOne
-from docling_graph.core.extractors.backends import LLMBackend
+from docling_graph.core.extractors import ManyToOneStrategy
+from docling_graph.core.extractors.backends.llm_backend import LlmBackend
+from docling_graph.llm_clients import get_client
+from docling_graph.llm_clients.config import resolve_effective_model_config
 
-backend = LLMBackend(model="llama-3.1-8b")
-extractor = ManyToOne(
-    backend=backend,
-    use_chunking=True,
-)
+effective = resolve_effective_model_config("ollama", "llama3.1:8b")
+client = get_client("ollama")(model_config=effective)
+backend = LlmBackend(llm_client=client)
 
-results = extractor.extract("document.pdf", MyTemplate)
+extractor = ManyToOneStrategy(backend=backend, use_chunking=True)
+results, docling_document = extractor.extract("document.pdf", MyTemplate)
 
 # Check if consolidation succeeded
 if len(results) == 1:
@@ -129,95 +142,94 @@ else:
 
 ## Backends
 
-### LLMBackend
+### LlmBackend
 
-LLM-based extraction backend with adaptive prompting.
+LLM-based extraction backend. Performs direct full-document extraction in a single call, or contract-driven skeleton-then-fill extraction when `extraction_contract="dense"`.
 
 ```python
-class LLMBackend(TextExtractionBackendProtocol):
-    """LLM backend for text extraction."""
-    
+class LlmBackend:
+    """Backend for LLM-based extraction."""
+
     def __init__(
         self,
-        client: LLMClientProtocol,
-        model: str,
-        provider: str
-    ):
-        """Initialize LLM backend."""
-        self.client = client
-        self.model_capability = self._detect_capability()  # Auto-detect tier
+        llm_client: LLMClientProtocol,
+        extraction_contract: Literal["direct", "dense"] = "direct",
+        dense_config: dict[str, Any] | None = None,
+        structured_output: bool = True,
+        structured_sparse_check: bool = True,
+    ) -> None:
+        """
+        Args:
+            llm_client: LLM client instance implementing LLMClientProtocol.
+            extraction_contract: 'direct' (single call) or 'dense' (skeleton-then-fill).
+            dense_config: Dense-contract tuning (see Dense Extraction docs).
+            structured_output: Use API schema-enforced output when supported.
+            structured_sparse_check: Retry with legacy prompt mode if structured output looks sparse.
+        """
 ```
 
 **Methods:**
 
-- `extract_from_markdown(markdown, template, context, is_partial)` - Extract from markdown with adaptive prompting
-- `consolidate_from_pydantic_models(raw_models, programmatic_model, template)` - Consolidate models (uses Chain of Density for ADVANCED tier)
-- `cleanup()` - Clean up resources
-
-**Model Capability Tiers:**
-
-| Tier | Model Size | Prompt Style | Consolidation |
-|:-----|:-----------|:-------------|:--------------|
-| **SIMPLE** | 1B-7B | Minimal | Single-turn |
-| **STANDARD** | 7B-13B | Balanced | Single-turn |
-| **ADVANCED** | 13B+ | Detailed | Chain of Density (3 turns) |
+- `extract_from_markdown(markdown, template, context="document", is_partial=False) -> BaseModel | None` — direct, single-call extraction
+- `extract_from_chunk_batches(*, chunks, chunk_metadata, template, context="document") -> BaseModel | None` — dense contract entry point (skeleton + fill across pre-chunked content)
+- `generate(system_prompt, user_prompt, max_tokens=None)` — free-form generation, used internally for gleaning passes
+- `cleanup()` — release the underlying LLM client
 
 **Example:**
 
 ```python
-from docling_graph.core.extractors.backends import LLMBackend
+from docling_graph.core.extractors.backends.llm_backend import LlmBackend
 from docling_graph.llm_clients import get_client
 from docling_graph.llm_clients.config import resolve_effective_model_config
 
-# STANDARD tier model (7B-13B)
 effective = resolve_effective_model_config("ollama", "llama3.1:8b")
 client = get_client("ollama")(model_config=effective)
-backend = LLMBackend(llm_client=client)
+backend = LlmBackend(llm_client=client)
 
-# Automatically uses STANDARD tier prompts
 model = backend.extract_from_markdown(
     markdown=markdown,
     template=MyTemplate,
     context="full document",
-    is_partial=False
+    is_partial=False,
 )
 ```
 
 ---
 
-### VLMBackend
+### VlmBackend
 
-Vision-Language Model backend with enhanced GPU cleanup.
+Vision-Language Model backend (local inference only), with enhanced GPU cleanup.
 
 ```python
-class VLMBackend(ExtractionBackendProtocol):
-    """VLM backend for document extraction."""
-    
-    def __init__(self, model: str):
-        """Initialize VLM backend."""
-        self.model_name = model
-        self.model = None  # Loaded on first use
+class VlmBackend:
+    """Backend for VLM-based extraction (local only)."""
+
+    def __init__(self, model_name: str) -> None:
+        """
+        Args:
+            model_name: HuggingFace model repository ID (e.g. 'numind/NuExtract-2.0-8B').
+        """
 ```
 
 **Methods:**
 
-- `extract_from_document(source, template)` - Extract from document
-- `cleanup()` - Enhanced GPU memory cleanup
+- `extract_from_document(source, template) -> List[BaseModel]` — extract directly from the document image/PDF (one model per page/item)
+- `cleanup()` — enhanced GPU memory cleanup
+- `cleanup_all_gpus()` — clear CUDA cache across every visible device (multi-GPU setups)
 
 **Enhanced GPU Cleanup:**
 
-The `cleanup()` method now includes:
+The `cleanup()` method includes:
 - Model-to-CPU transfer before deletion
-- Explicit CUDA cache clearing
+- Explicit CUDA cache clearing and synchronization
 - Memory usage tracking and logging
-- Multi-GPU device support
 
 **Example:**
 
 ```python
-from docling_graph.core.extractors.backends import VLMBackend
+from docling_graph.core.extractors.backends.vlm_backend import VlmBackend
 
-backend = VLMBackend(model_name="numind/NuExtract-2.0-8B")
+backend = VlmBackend(model_name="numind/NuExtract-2.0-8B")
 
 try:
     models = backend.extract_from_document("document.pdf", MyTemplate)
@@ -234,8 +246,8 @@ finally:
 Handles document conversion and markdown extraction.
 
 ```python
-class DocumentProcessor(DocumentProcessorProtocol):
-    """Process documents with Docling."""
+class DocumentProcessor:
+    """Process documents with Docling. Structurally satisfies DocumentProcessorProtocol."""
     
     def convert_to_docling_doc(self, source: str) -> Any:
         """Convert to Docling document."""
@@ -253,80 +265,55 @@ class DocumentProcessor(DocumentProcessorProtocol):
 
 ### DocumentChunker
 
-Handles document chunking with real tokenizers and schema-aware sizing.
+Structure-preserving document chunker built on Docling's `HybridChunker`. Keeps tables and lists intact, respects section hierarchy, and guarantees no chunk exceeds `chunk_max_tokens`.
 
 ```python
 class DocumentChunker:
-    """Chunk documents for processing."""
-    
+    """Structure-preserving document chunker using Docling's HybridChunker."""
+
     def __init__(
         self,
-        provider: str,
-        max_tokens: int = None,
-        tokenizer_name: str = None,
-        schema_json: str | None = None
-    ):
+        tokenizer_name: str | None = None,
+        chunk_max_tokens: int = 512,
+        merge_peers: bool = True,
+    ) -> None:
         """
-        Initialize chunker.
-        
         Args:
-            provider: LLM provider (for tokenizer selection)
-            max_tokens: Maximum tokens per chunk
-            tokenizer_name: Specific tokenizer to use
-            schema_json: Schema JSON string for dynamic adjustment
+            tokenizer_name: Tokenizer to use for counting (default:
+                sentence-transformers/all-MiniLM-L6-v2; pass "tiktoken" for
+                OpenAI-style counting).
+            chunk_max_tokens: Maximum tokens per chunk (hard cap).
+            merge_peers: Merge peer sections during chunking.
         """
-    
-    def chunk_markdown(
-        self,
-        markdown: str,
-        max_tokens: int
-    ) -> List[str]:
-        """
-        Chunk markdown by tokens using real tokenizer.
-        
-        Args:
-            markdown: Markdown content
-            max_tokens: Maximum tokens per chunk
-            
-        Returns:
-            List of markdown chunks
-        """
-    
-    def update_schema_config(self, schema_json: str):
-        """
-        Update schema configuration dynamically.
-        
-        Args:
-            schema_json: New schema JSON string
-        """
+
+    def chunk_document(self, document: DoclingDocument) -> List[str]:
+        """Chunk a DoclingDocument into structure-aware text chunks."""
+
+    def chunk_document_with_stats(self, document: DoclingDocument) -> tuple[List[str], dict]:
+        """Chunk and return stats: total_chunks, avg_tokens, max_tokens_in_chunk, ..."""
+
+    def chunk_text_fallback(self, text: str) -> List[str]:
+        """Sentence-aware fallback splitter for raw text without a DoclingDocument."""
+
+    def get_config_summary(self) -> dict:
+        """Return the chunker's current configuration."""
 ```
 
 **Features:**
 
-- **Real Tokenizers**: Uses provider-specific tokenizers for accurate token counting
-- **Safety Margins**: Reserves a fixed 100-token buffer for protocol overhead
-- **Schema-Aware**: Dynamically adjusts chunk size based on exact prompt tokens
-- **Provider-Specific**: Optimized for each LLM provider
+- **Structure-preserving**: Tables, lists, and section hierarchy are kept intact via Docling's `HybridChunker`
+- **Hard cap**: Any chunk that would exceed `chunk_max_tokens` is re-split by `chunk_text_fallback` (sentence, then word, then character boundaries) — chunks never silently exceed the limit
+- **Single sizing knob**: `chunk_max_tokens` — no coupling to model context limits or output budgets
 
 **Example:**
 
 ```python
-import json
+from docling_graph.core.extractors.document_chunker import DocumentChunker
 
-from docling_graph.core.extractors import DocumentChunker
+chunker = DocumentChunker(chunk_max_tokens=1024, merge_peers=True)
 
-# Create chunker with real tokenizer
-chunker = DocumentChunker(
-    provider="mistral",
-    max_tokens=4096,
-    schema_json=json.dumps(MyTemplate.model_json_schema())
-)
-
-# Chunk with accurate token counting
-chunks = chunker.chunk_markdown(markdown, max_tokens=4096)
-
-# Update for different schema
-chunker.update_schema_config(schema_json=json.dumps(OtherTemplate.model_json_schema()))
+chunks = chunker.chunk_document(docling_document)
+print(f"{len(chunks)} chunks, config: {chunker.get_config_summary()}")
 ```
 
 ---
@@ -335,10 +322,10 @@ chunker.update_schema_config(schema_json=json.dumps(OtherTemplate.model_json_sch
 
 ### ExtractorFactory.create_extractor()
 
-Creates an extractor from pipeline configuration. Used internally by the pipeline; for programmatic use, import from `docling_graph.core.extractors`.
+Creates an extractor from pipeline configuration. Used internally by the pipeline; for programmatic use, import from `docling_graph.core`.
 
 ```python
-from docling_graph.core.extractors import ExtractorFactory
+from docling_graph.core import ExtractorFactory
 
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
@@ -384,16 +371,16 @@ else:
         process_partial(model)
 ```
 
-### Real Tokenizer Integration
+### Structure-Preserving Chunking
 
-Accurate token counting with safety margins:
+Chunks respect table, list, and section boundaries and never exceed the configured token cap:
 
 ```python
-chunker = DocumentChunker(
-    provider="mistral",
-    max_tokens=4096  # Uses real Mistral tokenizer
-)
-# Applies 20% safety margin automatically
+from docling_graph.core.extractors.document_chunker import DocumentChunker
+
+chunker = DocumentChunker(chunk_max_tokens=1024)
+chunks = chunker.chunk_document(docling_document)
+# Every chunk is <= 1024 tokens; oversized structural chunks are re-split, never dropped.
 ```
 
 ---

@@ -6,6 +6,7 @@
 Add custom stages to the docling-graph pipeline for specialized preprocessing, validation, or post-processing tasks.
 
 **Prerequisites:**
+
 - Understanding of [Pipeline Architecture](../../introduction/architecture.md)
 - Familiarity with [Python API](../api/index.md)
 - Knowledge of pipeline context

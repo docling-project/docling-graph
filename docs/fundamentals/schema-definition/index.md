@@ -25,5 +25,4 @@ Pydantic templates are the schema contract for the supported extraction modes (`
 4. `relationships.md`
 5. `best-practices.md`
 6. `validation.md`
-7. `staged-extraction-schema.md` (dense)
-8. `advanced-patterns.md`
+7. `advanced-patterns.md`

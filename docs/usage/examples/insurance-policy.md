@@ -386,6 +386,7 @@ uv run docling-graph inspect outputs/insurance/
 ```
 
 **Features:**
+
 - View policy structure
 - Explore coverage relationships
 - See beneficiary connections

@@ -307,6 +307,32 @@ uv run docling-graph convert document.pdf \
     --parallel-workers 2
 ```
 
+### Provenance
+
+Deterministic data grounding — maps every graph node back to its source chunk(s) and page(s). No LLM involvement; applies to **both** `direct` and `dense` contracts. Enabled by default.
+
+```bash
+--provenance {off|standard|detailed}
+```
+
+- `standard` (default): `__provenance__` node attribute + `provenance.json` export.
+- `detailed`: also embeds character-offset spans in the node attribute.
+- `off`: disables grounding entirely (output is byte-identical to the feature not existing).
+
+**Example:**
+
+```bash
+uv run docling-graph convert document.pdf \
+    --template "templates.ScholarlyRheologyPaper" \
+    --processing-mode many-to-one \
+    --extraction-contract dense \
+    --provenance detailed
+```
+
+See [Data Grounding & Provenance](../../fundamentals/graph-management/provenance.md) for the node attribute shape and the full `provenance.json` schema.
+
+---
+
 ### Structured Output Mode
 
 Structured output is enabled by default for LLM extraction and enforces schema
@@ -376,6 +402,7 @@ uv run docling-graph convert document.pdf \
 ```
 
 **See Also:**
+
 - [Streaming Responses Recipe](cli-recipes.md#streaming-responses) - CLI examples
 - [Python API Streaming](../api/programmatic-examples.md#example-9-streaming-responses) - Programmatic usage
 - [LLM Clients Reference](../../reference/llm-clients.md#streaming-responses) - Streaming API details
@@ -696,9 +723,10 @@ outputs/
 │   ├── document.json            # Docling format
 │   └── document.md              # Markdown export
 └── docling_graph/               # Graph outputs
-    ├── graph.json               # Complete graph
+    ├── graph.json               # Complete graph (nodes carry __provenance__)
     ├── nodes.csv                # Node data
     ├── edges.csv                # Edge data
+    ├── provenance.json          # Grounding ledger (unless --provenance off)
     ├── graph.html               # Interactive visualization
     └── report.md                # Summary report
     └── ...

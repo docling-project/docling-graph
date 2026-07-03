@@ -6,6 +6,7 @@
 **Batch processing** optimizes extraction by grouping multiple chunks into single LLM calls, reducing API overhead while maximizing context window utilization.
 
 **In this guide:**
+
 - Why batching matters
 - Adaptive batching algorithm
 - Context window optimization
@@ -223,6 +224,7 @@ batcher = ChunkBatcher(
 ```
 
 **How to choose:**
+
 - Use model's actual context limit
 - Be conservative (leave buffer)
 - Account for prompt overhead
@@ -241,6 +243,7 @@ batcher = ChunkBatcher(
 ```
 
 **Includes:**
+
 - Extraction instructions
 - Schema definition
 - Example format
@@ -259,6 +262,7 @@ batcher = ChunkBatcher(
 ```
 
 **Depends on:**
+
 - Schema complexity
 - Expected output size
 - Safety margin
@@ -277,6 +281,7 @@ batcher = ChunkBatcher(
 ```
 
 **Effects:**
+
 - **Higher (0.95-0.98):** More batches, better fit, less merging
 - **Lower (0.80-0.90):** Fewer batches, more aggressive merging
 

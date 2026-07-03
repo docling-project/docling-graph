@@ -6,6 +6,7 @@
 **Visualization** transforms your knowledge graphs into interactive, explorable visualizations. Docling Graph automatically generates HTML visualizations and markdown reports for every pipeline run.
 
 **In this guide:**
+
 - Interactive HTML graphs
 - Markdown reports
 - Graph statistics
@@ -53,18 +54,21 @@ run_pipeline(config)
 ### Features
 
 ✅ **Interactive exploration**
+
 - Zoom and pan
 - Node selection
 - Search functionality
 - Layout algorithms
 
 ✅ **Visual styling**
+
 - Color-coded node types
 - Edge labels
 - Hover tooltips
 - Responsive design
 
 ✅ **Export options**
+
 - Save as image
 - Share via URL
 - Embed in websites

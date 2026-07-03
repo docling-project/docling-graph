@@ -6,6 +6,7 @@
 Handle errors gracefully in docling-graph pipelines with structured exception handling, retry logic, and debugging strategies.
 
 **Prerequisites:**
+
 - Understanding of [Pipeline Architecture](../../introduction/architecture.md)
 - Familiarity with [Python API](../api/index.md)
 - Basic Python exception handling

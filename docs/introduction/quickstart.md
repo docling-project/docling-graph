@@ -6,11 +6,13 @@
 Get started with docling-graph in **5 minutes** by extracting structured data from a simple billing document.
 
 **What You'll Learn:**
+
 - Basic template creation
 - Running your first extraction
 - Viewing results
 
 **Prerequisites:**
+
 - Python 3.10+
 - A sample billing document (PDF or image)
 
