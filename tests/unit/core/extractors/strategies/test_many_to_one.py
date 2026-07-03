@@ -168,6 +168,41 @@ class TestDirectExtraction:
         assert mock_llm_backend.extract_from_markdown.called
         assert len(results) >= 0
 
+    def test_attach_direct_provenance_upgrades_to_chunk_index(self, mock_llm_backend, patch_deps):
+        """Direct extraction upgrades the document-level ledger to a chunk index
+        (with text + pages) so the binder can locate nodes precisely (issue #1)."""
+        from docling_graph.core.provenance import ProvenanceLedger, document_level_ledger
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        # Backend already produced a document-level ledger (provenance enabled).
+        mock_llm_backend.last_provenance = document_level_ledger("whole doc text")
+        strategy.doc_processor.chunker = MagicMock()  # a chunker is available
+        strategy.doc_processor.extract_chunks_with_metadata = MagicMock(
+            return_value=(
+                ["chunk zero text", "chunk one text"],
+                [
+                    {"chunk_id": 0, "page_numbers": [1], "token_count": 3},
+                    {"chunk_id": 1, "page_numbers": [2], "token_count": 3},
+                ],
+            )
+        )
+
+        strategy._attach_direct_provenance(mock_llm_backend, MagicMock())
+
+        led = mock_llm_backend.last_provenance
+        assert isinstance(led, ProvenanceLedger)
+        assert led.node_level is False
+        assert set(led.chunks) == {0, 1}
+        assert led.chunks[1].text == "chunk one text"
+        assert led.chunks[1].page_numbers == (2,)
+
+    def test_attach_direct_provenance_noop_when_disabled(self, mock_llm_backend, patch_deps):
+        """No backend ledger (provenance off) -> nothing attached."""
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        mock_llm_backend.last_provenance = None
+        strategy._attach_direct_provenance(mock_llm_backend, MagicMock())
+        assert mock_llm_backend.last_provenance is None
+
     def test_direct_failure_returns_empty(self, mock_llm_backend, patch_deps):
         """Test that direct extraction returns empty list on failure."""
         mock_dp, _, mock_is_llm, _ = patch_deps

@@ -911,7 +911,7 @@ class TestChunkBatchesKeepsSparseResult:
             extraction_contract="dense",
             structured_sparse_check=True,
         )
-        mock_orch.return_value = ({"f1": "only one value"}, {"skeleton_nodes": 1})
+        mock_orch.return_value = ({"f1": "only one value"}, {"skeleton_nodes": 1}, None)
         chunks = ["word " * 200]  # long document, sparse fill
 
         result = backend.extract_from_chunk_batches(
@@ -1043,3 +1043,60 @@ class TestLargeDirectDocHint:
         if hasattr(mock_llm_client, "_max_output_tokens"):
             del mock_llm_client._max_output_tokens
         assert backend._estimated_output_token_budget() == _DEFAULT_MAX_OUTPUT_TOKENS
+
+
+class TestDirectContractProvenance:
+    """Direct contract produces a document-level provenance ledger (spec §5)."""
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_direct_sets_document_level_ledger(self, mock_get_prompt, mock_llm_client):
+        from docling_graph.core.provenance import ProvenanceLedger
+
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="direct",
+            dense_config={"provenance": "standard"},
+        )
+        mock_llm_client.get_json_response.return_value = {"name": "Test", "age": 30}
+        mock_get_prompt.return_value = {"system": "sys", "user": "user"}
+
+        result = backend.extract_from_markdown(
+            markdown="full document body", template=MockTemplate, context="full document"
+        )
+
+        assert isinstance(result, MockTemplate)
+        ledger = backend.last_provenance
+        assert isinstance(ledger, ProvenanceLedger)
+        assert ledger.resolution == "document"
+        assert ledger.nodes == {}
+        assert ledger.chunks[0].char_length == len("full document body")
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_direct_provenance_off_leaves_no_ledger(self, mock_get_prompt, mock_llm_client):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="direct",
+            dense_config={"provenance": "off"},
+        )
+        mock_llm_client.get_json_response.return_value = {"name": "Test", "age": 30}
+        mock_get_prompt.return_value = {"system": "sys", "user": "user"}
+
+        backend.extract_from_markdown(
+            markdown="full document body", template=MockTemplate, context="full document"
+        )
+        assert backend.last_provenance is None
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_partial_call_does_not_set_document_ledger(self, mock_get_prompt, mock_llm_client):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="direct",
+            dense_config={"provenance": "standard"},
+        )
+        mock_llm_client.get_json_response.return_value = {"name": "Test", "age": 30}
+        mock_get_prompt.return_value = {"system": "sys", "user": "user"}
+
+        backend.extract_from_markdown(
+            markdown="a chunk", template=MockTemplate, context="chunk", is_partial=True
+        )
+        assert backend.last_provenance is None

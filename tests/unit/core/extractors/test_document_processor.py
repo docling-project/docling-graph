@@ -158,3 +158,96 @@ def test_process_document(mock_chunker_class, mock_converter_class, mock_docling
 
     mock_converter_instance.convert.assert_called_with("source/path")
     assert markdowns == ["Page 1 MD", "Page 2 MD"]
+
+
+def _make_chunk_obj(page_no: int, refs: list[str], headings: list[str]) -> MagicMock:
+    """Build a mock docling chunk with doc_items provenance and headings."""
+    chunk = MagicMock()
+    items = []
+    for ref in refs:
+        item = MagicMock()
+        prov = MagicMock()
+        prov.page_no = page_no
+        item.prov = [prov]
+        item.self_ref = ref
+        items.append(item)
+    chunk.meta.doc_items = items
+    chunk.meta.headings = headings
+    return chunk
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_extract_chunks_with_metadata_provenance_fields(mock_chunker_class, mock_converter_class):
+    """Chunk metadata carries doc_item_refs, headings, text_hash, char_length, resplit_of."""
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 100})
+    chunker = mock_chunker_class.return_value
+    chunker.chunk_max_tokens = 100
+    chunker.tokenizer.count_tokens.side_effect = lambda t: len(t.split())
+
+    chunk_obj = _make_chunk_obj(3, ["#/texts/7", "#/tables/1"], ["Results"])
+    chunker.chunker.chunk.return_value = [chunk_obj]
+    chunker.chunker.contextualize.return_value = "Results small chunk text"
+
+    chunks, meta = processor.extract_chunks_with_metadata(MagicMock())
+
+    assert chunks == ["Results small chunk text"]
+    assert len(meta) == 1
+    m = meta[0]
+    assert m["chunk_id"] == 0
+    assert m["page_numbers"] == [3]
+    assert m["doc_item_refs"] == ["#/texts/7", "#/tables/1"]
+    assert m["headings"] == ["Results"]
+    assert m["char_length"] == len("Results small chunk text")
+    assert isinstance(m["text_hash"], str) and len(m["text_hash"]) == 16
+    assert m["resplit_of"] is None
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_extract_chunks_with_metadata_resplit_inherits_location(
+    mock_chunker_class, mock_converter_class
+):
+    """Re-split sub-chunks inherit pages/refs/headings and point at their parent."""
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 2})
+    chunker = mock_chunker_class.return_value
+    chunker.chunk_max_tokens = 2
+    chunker.tokenizer.count_tokens.side_effect = lambda t: len(t.split())
+
+    chunk_obj = _make_chunk_obj(5, ["#/texts/9"], ["Methods"])
+    chunker.chunker.chunk.return_value = [chunk_obj]
+    chunker.chunker.contextualize.return_value = "one two three four five"
+    chunker.chunk_text_fallback.return_value = ["one two", "three four"]
+
+    chunks, meta = processor.extract_chunks_with_metadata(MagicMock())
+
+    assert chunks == ["one two", "three four"]
+    assert [m["chunk_id"] for m in meta] == [0, 1]
+    for m in meta:
+        assert m["page_numbers"] == [5]
+        assert m["doc_item_refs"] == ["#/texts/9"]
+        assert m["headings"] == ["Methods"]
+        assert m["resplit_of"] == 0
+    assert meta[0]["text_hash"] != meta[1]["text_hash"]
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_chunk_text_metadata_provenance_fields(mock_chunker_class, mock_converter_class):
+    """Raw-text chunking emits the same metadata keys with empty location data."""
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 100})
+    chunker = mock_chunker_class.return_value
+    chunker.chunk_max_tokens = 100
+    chunker.tokenizer.count_tokens.side_effect = lambda t: len(t.split())
+    chunker.chunk_text_fallback.return_value = ["alpha beta", "gamma"]
+
+    chunks, meta = processor.chunk_text("alpha beta gamma")
+
+    assert chunks == ["alpha beta", "gamma"]
+    for m in meta:
+        assert m["page_numbers"] == [0]
+        assert m["doc_item_refs"] == []
+        assert m["headings"] == []
+        assert m["resplit_of"] is None
+        assert isinstance(m["text_hash"], str) and len(m["text_hash"]) == 16
+        assert m["char_length"] > 0

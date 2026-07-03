@@ -77,6 +77,35 @@ class TestEventTrace:
             assert "finished_at" not in step
             assert "events" not in step
 
+    def test_provenance_events_exported_as_step_artifacts(self):
+        trace = EventTrace()
+        trace.emit(
+            "provenance_captured",
+            "extraction",
+            {"document_id": "abc123", "resolution": "chunk", "node_entries": 5, "chunk_records": 3},
+        )
+        trace.emit(
+            "provenance_bound",
+            "graph_conversion",
+            {"nodes_seen": 5, "bound_verbatim": 3, "bound_observed": 1, "unresolved": 1},
+        )
+
+        payload = event_trace_to_jsonable(trace)
+        steps_by_name = {step["name"]: step for step in payload["steps"]}
+
+        assert steps_by_name["data_extraction"]["artifacts"]["provenance"] == {
+            "document_id": "abc123",
+            "resolution": "chunk",
+            "node_entries": 5,
+            "chunk_records": 3,
+        }
+        assert steps_by_name["graph_mapping"]["artifacts"]["provenance_bound"] == {
+            "nodes_seen": 5,
+            "bound_verbatim": 3,
+            "bound_observed": 1,
+            "unresolved": 1,
+        }
+
 
 class TestFailureLogging:
     """Only genuine failure events reach the error log."""
