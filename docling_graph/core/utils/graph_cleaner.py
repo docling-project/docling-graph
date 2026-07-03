@@ -14,8 +14,15 @@ from typing import Any, Dict, List, Set, Tuple
 import networkx as nx
 from rich import print as rich_print
 
+from ..provenance.identity import PROVENANCE_NODE_ATTR, merge_compact_views
+
 # Initialize logger for error reporting
 logger = logging.getLogger(__name__)
+
+# Framework-owned node attributes that carry no extracted content. Excluded
+# from phantom detection and content hashing so grounding metadata can never
+# keep an empty node alive or stop identical entities from deduplicating.
+_METADATA_NODE_ATTRS = {"id", "label", "type", PROVENANCE_NODE_ATTR}
 
 
 def is_meaningful_value(value: Any) -> bool:
@@ -185,7 +192,7 @@ class GraphCleaner:
 
             for key, value in node_data.items():
                 # Skip metadata fields
-                if key in {"id", "label", "type"}:
+                if key in _METADATA_NODE_ATTRS:
                     continue
 
                 # Check if this field has meaningful value
@@ -241,6 +248,14 @@ class GraphCleaner:
                 for dup_id in duplicates:
                     # Redirect all edges from duplicate to canonical
                     self._redirect_edges(graph, dup_id, canonical_id)
+
+                    # Union provenance so the duplicate's grounding survives
+                    merged_provenance = merge_compact_views(
+                        graph.nodes[canonical_id].get(PROVENANCE_NODE_ATTR),
+                        graph.nodes[dup_id].get(PROVENANCE_NODE_ATTR),
+                    )
+                    if merged_provenance is not None:
+                        graph.nodes[canonical_id][PROVENANCE_NODE_ATTR] = merged_provenance
 
                     # Remove duplicate
                     graph.remove_node(dup_id)
@@ -312,9 +327,10 @@ class GraphCleaner:
         import hashlib
         import json
 
-        # Extract content fields (exclude id, generated metadata)
+        # Extract content fields (exclude id, generated metadata, provenance —
+        # identical entities with different anchors must still deduplicate)
         content_fields = {
-            k: v for k, v in node_data.items() if k not in {"id", "label", "type"} and v is not None
+            k: v for k, v in node_data.items() if k not in _METADATA_NODE_ATTRS and v is not None
         }
 
         # Normalize and sort
@@ -378,7 +394,7 @@ def validate_graph_structure(graph: nx.DiGraph, raise_on_error: bool = True) -> 
     # Check 2: No empty nodes
     for node_id, node_data in graph.nodes(data=True):
         has_meaningful_data = any(
-            is_meaningful_value(v) for k, v in node_data.items() if k not in {"id", "label", "type"}
+            is_meaningful_value(v) for k, v in node_data.items() if k not in _METADATA_NODE_ATTRS
         )
         if not has_meaningful_data:
             issues.append(f"Empty node: {node_id}")

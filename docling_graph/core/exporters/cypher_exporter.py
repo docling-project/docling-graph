@@ -1,5 +1,6 @@
 """Cypher script exporter for Neo4j direct import."""
 
+import json
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional, TextIO, cast
@@ -7,6 +8,7 @@ from typing import Any, Dict, Optional, TextIO, cast
 import networkx as nx
 
 from ..converters.config import ExportConfig
+from ..provenance.identity import PROVENANCE_NODE_ATTR
 
 
 class CypherExporter:
@@ -121,6 +123,9 @@ class CypherExporter:
             props = []
             for key, value in data.items():
                 if key != "label" and value is not None:
+                    if key == PROVENANCE_NODE_ATTR and isinstance(value, dict):
+                        # Store provenance as a parseable JSON string property.
+                        value = json.dumps(value, ensure_ascii=False, default=str)
                     escaped_value = self._escape_cypher_string(value)
                     props.append(f'{key}: "{escaped_value}"')
 

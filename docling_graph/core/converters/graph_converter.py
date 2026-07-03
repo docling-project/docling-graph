@@ -97,6 +97,7 @@ class GraphConverter:
     def pydantic_list_to_graph(
         self,
         model_instances: List[BaseModel],
+        provenance_binder: Any | None = None,
     ) -> tuple[nx.DiGraph, GraphMetadata]:
         """
         Convert list of Pydantic models to a NetworkX graph.
@@ -105,12 +106,18 @@ class GraphConverter:
         1. Pre-register all models for deterministic node IDs
         2. Create nodes from models
         3. Create edges between entities
-        4. Apply automatic cleanup (if enabled)
-        5. Validate graph structure
-        6. Calculate statistics
+        4. Bind provenance (if a binder is provided) — before cleanup, so
+           duplicate-node merging can union provenance instead of losing it
+        5. Apply automatic cleanup (if enabled)
+        6. Validate graph structure
+        7. Calculate statistics
 
         Args:
             model_instances: List of Pydantic model instances to convert
+            provenance_binder: Optional callable ``(graph, model_instances) -> None``
+                that annotates nodes with provenance. The converter stays
+                agnostic of the provenance module; the pipeline stage injects
+                a closure.
 
         Returns:
             Tuple of (graph, metadata)
@@ -153,6 +160,15 @@ class GraphConverter:
             edge_list.extend(reverse_edge_list)
 
         graph.add_edges_from(edge_list)
+
+        # Bind provenance before cleanup: the cleaner's duplicate merge unions
+        # node provenance, which requires the attribute to already be present.
+        if provenance_binder is not None:
+            try:
+                provenance_binder(graph, model_instances)
+            except Exception as e:
+                # Grounding must never break graph conversion.
+                rich_print(f"[yellow][GraphConverter][/yellow] Provenance binding failed: {e}")
 
         # Auto-cleanup if enabled
         if self.auto_cleanup and self.cleaner:

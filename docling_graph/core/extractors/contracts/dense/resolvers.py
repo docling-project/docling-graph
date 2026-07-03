@@ -56,6 +56,31 @@ def _parent_key(parent: dict[str, Any] | None, key_fn: Callable[[dict], Any]) ->
     return key_fn({"path": parent.get("path"), "ids": parent.get("ids") or {}})
 
 
+def _serialize_key(key: Any) -> str | None:
+    """Serialize a (path, pairs) identity tuple into the ledger key format."""
+    try:
+        path, pairs = key
+        if any(field == "__key" for field, _ in pairs):
+            return None
+        return f"{path}|" + ",".join(f"{field}={value}" for field, value in pairs)
+    except Exception:
+        return None
+
+
+def _absorb_sources(keeper: dict[str, Any], merged: dict[str, Any], merged_key: Any) -> None:
+    """Union the merged node's provenance bookkeeping into the keeper."""
+    for list_key in ("_source_batch_indexes", "_source_chunk_ids"):
+        target = keeper.setdefault(list_key, [])
+        for value in merged.get(list_key) or []:
+            if value not in target:
+                target.append(value)
+    serialized = _serialize_key(merged_key)
+    if serialized is not None:
+        merged_from = keeper.setdefault("_merged_from", [])
+        if serialized not in merged_from:
+            merged_from.append(serialized)
+
+
 def resolve_skeleton_nodes(
     skeleton_nodes: list[dict[str, Any]],
     key_fn: Callable[[dict[str, Any]], Any],
@@ -100,6 +125,7 @@ def resolve_skeleton_nodes(
             if _fuzzy_similarity(left_text, right_text) < _FUZZY_MERGE_THRESHOLD:
                 continue
             id_remap[right_key] = dict(left.get("ids") or {})
+            _absorb_sources(left, right, right_key)
             removed_indexes.add(j)
             merged_count += 1
 

@@ -179,6 +179,19 @@ class PipelineConfig(BaseModel):
             "similarity thresholds are handled internally."
         ),
     )
+
+    # Data grounding / provenance: deterministic node-to-source mapping.
+    # Fully out-of-band (no prompt or LLM-output changes at any level).
+    provenance: Literal["off", "standard", "detailed"] = Field(
+        default="standard",
+        description=(
+            "Deterministic provenance ledger mapping graph nodes to source "
+            "chunks/pages. 'off': disabled. 'standard': node annotations + "
+            "provenance.json, with an exact verbatim-identifier locator "
+            "(precise chunk/page) and an approximate observed fallback. "
+            "'detailed': also embeds character spans in the node annotation."
+        ),
+    )
     # Export settings (with defaults)
     export_format: Literal["csv", "cypher"] = Field(default="csv")
     export_docling: bool = Field(default=True)
@@ -261,6 +274,7 @@ class PipelineConfig(BaseModel):
             "dense_fill_nodes_cap": self.dense_fill_nodes_cap,
             "dense_fill_context": self.dense_fill_context,
             "dense_dedupe": self.dense_dedupe,
+            "provenance": self.provenance,
             "export_format": self.export_format,
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
@@ -304,6 +318,7 @@ class PipelineConfig(BaseModel):
                 "dense_fill_nodes_cap": default_config.dense_fill_nodes_cap,
                 "dense_fill_context": default_config.dense_fill_context,
                 "dense_dedupe": default_config.dense_dedupe,
+                "provenance": default_config.provenance,
             },
             "docling": {
                 "pipeline": default_config.docling_config,

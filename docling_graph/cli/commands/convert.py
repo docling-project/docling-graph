@@ -49,6 +49,7 @@ def _resolve_cli_settings(
     dense_fill_nodes_cap: int | None,
     dense_fill_context: str | None,
     dense_dedupe: str | None,
+    provenance: str | None,
     schema_enforced_llm: bool | None,
     structured_sparse_check: bool | None,
     gleaning_enabled: bool | None,
@@ -78,6 +79,12 @@ def _resolve_cli_settings(
     if final_dense_fill_context not in ("scoped", "full"):
         final_dense_fill_context = "scoped"
 
+    final_provenance = str(
+        provenance if provenance is not None else defaults.get("provenance", "standard")
+    ).lower()
+    if final_provenance not in ("off", "standard", "detailed"):
+        final_provenance = "standard"
+
     docling_export_settings = docling_cfg.get("export", {})
 
     return {
@@ -105,6 +112,7 @@ def _resolve_cli_settings(
         ),
         "dense_fill_context": final_dense_fill_context,
         "dense_dedupe": final_dense_dedupe,
+        "provenance": final_provenance,
         "structured_output": (
             schema_enforced_llm
             if schema_enforced_llm is not None
@@ -252,6 +260,16 @@ def convert_command(
             help="Skeleton dedupe intensity: off | standard | aggressive (default: standard).",
         ),
     ] = None,
+    provenance: Annotated[
+        str | None,
+        typer.Option(
+            "--provenance",
+            help=(
+                "Deterministic node-to-source grounding: off | standard | detailed "
+                "(default: standard; 'detailed' adds verbatim char spans)."
+            ),
+        ),
+    ] = None,
     # Docling export options
     export_docling_json: Annotated[
         bool,
@@ -370,6 +388,7 @@ def convert_command(
             dense_fill_nodes_cap=dense_fill_nodes_cap,
             dense_fill_context=dense_fill_context,
             dense_dedupe=dense_dedupe,
+            provenance=provenance,
             schema_enforced_llm=schema_enforced_llm,
             structured_sparse_check=structured_sparse_check,
             gleaning_enabled=gleaning_enabled,
@@ -428,6 +447,7 @@ def convert_command(
     rich_print(f"  • Contract: [cyan]{extraction_contract_val}[/cyan]")
     rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
+    rich_print(f"  • Provenance: [cyan]{settings['provenance']}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
     if extraction_contract_val == "direct":
         rich_print(f"  • Gleaning: [cyan]{final_gleaning_enabled}[/cyan]")
@@ -485,6 +505,7 @@ def convert_command(
         dense_fill_nodes_cap=settings["dense_fill_nodes_cap"],
         dense_fill_context=settings["dense_fill_context"],
         dense_dedupe=settings["dense_dedupe"],
+        provenance=settings["provenance"],
         export_format=export_format_val,
         export_docling=True,
         export_docling_json=final_export_docling_json,

@@ -64,6 +64,11 @@ class PipelineContext:
     output_manager: Any | None = None  # OutputDirectoryManager, avoid circular import
     trace_data: EventTrace | None = None
 
+    # Provenance ledger from extraction (ProvenanceLedger; typed loosely to
+    # keep the context import-light). None when provenance is off or the
+    # extraction path produced no ledger.
+    provenance: Any | None = None
+
     def __post_init__(self) -> None:
         """Initialize node registry if not provided."""
         if self.node_registry is None:

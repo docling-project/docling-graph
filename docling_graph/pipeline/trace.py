@@ -124,6 +124,10 @@ def _add_event_artifact(step: _StepAccumulator, event: TraceEvent, payload: dict
         artifacts.setdefault("fallbacks", []).append(payload)
     elif event.event_type == "graph_created":
         artifacts["graph"] = payload
+    elif event.event_type == "provenance_captured":
+        artifacts["provenance"] = payload
+    elif event.event_type == "provenance_bound":
+        artifacts["provenance_bound"] = payload
     elif event.event_type == "export_written":
         artifacts.setdefault("exports", []).append(payload)
     elif event.event_type == "pipeline_started":
