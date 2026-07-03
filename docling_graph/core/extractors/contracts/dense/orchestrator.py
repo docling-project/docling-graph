@@ -18,6 +18,16 @@ from typing import Any, Callable, Iterator, cast
 
 from pydantic import BaseModel
 
+from docling_graph.core.provenance import (
+    ChunkRecord,
+    NodeProvenance,
+    ProvenanceLedger,
+    SourceAnchor,
+    canonical_id_text as _canonical_id_text,
+    identity_key as _provenance_identity_key,
+    identity_pairs,
+    text_hash as _chunk_text_hash,
+)
 from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
 
 from .catalog import (
@@ -85,25 +95,31 @@ def _skeleton_identity_key(
     node: dict[str, Any],
     spec_by_path: dict[str, NodeSpec],
 ) -> tuple[str, tuple[tuple[str, str], ...]]:
+    """Dedup key for a skeleton node; delegates canonicalization to core.provenance.
+
+    Nodes without any usable id keep a process-unique fallback so id-less
+    siblings are never merged with each other.
+    """
     path = str(node.get("path") or "").strip()
     spec = spec_by_path.get(path)
     ids = node.get("ids") or {}
     if not isinstance(ids, dict):
         ids = {}
-    if spec and spec.id_fields:
-        ordered = tuple(
-            (f, canonicalize_identity_for_dedup(f, ids.get(f)))
-            for f in spec.id_fields
-            if ids.get(f) is not None
-        )
-        if ordered:
-            return (path, tuple(sorted(ordered, key=lambda x: x[0])))
-    norm = tuple(
-        sorted(
-            (str(k), canonicalize_identity_for_dedup(k, v)) for k, v in ids.items() if v is not None
-        )
-    )
-    return (path, norm if norm else (("__key", str(id(node))),))
+    pairs = identity_pairs(ids, spec.id_fields if spec else [])
+    return (path, pairs if pairs else (("__key", str(id(node))),))
+
+
+def _skeleton_ledger_key(
+    node: dict[str, Any],
+    spec_by_path: dict[str, NodeSpec],
+) -> str | None:
+    """Serialized ledger identity for a skeleton node; None when unkeyable."""
+    path = str(node.get("path") or "").strip()
+    spec = spec_by_path.get(path)
+    ids = node.get("ids") or {}
+    if not isinstance(ids, dict):
+        ids = {}
+    return _provenance_identity_key(path, ids, spec.id_fields if spec else [])
 
 
 def chunk_batches_by_token_limit(
@@ -153,6 +169,7 @@ def normalize_skeleton_batch(
     allowed_paths: set[str],
     *,
     source_batch_index: int | None = None,
+    source_chunk_ids: list[int] | None = None,
 ) -> list[dict[str, Any]]:
     """Resolve batch-local integer handles into (path, ids) parent references.
 
@@ -190,6 +207,11 @@ def normalize_skeleton_batch(
         result: dict[str, Any] = {"path": entry["path"], "ids": entry["ids"], "parent": parent}
         if source_batch_index is not None:
             result["_source_batch_index"] = source_batch_index
+        if source_chunk_ids is not None:
+            # Chunk-level provenance: the exact chunks the LLM read when it
+            # asserted this node. Truncation-split sub-batches pass a narrower
+            # list than the full batch, so granularity improves under splits.
+            result["_source_chunk_ids"] = list(source_chunk_ids)
         out.append(result)
     return out
 
@@ -200,8 +222,13 @@ def merge_skeleton_batches(
 ) -> list[dict[str, Any]]:
     """Dedupe skeleton nodes across batches, accumulating every source batch index.
 
-    The union of source batches is kept so Phase 2 can scope its fill context to
-    the document regions where the node was actually observed.
+    The union of source *batches* is kept so Phase 2 can scope its fill context
+    to the document regions where the node was observed. The observed *chunk*
+    set, by contrast, keeps only the FIRST batch that emitted the node — its
+    genuine reading. Sequential mode re-emits every already-found node in every
+    later batch (the ``already_found`` prompt echo), so accumulating chunks
+    across re-emissions would smear a node across the whole document. The
+    verbatim scan restores any true multi-location grounding deterministically.
 
     The root (path "") is a singleton by definition: batches routinely emit it
     with paraphrased identifier values (e.g. title variants), so all root nodes
@@ -213,11 +240,15 @@ def merge_skeleton_batches(
         for node in batch:
             key = _skeleton_identity_key(node, spec_by_path)
             source_idx = node.get("_source_batch_index")
+            source_chunks = node.get("_source_chunk_ids") or []
             merged = by_key.get(key)
             if merged is None:
                 merged = dict(node)
                 merged.pop("_source_batch_index", None)
+                merged.pop("_source_chunk_ids", None)
                 merged["_source_batch_indexes"] = []
+                # First-emission chunks only (see docstring); not accumulated.
+                merged["_source_chunk_ids"] = [c for c in source_chunks if isinstance(c, int)]
                 by_key[key] = merged
             if isinstance(source_idx, int) and source_idx not in merged["_source_batch_indexes"]:
                 merged["_source_batch_indexes"].append(source_idx)
@@ -288,12 +319,6 @@ def _canonical_lookup_key(path: str, spec: NodeSpec, ids: dict[str, Any]) -> tup
     return (path, ())
 
 
-def _canonical_id_text(ids: dict[str, Any]) -> str:
-    """Single canonical string for an id dict, used for fuzzy parent matching."""
-    parts = [canonicalize_identity_for_dedup(k, v) for k, v in sorted(ids.items()) if v is not None]
-    return " ".join(p for p in parts if p)
-
-
 def apply_skeleton_reconciliation(
     skeleton_nodes: list[dict[str, Any]],
     merge_groups: list[dict[str, Any]],
@@ -341,6 +366,19 @@ def apply_skeleton_reconciliation(
             for idx in node.get("_source_batch_indexes", []) or []:
                 if idx not in keep_sources:
                     keep_sources.append(idx)
+            # Provenance lineage: chunks acquired through an LLM alias merge are
+            # kept separate from directly-observed ones (anchor kind "reconciled"),
+            # and the absorbed identity is recorded so the merge stays auditable.
+            keep_reconciled = keep_node.setdefault("_reconciled_chunk_ids", [])
+            own_chunks = keep_node.get("_source_chunk_ids") or []
+            for chunk_id in node.get("_source_chunk_ids", []) or []:
+                if chunk_id not in keep_reconciled and chunk_id not in own_chunks:
+                    keep_reconciled.append(chunk_id)
+            absorbed_key = _skeleton_ledger_key(node, spec_by_path)
+            if absorbed_key is not None:
+                merged_from = keep_node.setdefault("_merged_from", [])
+                if absorbed_key not in merged_from:
+                    merged_from.append(absorbed_key)
 
     kept_nodes = [n for n in skeleton_nodes if id(n) not in removed]
     if id_remap:
@@ -384,6 +422,7 @@ def merge_filled_into_root(
     path_descriptors: dict[str, list[dict[str, Any]]],
     catalog: NodeCatalog,
     stats_out: dict[str, int] | None = None,
+    events_out: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Attach filled instances to their parents, rescuing drifted parent references.
 
@@ -462,6 +501,9 @@ def merge_filled_into_root(
             return None, ""
         _attach(grand_obj, parent_spec, placeholder)
         lookup[key] = placeholder
+        if events_out is not None:
+            # Ledger event: a parent was materialized without direct observation.
+            events_out.append({"event": "synthetic", "path": parent_path, "ids": dict(placeholder)})
         return placeholder, ("placeholder" if placeholder else "bucket")
 
     _how_to_stat = {
@@ -509,8 +551,23 @@ def merge_filled_into_root(
             if parent_obj is not None:
                 _attach(parent_obj, spec, obj)
                 stats[_how_to_stat.get(how, "attached_exact")] += 1
+                if events_out is not None and how in ("placeholder", "bucket"):
+                    events_out.append(
+                        {
+                            "event": "rescued",
+                            "how": how,
+                            "path": path,
+                            "ids": dict(desc.get("ids") or {}),
+                            "parent_path": parent_path,
+                            "parent_ids": dict(parent_ids),
+                        }
+                    )
             else:
                 stats["dropped"] += 1
+                if events_out is not None:
+                    events_out.append(
+                        {"event": "dropped", "path": path, "ids": dict(desc.get("ids") or {})}
+                    )
                 logger.warning(
                     "Dense merge: dropped %s instance ids=%s (unresolvable parent %s ids=%s)",
                     path,
@@ -543,7 +600,11 @@ def _compute_branch_paths(catalog: NodeCatalog) -> set[str]:
     return {p for p in all_paths if any(q != p and q.startswith(p) for q in all_paths)}
 
 
-def prune_barren_branches(root: dict[str, Any], catalog: NodeCatalog) -> dict[str, Any]:
+def prune_barren_branches(
+    root: dict[str, Any],
+    catalog: NodeCatalog,
+    events_out: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """
     Remove branch nodes that are childless and have no non-identity scalar data.
     Domain-agnostic: uses only catalog path structure (branch vs leaf) and graph topology.
@@ -591,15 +652,25 @@ def prune_barren_branches(root: dict[str, Any], catalog: NodeCatalog) -> dict[st
                     if isinstance(item, dict):
                         prune_in_place(item, cs.path)
                 if cs.path in branch_paths:
-                    kept = [
-                        x
-                        for x in val
-                        if not (
+                    kept = []
+                    for x in val:
+                        if (
                             isinstance(x, dict)
                             and not has_children(x, cs.path)
                             and is_barren(x, cs.path)
-                        )
-                    ]
+                        ):
+                            if events_out is not None:
+                                child_spec = spec_by_path.get(cs.path)
+                                pruned_ids = {
+                                    f: x[f]
+                                    for f in (child_spec.id_fields if child_spec else [])
+                                    if x.get(f) not in (None, "")
+                                }
+                                events_out.append(
+                                    {"event": "pruned", "path": cs.path, "ids": pruned_ids}
+                                )
+                        else:
+                            kept.append(x)
                     obj[fn] = kept
             elif not cs.is_list and isinstance(val, dict):
                 prune_in_place(val, cs.path)
@@ -666,6 +737,9 @@ class DenseOrchestratorConfig:
     # "aggressive": + fuzzy string merge of near-identical same-path ids
     #               (OCR noise, casing); threshold handled internally.
     dedupe_mode: str = "standard"
+    # "off": no provenance ledger. "standard": chunk-level ledger.
+    # "detailed": + deterministic verbatim anchor scan (char spans).
+    provenance_mode: str = "standard"
 
     @classmethod
     def from_dict(cls, config: dict[str, Any] | None) -> DenseOrchestratorConfig:
@@ -680,12 +754,16 @@ class DenseOrchestratorConfig:
         dedupe_mode = str(c.get("dense_dedupe", "standard") or "standard").lower()
         if dedupe_mode not in ("off", "standard", "aggressive"):
             dedupe_mode = "standard"
+        provenance_mode = str(c.get("provenance", "standard") or "standard").lower()
+        if provenance_mode not in ("off", "standard", "detailed"):
+            provenance_mode = "standard"
         return cls(
             skeleton_batch_tokens=skeleton_batch_tokens,
             fill_nodes_cap=int(c.get("dense_fill_nodes_cap", 5) or 5),
             parallel_workers=max(1, int(c.get("parallel_workers", 1) or 1)),
             fill_context_mode=fill_context_mode,
             dedupe_mode=dedupe_mode,
+            provenance_mode=provenance_mode,
         )
 
 
@@ -707,6 +785,9 @@ class DenseOrchestrator:
         self._catalog = build_node_catalog(template)
         # Per-run observability (exposed after run() as last_run_stats).
         self.last_run_stats: dict[str, Any] = {}
+        # Per-run provenance ledger (exposed after run(); None when disabled or
+        # when the run produced no usable skeleton).
+        self.last_provenance: ProvenanceLedger | None = None
         self._counters: dict[str, int] = {}
         self._counter_lock = threading.Lock()
 
@@ -786,7 +867,10 @@ class DenseOrchestrator:
                         len(validated_nodes),
                     )
                 normalized_batch = normalize_skeleton_batch(
-                    validated_nodes, allowed_paths, source_batch_index=batch_idx
+                    validated_nodes,
+                    allowed_paths,
+                    source_batch_index=batch_idx,
+                    source_chunk_ids=[chunk_idx for chunk_idx, _, _ in batch],
                 )
                 if normalized_batch or not raw_nodes:
                     return normalized_batch, truncated
@@ -935,6 +1019,248 @@ class DenseOrchestrator:
         if gate_failure:
             stats["quality_gate_failure"] = gate_failure
         self.last_run_stats = stats
+
+    def _build_chunk_records(
+        self,
+        batches: list[list[tuple[int, str, int]]],
+        chunk_metadata: list[dict[str, Any]] | None,
+        total_chunks: int,
+    ) -> dict[int, ChunkRecord]:
+        """Chunk index for the provenance ledger (H2).
+
+        The batch tuples are authoritative for chunk_id -> (text, batch) since
+        they are exactly what Phase 1 sends to the LLM; per-chunk location
+        metadata is joined in when the metadata list aligns with the chunk list.
+        """
+        aligned = bool(chunk_metadata) and len(chunk_metadata or []) == total_chunks
+        records: dict[int, ChunkRecord] = {}
+        for batch_index, batch in enumerate(batches):
+            for chunk_id, chunk_text, token_count in batch:
+                meta = (chunk_metadata[chunk_id] if aligned else {}) or {}  # type: ignore[index]
+                records[chunk_id] = ChunkRecord(
+                    chunk_id=chunk_id,
+                    batch_index=batch_index,
+                    page_numbers=tuple(
+                        p for p in (meta.get("page_numbers") or []) if isinstance(p, int)
+                    ),
+                    doc_item_refs=tuple(str(r) for r in (meta.get("doc_item_refs") or [])),
+                    headings=tuple(str(h) for h in (meta.get("headings") or [])),
+                    token_count=token_count,
+                    text_hash=_chunk_text_hash(chunk_text),
+                    char_length=len(chunk_text),
+                    text=chunk_text,
+                    resplit_of=meta.get("resplit_of")
+                    if isinstance(meta.get("resplit_of"), int)
+                    else None,
+                )
+        return records
+
+    def _freeze_ledger(
+        self,
+        merged_skeleton: list[dict[str, Any]],
+        chunk_records: dict[int, ChunkRecord],
+        spec_by_path: dict[str, NodeSpec],
+    ) -> ProvenanceLedger:
+        """Ledger freeze (H5): one NodeProvenance per surviving skeleton node.
+
+        Runs after reconciliation and root-id stripping, before Phase 2 — fill
+        cannot change identity (_sanitize_filled restores id values), so keys
+        frozen here remain valid through the rest of the run. Coordinator
+        thread only.
+        """
+        nodes: dict[str, NodeProvenance] = {}
+        unkeyed_ordinal = 0
+        for node in merged_skeleton:
+            path = str(node.get("path") or "")
+            spec = spec_by_path.get(path)
+            ids = node.get("ids") or {}
+            if not isinstance(ids, dict):
+                ids = {}
+            key = _skeleton_ledger_key(node, spec_by_path)
+            notes: list[str] = []
+            if key is None:
+                # Id-less nodes get a positional key that by design never binds
+                # exactly — fail-empty, never fail-wrong.
+                key = f"{path}#unkeyed{unkeyed_ordinal}"
+                unkeyed_ordinal += 1
+                notes.append("identity:unkeyed")
+            entry = nodes.get(key)
+            if entry is None:
+                entry = NodeProvenance(
+                    identity_key=key,
+                    catalog_path=path,
+                    node_type=spec.node_type if spec else "",
+                    ids={str(k): str(v) for k, v in ids.items() if v is not None},
+                    notes=notes,
+                )
+                nodes[key] = entry
+            observed = [c for c in (node.get("_source_chunk_ids") or []) if isinstance(c, int)]
+            if not observed:
+                # Defensive batch-level fallback when chunk ids are missing.
+                batch_indexes = {
+                    b for b in (node.get("_source_batch_indexes") or []) if isinstance(b, int)
+                }
+                observed = [
+                    c for c, rec in chunk_records.items() if rec.batch_index in batch_indexes
+                ]
+            reconciled = [
+                c for c in (node.get("_reconciled_chunk_ids") or []) if isinstance(c, int)
+            ]
+            existing = {(a.chunk_id, a.kind) for a in entry.anchors}
+            for chunk_id in sorted(set(observed)):
+                if chunk_id in chunk_records and (chunk_id, "observed") not in existing:
+                    entry.anchors.append(SourceAnchor(chunk_id=chunk_id, kind="observed"))
+            for chunk_id in sorted(set(reconciled)):
+                if (
+                    chunk_id in chunk_records
+                    and (chunk_id, "observed") not in existing
+                    and (chunk_id, "reconciled") not in existing
+                    and not any(
+                        a.chunk_id == chunk_id and a.kind == "observed" for a in entry.anchors
+                    )
+                ):
+                    entry.anchors.append(SourceAnchor(chunk_id=chunk_id, kind="reconciled"))
+            for absorbed in node.get("_merged_from") or []:
+                if absorbed not in entry.merged_from:
+                    entry.merged_from.append(absorbed)
+            if path == "" and "scope:document" not in entry.notes:
+                # The root is always filled against the full document.
+                entry.notes.append("scope:document")
+        return ProvenanceLedger(node_level=True, chunks=chunk_records, nodes=nodes)
+
+    def _apply_merge_events(
+        self,
+        ledger: ProvenanceLedger,
+        events: list[dict[str, Any]],
+        spec_by_path: dict[str, NodeSpec],
+    ) -> None:
+        """Fold merge_filled_into_root / prune events into the ledger (H6)."""
+
+        def _key_for(path: str, ids: dict[str, Any]) -> str | None:
+            spec = spec_by_path.get(path)
+            return _provenance_identity_key(path, ids, spec.id_fields if spec else [])
+
+        for event in events:
+            kind = event.get("event")
+            path = str(event.get("path") or "")
+            ids = event.get("ids") or {}
+            if kind in ("dropped", "pruned"):
+                key = _key_for(path, ids)
+                entry = ledger.nodes.get(key) if key else None
+                if entry is not None:
+                    entry.dropped = True
+                    entry.notes.append(f"merge:{kind}")
+            elif kind == "synthetic":
+                key = _key_for(path, ids) or f"{path}#bucket"
+                entry = ledger.nodes.get(key)
+                if entry is None:
+                    spec = spec_by_path.get(path)
+                    ledger.nodes[key] = NodeProvenance(
+                        identity_key=key,
+                        catalog_path=path,
+                        node_type=spec.node_type if spec else "",
+                        ids={str(k): str(v) for k, v in ids.items() if v is not None},
+                        synthetic=True,
+                        notes=["merge:placeholder" if ids else "merge:bucket"],
+                    )
+                elif not entry.anchors:
+                    entry.notes.append("merge:placeholder-reused")
+            elif kind == "rescued":
+                # Synthetic parents inherit their rescued children's chunks as
+                # weaker "derived" evidence.
+                parent_path = str(event.get("parent_path") or "")
+                parent_spec = spec_by_path.get(parent_path)
+                parent_ids = event.get("parent_ids") or {}
+                placeholder_ids = {
+                    f: parent_ids[f]
+                    for f in (parent_spec.id_fields if parent_spec else [])
+                    if parent_ids.get(f) not in (None, "")
+                }
+                parent_key = _key_for(parent_path, placeholder_ids) or f"{parent_path}#bucket"
+                parent_entry = ledger.nodes.get(parent_key)
+                child_key = _key_for(path, ids)
+                child_entry = ledger.nodes.get(child_key) if child_key else None
+                if parent_entry is not None and parent_entry.synthetic and child_entry is not None:
+                    existing = {(a.chunk_id, a.kind) for a in parent_entry.anchors}
+                    for anchor in child_entry.anchors:
+                        if (anchor.chunk_id, "derived") not in existing and anchor.kind in (
+                            "observed",
+                            "verbatim",
+                        ):
+                            parent_entry.anchors.append(
+                                SourceAnchor(chunk_id=anchor.chunk_id, kind="derived")
+                            )
+                            existing.add((anchor.chunk_id, "derived"))
+
+    def _finalize_provenance(
+        self,
+        ledger: ProvenanceLedger,
+        merge_events: list[dict[str, Any]],
+        spec_by_path: dict[str, NodeSpec],
+        path_descriptors: dict[str, list[dict[str, Any]]],
+        path_filled: dict[str, list[dict[str, Any]]],
+    ) -> None:
+        """Fold merge events into the ledger, re-key to final ids, and publish it.
+
+        The verbatim locator is NOT run here: the skeleton identifiers are often
+        generic placeholders that the fill phase refines to the real value
+        (e.g. "SlurryComponent" -> "LiFePO4"). Only the real value appears in
+        the document, so the binder runs the locator with the final model ids.
+        This ledger carries the observed (skeleton) anchors and the full chunk
+        text; the binder adds the exact verbatim anchors.
+        """
+        self._apply_merge_events(ledger, merge_events, spec_by_path)
+        self._rekey_ledger_to_filled(ledger, path_descriptors, path_filled, spec_by_path)
+        self.last_provenance = ledger
+
+    def _rekey_ledger_to_filled(
+        self,
+        ledger: ProvenanceLedger,
+        path_descriptors: dict[str, list[dict[str, Any]]],
+        path_filled: dict[str, list[dict[str, Any]]],
+        spec_by_path: dict[str, NodeSpec],
+    ) -> None:
+        """Re-key ledger entries from skeleton ids to the FINAL filled ids.
+
+        Phase 2 often replaces a rough skeleton identifier with the real one
+        (skeleton "Battery Slurry Batch" -> fill "BATCH-LFP-001"). The graph
+        node carries the filled id, so an entry still keyed on the skeleton id
+        would never bind. Descriptors and filled objects are index-aligned per
+        path (fill pads/truncates each batch to its descriptor count), so the
+        correspondence is exact. When two skeleton entries collapse onto the
+        same final id, their anchors/lineage merge.
+        """
+        for path, descriptors in path_descriptors.items():
+            spec = spec_by_path.get(path)
+            if spec is None or not spec.id_fields:
+                continue
+            filled = path_filled.get(path, [])
+            for i, desc in enumerate(descriptors):
+                if i >= len(filled) or not isinstance(filled[i], dict):
+                    continue
+                skel_ids = desc.get("ids") or {}
+                skel_key = _provenance_identity_key(path, skel_ids, spec.id_fields)
+                if skel_key is None or skel_key not in ledger.nodes:
+                    continue
+                obj = filled[i]
+                final_ids = {f: obj[f] for f in spec.id_fields if obj.get(f) not in (None, "")}
+                final_key = _provenance_identity_key(path, final_ids, spec.id_fields)
+                if final_key is None or final_key == skel_key:
+                    continue
+                entry = ledger.nodes.pop(skel_key)
+                target = ledger.nodes.get(final_key)
+                if target is not None:
+                    seen = {(a.chunk_id, a.kind, a.span) for a in target.anchors}
+                    for anchor in entry.anchors:
+                        if (anchor.chunk_id, anchor.kind, anchor.span) not in seen:
+                            target.anchors.append(anchor)
+                    for src in entry.merged_from:
+                        if src not in target.merged_from:
+                            target.merged_from.append(src)
+                else:
+                    entry.identity_key = final_key
+                    entry.ids = {str(k): str(v) for k, v in final_ids.items()}
+                    ledger.nodes[final_key] = entry
 
     def _build_fill_context(
         self,
@@ -1116,6 +1442,8 @@ class DenseOrchestrator:
     ) -> dict[str, Any] | None:
         self._counters = {}
         self.last_run_stats = {}
+        self.last_provenance = None
+        provenance_enabled = self._config.provenance_mode != "off"
         token_counts: list[int] | None = None
         if chunk_metadata and len(chunk_metadata) == len(chunks):
             raw_counts = [m.get("token_count") for m in chunk_metadata]
@@ -1176,6 +1504,13 @@ class DenseOrchestrator:
         if self._debug_dir:
             self._write_debug("dense_skeleton_graph.json", {"nodes": merged_skeleton})
 
+        # Provenance (H2 + H5): chunk index and ledger freeze. Fill cannot
+        # change node identity, so the ledger frozen here stays valid.
+        ledger: ProvenanceLedger | None = None
+        if provenance_enabled:
+            chunk_records = self._build_chunk_records(batches, chunk_metadata, len(chunks))
+            ledger = self._freeze_ledger(merged_skeleton, chunk_records, spec_by_path)
+
         path_counts: dict[str, int] = {}
         for n in merged_skeleton:
             p = n.get("path") or ""
@@ -1188,6 +1523,11 @@ class DenseOrchestrator:
             reason = "missing_root" if total >= 1 else "empty_skeleton"
             logger.warning("Dense Phase 1 quality gate failed: %s", reason)
             self._finalize_run_stats(total, reconciliation_merged, {}, gate_failure=reason)
+            if ledger is not None and self._debug_dir:
+                # Partial ledger for audit; last_provenance stays None because
+                # the strategy falls back to direct extraction, whose result
+                # this ledger does not describe.
+                self._write_debug("dense_provenance_partial.json", ledger.model_dump(mode="json"))
             if self._on_trace:
                 self._on_trace({"contract": "dense", "phase1_quality": False, "reason": reason})
             return None
@@ -1220,6 +1560,12 @@ class DenseOrchestrator:
                 fill_jobs.append(
                     (path, spec, batch_descriptors, batch_index, sub_schema, fill_markdown)
                 )
+                if ledger is not None:
+                    for desc in batch_descriptors:
+                        key = _provenance_identity_key(path, desc.get("ids") or {}, spec.id_fields)
+                        entry = ledger.nodes.get(key) if key else None
+                        if entry is not None and batch_index not in entry.fill_batches:
+                            entry.fill_batches.append(batch_index)
 
         if workers <= 1 or len(fill_jobs) <= 1:
             for path, spec, batch_descriptors, _bi, sub_schema, fill_markdown in fill_jobs:
@@ -1272,17 +1618,28 @@ class DenseOrchestrator:
 
         phase2_elapsed = time.perf_counter() - phase2_start
         merge_stats: dict[str, int] = {}
+        merge_events: list[dict[str, Any]] | None = [] if ledger is not None else None
         root = merge_filled_into_root(
-            path_filled, path_descriptors, self._catalog, stats_out=merge_stats
+            path_filled,
+            path_descriptors,
+            self._catalog,
+            stats_out=merge_stats,
+            events_out=merge_events,
         )
         # Invariant: id-only childless branch nodes are skeleton noise that the
         # fill could not substantiate; they are always pruned. Rescue buckets
         # and placeholders keep their children and therefore always survive.
-        root = prune_barren_branches(root, self._catalog)
+        root = prune_barren_branches(root, self._catalog, events_out=merge_events)
+        if ledger is not None and merge_events is not None:
+            self._finalize_provenance(
+                ledger, merge_events, spec_by_path, path_descriptors, path_filled
+            )
         self._finalize_run_stats(len(merged_skeleton), reconciliation_merged, merge_stats)
         if self._debug_dir:
             self._write_debug("dense_merge_stats.json", merge_stats)
             self._write_debug("dense_run_stats.json", self.last_run_stats)
+            if ledger is not None:
+                self._write_debug("dense_provenance.json", ledger.model_dump(mode="json"))
         if self._on_trace:
             self._on_trace(
                 {

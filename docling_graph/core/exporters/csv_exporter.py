@@ -1,6 +1,7 @@
 """CSV exporter for Neo4j-compatible format."""
 
 import csv
+import json
 from pathlib import Path
 from typing import Optional, cast
 
@@ -8,6 +9,7 @@ import networkx as nx
 import pandas as pd
 
 from ..converters.config import ExportConfig
+from ..provenance.identity import PROVENANCE_NODE_ATTR
 
 
 class CSVExporter:
@@ -67,6 +69,12 @@ class CSVExporter:
 
         for node_id, data in graph.nodes(data=True):
             node_dict = {"id": node_id, **data}
+            # Provenance is a nested dict; serialize as parseable JSON rather
+            # than letting pandas emit a Python repr.
+            if isinstance(node_dict.get(PROVENANCE_NODE_ATTR), dict):
+                node_dict[PROVENANCE_NODE_ATTR] = json.dumps(
+                    node_dict[PROVENANCE_NODE_ATTR], ensure_ascii=False, default=str
+                )
             nodes_data.append(node_dict)
 
         nodes_df = pd.DataFrame(nodes_data)

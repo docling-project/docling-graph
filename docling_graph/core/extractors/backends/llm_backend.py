@@ -67,6 +67,10 @@ class LlmBackend:
         # Per-run dense observability (skeleton_nodes, truncation/split counts,
         # merge/orphan stats); surfaced in metadata.json and the report.
         self.last_dense_stats: dict[str, Any] = {}
+        # Per-run provenance ledger from dense extraction; None when disabled,
+        # when dense produced no result (a direct fallback result is NOT
+        # described by a failed dense run's ledger), or for direct extraction.
+        self.last_provenance: Any = None
         self._retry_on_truncation = bool(self._dense_config_raw.get("retry_on_truncation", True))
         self._truncation_retry_multiplier = max(
             1.0,
@@ -1274,7 +1278,11 @@ class LlmBackend:
         # sparse-but-valid dense result is always better than discarding it.
         # (The schema-leaf sparsity heuristic penalizes large templates with
         # many optional fields and was designed for direct structured output.)
-        return self._validate_extraction(parsed_json, template, context)
+        model = self._validate_extraction(parsed_json, template, context)
+        if model is None:
+            # A ledger must never describe a result that failed validation.
+            self.last_provenance = None
+        return model
 
     def _extract_with_dense_contract(
         self,
@@ -1330,7 +1338,7 @@ class LlmBackend:
                 **kwargs,
             )
 
-        root, run_stats = run_dense_orchestrator(
+        root, run_stats, ledger = run_dense_orchestrator(
             llm_call_fn=_dense_llm,
             dense_config_raw=self._dense_config_raw,
             chunks=chunks,
@@ -1341,6 +1349,9 @@ class LlmBackend:
             trace_data=trace_data,
         )
         self.last_dense_stats = run_stats
+        # Only a successful dense run's ledger describes the final result; on
+        # failure the strategy falls back to direct extraction.
+        self.last_provenance = ledger if root else None
         return root
 
     def extract_from_markdown(
@@ -1401,8 +1412,23 @@ class LlmBackend:
         if not parsed_json:
             return None
 
-        # Validate and return
-        return self._validate_extraction(parsed_json, template, context)
+        # Validate
+        model = self._validate_extraction(parsed_json, template, context)
+
+        # Direct contract grounding (spec §5): the whole document is extracted
+        # in one call with no per-node chunk tracking, so provenance is
+        # document-level. Only for the pure direct contract — dense sets its own
+        # (chunk-level) ledger, and partial/chunk calls are not full documents.
+        if (
+            model is not None
+            and not is_partial
+            and self.extraction_contract == "direct"
+            and str(self._dense_config_raw.get("provenance", "standard")).lower() != "off"
+        ):
+            from ....core.provenance.models import document_level_ledger
+
+            self.last_provenance = document_level_ledger(markdown)
+        return model
 
     def generate(
         self,

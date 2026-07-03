@@ -18,7 +18,24 @@ from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
 
 from ...exceptions import ExtractionError
+from ..provenance.models import text_hash as _chunk_text_hash
 from .document_chunker import DocumentChunker
+
+
+def _chunk_doc_item_refs(chunk_obj: Any) -> list[str]:
+    """Docling item self_refs for a chunk; defensive against docling API drift."""
+    refs: list[str] = []
+    for item in getattr(getattr(chunk_obj, "meta", None), "doc_items", None) or []:
+        ref = getattr(item, "self_ref", None)
+        if ref:
+            refs.append(str(ref))
+    return refs
+
+
+def _chunk_headings(chunk_obj: Any) -> list[str]:
+    """Heading trail for a chunk; defensive against docling API drift."""
+    headings = getattr(getattr(chunk_obj, "meta", None), "headings", None) or []
+    return [str(h) for h in headings if h]
 
 
 class DocumentProcessor:
@@ -218,6 +235,11 @@ class DocumentProcessor:
             - chunk_id: int
             - page_numbers: list[int]
             - token_count: int
+            - doc_item_refs: list[str] (docling item self_refs)
+            - headings: list[str] (heading trail from chunk meta)
+            - text_hash: str (hash of the chunk text, for provenance drift checks)
+            - char_length: int
+            - resplit_of: int | None (ordinal of the oversized parent chunk when re-split)
         """
         if not self.chunker:
             raise ValueError(
@@ -232,7 +254,7 @@ class DocumentProcessor:
         chunks = []
         metadata_list = []
         chunk_id = 0
-        for chunk_obj in raw_chunker.chunk(document):
+        for raw_idx, chunk_obj in enumerate(raw_chunker.chunk(document)):
             enriched_text = raw_chunker.contextualize(chunk=chunk_obj)
             enriched_tokens = self.chunker.tokenizer.count_tokens(enriched_text)
             page_numbers = sorted(
@@ -242,6 +264,8 @@ class DocumentProcessor:
                     if hasattr(item, "prov") and item.prov
                 }
             )
+            doc_item_refs = _chunk_doc_item_refs(chunk_obj)
+            headings = _chunk_headings(chunk_obj)
             if enriched_tokens <= self.chunker.chunk_max_tokens:
                 chunks.append(enriched_text)
                 metadata_list.append(
@@ -249,6 +273,11 @@ class DocumentProcessor:
                         "chunk_id": chunk_id,
                         "page_numbers": page_numbers,
                         "token_count": enriched_tokens,
+                        "doc_item_refs": doc_item_refs,
+                        "headings": headings,
+                        "text_hash": _chunk_text_hash(enriched_text),
+                        "char_length": len(enriched_text),
+                        "resplit_of": None,
                     }
                 )
                 chunk_id += 1
@@ -256,11 +285,18 @@ class DocumentProcessor:
                 sub_chunks = self.chunker.chunk_text_fallback(enriched_text)
                 chunks.extend(sub_chunks)
                 for sub in sub_chunks:
+                    # Sub-chunks inherit the parent's location metadata (pages,
+                    # item refs, headings) — the split is textual, not structural.
                     metadata_list.append(
                         {
                             "chunk_id": chunk_id,
                             "page_numbers": page_numbers,
                             "token_count": self.chunker.tokenizer.count_tokens(sub),
+                            "doc_item_refs": doc_item_refs,
+                            "headings": headings,
+                            "text_hash": _chunk_text_hash(sub),
+                            "char_length": len(sub),
+                            "resplit_of": raw_idx,
                         }
                     )
                     chunk_id += 1
@@ -383,6 +419,11 @@ class DocumentProcessor:
                     "chunk_id": chunk_id,
                     "page_numbers": [0],  # Text inputs don't have pages
                     "token_count": token_count,
+                    "doc_item_refs": [],
+                    "headings": [],
+                    "text_hash": _chunk_text_hash(chunk_text),
+                    "char_length": len(chunk_text),
+                    "resplit_of": None,
                 }
             )
 

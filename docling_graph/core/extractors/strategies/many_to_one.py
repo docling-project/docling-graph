@@ -66,8 +66,11 @@ class ManyToOneStrategy(BaseExtractor):
         if extraction_contract == "dense" and not use_chunking:
             raise ValueError("Dense extraction requires use_chunking=True.")
 
+        # A chunker is configured whenever chunking is enabled — dense needs it
+        # for extraction, and direct uses it (extraction unchanged) only to build
+        # a chunk-level provenance index so its nodes can be located precisely.
         chunker_config: dict[str, Any] | None = None
-        if use_chunking and extraction_contract == "dense":
+        if use_chunking:
             chunker_config = {"chunk_max_tokens": int(chunk_max_tokens or 512)}
 
         self.doc_processor = DocumentProcessor(
@@ -449,6 +452,7 @@ class ManyToOneStrategy(BaseExtractor):
 
             if model:
                 logger.info("Direct extraction successful")
+                self._attach_direct_provenance(backend, document)
                 return [model], document
             else:
                 logger.warning("Direct extraction returned no model")
@@ -471,3 +475,29 @@ class ManyToOneStrategy(BaseExtractor):
                     },
                 )
             return [], document
+
+    def _attach_direct_provenance(self, backend: Any, document: DoclingDocument) -> None:
+        """Upgrade the direct contract's document-level ledger to a chunk index.
+
+        The direct call extracts the whole document at once, so there are no
+        skeleton anchors — but chunking the document (page numbers + text) lets
+        the binder verbatim-locate each extracted node's identifier, turning
+        "whole document" into an exact chunk/page. Falls back silently to the
+        backend's document-level ledger when provenance is off or no chunker is
+        available (e.g. a format Docling exposes no structure for).
+        """
+        if getattr(backend, "last_provenance", None) is None:
+            return  # provenance disabled: backend produced no ledger
+        processor = self.doc_processor
+        if getattr(processor, "chunker", None) is None:
+            return  # keep the document-level fallback
+        try:
+            chunks, metadata = processor.extract_chunks_with_metadata(document)
+        except Exception as e:
+            logger.warning("Direct provenance chunk index unavailable: %s", e)
+            return
+        if not chunks:
+            return
+        from ...provenance import chunk_index_ledger
+
+        backend.last_provenance = chunk_index_ledger(chunks, metadata)

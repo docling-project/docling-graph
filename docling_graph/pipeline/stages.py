@@ -332,6 +332,7 @@ class ExtractionStage(PipelineStage):
                 logger.info(f"[{self.name()}] Using pre-loaded DoclingDocument")
                 context.extracted_models = self._extract_from_docling_document(context)
                 logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
+                self._capture_provenance(context)
                 return context
 
         # All other inputs: Docling conversion path (file, URL download, text normalized to .md)
@@ -358,7 +359,97 @@ class ExtractionStage(PipelineStage):
 
         logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
 
+        self._capture_provenance(context)
         return context
+
+    def _capture_provenance(self, context: PipelineContext) -> None:
+        """Attach the extraction provenance ledger to the context (spec hook H7).
+
+        Finalizes ``DocumentOrigin`` here: extraction internals know chunks,
+        the stage knows source identity (path, input type, template).
+        """
+        if getattr(context.config, "provenance", "standard") == "off":
+            return
+
+        from ..core.provenance import DocumentOrigin, ProvenanceLedger, content_hash
+
+        backend = getattr(context.extractor, "backend", None)
+        ledger = getattr(backend, "last_provenance", None)
+        # Strict type check: mocks and foreign backends must never smuggle a
+        # non-ledger value into the context.
+        if not isinstance(ledger, ProvenanceLedger):
+            return
+
+        source = str(context.config.source or "")
+        input_type = "document"
+        if context.input_metadata:
+            source = str(context.input_metadata.get("original_source") or source)
+            input_type = str(context.input_metadata.get("input_type") or input_type)
+
+        document_id = ""
+        candidate: Path | None = None
+        if isinstance(context.normalized_source, Path):
+            candidate = context.normalized_source
+        elif context.config.source:
+            maybe = Path(str(context.config.source))
+            candidate = maybe if maybe.is_file() else None
+        try:
+            if candidate is not None and candidate.is_file():
+                document_id = content_hash(candidate.read_bytes())
+        except Exception:
+            document_id = ""
+        if not document_id:
+            document_id = content_hash(source.encode("utf-8"))
+
+        page_count = None
+        if context.docling_document is not None:
+            try:
+                num_pages_fn = getattr(context.docling_document, "num_pages", None)
+                if callable(num_pages_fn):
+                    page_count = int(num_pages_fn() or 0) or None
+            except Exception:
+                page_count = None
+
+        template_name = ""
+        schema_hash = ""
+        if context.template is not None:
+            template_name = getattr(context.template, "__name__", "")
+            try:
+                import json as _json
+
+                schema_hash = content_hash(
+                    _json.dumps(context.template.model_json_schema(), sort_keys=True).encode(
+                        "utf-8"
+                    )
+                )
+            except Exception:
+                schema_hash = ""
+
+        ledger.document = DocumentOrigin(
+            document_id=document_id,
+            source=source,
+            input_type=input_type,
+            page_count=page_count,
+            template_name=template_name,
+            template_schema_hash=schema_hash,
+        )
+        context.provenance = ledger
+        logger.info(
+            f"[{self.name()}] Captured provenance ledger: "
+            f"{len(ledger.nodes)} node entries, {len(ledger.chunks)} chunks, "
+            f"resolution={ledger.resolution}"
+        )
+        if context.trace_data is not None:
+            context.trace_data.emit(
+                "provenance_captured",
+                "extraction",
+                {
+                    "document_id": document_id,
+                    "resolution": ledger.resolution,
+                    "node_entries": len(ledger.nodes),
+                    "chunk_records": len(ledger.chunks),
+                },
+            )
 
     def _create_extractor(self, context: PipelineContext) -> Any:
         """
@@ -385,6 +476,7 @@ class ExtractionStage(PipelineStage):
             "dense_fill_nodes_cap": conf.get("dense_fill_nodes_cap", 5),
             "dense_fill_context": conf.get("dense_fill_context", "scoped"),
             "dense_dedupe": conf.get("dense_dedupe", "standard"),
+            "provenance": conf.get("provenance", "standard"),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -618,9 +710,44 @@ class GraphConversionStage(PipelineStage):
             raise PipelineError(
                 "No extracted models available for graph conversion", details={"stage": self.name()}
             )
+
+        # Provenance binder (spec hook H9): injected as a closure so the
+        # converter stays agnostic of the provenance module. Runs inside the
+        # converter, after edge assembly and before cleanup.
+        provenance_binder = None
+        bind_stats: Dict[str, int] = {}
+        if (
+            context.provenance is not None
+            and context.template is not None
+            and getattr(context.config, "provenance", "standard") != "off"
+        ):
+            from ..core.provenance.binder import bind_provenance
+
+            ledger = context.provenance
+            template = context.template
+            registry = context.node_registry
+            # 'detailed' surfaces char spans in the node attribute; 'standard'
+            # keeps them in provenance.json only.
+            include_spans = getattr(context.config, "provenance", "standard") == "detailed"
+
+            def provenance_binder(graph: Any, models: Any) -> None:
+                bind_stats.update(
+                    bind_provenance(
+                        graph=graph,
+                        models=models,
+                        ledger=ledger,
+                        registry=registry,
+                        template=template,
+                        include_spans=include_spans,
+                    )
+                )
+
         context.knowledge_graph, context.graph_metadata = converter.pydantic_list_to_graph(
-            context.extracted_models
+            context.extracted_models,
+            provenance_binder=provenance_binder,
         )
+        if bind_stats and context.trace_data is not None:
+            context.trace_data.emit("provenance_bound", "graph_conversion", dict(bind_stats))
         if context.trace_data is not None:
             context.trace_data.emit(
                 "graph_created",
@@ -673,6 +800,17 @@ class ExportStage(PipelineStage):
         json_path = graph_dir / "graph.json"
         JSONExporter().export(context.knowledge_graph, json_path)
         logger.info(f"Saved JSON to {json_path}")
+
+        # Persist the full provenance ledger next to the graph (spec hook H11)
+        if (
+            context.provenance is not None
+            and getattr(context.config, "provenance", "standard") != "off"
+        ):
+            provenance_path = graph_dir / "provenance.json"
+            provenance_path.write_text(
+                context.provenance.model_dump_json(indent=2), encoding="utf-8"
+            )
+            logger.info(f"Saved provenance ledger to {provenance_path}")
         if context.trace_data is not None:
             context.trace_data.emit(
                 "export_written",
