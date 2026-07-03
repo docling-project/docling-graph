@@ -6,6 +6,7 @@
 The **most critical decision** when designing a Pydantic template is classifying each model as either an **Entity** or a **Component**. This distinction fundamentally affects how your knowledge graph is constructed and how nodes are deduplicated.
 
 **In this guide:**
+
 - Understanding the Entity vs Component distinction
 - When to use each classification
 - How to configure `graph_id_fields` and `is_entity`
@@ -71,6 +72,7 @@ class Person(BaseModel):
 ```
 
 **Key Points:**
+
 - Use `graph_id_fields` to specify which fields form the unique identifier
 - Only fields in `graph_id_fields` are used for deduplication
 - Other fields can vary without creating new nodes
@@ -236,6 +238,7 @@ class Address(BaseModel):
 ```
 
 **Key Points:**
+
 - Use `is_entity=False` to mark as component
 - **All fields** are used for deduplication
 - Identical content = same node
@@ -374,18 +377,22 @@ Use this decision tree to classify your models:
 ### Questions to Ask
 
 1. **"Should this be tracked individually?"**
+
    - Yes → Likely an Entity
    - No → Likely a Component
 
 2. **"If I see this twice with identical values, should it be one thing or two?"**
+
    - One thing → Component
    - Two things → Entity
 
 3. **"Does this represent a unique object or a shared value?"**
+
    - Unique object → Entity
    - Shared value → Component
 
 4. **"Would I want to query for all instances of this specific thing?"**
+
    - Yes → Entity
    - No → Component
 

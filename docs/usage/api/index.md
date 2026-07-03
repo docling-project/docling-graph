@@ -6,6 +6,7 @@
 The **docling-graph Python API** provides programmatic access to the document-to-graph pipeline, enabling integration into Python applications, notebooks, and workflows.
 
 **Key Components:**
+
 - `run_pipeline()` - Main pipeline function
 - `PipelineConfig` - Type-safe configuration
 - Direct module imports for advanced usage

@@ -138,6 +138,7 @@ Don't use when:
 --8<-- "docs/assets/flowcharts/extension_points.md"
 
 **Extension Points:**
+
 - **Custom Backends** (blue): Replace extraction logic
 - **Custom Exporters** (blue): Replace export logic
 - **Custom Stages** (yellow): Add processing steps

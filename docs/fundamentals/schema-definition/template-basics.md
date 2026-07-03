@@ -6,6 +6,7 @@
 Every Pydantic template for Docling Graph follows a **standard structure** with required imports, helper functions, and organization patterns. This ensures consistency and compatibility with the extraction pipeline.
 
 **In this guide:**
+
 - Required imports and their purposes
 - The mandatory `edge()` helper function
 - Standard file organization
@@ -98,12 +99,14 @@ def edge(label: str, **kwargs: Any) -> Any:
 ### Critical Rules
 
 ✅ **DO:**
+
 - Use lowercase `edge` (not `Edge` or `EDGE`)
 - Return `Field(...)` with `json_schema_extra={"edge_label": label}`
 - Accept `**kwargs` to pass through additional Field parameters
 - Include the docstring
 
 ❌ **DON'T:**
+
 - Change the function signature
 - Modify the `json_schema_extra` structure
 - Remove `**kwargs` support

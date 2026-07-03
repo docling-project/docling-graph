@@ -45,7 +45,9 @@ Each step object includes only:
 - `data_extraction.artifacts.extractions`
 - `data_extraction.artifacts.fallbacks`
 - `data_extraction.artifacts.dense_traces` and related dense debug artifacts (when extraction_contract="dense")
+- `data_extraction.artifacts.provenance` — ledger summary (document id, resolution, node/chunk counts) once extraction attaches a [provenance ledger](../../fundamentals/graph-management/provenance.md) (present unless `provenance="off"`)
 - `graph_mapping.artifacts.graph`
+- `graph_mapping.artifacts.provenance_bound` — binder coverage stats (`nodes_seen`, `bound_verbatim`, `bound_observed`, `bound_document`, `unresolved`)
 - `pipeline.artifacts.start|finish|failure`
 
 ## Structured Output Diagnostics
@@ -59,6 +61,15 @@ Example payload keys:
 - `fallback_error_class`
 - `structured_primary_attempt_parsed_json`
 - `structured_primary_attempt_raw`
+
+## Provenance Diagnostics
+
+The provenance artifacts are lightweight run-level summaries — for the full grounding data (chunk text, per-node anchors), use `debug/dense_provenance.json` (dense) or `docling_graph/provenance.json` (always, when `provenance` is not `"off"`). See [Data Grounding & Provenance](../../fundamentals/graph-management/provenance.md).
+
+```bash
+jq '.steps[] | select(.name == "graph_mapping") | .artifacts.provenance_bound' debug/trace_data.json
+# {"nodes_seen": 16, "bound_verbatim": 7, "bound_observed": 8, "bound_document": 1, "unresolved": 0}
+```
 
 ## Quick Inspection
 

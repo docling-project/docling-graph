@@ -6,6 +6,7 @@
 This section provides **complete, end-to-end examples** organized by both **input format** and **domain/use case**. Each example demonstrates how to process different types of documents through the Docling Graph pipeline.
 
 **What's Covered:**
+
 - Complete Pydantic templates
 - CLI and Python API usage
 - Expected outputs and graph structures
@@ -53,11 +54,13 @@ This section provides **complete, end-to-end examples** organized by both **inpu
 **New to Docling Graph?** → [Quickstart](../../introduction/quickstart.md)
 
 **By Input Format:**
+
 - Web documents → [URL Input](url-input.md)
 - Documentation → [Markdown Input](markdown-input.md)
 - Reprocessing → [DoclingDocument Input](docling-document-input.md)
 
 **By Domain:**
+
 - Business → [Billing Document Extraction](billing-document.md)
 - Identity → [ID Card](id-card.md)
 - Legal → [Insurance Policy](insurance-policy.md)
@@ -136,6 +139,11 @@ See individual example pages for complete templates.
 - **[Input Formats Guide](../../fundamentals/pipeline-configuration/input-formats.md)** - Complete input format reference
 - **[Backend Selection](../../fundamentals/pipeline-configuration/backend-selection.md)** - Choose LLM vs VLM
 - **[Processing Modes](../../fundamentals/pipeline-configuration/processing-modes.md)** - One-to-one vs many-to-one
+- **[Data Grounding & Provenance](../../fundamentals/graph-management/provenance.md)** - Trace nodes back to source chunks and pages
+
+### Runnable Scripts
+
+For self-contained, runnable Python scripts (quickstart, chunking, batch processing, provenance, etc.), see [`docs/examples/README.md`](../../examples/README.md) and the [CLI Recipes](../cli/cli-recipes.md) that mirror each one.
 
 ### API Reference
 

@@ -107,6 +107,7 @@ class ConfigurationError(DoclingGraphError):
 ```
 
 **Common Causes:**
+
 - Missing required environment variables
 - Invalid configuration file
 - Unsupported model or provider
@@ -154,6 +155,7 @@ class ClientError(DoclingGraphError):
 ```
 
 **Common Causes:**
+
 - API authentication failure
 - Network timeout
 - Invalid API response
@@ -209,6 +211,7 @@ class ExtractionError(DoclingGraphError):
 ```
 
 **Common Causes:**
+
 - Document parsing failure
 - Empty extraction result
 - Invalid document format
@@ -266,6 +269,7 @@ class ValidationError(DoclingGraphError):
 ```
 
 **Common Causes:**
+
 - Pydantic validation error
 - Schema mismatch
 - Invalid data structure
@@ -322,6 +326,7 @@ class GraphError(DoclingGraphError):
 ```
 
 **Common Causes:**
+
 - Invalid graph structure
 - Node/edge creation failure
 - Graph validation error
@@ -378,6 +383,7 @@ class PipelineError(DoclingGraphError):
 ```
 
 **Common Causes:**
+
 - Stage execution failure
 - Resource initialization error
 - Cleanup failure

@@ -211,6 +211,7 @@ class DoclingExporter:
 ```
 
 **Creates:**
+
 - `docling_document.json` - Docling JSON
 - `markdown/full_document.md` - Full markdown
 - `markdown/pages/page_N.md` - Per-page markdown

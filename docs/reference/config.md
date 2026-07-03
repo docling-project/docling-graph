@@ -90,6 +90,12 @@ Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extra
 
 Mandatory cleanup — root singleton collapse, barren-branch pruning, and the root-required quality gate — are pipeline invariants and not configurable.
 
+#### Provenance (data grounding)
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `provenance` | `"off"`, `"standard"` or `"detailed"` | `"standard"` | Deterministic node-to-source grounding. `off`: disabled. `standard`: `__provenance__` node attribute + `provenance.json` export, with verbatim (exact) locations where the node's identifier is found in the source and approximate/document-scope fallbacks otherwise. `detailed`: adds character-offset spans to the node attribute. Applies to both `direct` and `dense` contracts. See [Data Grounding & Provenance](../fundamentals/graph-management/provenance.md). |
+
 #### Gleaning (direct contract)
 
 | Field | Type | Default | Description |
@@ -390,25 +396,25 @@ config = PipelineConfig(
 context = run_pipeline(config)
 
 # Debug artifacts saved to outputs/{document}_{timestamp}/debug/
-debug_dir = Path(context.output_dir) / "debug"
+debug_dir = context.output_manager.get_debug_dir()
 print(f"Debug artifacts saved to: {debug_dir}")
 
-# Analyze dense debug artifacts
+# Inspect debug artifacts (dense_* files only present for extraction_contract="dense")
 import json
 
 for name in [
-    "dense_catalog.json",
-    "dense_skeleton.json",
-    "dense_fill.json",
-    "merged_output.json",
-    "dense_trace.json",
+    "dense_skeleton_graph.json",
+    "dense_merge_stats.json",
+    "dense_run_stats.json",
+    "dense_provenance.json",   # present when provenance is not "off"
+    "trace_data.json",
 ]:
     p = debug_dir / name
     print(name, "exists" if p.exists() else "missing")
 
-with open(debug_dir / "dense_trace.json") as f:
+with open(debug_dir / "trace_data.json") as f:
     trace = json.load(f)
-    print(trace.get("timings_seconds", {}))
+    print(trace["summary"])
 ```
 
 ### Explicit Control

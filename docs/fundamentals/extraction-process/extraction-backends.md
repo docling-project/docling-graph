@@ -6,6 +6,7 @@
 **Extraction backends** are the engines that extract structured data from documents. Docling Graph supports two types: **LLM backends** (text-based) and **VLM backends** (vision-based).
 
 **In this guide:**
+
 - LLM vs VLM comparison
 - Backend selection criteria
 - Configuration and usage
@@ -72,21 +73,25 @@ For many-to-one extraction with the LLM backend you can choose:
 #### ✅ Strengths
 
 1. **Fast Processing**
+
    - Quick text extraction
    - Efficient chunking
    - Parallel processing
 
 2. **Cost Effective**
+
    - Local models are free
    - Remote APIs are affordable
    - No GPU required (local)
 
 3. **Flexible**
+
    - Multiple providers
    - Easy to switch models
    - API or local
 
 4. **Accurate for Text**
+
    - Excellent for standard documents
    - Good table understanding
    - Strong reasoning
@@ -94,11 +99,13 @@ For many-to-one extraction with the LLM backend you can choose:
 #### ❌ Limitations
 
 1. **Text-Only**
+
    - No visual understanding
    - Relies on OCR quality
    - May miss layout cues
 
 2. **Context Limits**
+
    - Requires chunking for large docs
    - May lose cross-page context
    - Needs merging
@@ -260,21 +267,25 @@ config = PipelineConfig(
 #### ✅ Strengths
 
 1. **Visual Understanding**
+
    - Sees layout and structure
    - Understands images
    - Handles complex formats
 
 2. **No Chunking Needed**
+
    - Processes pages directly
    - No context window limits
    - Simpler pipeline
 
 3. **Robust to OCR Issues**
+
    - Doesn't rely on OCR
    - Handles poor quality
    - Better for handwriting
 
 4. **Layout Aware**
+
    - Understands visual hierarchy
    - Recognizes forms
    - Detects tables visually
@@ -282,16 +293,19 @@ config = PipelineConfig(
 #### ❌ Limitations
 
 1. **Slower**
+
    - More computation
    - GPU recommended
    - Longer processing time
 
 2. **Local Only**
+
    - No remote API support
    - Requires local GPU
    - Higher resource usage
 
 3. **Model Size**
+
    - Large models (2B-8B params)
    - More memory needed
    - Longer startup time
@@ -620,6 +634,7 @@ config = PipelineConfig(
 ```
 
 **Benefits:**
+
 - Prevents context window overflows
 - More efficient chunk packing
 - Better resource utilization
@@ -709,6 +724,7 @@ config = PipelineConfig(
 ```
 
 **Why Different Thresholds?**
+
 - **OpenAI/Google**: Robust to near-limit contexts → aggressive batching
 - **Anthropic**: More conservative → moderate batching
 - **Ollama/Local**: Variable performance → conservative batching

@@ -6,6 +6,7 @@
 **Document Conversion** is the first stage of the extraction pipeline, transforming raw PDFs and images into structured DoclingDocument format. This stage uses the Docling library to perform OCR, layout analysis, and content extraction.
 
 **In this guide:**
+
 - OCR vs Vision pipelines
 - Layout analysis
 - Table extraction
@@ -46,6 +47,7 @@ config = PipelineConfig(
 ### Features
 
 ✅ **Strengths:**
+
 - Fast processing
 - High accuracy for text
 - Excellent table extraction
@@ -53,6 +55,7 @@ config = PipelineConfig(
 - No GPU required
 
 ❌ **Limitations:**
+
 - May struggle with complex layouts
 - Less effective for handwriting
 - Requires clear text
@@ -89,6 +92,7 @@ config = PipelineConfig(
 ### Features
 
 ✅ **Strengths:**
+
 - Excellent for complex layouts
 - Handles handwriting better
 - Understands visual context
@@ -96,6 +100,7 @@ config = PipelineConfig(
 - Robust to noise
 
 ❌ **Limitations:**
+
 - Slower processing
 - Requires more memory
 - GPU recommended

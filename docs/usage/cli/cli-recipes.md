@@ -19,6 +19,7 @@ This guide provides **ready-to-use CLI commands** for all example scripts. Run t
 | [09: Batch Processing](#batch-processing) | `09_batch_processing.py` | VLM | Multiple documents |
 | [10: Multi-Provider](#multi-provider) | `10_provider_configs.py` | LLM (Remote) | Provider comparison |
 | [11: Streaming Responses](#streaming-responses) | `14_streaming_responses.py` | LLM (Remote) | Timeout avoidance |
+| [12: Data Grounding](#data-grounding) | `15_provenance_grounding.py` | LLM (Dense) | Auditing, citation |
 
 ---
 
@@ -452,6 +453,48 @@ docling-graph convert large_document.pdf \
     --backend llm \
     --llm-streaming
 ```
+
+---
+
+## 📍 Data Grounding
+
+**Python Script:** `15_provenance_grounding.py`
+
+**Use Case:** Trace every extracted node back to its source chunk and page for auditing or citation
+
+**Prerequisites:**
+```bash
+pip install docling-graph
+export MISTRAL_API_KEY="your-api-key"
+```
+
+**CLI Command:**
+```bash
+docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
+    --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
+    --output-dir "outputs/cli_provenance" \
+    --backend "llm" \
+    --inference "remote" \
+    --provider "mistral" \
+    --model "mistral-large-latest" \
+    --processing-mode "many-to-one" \
+    --extraction-contract "dense" \
+    --provenance "detailed"
+```
+
+**When to Use:**
+
+- ✅ Auditing extracted data against the source document
+- ✅ Citation / "show your work" for downstream RAG or review UIs
+- ✅ Debugging why a field has a particular value
+
+**Result:** Every entity node in `docling_graph/graph.json` carries a `__provenance__` attribute, and the full grounding ledger — including source chunk text — is written to `docling_graph/provenance.json`:
+
+```bash
+jq '.nodes[] | {id, provenance: .__provenance__}' outputs/cli_provenance/*/docling_graph/graph.json
+```
+
+See [Data Grounding & Provenance](../../fundamentals/graph-management/provenance.md) for the full schema.
 
 ---
 

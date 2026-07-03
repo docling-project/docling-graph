@@ -6,6 +6,7 @@
 Docling Graph supports two extraction backends: **LLM (Language Model)** for text-based extraction and **VLM (Vision-Language Model)** for vision-based extraction. Choosing the right backend is crucial for extraction quality and performance.
 
 **In this guide:**
+
 - LLM vs VLM comparison
 - When to use each backend
 - Performance characteristics
@@ -75,20 +76,24 @@ config = PipelineConfig(
 ### LLM Advantages
 
 1. **Flexible Inference**
+
    - Local: Use your own GPU/CPU
    - Remote: Use cloud APIs (OpenAI, Mistral, Gemini)
 
 2. **Fast Processing**
+
    - Quick markdown conversion
    - Efficient text processing
    - Parallel chunking support
 
 3. **Cost Effective**
+
    - Local inference: Free (after GPU cost)
    - Remote inference: Pay per token
    - Generally cheaper than VLM
 
 4. **Easy Setup**
+
    - No GPU required for remote
    - Simple API key configuration
    - Wide model selection
@@ -96,16 +101,19 @@ config = PipelineConfig(
 ### LLM Limitations
 
 1. **Text-Only Processing**
+
    - Loses visual information
    - May miss layout cues
    - Can't process images directly
 
 2. **OCR Dependency**
+
    - Relies on Docling OCR quality
    - May struggle with poor scans
    - Handwriting not well supported
 
 3. **Context Limits**
+
    - Large documents need chunking
    - May lose cross-page context
    - Requires consolidation for coherence
@@ -139,6 +147,7 @@ config = PipelineConfig(
 ### When to Use VLM
 
 ✅ **Use VLM when:**
+
 - Documents have complex visual layouts
 - Images contain critical information
 - Tables have intricate structures
@@ -147,6 +156,7 @@ config = PipelineConfig(
 - You have GPU available
 
 ❌ **Don't use VLM when:**
+
 - Documents are simple text
 - You need remote API support
 - GPU is not available
@@ -156,18 +166,21 @@ config = PipelineConfig(
 ### VLM Advantages
 
 1. **Visual Understanding**
+
    - Processes layout and structure
    - Understands visual relationships
    - Handles complex tables
    - Processes embedded images
 
 2. **Higher Accuracy**
+
    - Best for complex documents
    - Understands visual context
    - Fewer extraction errors
    - Better table handling
 
 3. **No OCR Dependency**
+
    - Direct image processing
    - Better with poor scans
    - Handles handwriting better
@@ -176,18 +189,21 @@ config = PipelineConfig(
 ### VLM Limitations
 
 1. **Local Only**
+
    - Requires local GPU
    - No remote API support
    - Higher setup complexity
    - GPU memory requirements
 
 2. **Slower Processing**
+
    - Image processing overhead
    - Larger model size
    - More GPU memory needed
    - Longer inference time
 
 3. **Higher Cost**
+
    - GPU required
    - More expensive hardware
    - Higher power consumption

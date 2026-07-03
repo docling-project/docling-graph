@@ -6,6 +6,7 @@
 **Batch processing** enables efficient processing of multiple documents with progress tracking, error handling, and result aggregation.
 
 **Key Features:**
+
 - Memory-efficient processing (no file exports by default)
 - Parallel processing
 - Progress tracking

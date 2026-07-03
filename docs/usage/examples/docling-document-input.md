@@ -265,6 +265,7 @@ Invoice (root node)
 ### Processing Benefits
 
 **With DoclingDocument Input:**
+
 - ⚡ **Faster**: Skips OCR and document conversion
 - 💰 **Cheaper**: No OCR processing costs
 - 🔄 **Reusable**: Process same document with different templates

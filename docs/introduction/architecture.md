@@ -41,6 +41,12 @@ Transforms Pydantic models to NetworkX graphs with stable node IDs and automatic
 
 **Location:** `docling_graph/core/converters/graph_converter.py`
 
+### Data Grounding & Provenance
+
+Deterministic sidecar ledger that maps every graph node back to its source chunk(s) and page(s); binds a `__provenance__` attribute onto nodes after conversion, without changing prompts, schemas, or LLM output.
+
+**Location:** `docling_graph/core/provenance/`
+
 ### Exporters & Visualizers
 
 Export graphs in CSV, Cypher, JSON formats and generate interactive HTML visualizations.
@@ -88,8 +94,10 @@ if len(models) > 1:
 
 #### Stage 5: Graph Conversion
 ```python
-# Convert to graph
-graph, metadata = converter.pydantic_list_to_graph([final_model])
+# Convert to graph (provenance_binder annotates nodes before cleanup)
+graph, metadata = converter.pydantic_list_to_graph(
+    [final_model], provenance_binder=provenance_binder
+)
 ```
 
 #### Stage 6: Export

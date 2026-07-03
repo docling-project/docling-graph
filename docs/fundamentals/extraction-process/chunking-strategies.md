@@ -6,6 +6,7 @@
 **Chunking** is the process of intelligently splitting documents into optimal pieces for LLM processing. Docling Graph uses **structure-aware chunking** that preserves document semantics, tables, and hierarchies.
 
 **In this guide:**
+
 - Why chunking matters
 - Structure-aware vs naive chunking
 - Real tokenizer integration
@@ -49,6 +50,7 @@ def naive_chunk(text, max_chars=1000):
 ```
 
 **Problems:**
+
 - Breaks tables mid-row
 - Splits lists
 - Ignores semantic boundaries
@@ -71,6 +73,7 @@ chunks = chunker.chunk_document(document)
 ```
 
 **Benefits:**
+
 - Preserves tables
 - Keeps lists intact
 - Respects sections
@@ -119,6 +122,7 @@ chunker = DocumentChunker(
 ```
 
 **Supported providers:**
+
 - `mistral` - Mistral AI models
 - `openai` - OpenAI models
 - `ollama` - Ollama local models

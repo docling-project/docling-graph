@@ -77,6 +77,7 @@ Following industry best practices:
 ### Patch Release (v1.2.0 → 0.3.1)
 
 **When:**
+
 - Bug fixes
 - Documentation updates
 - Performance improvements (no API changes)
@@ -93,6 +94,7 @@ git tag v0.3.1
 ### Minor Release (v1.2.0 → 0.4.0)
 
 **When:**
+
 - New features
 - New backends/exporters
 - Deprecations (with warnings)
@@ -109,6 +111,7 @@ git tag v0.4.0
 ### Major Release (1.x.x → 2.0.0) - Manual Only
 
 **When:**
+
 - Breaking API changes
 - Removed deprecated features
 - Major architectural refactoring

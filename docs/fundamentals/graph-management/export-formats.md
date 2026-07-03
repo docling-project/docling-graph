@@ -6,6 +6,7 @@
 **Export formats** determine how your knowledge graph is saved and shared. Docling Graph supports CSV, Cypher, and JSON formats, each optimized for different use cases.
 
 **In this guide:**
+
 - CSV format (spreadsheets, analysis)
 - Cypher format (Neo4j import)
 - JSON format (programmatic access)
@@ -21,6 +22,31 @@
 | **CSV** | Analysis, spreadsheets | `nodes.csv`, `edges.csv` | Excel, Pandas, SQL |
 | **Cypher** | Graph databases | `graph.cypher` | Neo4j import |
 | **JSON** | APIs, processing | `graph.json` | Python, JavaScript |
+
+---
+
+## Provenance in Exports
+
+When [data grounding](provenance.md) is enabled (the default, `provenance="standard"`), every entity node carries a `__provenance__` attribute. Each exporter serializes it appropriately for its format:
+
+| Format | How `__provenance__` appears |
+|--------|-------------------------------|
+| **JSON** (`graph.json`) | Native nested object, same as any other node field. |
+| **CSV** (`nodes.csv`) | A JSON **string** column — parse with `json.loads(row["__provenance__"])`. |
+| **Cypher** (`graph.cypher`) | A string node property containing escaped JSON, e.g. `CREATE (n:Invoice {..., __provenance__: "{\"match\": \"verbatim\", ...}"})`. |
+
+The full ledger — including chunk **text**, so you can trace a node straight to its source snippet — is always written separately as `provenance.json`, regardless of `export_format`. See [Data Grounding & Provenance](provenance.md) for the complete schema.
+
+```python
+import pandas as pd
+import json
+
+nodes = pd.read_csv("outputs/.../docling_graph/nodes.csv")
+nodes["__provenance__"] = nodes["__provenance__"].apply(json.loads)
+
+verbatim = nodes[nodes["__provenance__"].apply(lambda p: p.get("match") == "verbatim")]
+print(f"{len(verbatim)} nodes grounded to an exact page")
+```
 
 ---
 
@@ -48,11 +74,14 @@ run_pipeline(config)
 ### Output Files
 
 ```
-outputs/
-├── nodes.csv          # All nodes with properties
-├── edges.csv          # All edges with relationships
-├── graph_stats.json   # Graph statistics
-└── visualization.html # Interactive visualization
+outputs/{document}_{timestamp}/
+├── metadata.json                # Pipeline metadata (results.nodes, results.edges, ...)
+└── docling_graph/
+    ├── nodes.csv                 # All nodes with properties
+    ├── edges.csv                 # All edges with relationships
+    ├── graph.json                # Same graph in JSON (always written alongside CSV/Cypher)
+    ├── graph.html                # Interactive visualization
+    └── report.md                 # Summary report
 ```
 
 ---
@@ -67,6 +96,7 @@ addr_123,Address,entity,Address,,,,123 Main St,Paris
 ```
 
 **Columns:**
+
 - `id`: Unique node identifier
 - `label`: Node type/class
 - `type`: Always "entity"
@@ -85,6 +115,7 @@ invoice_001,item_001,contains_item
 ```
 
 **Columns:**
+
 - `source`: Source node ID
 - `target`: Target node ID
 - `label`: Relationship type
@@ -94,8 +125,10 @@ invoice_001,item_001,contains_item
 ### Manual CSV Export
 
 ```python
+from pathlib import Path
+
 from docling_graph.core.exporters import CSVExporter
-from docling_graph.core.converters import GraphConverter
+from docling_graph.core import GraphConverter
 
 # Convert models to graph
 converter = GraphConverter()
@@ -103,7 +136,7 @@ graph, metadata = converter.pydantic_list_to_graph(models)
 
 # Export to CSV
 exporter = CSVExporter()
-exporter.export(graph, output_dir="csv_output")
+exporter.export(graph, Path("csv_output"))
 
 print("Exported to csv_output/nodes.csv and csv_output/edges.csv")
 ```
@@ -187,10 +220,13 @@ run_pipeline(config)
 ### Output Files
 
 ```
-outputs/
-├── graph.cypher       # Cypher statements
-├── graph_stats.json   # Graph statistics
-└── visualization.html # Interactive visualization
+outputs/{document}_{timestamp}/
+├── metadata.json                # Pipeline metadata (results.nodes, results.edges, ...)
+└── docling_graph/
+    ├── graph.cypher               # Cypher statements
+    ├── graph.json                 # Same graph in JSON (always written alongside CSV/Cypher)
+    ├── graph.html                 # Interactive visualization
+    └── report.md                  # Summary report
 ```
 
 ---
@@ -219,9 +255,10 @@ CREATE (org_acme)-[:LOCATED_AT]->(addr_123)
 ### Manual Cypher Export
 
 ```python
-from docling_graph.core.exporters import CypherExporter
-from docling_graph.core.converters import GraphConverter
 from pathlib import Path
+
+from docling_graph.core.exporters import CypherExporter
+from docling_graph.core import GraphConverter
 
 # Convert models to graph
 converter = GraphConverter()
@@ -284,43 +321,22 @@ print("Imported to Neo4j")
 
 ### What is JSON Export?
 
-**JSON export** is automatically generated alongside CSV or Cypher, providing structured data for programmatic access.
+**JSON export** (`graph.json`) is always written alongside CSV or Cypher, providing structured data for programmatic access. There is no separate "extracted models" JSON file — the models' field values are the node properties in `graph.json`.
 
 ### Output Files
 
 ```
-outputs/
-├── extracted_data.json  # Pydantic models
-├── graph_data.json      # Graph structure
-├── graph_stats.json     # Statistics
-└── ...
+outputs/{document}_{timestamp}/
+├── metadata.json                 # Pipeline metadata (results.nodes, results.edges, ...)
+└── docling_graph/
+    └── graph.json                  # Nodes + edges + metadata (always written)
 ```
 
 ---
 
-### extracted_data.json Format
+### graph.json Format
 
-```json
-{
-  "models": [
-    {
-      "invoice_number": "INV-001",
-      "total": 1000,
-      "issued_by": {
-        "name": "Acme Corp",
-        "located_at": {
-          "street": "123 Main St",
-          "city": "Paris"
-        }
-      }
-    }
-  ]
-}
-```
-
----
-
-### graph_data.json Format
+Node properties are **flat** — template field values sit directly on the node dict alongside `id`/`label`/`type`/`__class__`, not nested under a `"properties"` key:
 
 ```json
 {
@@ -329,18 +345,16 @@ outputs/
       "id": "invoice_001",
       "label": "Invoice",
       "type": "entity",
-      "properties": {
-        "invoice_number": "INV-001",
-        "total": 1000
-      }
+      "__class__": "Invoice",
+      "invoice_number": "INV-001",
+      "total": 1000
     },
     {
       "id": "org_acme",
       "label": "Organization",
       "type": "entity",
-      "properties": {
-        "name": "Acme Corp"
-      }
+      "__class__": "Organization",
+      "name": "Acme Corp"
     }
   ],
   "edges": [
@@ -349,7 +363,11 @@ outputs/
       "target": "org_acme",
       "label": "issued_by"
     }
-  ]
+  ],
+  "metadata": {
+    "node_count": 2,
+    "edge_count": 1
+  }
 }
 ```
 
@@ -358,9 +376,10 @@ outputs/
 ### Manual JSON Export
 
 ```python
-from docling_graph.core.exporters import JSONExporter
-from docling_graph.core.converters import GraphConverter
 from pathlib import Path
+
+from docling_graph.core.exporters import JSONExporter
+from docling_graph.core import GraphConverter
 
 # Convert models to graph
 converter = GraphConverter()
@@ -381,10 +400,10 @@ print("Exported to outputs/graph.json")
 import json
 
 # Load graph data
-with open("outputs/graph_data.json") as f:
+with open("outputs/.../docling_graph/graph.json") as f:
     graph_data = json.load(f)
 
-# Access nodes
+# Access nodes (field values are flat on each node dict)
 for node in graph_data["nodes"]:
     print(f"{node['label']}: {node['id']}")
 
@@ -502,14 +521,16 @@ import requests
 config = PipelineConfig(
     source="document.pdf",
     template="templates.BillingDocument",
-    export_format="csv",  # JSON always generated
+    export_format="csv",  # JSON always generated alongside it
+    dump_to_disk=True,
     output_dir="api_data"
 )
 
-run_pipeline(config)
+context = run_pipeline(config)
 
-# Load JSON
-with open("api_data/extracted_data.json") as f:
+# Load the written graph.json (or read context.knowledge_graph directly, no file needed)
+graph_json_path = context.output_manager.get_docling_graph_dir() / "graph.json"
+with open(graph_json_path) as f:
     data = json.load(f)
 
 # Send to API
@@ -580,13 +601,14 @@ print("✅ Exports validated")
 
 **Solution:**
 ```python
-# Check if graph has nodes
+# Check if graph has nodes (metadata.json is at the document dir root,
+# one level above docling_graph/)
 import json
 
-with open("outputs/graph_stats.json") as f:
-    stats = json.load(f)
+with open("outputs/.../metadata.json") as f:
+    metadata = json.load(f)
 
-if stats["node_count"] == 0:
+if metadata["results"]["nodes"] == 0:
     print("No nodes in graph - check extraction")
 ```
 
@@ -612,7 +634,7 @@ cat outputs/graph.cypher | cypher-shell -u neo4j -p password 2>&1 | tee import.l
 import json
 
 try:
-    with open("outputs/graph_data.json") as f:
+    with open("outputs/.../docling_graph/graph.json") as f:
         data = json.load(f)
     print("✅ Valid JSON")
 except json.JSONDecodeError as e:
@@ -625,6 +647,7 @@ except json.JSONDecodeError as e:
 
 Now that you understand export formats:
 
-1. **[Visualization →](visualization.md)** - Visualize your graphs
-2. **[Neo4j Integration →](neo4j-integration.md)** - Deep dive into Neo4j
-3. **[Graph Analysis →](graph-analysis.md)** - Analyze graph structure
+1. **[Data Grounding & Provenance →](provenance.md)** - Trace nodes back to source chunks and pages
+2. **[Visualization →](visualization.md)** - Visualize your graphs
+3. **[Neo4j Integration →](neo4j-integration.md)** - Deep dive into Neo4j
+4. **[Graph Analysis →](graph-analysis.md)** - Analyze graph structure

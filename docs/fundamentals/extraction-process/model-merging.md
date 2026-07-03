@@ -6,6 +6,7 @@
 **Model merging** is the process of consolidating multiple Pydantic model instances into a single unified model. This is essential when extracting from multiple chunks or pages.
 
 **In this guide:**
+
 - Why merging is needed
 - Programmatic vs LLM merging
 - Optional LLM consolidation
@@ -206,11 +207,13 @@ entity_3 = {"name": "Acme Corp", "city": "London"}
 ### When to Use
 
 ✅ **Use LLM consolidation when:**
+
 - High accuracy is needed
 - Complex conflict resolution required
 - Budget allows extra API calls
 
 ❌ **Don't use LLM consolidation when:**
+
 - Speed is priority
 - Cost is primary concern
 - Simple merging sufficient

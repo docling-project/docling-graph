@@ -6,6 +6,7 @@
 The **docling-graph CLI** provides command-line tools for document-to-graph conversion, configuration management, and graph visualization.
 
 **Available Commands:**
+
 - `init` - Create configuration files
 - `convert` - Convert documents to graphs
 - `inspect` - Visualize graphs in browser
@@ -78,6 +79,7 @@ docling-graph init
 ```
 
 **Features:**
+
 - Interactive configuration builder (processing mode, extraction contract, backend, inference, provider/model, export, output)
 - Dependency validation
 - Provider/model identifiers use LiteLLM routing
@@ -96,6 +98,7 @@ docling-graph convert SOURCE --template TEMPLATE [OPTIONS]
 ```
 
 **Features:**
+
 - Multiple backend support (LLM/VLM)
 - Flexible processing modes
 - Configurable chunking
@@ -114,6 +117,7 @@ docling-graph inspect PATH [OPTIONS]
 ```
 
 **Features:**
+
 - Interactive HTML visualization
 - CSV and JSON import
 - Node/edge exploration

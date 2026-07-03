@@ -333,6 +333,7 @@ uv run docling-graph inspect outputs/id_card/
 ```
 
 **Features:**
+
 - View extracted personal information
 - See address relationships
 - Verify dates are parsed correctly

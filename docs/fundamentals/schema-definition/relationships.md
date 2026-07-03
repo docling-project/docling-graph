@@ -11,6 +11,7 @@
 Relationships (edges) connect nodes in your knowledge graph. The `edge()` helper function marks fields as graph relationships and defines their labels. Well-designed edges create meaningful, queryable graph structures.
 
 **In this guide:**
+
 - Using the `edge()` function
 - Edge label conventions
 - Single vs list relationships
@@ -70,12 +71,14 @@ addresses: List[Address] = edge(
 ### Naming Standards
 
 ✅ **DO:**
+
 - Use ALL_CAPS with underscores
 - Use verb phrases that describe the relationship
 - Choose descriptive, domain-appropriate verbs
 - Be consistent across your template
 
 ❌ **DON'T:**
+
 - Use camelCase, lowercase, or mixed case
 - Use vague labels like "LINK" or "RELATED"
 - Mix naming styles

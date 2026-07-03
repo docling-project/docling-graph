@@ -69,6 +69,7 @@ Use `uv run docling-graph` when running the CLI from a source checkout.
 ### For Remote API Only
 
 - **No GPU required**
+
 - **Internet connection** required
 - **API keys** required
 

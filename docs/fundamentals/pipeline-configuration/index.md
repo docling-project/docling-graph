@@ -6,6 +6,7 @@
 Pipeline configuration controls how Docling Graph processes documents and extracts knowledge graphs. The `PipelineConfig` class provides a type-safe, programmatic way to configure all aspects of the extraction pipeline.
 
 **In this section:**
+
 - Understanding PipelineConfig
 - Backend selection (LLM vs VLM)
 - Model configuration
@@ -91,6 +92,7 @@ run_pipeline(config)
 ```
 
 **Defaults:**
+
 - Backend: `llm`
 - Inference: `local`
 - Processing mode: `many-to-one`
@@ -181,12 +183,14 @@ PipelineConfig
 ### 1. Backend: LLM vs VLM
 
 **Choose LLM when:**
+
 - Processing text-heavy documents
 - Need remote API support
 - Want flexible model selection
 - Cost is a concern (remote APIs)
 
 **Choose VLM when:**
+
 - Processing image-heavy documents
 - Need vision understanding
 - Have local GPU available
@@ -197,12 +201,14 @@ PipelineConfig
 ### 2. Inference: Local vs Remote
 
 **Choose Local when:**
+
 - Have GPU available
 - Processing sensitive data
 - Need offline capability
 - Want to avoid API costs
 
 **Choose Remote when:**
+
 - No GPU available
 - Need quick setup
 - Want latest models
@@ -213,11 +219,13 @@ PipelineConfig
 ### 3. Processing Mode: One-to-One vs Many-to-One
 
 **Choose One-to-One when:**
+
 - Documents have distinct pages
 - Need page-level granularity
 - Pages are independent
 
 **Choose Many-to-One when:**
+
 - Document is a single entity
 - Need document-level view
 - Want consolidated output

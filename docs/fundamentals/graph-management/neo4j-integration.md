@@ -6,6 +6,7 @@
 **Neo4j integration** enables you to import knowledge graphs into Neo4j graph database for powerful querying, analysis, and visualization using Cypher query language.
 
 **In this guide:**
+
 - Neo4j setup
 - Cypher import
 - Query examples
@@ -19,21 +20,25 @@
 ### Benefits
 
 ✅ **Graph-native database**
+
 - Optimized for graph queries
 - Fast relationship traversal
 - ACID transactions
 
 ✅ **Cypher query language**
+
 - Intuitive pattern matching
 - Powerful aggregations
 - Path finding algorithms
 
 ✅ **Visualization**
+
 - Built-in graph browser
 - Interactive exploration
 - Custom styling
 
 ✅ **Scalability**
+
 - Handles millions of nodes
 - Distributed architecture
 - High performance

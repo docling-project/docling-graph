@@ -49,6 +49,7 @@ def extract_from_document(
 Extract structured data from a document.
 
 **Parameters:**
+
 - `source` (`str`): Path to source document
 - `template` (`Type[BaseModel]`): Pydantic model template
 
@@ -105,6 +106,7 @@ class TextExtractionBackendProtocol(Protocol):
 ```
 
 **Attributes:**
+
 - `client` (`Any`): LLM client instance
 
 **Methods:**
@@ -123,6 +125,7 @@ def extract_from_markdown(
 Extract structured data from markdown content.
 
 **Parameters:**
+
 - `markdown` (`str`): Markdown content
 - `template` (`Type[BaseModel]`): Pydantic model template
 - `context` (`str`): Context description (e.g., "page 1")
@@ -143,6 +146,7 @@ def consolidate_from_pydantic_models(
 Consolidate multiple models using LLM.
 
 **Parameters:**
+
 - `raw_models` (`List[BaseModel]`): List of extracted models
 - `programmatic_model` (`BaseModel`): Programmatically merged model
 - `template` (`Type[BaseModel]`): Target template
@@ -223,6 +227,7 @@ def get_json_response(
 Execute LLM call and return parsed JSON.
 
 **Parameters:**
+
 - `prompt` (`str` or `Mapping[str, str]`): Prompt (legacy string or dict with 'system' and 'user')
 - `schema_json` (`str`): Pydantic schema as JSON string
 
@@ -275,6 +280,7 @@ class ExtractorProtocol(Protocol):
 ```
 
 **Attributes:**
+
 - `backend` (`Any`): Backend instance (VLM or LLM)
 
 **Methods:**
@@ -291,6 +297,7 @@ def extract(
 Extract structured data from source document.
 
 **Parameters:**
+
 - `source` (`str`): Path to source document
 - `template` (`Type[BaseModel]`): Pydantic model template
 
@@ -347,6 +354,7 @@ def convert_to_docling_doc(source: str) -> Any
 Convert document to Docling document object.
 
 **Parameters:**
+
 - `source` (`str`): Path to source document
 
 **Returns:** Docling document object
@@ -360,6 +368,7 @@ def extract_full_markdown(document: Any) -> str
 Extract complete markdown from document.
 
 **Parameters:**
+
 - `document` (`Any`): Docling document object
 
 **Returns:** Full markdown content as string
@@ -373,6 +382,7 @@ def extract_page_markdowns(document: Any) -> List[str]
 Extract markdown for each page separately.
 
 **Parameters:**
+
 - `document` (`Any`): Docling document object
 
 **Returns:** List of markdown strings, one per page
@@ -390,6 +400,7 @@ def is_vlm_backend(backend: Any) -> TypeGuard[ExtractionBackendProtocol]
 Check if backend behaves like a VLM backend.
 
 **Parameters:**
+
 - `backend` (`Any`): Backend instance to check
 
 **Returns:** True if backend provides document-level extraction
@@ -413,6 +424,7 @@ def is_llm_backend(backend: Any) -> TypeGuard[TextExtractionBackendProtocol]
 Check if backend behaves like an LLM backend.
 
 **Parameters:**
+
 - `backend` (`Any`): Backend instance to check
 
 **Returns:** True if backend provides markdown/text extraction
@@ -436,6 +448,7 @@ def get_backend_type(backend: Any) -> str
 Get the backend type as a string.
 
 **Parameters:**
+
 - `backend` (`Any`): Backend instance
 
 **Returns:** "vlm", "llm", or "unknown"

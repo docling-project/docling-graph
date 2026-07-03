@@ -241,6 +241,7 @@ uv run docling-graph inspect outputs/billing_doc/
 ```
 
 **Features:**
+
 - Interactive node exploration
 - Relationship filtering
 - Property inspection
@@ -482,6 +483,7 @@ The template has been significantly simplified:
 
 - **Reduced from 2230 lines to 717 lines** (68% reduction)
 - **Reduced from 40+ classes to 10 core classes**
+
 - **Embedded contact info** - Email, phone, address directly in Party
 - **Embedded totals** - Financial totals directly in BillingDocument
 - **Simplified line items** - Direct fields instead of nested objects

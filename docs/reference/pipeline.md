@@ -71,11 +71,13 @@ The pipeline executes the following stages in order:
 **Purpose:** Load and validate Pydantic templates
 
 **Actions:**
+
 - Import template module
 - Validate template structure
 - Check for required fields
 
 **Errors:**
+
 - `ConfigurationError` if template not found
 - `ValidationError` if template invalid
 
@@ -84,11 +86,13 @@ The pipeline executes the following stages in order:
 **Purpose:** Extract structured data from documents
 
 **Actions:**
+
 - Convert document with Docling
 - Extract using backend (VLM or LLM)
 - Validate extracted data
 
 **Errors:**
+
 - `ExtractionError` if extraction fails
 - `ValidationError` if data invalid
 
@@ -97,11 +101,13 @@ The pipeline executes the following stages in order:
 **Purpose:** Export Docling document outputs
 
 **Actions:**
+
 - Export Docling JSON
 - Export markdown
 - Export per-page markdown
 
 **Controlled by:**
+
 - `export_docling`
 - `export_docling_json`
 - `export_markdown`
@@ -112,11 +118,13 @@ The pipeline executes the following stages in order:
 **Purpose:** Convert extracted data to knowledge graphs
 
 **Actions:**
+
 - Create NetworkX graph
 - Generate stable node IDs
 - Create edges from relationships
 
 **Errors:**
+
 - `GraphError` if conversion fails
 
 ### 5. Export
@@ -124,11 +132,13 @@ The pipeline executes the following stages in order:
 **Purpose:** Export graphs in multiple formats
 
 **Actions:**
+
 - Export to CSV (nodes.csv, edges.csv)
 - Export to Cypher (graph.cypher)
 - Export to JSON (graph.json)
 
 **Controlled by:**
+
 - `export_format`
 
 ### 6. Visualization
@@ -136,11 +146,13 @@ The pipeline executes the following stages in order:
 **Purpose:** Generate reports and interactive visualizations
 
 **Actions:**
+
 - Create HTML visualization
 - Generate markdown report
 - Calculate statistics
 
 **Outputs:**
+
 - `graph_visualization.html`
 - `extraction_report.md`
 
