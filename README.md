@@ -40,13 +40,17 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 - **💎 Graphs:** Pydantic → [NetworkX](docs/fundamentals/graph-management/graph-conversion.md) directed graphs with stable IDs and edge metadata.
 
+- **🔗 Provenance:** Deterministic [data grounding](docs/fundamentals/graph-management/provenance.md) — every node traces back to its exact source chunk and page, with no extra LLM calls.
+
 - **📦 Export:** [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export), and other KG-friendly formats.
 
 - **🔍 Visualization:** [Interactive HTML](docs/fundamentals/graph-management/visualization.md) and Markdown reports.
 
 ### Latest Changes
 
-- **🪜 Multi-pass extraction:** [Delta](docs/fundamentals/extraction-process/delta-extraction.md) and [staged](docs/fundamentals/extraction-process/staged-extraction.md) contracts (experimental).
+- **🔗 Data grounding:** Deterministic [provenance](docs/fundamentals/graph-management/provenance.md) ledger — every node carries its source chunk, page, and (when found verbatim) exact character span. No extra LLM calls; works with both extraction contracts.
+
+- **🪜 Dense extraction:** Two-phase [skeleton-then-fill](docs/fundamentals/extraction-process/dense-extraction.md) contract — discovers every entity instance first, then fills each with full data from the document.
 
 - **📐 Structured extraction:** LLM output is schema-enforced by default; see [CLI](docs/usage/cli/convert-command.md#structured-output-mode) and [API](docs/usage/api/llm-model-config.md) to disable.
 
@@ -56,11 +60,11 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Coming Soon
 
+* 💾 **Graph Fusion:** Combine and reconcile disparate knowledge graphs into a unified structure.
+
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 
 * 🧲 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
-
-* 💾 **Graph Database Integration:** Export data straight into `Neo4j`, `ArangoDB`, and similar databases.
 
 
 
@@ -142,6 +146,8 @@ print(f"Extracted {len(models)} model(s)")
 print(f"Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
+Every node above also carries a deterministic `__provenance__` attribute by default (`provenance="standard"`), pointing back to the source chunk and page it was extracted from — no extra LLM calls involved. See [Data Grounding & Provenance](docs/fundamentals/graph-management/provenance.md).
+
 For debugging, use `--debug` with the CLI to save intermediate artifacts to disk; see [Trace Data & Debugging](docs/usage/advanced/trace-data-debugging.md). For more examples, see [Examples](docs/usage/examples/index.md).
 
 
@@ -193,7 +199,7 @@ The documentation follows the docling-graph pipeline stages:
 3. [Schema Definition](docs/fundamentals/schema-definition/index.md) - Creating Pydantic templates
 4. [Pipeline Configuration](docs/fundamentals/pipeline-configuration/index.md) - Configuring the extraction pipeline
 5. [Extraction Process](docs/fundamentals/extraction-process/index.md) - Document conversion and extraction
-6. [Graph Management](docs/fundamentals/graph-management/index.md) - Exporting and visualizing graphs
+6. [Graph Management](docs/fundamentals/graph-management/index.md) - Converting, grounding, exporting, and visualizing graphs
 7. [CLI Reference](docs/usage/cli/index.md) - Command-line interface guide
 8. [Python API](docs/usage/api/index.md) - Programmatic usage
 9. [Examples](docs/usage/examples/index.md) - Working code examples
@@ -240,7 +246,6 @@ Docling Graph builds on outstanding open-source projects:
 - [Pydantic](https://pydantic.dev) - schema definition and validation
 - [NetworkX](https://networkx.org/) - graph construction and analysis
 - [LiteLLM](https://github.com/BerriAI/litellm) - unified LLM provider interface
-- [SpaCy](https://spacy.io/) - semantic entity resolution in delta extraction
 - [Cytoscape](https://js.cytoscape.org/) - interactive graph visualization
 
 
