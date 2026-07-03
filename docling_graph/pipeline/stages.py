@@ -632,7 +632,7 @@ class ExtractionStage(PipelineStage):
             )
 
         logger.info(f"[{self.name()}] Extracted {len(extracted_models)} items from DoclingDocument")
-        return extracted_models
+        return extracted_models  # type: ignore[no-any-return]
 
 
 class DoclingExportStage(PipelineStage):
