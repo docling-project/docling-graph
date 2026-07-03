@@ -321,7 +321,7 @@ def _canonical_lookup_key(path: str, spec: NodeSpec, ids: dict[str, Any]) -> tup
 
 def apply_skeleton_reconciliation(
     skeleton_nodes: list[dict[str, Any]],
-    merge_groups: list[dict[str, Any]],
+    merge_groups: list[Any],
     spec_by_path: dict[str, NodeSpec],
 ) -> tuple[list[dict[str, Any]], int]:
     """Apply validated alias merge groups to the merged skeleton.
@@ -408,8 +408,6 @@ def _unique_fuzzy_parent_match(
     parent_descs = path_descriptors.get(parent_path, [])
     matches: list[dict[str, Any]] = []
     for i, cand in enumerate(path_filled.get(parent_path, [])):
-        if not isinstance(cand, dict):
-            continue
         cand_ids = (parent_descs[i].get("ids") if i < len(parent_descs) else None) or {}
         cand_text = _canonical_id_text(cand_ids)
         if cand_text and (ref_text in cand_text or cand_text in ref_text):
@@ -542,8 +540,6 @@ def merge_filled_into_root(
         if parent_path not in spec_by_path:
             continue
         for i, obj in enumerate(filled_list):
-            if not isinstance(obj, dict):
-                continue
             desc = descriptors[i] if i < len(descriptors) else {}
             parent = desc.get("parent")
             parent_ids = (parent.get("ids") or {}) if isinstance(parent, dict) else {}
@@ -1602,10 +1598,10 @@ class DenseOrchestrator:
                     ): (path, batch_index)
                     for path, spec, batch_descriptors, batch_index, sub_schema, fill_markdown in fill_jobs
                 }
-                for future in as_completed(fill_futures):  # type: ignore[assignment]
-                    path, batch_index = fill_futures[future]  # type: ignore[index]
+                for future in as_completed(fill_futures):
+                    path, batch_index = fill_futures[future]
                     try:
-                        p, bi, sanitized = future.result()  # type: ignore[misc]
+                        p, bi, sanitized = future.result()
                         results_by_path.setdefault(p, []).append((bi, sanitized))
                     except Exception as e:
                         logger.warning(

@@ -145,8 +145,8 @@ class TestExporterSerialization:
         import pandas as pd
 
         nodes_csv = next(tmp_path.glob("*.csv"))
-        df = pd.read_csv(nodes_csv)
-        raw = df.loc[df["id"] == "Thing_1", PROVENANCE_NODE_ATTR].iloc[0]
+        nodes_df = pd.read_csv(nodes_csv)
+        raw = nodes_df.loc[nodes_df["id"] == "Thing_1", PROVENANCE_NODE_ATTR].iloc[0]
         assert json.loads(raw)["chunks"] == [0]
 
     def test_cypher_provenance_property_embedded_as_json_string(self, tmp_path):
