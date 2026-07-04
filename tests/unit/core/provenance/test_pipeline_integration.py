@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import networkx as nx
 
 from docling_graph.config import PipelineConfig
+from docling_graph.core.converters.config import ExportConfig
 from docling_graph.core.exporters.csv_exporter import CSVExporter
 from docling_graph.core.exporters.cypher_exporter import CypherExporter
 from docling_graph.core.exporters.json_exporter import JSONExporter
@@ -144,7 +145,7 @@ class TestExporterSerialization:
         CSVExporter().export(_tiny_graph(), tmp_path)
         import pandas as pd
 
-        nodes_csv = next(tmp_path.glob("*.csv"))
+        nodes_csv = tmp_path / ExportConfig().CSV_NODE_FILENAME
         nodes_df = pd.read_csv(nodes_csv)
         raw = nodes_df.loc[nodes_df["id"] == "Thing_1", PROVENANCE_NODE_ATTR].iloc[0]
         assert json.loads(raw)["chunks"] == [0]
