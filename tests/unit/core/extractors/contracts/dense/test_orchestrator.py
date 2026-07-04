@@ -472,6 +472,166 @@ def test_skeleton_single_chunk_truncation_does_not_split():
     assert len(nodes) == 1
 
 
+def test_multi_chunk_truncation_splits_before_escalating():
+    """P2: a multi-chunk batch splits *before* max_tokens escalation is allowed."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    flags: list[bool] = []
+    state = {"n": 0}
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        allow_truncation_retry: bool = True,
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        flags.append(allow_truncation_retry)
+        state["n"] += 1
+        if state["n"] == 1:  # the initial multi-chunk batch truncates
+            if _diagnostics_out is not None:
+                _diagnostics_out["truncated"] = True
+            return {"nodes": []}
+        return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    batch = [(0, "chunk a", 40), (1, "chunk b", 40)]
+    orch._run_one_skeleton_batch(
+        batch_idx=0,
+        batch=batch,
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+        already_found_str=None,
+    )
+    # Initial multi-chunk call must NOT permit escalation (split first); the
+    # single-chunk sub-batches may escalate.
+    assert flags[0] is False
+    assert all(f is True for f in flags[1:])
+    assert orch._counters.get("split_count", 0) == 1
+
+
+def test_single_chunk_unrecoverable_truncation_records_dropped_chunk():
+    """P2/V3: a single chunk that never recovers is recorded as dropped, not silently lost."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    calls: list[str] = []
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        calls.append(context)
+        if _diagnostics_out is not None:
+            _diagnostics_out["truncated"] = True
+        return {"nodes": []}  # nothing usable, ever
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    batch = [(7, "single chunk only", 40)]
+    _, nodes = orch._run_one_skeleton_batch(
+        batch_idx=0,
+        batch=batch,
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+        already_found_str=None,
+    )
+    assert nodes == []
+    # main skeleton call + one shallow-projection fallback attempt
+    assert len(calls) == 2
+    assert orch._dropped_chunk_ids == [7]
+    assert orch._counters.get("failed_batch_count") == 1
+
+
+def test_single_chunk_truncation_recovers_via_shallow_fallback():
+    """P2: when the full-schema attempt truncates but the shallow (root +
+    direct-children) projection succeeds, the recovered node is kept and the
+    chunk is NOT recorded as dropped."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    calls: list[str] = []
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        calls.append(context)
+        if len(calls) == 1:  # main (full-schema) attempt truncates, nothing usable
+            if _diagnostics_out is not None:
+                _diagnostics_out["truncated"] = True
+            return {"nodes": []}
+        # shallow fallback attempt succeeds
+        return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    batch = [(3, "single chunk only", 40)]
+    _, nodes = orch._run_one_skeleton_batch(
+        batch_idx=0,
+        batch=batch,
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+        already_found_str=None,
+    )
+    assert len(nodes) == 1
+    assert len(calls) == 2
+    assert orch._dropped_chunk_ids == []
+    assert orch._counters.get("failed_batch_count", 0) == 0
+
+
+def test_shallow_skeleton_artifacts_none_without_root_spec():
+    """A catalog with no root spec has nothing to fall back to; the shallow
+    retry is a no-op rather than raising."""
+    from docling_graph.core.extractors.contracts.dense.catalog import NodeSpec
+
+    template_cls, _allowed, _spec_by_path = _company_skeleton_args()
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: {"nodes": []},
+        template=template_cls,
+        config=DenseOrchestratorConfig(),
+    )
+    # Simulate a catalog with only nested paths (no root "" spec).
+    orch._catalog.nodes = [n for n in orch._catalog.nodes if n.path != ""]
+    assert isinstance(orch._catalog.nodes[0], NodeSpec)  # sanity: nodes remain
+    assert orch._shallow_skeleton_artifacts() is None
+    # Cached: a second call returns the same (still None) result without rebuilding.
+    assert orch._shallow_skeleton_artifacts() is None
+
+
 def test_skeleton_no_split_when_not_truncated():
     """A non-truncated multi-chunk batch is not split."""
     template_cls, allowed, spec_by_path = _company_skeleton_args()
@@ -977,6 +1137,12 @@ def test_run_stats_published_after_run():
     assert stats["truncation_count"] == 0
     assert stats["split_count"] == 0
     assert "retention_pct" in stats
+    # V3: honest source-coverage signals alongside merge-only retention.
+    assert stats["skeleton_batches_failed"] == 0
+    assert stats["dropped_chunk_ids"] == []
+    assert stats["chunk_coverage_pct"] == 100.0
+    assert stats["parallel_workers"] == 1
+    assert "phase1_seconds" in stats and "phase2_seconds" in stats
 
 
 def test_dense_config_from_dict_parses_dedupe_mode():

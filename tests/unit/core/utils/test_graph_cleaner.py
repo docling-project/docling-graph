@@ -5,6 +5,7 @@ from docling_graph.core.utils.graph_cleaner import (
     GraphCleaner,
     cap_edge_keywords,
     drop_self_edges,
+    is_meaningful_value,
     validate_graph_structure,
 )
 
@@ -73,6 +74,33 @@ def test_clean_graph(cleaner: GraphCleaner, dirty_graph: nx.DiGraph):
     assert cleaned_graph.has_edge("node-1", "node-2")
 
 
+def test_phantom_removal_records_dropped_relationships(
+    cleaner: GraphCleaner, dirty_graph: nx.DiGraph
+):
+    """Q3: removing a phantom records the (source, label, target) of the lost edge."""
+    cleaned = cleaner.clean_graph(dirty_graph)
+    dropped = cleaner.last_dropped_relationships
+    assert {"source": "node-3", "label": "KNOWS", "target": "phantom-1"} in dropped
+    # Stashed on the graph so the report can surface it without extra plumbing.
+    assert cleaned.graph.get("dropped_relationships") == dropped
+
+
+def test_phantom_removal_records_outgoing_edges_too():
+    """Q3: a phantom's OUTGOING edges are also lost relationships, not just incoming."""
+    g = nx.DiGraph()
+    g.add_node("phantom-1", id="phantom-1", label="Person")
+    g.add_node("node-a", name="Alice")
+    g.add_edge("node-a", "phantom-1", label="KNOWS")
+    g.add_edge("phantom-1", "node-a", label="MANAGES")
+
+    cleaner = GraphCleaner(verbose=True)
+    cleaner.clean_graph(g)
+
+    dropped = cleaner.last_dropped_relationships
+    assert {"source": "node-a", "label": "KNOWS", "target": "phantom-1"} in dropped
+    assert {"source": "phantom-1", "label": "MANAGES", "target": "node-a"} in dropped
+
+
 def test_validate_graph_structure_valid():
     """Test validation on a clean graph."""
     g = nx.DiGraph()
@@ -110,6 +138,73 @@ def test_validate_graph_structure_allows_single_node_no_edges():
     assert validate_graph_structure(g, raise_on_error=True) is True
     assert g.number_of_nodes() == 1
     assert g.number_of_edges() == 0
+
+
+def test_validate_graph_structure_empty_graph_reports_no_nodes():
+    with pytest.raises(ValueError, match="Graph has no nodes"):
+        validate_graph_structure(nx.DiGraph(), raise_on_error=True)
+
+
+def test_validate_graph_structure_truncates_long_issue_list():
+    g = nx.DiGraph()
+    for i in range(15):
+        g.add_node(f"empty-{i}", id=f"empty-{i}", label="Thing")  # no meaningful data
+    with pytest.raises(ValueError, match=r"and 5 more") as exc_info:
+        validate_graph_structure(g, raise_on_error=True)
+    assert "15 issue(s)" in str(exc_info.value)
+
+
+def test_validate_graph_structure_returns_false_without_raising():
+    g = nx.DiGraph()
+    g.add_node("empty", id="empty", label="Thing")  # no meaningful data
+    assert validate_graph_structure(g, raise_on_error=False) is False
+
+
+def test_is_meaningful_value_none_and_empty_collections():
+    assert is_meaningful_value(None) is False
+    assert is_meaningful_value("") is False
+    assert is_meaningful_value("   ") is False
+    assert is_meaningful_value([]) is False
+    assert is_meaningful_value({}) is False
+    assert is_meaningful_value("Hello") is True
+    assert is_meaningful_value(0) is True
+    assert is_meaningful_value(False) is True
+
+
+def test_content_hash_disambiguates_placeholder_siblings_by_node_id(cleaner: GraphCleaner):
+    """A literal 'Unknown' placeholder value folds in node_id so list siblings
+    that all share the same placeholder don't spuriously dedupe."""
+    base = {"label": "Person", "type": "entity", "__class__": "Person", "nom": "Unknown"}
+    h1 = cleaner._compute_content_hash(base, node_id="person-1")
+    h2 = cleaner._compute_content_hash(base, node_id="person-2")
+    assert h1 != h2
+
+
+def test_redirect_edges_skips_self_loop_creation(cleaner: GraphCleaner):
+    """Redirecting a duplicate's edges never creates a self-loop on the canonical node."""
+    g = nx.DiGraph()
+    g.add_node("canonical", name="A")
+    g.add_node("dup", name="A")
+    g.add_edge("canonical", "dup", label="REL")  # would become a self-loop if redirected
+    g.add_edge("dup", "canonical", label="REL")  # likewise
+
+    cleaner._redirect_edges(g, old_node="dup", new_node="canonical")
+
+    assert not g.has_edge("canonical", "canonical")
+
+
+def test_redirect_edges_moves_genuine_incoming_edge(cleaner: GraphCleaner):
+    """A duplicate's incoming edge from an unrelated node is redirected to the canonical."""
+    g = nx.DiGraph()
+    g.add_node("canonical", name="A")
+    g.add_node("dup", name="A")
+    g.add_node("other", name="B")
+    g.add_edge("other", "dup", label="KNOWS")
+
+    cleaner._redirect_edges(g, old_node="dup", new_node="canonical")
+
+    assert g.has_edge("other", "canonical")
+    assert g["other"]["canonical"]["label"] == "KNOWS"
 
 
 def test_drop_self_edges():

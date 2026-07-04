@@ -692,6 +692,55 @@ class TestDirectExtractionTraceAndDiagnostics:
         assert out == {"id": "ok"}
         assert mock_llm_client.get_json_response.call_count == 2
 
+    def test_call_prompt_allow_truncation_retry_false_skips_escalation(self, mock_llm_client):
+        """P2 (split-before-escalate): the dense orchestrator's _dense_llm wrapper
+        always calls with structured_output_override=False (legacy-only, matching
+        dense's single-call-path contract) and, for a multi-chunk batch, also
+        allow_truncation_retry=False so it can split instead of escalating output
+        tokens. _call_prompt must honor that and never attempt the escalation
+        retry call, even though the client reports truncation."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="dense",
+            dense_config={"retry_on_truncation": True},
+        )
+        details = {"truncated": True, "max_tokens": 512}
+        mock_llm_client.get_json_response.side_effect = [
+            ClientError("truncated", details=details),
+        ]
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+            allow_truncation_retry=False,
+        )
+        assert out is None
+        # No escalation retry attempted: exactly the one (truncated) call.
+        assert mock_llm_client.get_json_response.call_count == 1
+
+    def test_call_prompt_allow_truncation_retry_true_still_escalates(self, mock_llm_client):
+        """Contrast case: with allow_truncation_retry left at its default (True),
+        the same truncation DOES trigger the escalation retry call."""
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="dense",
+            dense_config={"retry_on_truncation": True},
+        )
+        details = {"truncated": True, "max_tokens": 512}
+        mock_llm_client.get_json_response.side_effect = [
+            ClientError("truncated", details=details),
+            {"id": "ok"},
+        ]
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+        )
+        assert out == {"id": "ok"}
+        assert mock_llm_client.get_json_response.call_count == 2
+
     @patch("docling_graph.core.extractors.backends.llm_backend.run_gleaning_pass_direct")
     @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
     def test_direct_extraction_gleaning_pass_invoked(
