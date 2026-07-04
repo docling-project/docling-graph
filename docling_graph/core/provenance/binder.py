@@ -24,7 +24,9 @@ from pydantic import BaseModel
 
 from .anchor_scan import locate_values
 from .identity import (
+    DEFAULT_MAX_ANCHORS,
     PROVENANCE_NODE_ATTR,
+    _pages_for_chunks,
     canonical_id_text,
     compact_view,
     identity_key,
@@ -33,6 +35,79 @@ from .identity import (
 from .models import NodeProvenance, ProvenanceLedger, SourceAnchor
 
 logger = logging.getLogger(__name__)
+
+# Max char spans surfaced in a located node-attribute view (detailed mode);
+# mirrors identity.py's cap for the compact_view path.
+_VIEW_MAX_SPANS = 4
+# Upper bound on a non-identity string field considered as a distinctive
+# locator — long paraphrased prose rarely appears verbatim in one chunk.
+_MAX_DISTINCTIVE_LEN = 300
+
+
+def _distinctive_values(instance: BaseModel, id_fields: list[str]) -> list[str]:
+    """Non-identity, short string field values worth locating verbatim (V1).
+
+    Longest first: a fuller phrase is the more distinctive locator and, when it
+    matches, pins the node to a single chunk. anchor_scan's guards (min length,
+    short-numeric skip, ``_MAX_VERBATIM_CHUNKS`` cap) reject non-distinctive
+    values, so this stays fail-empty.
+    """
+    out: list[str] = []
+    for field_name in type(instance).model_fields:
+        if field_name in id_fields:
+            continue
+        value = getattr(instance, field_name, None)
+        if isinstance(value, str):
+            text = value.strip()
+            if 3 <= len(text) <= _MAX_DISTINCTIVE_LEN:
+                out.append(text)
+    out.sort(key=len, reverse=True)
+    return out
+
+
+def _locate_distinctive(
+    instance: BaseModel,
+    id_fields: list[str],
+    chunk_texts: dict[int, str],
+    valid_chunk_ids: set[int],
+) -> list[tuple[int, tuple[int, int]]]:
+    """First distinctive non-identity field that appears verbatim, else empty."""
+    for candidate in _distinctive_values(instance, id_fields):
+        hits = [(c, s) for c, s in locate_values([candidate], chunk_texts) if c in valid_chunk_ids]
+        if hits:
+            return hits
+    return []
+
+
+def _located_view(
+    located: list[tuple[int, tuple[int, int]]],
+    ledger: ProvenanceLedger,
+    document_id: str,
+    include_spans: bool,
+) -> dict[str, Any]:
+    """Verbatim compact view built directly from located anchors.
+
+    Bypasses compact_view's scope:document short-circuit so a root/entry that is
+    document-scoped but *also* pinned to a distinctive field still reports the
+    precise chunk (V2).
+    """
+    chunk_ids = sorted({c for c, _ in located})
+    shown = chunk_ids[:DEFAULT_MAX_ANCHORS]
+    view: dict[str, Any] = {
+        "document_id": document_id,
+        "match": "verbatim",
+        "chunks": shown,
+        "pages": _pages_for_chunks(ledger, shown),
+    }
+    if len(chunk_ids) > len(shown):
+        view["chunks_omitted"] = len(chunk_ids) - len(shown)
+    if include_spans:
+        spans = [{"chunk": c, "start": s[0], "end": s[1]} for c, s in sorted(located)][
+            :_VIEW_MAX_SPANS
+        ]
+        if spans:
+            view["spans"] = spans
+    return view
 
 
 def _relative_path(parent_path: str, child_path: str) -> str:
@@ -140,8 +215,37 @@ def bind_provenance(
     document_fallback = not ledger.node_level
     document_id = ledger.document.document_id if ledger.document is not None else ""
 
-    def _bind_instance(instance: BaseModel, path: str) -> None:
+    valid_chunk_ids = set(ledger.chunks)
+
+    def _emit_located(
+        node_data: dict[str, Any],
+        entry: NodeProvenance | None,
+        key: str | None,
+        path: str,
+        spec: Any,
+        ids: dict[str, Any],
+        located: list[tuple[int, tuple[int, int]]],
+    ) -> None:
         nonlocal added_verbatim
+        if entry is None:
+            # Direct contract (or unmatched dense node): synthesize an entry so
+            # the ledger records the grounding too.
+            entry = NodeProvenance(
+                identity_key=key or f"{path}#located{len(ledger.nodes)}",
+                catalog_path=path,
+                node_type=spec.node_type,
+                ids={str(k): str(v) for k, v in ids.items()},
+            )
+            ledger.nodes[entry.identity_key] = entry
+        existing = {(a.chunk_id, a.span) for a in entry.anchors if a.kind == "verbatim"}
+        for chunk_id, span in located:
+            if (chunk_id, span) not in existing:
+                entry.anchors.append(SourceAnchor(chunk_id=chunk_id, kind="verbatim", span=span))
+                existing.add((chunk_id, span))
+                added_verbatim += 1
+        _assign(node_data, _located_view(located, ledger, document_id, include_spans))
+
+    def _bind_instance(instance: BaseModel, path: str) -> None:
         spec = spec_by_path.get(path)
         if spec is None or spec.kind != "entity":
             return
@@ -160,36 +264,37 @@ def bind_provenance(
         if entry is None:
             entry = _fuzzy_same_path_lookup(path, ids, fuzzy_index)
 
-        # A document-scoped entry (the root) is intentionally whole-document —
-        # never try to pinpoint it (its id often appears in many chunks).
+        # A document-scoped entry (the root) is whole-document by design, but a
+        # distinctive *non-identity* attribute (an insurer name, a paper title)
+        # can still pin it to an exact chunk — try that before falling back to
+        # document scope (V2). The locator's _MAX_VERBATIM_CHUNKS cap keeps a
+        # common root id document-scoped.
         if entry is not None and "scope:document" in entry.notes:
+            located = _locate_distinctive(
+                instance, list(spec.id_fields), chunk_texts, valid_chunk_ids
+            )
+            if located:
+                _emit_located(node_data, entry, key, path, spec, ids, located)
+                stats["bound_verbatim"] += 1
+                return
             _assign(node_data, compact_view(entry, ledger, include_spans=include_spans))
             stats["bound_observed"] += 1
             return
 
-        # Precise location: does the node's real identifier appear verbatim?
-        located = locate_values([str(v) for v in ids.values()], chunk_texts)
-        located = [(c, s) for c, s in located if c in ledger.chunks]
+        # Precise location: the node's real identifier appears verbatim, or —
+        # when identity values are synthesized/absent (direct mode) — a
+        # distinctive non-identity field pins the node instead (V1).
+        located = [
+            (c, s)
+            for c, s in locate_values([str(v) for v in ids.values()], chunk_texts)
+            if c in ledger.chunks
+        ]
+        if not located:
+            located = _locate_distinctive(
+                instance, list(spec.id_fields), chunk_texts, valid_chunk_ids
+            )
         if located:
-            if entry is None:
-                # Direct contract (or unmatched dense node): synthesize an entry
-                # so the ledger records the grounding too.
-                entry = NodeProvenance(
-                    identity_key=key or f"{path}#located{len(ledger.nodes)}",
-                    catalog_path=path,
-                    node_type=spec.node_type,
-                    ids={str(k): str(v) for k, v in ids.items()},
-                )
-                ledger.nodes[entry.identity_key] = entry
-            existing = {(a.chunk_id, a.span) for a in entry.anchors if a.kind == "verbatim"}
-            for chunk_id, span in located:
-                if (chunk_id, span) not in existing:
-                    entry.anchors.append(
-                        SourceAnchor(chunk_id=chunk_id, kind="verbatim", span=span)
-                    )
-                    existing.add((chunk_id, span))
-                    added_verbatim += 1
-            _assign(node_data, compact_view(entry, ledger, include_spans=include_spans))
+            _emit_located(node_data, entry, key, path, spec, ids, located)
             stats["bound_verbatim"] += 1
             return
 

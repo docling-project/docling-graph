@@ -110,6 +110,10 @@ class GraphCleaner:
     def __init__(self, verbose: bool = True) -> None:
         """Initialize cleaner."""
         self.verbose = verbose
+        # Relationships lost when a dangling (phantom) target was removed, e.g.
+        # {"source": ..., "label": ..., "target": ...}. Also stashed on the graph
+        # (graph.graph["dropped_relationships"]) so the report can surface them.
+        self.last_dropped_relationships: list[dict[str, str]] = []
 
     def clean_graph(self, graph: nx.DiGraph) -> nx.DiGraph:
         """
@@ -204,10 +208,31 @@ class GraphCleaner:
                 phantom_nodes.append(node_id)
 
         # Remove phantoms and redirect edges
+        dropped_relationships: list[dict[str, str]] = []
         for phantom_id in phantom_nodes:
             # Find edges pointing to this phantom
             incoming = list(graph.in_edges(phantom_id, data=True))
             outgoing = list(graph.out_edges(phantom_id, data=True))
+
+            # A dangling edge means a *lost relationship*, not just a count.
+            # Record each (source, label, target) so the report can show WHAT
+            # was dropped, not merely how many.
+            for src, _dst, data in incoming:
+                dropped_relationships.append(
+                    {
+                        "source": str(src),
+                        "label": str(data.get("label") or ""),
+                        "target": phantom_id,
+                    }
+                )
+            for _src, dst, data in outgoing:
+                dropped_relationships.append(
+                    {
+                        "source": phantom_id,
+                        "label": str(data.get("label") or ""),
+                        "target": str(dst),
+                    }
+                )
 
             # Remove the phantom
             graph.remove_node(phantom_id)
@@ -216,6 +241,19 @@ class GraphCleaner:
                 rich_print(
                     f"[yellow][GraphCleaner][/yellow] Removed phantom: {phantom_id} "
                     f"(had {len(incoming)} incoming, {len(outgoing)} outgoing edges)"
+                )
+
+        self.last_dropped_relationships = dropped_relationships
+        # Stash on the graph so ExportStage/ReportGenerator can surface it without
+        # a new plumbing path (the graph is what they already carry).
+        if dropped_relationships:
+            graph.graph["dropped_relationships"] = dropped_relationships
+            for rel in dropped_relationships[:10]:
+                logger.info(
+                    "Dropped relationship (phantom target removed): %s -[%s]-> %s",
+                    rel["source"],
+                    rel["label"],
+                    rel["target"],
                 )
 
         return len(phantom_nodes)

@@ -67,6 +67,10 @@ class ReportGenerator:
         if dense_stats:
             report_parts.append(self._create_dense_stats(dense_stats))
 
+        dropped_relationships = graph.graph.get("dropped_relationships")
+        if dropped_relationships:
+            report_parts.append(self._create_dropped_relationships(dropped_relationships))
+
         if include_samples:
             report_parts.append(self._create_sample_nodes(graph))
             report_parts.append(self._create_sample_edges(graph))
@@ -106,20 +110,58 @@ class ReportGenerator:
         """Create dense run-statistics section (Phase 1/2 health per run)."""
         labels = {
             "skeleton_nodes": "Skeleton nodes discovered",
+            "parallel_workers": "Parallel workers",
+            "phase1_seconds": "Phase 1 (skeleton) wall-clock (s)",
+            "phase2_seconds": "Phase 2 (fill) wall-clock (s)",
+            "chunk_coverage_pct": "Source chunk coverage (%)",
             "truncation_count": "Truncated LLM responses",
             "split_count": "Skeleton batch splits",
+            "skeleton_batches_failed": "Skeleton batches failed (content lost)",
+            "dropped_chunk_ids": "Dropped chunk ids (no skeleton)",
             "reconciliation_merged": "Alias instances reconciled",
             "merge_recovered": "Drifted parent links recovered",
             "merge_orphans_dropped": "Instances dropped (unresolvable parent)",
-            "retention_pct": "Skeleton retention (%)",
+            "retention_pct": "Merge retention (post-fill, %)",
             "quality_gate_failure": "Quality gate failure",
         }
         lines = ["## Dense Extraction Statistics", ""]
+        # A lossy run must not hide behind merge-only retention: warn prominently
+        # when whole chunks produced no skeleton (content may be missing).
+        failed = dense_stats.get("skeleton_batches_failed") or 0
+        if isinstance(failed, int) and failed > 0:
+            dropped_ids = dense_stats.get("dropped_chunk_ids") or []
+            detail = f" (chunk ids: {dropped_ids})" if dropped_ids else ""
+            lines.append(
+                f"> ⚠️ **{failed} chunk batch(es) produced no skeleton — content may be "
+                f"missing**{detail}. `retention_pct` reflects only post-fill merge retention, "
+                "not source coverage; see **Source chunk coverage (%)** below."
+            )
+            lines.append("")
         for key, label in labels.items():
             if key in dense_stats:
                 lines.append(f"- **{label}**: {dense_stats[key]}")
         if len(lines) == 2:
             return "\n".join([*lines, "*No dense statistics available.*"])
+        return "\n".join(lines)
+
+    @staticmethod
+    def _create_dropped_relationships(dropped: list[dict]) -> str:
+        """List relationships lost when a dangling (phantom) target was removed.
+
+        A dropped edge is a lost relationship, not a mere count — surfacing the
+        (source, label, target) tells the user *what* connection went missing.
+        """
+        lines = ["## Dropped Relationships", ""]
+        lines.append(
+            f"{len(dropped)} relationship(s) were removed because their target node "
+            "was a phantom (dangling reference the model could not substantiate):"
+        )
+        lines.append("")
+        for rel in dropped[:25]:
+            label = rel.get("label") or "REFERENCES"
+            lines.append(f"- `{rel.get('source')}` -[{label}]-> `{rel.get('target')}`")
+        if len(dropped) > 25:
+            lines.append(f"- … and {len(dropped) - 25} more")
         return "\n".join(lines)
 
     def validate_graph(self, graph: nx.DiGraph) -> bool:

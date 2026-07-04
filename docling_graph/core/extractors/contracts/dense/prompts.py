@@ -61,11 +61,14 @@ def get_skeleton_batch_prompt(
     user_prompt = f"[Batch {batch_index + 1}/{total_batches}]\n\n"
     if already_found:
         user_prompt += (
-            "=== ALREADY EXTRACTED (do not duplicate) ===\n"
+            "=== ALREADY EXTRACTED — REFERENCE ONLY, DO NOT RE-OUTPUT ===\n"
             f"{already_found}\n"
             "=== END ===\n\n"
-            "Extract ADDITIONAL node instances not already listed above "
-            "(re-emit a listed parent only when a new child needs to reference it).\n\n"
+            "The entities above are already captured. Do NOT include any of them in your "
+            "output — emit ONLY entities that are NEW in this batch. The single exception: "
+            "re-emit a listed PARENT node when (and only when) a NEW child in this batch must "
+            "reference it. Re-emitting already-listed entities for any other reason wastes "
+            "output budget and risks truncating the response.\n\n"
         )
     if global_context:
         user_prompt += f"=== DOCUMENT CONTEXT ===\n{global_context}\n=== END ===\n\n"
