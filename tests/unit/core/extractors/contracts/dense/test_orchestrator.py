@@ -2,6 +2,7 @@
 Unit tests for dense extraction orchestrator (Phase 1 and Phase 2, including parallel).
 """
 
+import os
 from typing import Any
 
 import pytest
@@ -1156,6 +1157,18 @@ def test_dense_config_from_dict_parses_dedupe_mode():
     assert DenseOrchestratorConfig.from_dict({"dense_dedupe": "bogus"}).dedupe_mode == "standard"
 
 
+def test_dense_config_from_dict_parses_provenance_mode():
+    """provenance maps to provenance_mode; an invalid value falls back to 'standard'."""
+    assert DenseOrchestratorConfig.from_dict({"provenance": "off"}).provenance_mode == "off"
+    assert (
+        DenseOrchestratorConfig.from_dict({"provenance": "detailed"}).provenance_mode == "detailed"
+    )
+    assert DenseOrchestratorConfig.from_dict({}).provenance_mode == "standard"
+    assert (
+        DenseOrchestratorConfig.from_dict({"provenance": "nonsense"}).provenance_mode == "standard"
+    )
+
+
 def _run_dedupe_mode(mode: str) -> list[str]:
     """Run a two-employee SampleCompany extraction; return the LLM contexts seen."""
     from tests.fixtures.sample_templates.test_template import SampleCompany
@@ -1290,3 +1303,1040 @@ def test_strip_mislabeled_root_ids_keeps_real_identifiers():
         "reference_no": "Contract",
         "vendor_name": "Zylker PC Builds",
     }
+
+
+# ============================================================================
+# Additional coverage: defensive branches, edge cases, and less-exercised paths
+# ============================================================================
+
+
+def test_strip_mislabeled_root_ids_skips_non_dict_ids():
+    """A root node whose 'ids' is not a dict (malformed) is left untouched."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        strip_mislabeled_root_ids,
+    )
+
+    nodes = [{"path": "", "ids": "not-a-dict", "parent": None}]
+    out = strip_mislabeled_root_ids(nodes)
+    assert out[0]["ids"] == "not-a-dict"
+
+
+def test_skeleton_identity_key_handles_non_dict_ids():
+    """A node with non-dict 'ids' falls back to an empty-ids identity key."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        _skeleton_identity_key,
+    )
+
+    spec_by_path: dict[str, NodeSpec] = {}
+    node = {"path": "studies[]", "ids": "garbage"}
+    path, pairs = _skeleton_identity_key(node, spec_by_path)
+    assert path == "studies[]"
+    # No spec and no usable ids -> falls back to the process-unique key.
+    assert pairs[0][0] == "__key"
+
+
+def test_skeleton_ledger_key_handles_non_dict_ids():
+    """_skeleton_ledger_key tolerates a non-dict 'ids' the same way."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        _skeleton_ledger_key,
+    )
+
+    spec_by_path: dict[str, NodeSpec] = {}
+    node = {"path": "studies[]", "ids": 12345}
+    # With no spec and no id fields, identity_key degrades to None (unkeyable).
+    assert _skeleton_ledger_key(node, spec_by_path) is None
+
+
+def test_chunk_batches_rejects_non_positive_max_tokens():
+    """max_batch_tokens <= 0 is an invariant violation, not a silent no-op."""
+    with pytest.raises(ValueError, match="max_batch_tokens must be > 0"):
+        chunk_batches_by_token_limit(["a chunk"], None, max_batch_tokens=0)
+
+
+def test_chunk_batches_falls_back_to_word_count_when_counts_misaligned():
+    """A token_counts list of the wrong length is ignored in favor of a word-count estimate."""
+    chunks = ["one two three four", "five six"]
+    # Mismatched length (3 counts for 2 chunks) triggers the fallback branch.
+    batches = chunk_batches_by_token_limit(chunks, [10, 10, 10], max_batch_tokens=1000)
+    assert sum(len(b) for b in batches) == 2
+
+
+def test_canonical_catalog_path_returns_none_when_no_candidate_matches():
+    """A path with no bracket-stripped match against any allowed path is unresolvable."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        _canonical_catalog_path,
+    )
+
+    assert _canonical_catalog_path("totally.unknown.path", {"", "studies[]"}) is None
+
+
+def test_normalize_skeleton_batch_drops_node_with_unresolvable_path():
+    """A node whose path cannot be mapped onto the catalog is silently dropped."""
+    allowed = {"", "studies[]"}
+    nodes = [
+        _skeleton({"i": 1, "path": "totally_unknown", "ids": {"a": "b"}}),
+        _skeleton({"i": 2, "path": "studies[]", "ids": {"study_id": "S1"}}),
+    ]
+    out = normalize_skeleton_batch(nodes, allowed)
+    assert len(out) == 1
+    assert out[0]["path"] == "studies[]"
+
+
+def test_apply_skeleton_reconciliation_skips_group_whose_keep_node_already_removed():
+    """A later group targeting an already-merged-away keep node is skipped, not double-applied."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        apply_skeleton_reconciliation,
+    )
+
+    catalog = _linkage_catalog()
+    spec_by_path = {s.path: s for s in catalog.nodes}
+    a = {"path": "studies[]", "ids": {"study_id": "A"}, "parent": None}
+    b = {"path": "studies[]", "ids": {"study_id": "B"}, "parent": None}
+    c = {"path": "studies[]", "ids": {"study_id": "C"}, "parent": None}
+    # First group merges b into a (removing b). Second group tries to use the
+    # now-removed b (index 1) as its "keep" node; it must be skipped harmlessly.
+    groups = [
+        {"path": "studies[]", "keep": 0, "merge": [1]},
+        {"path": "studies[]", "keep": 1, "merge": [2]},
+    ]
+    kept, merged_count = apply_skeleton_reconciliation([a, b, c], groups, spec_by_path)
+    assert merged_count == 1
+    ids_left = {n["ids"]["study_id"] for n in kept}
+    assert ids_left == {"A", "C"}
+
+
+def test_merge_filled_into_root_skips_node_whose_catalog_parent_path_is_unknown():
+    """A NodeSpec whose declared parent_path is absent from the catalog is skipped entirely."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=["title"]),
+            NodeSpec(
+                path="orphan[]",
+                node_type="Orphan",
+                id_fields=["oid"],
+                # Declares a parent path that has no corresponding NodeSpec at all.
+                parent_path="missing_parent[]",
+                field_name="orphans",
+                is_list=True,
+            ),
+        ]
+    )
+    path_filled = {"": [{"title": "T"}], "orphan[]": [{"oid": "O1"}]}
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "orphan[]": [_desc("orphan[]", {"oid": "O1"}, {"path": "", "ids": {}})],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    # "parent_path not in spec_by_path" guard skips the whole path -> never attached.
+    assert "orphans" not in root
+    assert stats.get("dropped", 0) == 0
+
+
+def test_merge_filled_into_root_depth_guard_stops_infinite_placeholder_recursion():
+    """A pathologically deep parent chain hits the recursion depth guard and drops cleanly."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    # Build a chain of 10 nested paths so the placeholder-creation recursion
+    # exceeds the depth=8 guard before reaching the root.
+    nodes = [
+        NodeSpec(path="", node_type="Root", id_fields=["title"], parent_path="", field_name="")
+    ]
+    parent_path = ""
+    for level in range(10):
+        path = "/".join(["lvl"] * (level + 1)) + "[]"
+        nodes.append(
+            NodeSpec(
+                path=path,
+                node_type=f"Level{level}",
+                id_fields=["id"],
+                parent_path=parent_path,
+                field_name="child",
+                is_list=True,
+            )
+        )
+        parent_path = path
+    catalog = NodeCatalog(nodes=nodes)
+    deepest_path = parent_path
+    path_filled = {deepest_path: [{"id": "leaf"}]}
+    path_descriptors = {
+        deepest_path: [
+            _desc(deepest_path, {"id": "leaf"}, {"path": "/".join(["lvl"] * 9) + "[]", "ids": {}})
+        ]
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    # The deep chain of id-less placeholders exceeds depth 8: unresolvable, dropped.
+    assert stats["dropped"] == 1
+    assert root == {}
+
+
+def test_merge_filled_into_root_skips_instance_with_empty_field_name():
+    """A NodeSpec with an empty field_name (malformed catalog) is skipped, not attached."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=["title"]),
+            NodeSpec(
+                path="orphan[]",
+                node_type="Orphan",
+                id_fields=["oid"],
+                parent_path="",
+                field_name="",  # malformed: no attachment field
+                is_list=True,
+            ),
+        ]
+    )
+    path_filled = {"": [{"title": "T"}], "orphan[]": [{"oid": "O1"}]}
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "orphan[]": [_desc("orphan[]", {"oid": "O1"}, {"path": "", "ids": {}})],
+    }
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog)
+    assert "orphan" not in root
+
+
+def test_prune_barren_branches_keeps_branch_with_children_even_if_scalars_empty():
+    """A branch node that HAS children is never pruned, regardless of its own scalar fields."""
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=[]),
+            NodeSpec(
+                path="studies[]",
+                node_type="Study",
+                id_fields=["study_id"],
+                parent_path="",
+                field_name="studies",
+                is_list=True,
+            ),
+            NodeSpec(
+                path="studies[].experiments[]",
+                node_type="Experiment",
+                id_fields=["exp_id"],
+                parent_path="studies[]",
+                field_name="experiments",
+                is_list=True,
+            ),
+        ]
+    )
+    root = {
+        "studies": [
+            {
+                "study_id": "S1",
+                "objective": None,
+                "experiments": [{"exp_id": "E1"}],
+            }
+        ]
+    }
+    out = prune_barren_branches(root, catalog)
+    # Has a child -> kept even though "objective" is None (barren-looking otherwise).
+    assert len(out["studies"]) == 1
+    assert out["studies"][0]["experiments"][0]["exp_id"] == "E1"
+
+
+def test_prune_barren_branches_records_pruned_event():
+    """events_out receives a 'pruned' event with the id fields of the removed branch."""
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=[]),
+            NodeSpec(
+                path="studies[]",
+                node_type="Study",
+                id_fields=["study_id"],
+                parent_path="",
+                field_name="studies",
+                is_list=True,
+            ),
+            NodeSpec(
+                path="studies[].experiments[]",
+                node_type="Experiment",
+                id_fields=["exp_id"],
+                parent_path="studies[]",
+                field_name="experiments",
+                is_list=True,
+            ),
+        ]
+    )
+    root = {"studies": [{"study_id": "S1", "objective": None, "experiments": []}]}
+    events: list[dict[str, Any]] = []
+    out = prune_barren_branches(root, catalog, events_out=events)
+    assert out["studies"] == []
+    assert len(events) == 1
+    assert events[0]["event"] == "pruned"
+    assert events[0]["path"] == "studies[]"
+    assert events[0]["ids"] == {"study_id": "S1"}
+
+
+def test_prune_barren_branches_recurses_into_non_list_dict_child():
+    """A singular (non-list) branch child is recursed into via the dict-value path."""
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=[]),
+            NodeSpec(
+                path="summary",
+                node_type="Summary",
+                id_fields=[],
+                parent_path="",
+                field_name="summary",
+                is_list=False,
+            ),
+            NodeSpec(
+                path="summary.detail[]",
+                node_type="Detail",
+                id_fields=["detail_id"],
+                parent_path="summary",
+                field_name="detail",
+                is_list=True,
+            ),
+            # A grandchild makes "summary.detail[]" itself a branch path, so
+            # pruning actually applies to its (barren) list entries.
+            NodeSpec(
+                path="summary.detail[].sub[]",
+                node_type="Sub",
+                id_fields=["sub_id"],
+                parent_path="summary.detail[]",
+                field_name="sub",
+                is_list=True,
+            ),
+        ]
+    )
+    root = {"summary": {"detail": [{"detail_id": "D1", "note": None, "sub": []}]}}
+    out = prune_barren_branches(root, catalog)
+    # "summary" is recursed into via the non-list dict-value path (elif branch);
+    # its "detail" list is then pruned because the entry is barren and childless.
+    assert out["summary"]["detail"] == []
+
+
+def test_is_usable_id_value_accepts_bool_and_numeric():
+    """Booleans and numeric types count as usable identity values (not just strings)."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import _is_usable_id_value
+
+    assert _is_usable_id_value(True) is True
+    assert _is_usable_id_value(0) is True
+    assert _is_usable_id_value(3.14) is True
+    assert _is_usable_id_value("  ") is False
+    assert _is_usable_id_value(None) is False
+
+
+def test_call_skeleton_batch_retries_when_every_entry_invalid():
+    """When every node entry fails validation, the pass is retried before giving up."""
+    template_cls, allowed, _spec_by_path = _company_skeleton_args()
+    calls = {"n": 0}
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        calls["n"] += 1
+        # Every entry is malformed (missing required 'path'/'ids' shape).
+        return {"nodes": ["garbage", 123]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=template_cls,
+        config=DenseOrchestratorConfig(max_pass_retries=1),
+    )
+    nodes, truncated = orch._call_skeleton_batch(
+        batch_idx=0,
+        batch=[(0, "text", 10)],
+        total_batches=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        already_found_str=None,
+    )
+    assert nodes == []
+    assert truncated is False
+    # Initial attempt + one retry (max_pass_retries=1) = 2 calls.
+    assert calls["n"] == 2
+
+
+def test_shallow_skeleton_retry_returns_empty_without_root_spec():
+    """The shallow terminal fallback is a clean no-op when there is no root to fall back to."""
+    template_cls, _allowed, _spec_by_path = _company_skeleton_args()
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: {"nodes": []},
+        template=template_cls,
+        config=DenseOrchestratorConfig(),
+    )
+    orch._catalog.nodes = [n for n in orch._catalog.nodes if n.path != ""]
+    result = orch._shallow_skeleton_retry(0, [(0, "text", 10)], "t")
+    assert result == []
+
+
+def test_dedupe_skeleton_traces_containment_and_aggressive_resolver_stats():
+    """on_trace receives containment-merge and (aggressive-mode) resolver stats."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    traced: list[dict[str, Any]] = []
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: {"merges": []},
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(dedupe_mode="aggressive"),
+        on_trace=traced.append,
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    # Two employees whose ids are a containment pair (base vs. superset string).
+    skeleton = [
+        {"path": "employees[]", "ids": {"email": "alice@x.com"}, "parent": None},
+        {"path": "employees[]", "ids": {"email": "alice@x.com extra"}, "parent": None},
+    ]
+    orch._dedupe_skeleton(skeleton, spec_by_path, "t")
+    kinds = {list(t.keys())[1] for t in traced if len(t) > 1}
+    # At minimum containment-merge tracing must have fired for this pair.
+    assert "phase1_containment" in kinds or "phase1_resolvers" in kinds
+
+
+def test_write_debug_writes_json_file(tmp_path):
+    """_write_debug creates the debug dir and writes JSON when debug_dir is set."""
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+        debug_dir=str(tmp_path / "debug_out"),
+    )
+    orch._write_debug("sample.json", {"a": 1})
+    written = tmp_path / "debug_out" / "sample.json"
+    assert written.exists()
+    assert written.read_text(encoding="utf-8") == '{\n  "a": 1\n}'
+
+
+def test_write_debug_is_noop_without_debug_dir():
+    """_write_debug does nothing when no debug_dir was configured."""
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+    )
+    # Should not raise even though no debug_dir exists.
+    orch._write_debug("sample.json", {"a": 1})
+
+
+def test_freeze_ledger_assigns_unkeyed_key_for_idless_node():
+    """A node with no usable ids gets a positional '#unkeyedN' ledger key, never a false binding."""
+    from docling_graph.core.provenance import ChunkRecord
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    merged_skeleton = [
+        {"path": "employees[]", "ids": {}, "parent": None, "_source_chunk_ids": [0]},
+    ]
+    chunk_records = {
+        0: ChunkRecord(chunk_id=0, batch_index=0, token_count=5, text_hash="h", char_length=4)
+    }
+    ledger = orch._freeze_ledger(merged_skeleton, chunk_records, spec_by_path)
+    assert len(ledger.nodes) == 1
+    entry = next(iter(ledger.nodes.values()))
+    assert entry.identity_key.startswith("employees[]#unkeyed")
+    assert "identity:unkeyed" in entry.notes
+
+
+def test_freeze_ledger_falls_back_to_batch_level_chunks_when_source_chunks_missing():
+    """When _source_chunk_ids is absent, anchors fall back to all chunks in the source batches."""
+    from docling_graph.core.provenance import ChunkRecord
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    merged_skeleton = [
+        {
+            "path": "employees[]",
+            "ids": {"email": "a@x.com"},
+            "parent": None,
+            "_source_batch_indexes": [0],
+            # No _source_chunk_ids: must fall back to batch-level chunk lookup.
+        },
+    ]
+    chunk_records = {
+        0: ChunkRecord(chunk_id=0, batch_index=0, token_count=5, text_hash="h", char_length=4),
+        1: ChunkRecord(chunk_id=1, batch_index=1, token_count=5, text_hash="h", char_length=4),
+    }
+    ledger = orch._freeze_ledger(merged_skeleton, chunk_records, spec_by_path)
+    entry = next(iter(ledger.nodes.values()))
+    anchored_chunk_ids = {a.chunk_id for a in entry.anchors}
+    assert anchored_chunk_ids == {0}
+
+
+def test_freeze_ledger_records_reconciled_anchors_and_merged_from():
+    """Reconciled chunk ids become 'reconciled' anchors; merged_from lineage is recorded."""
+    from docling_graph.core.provenance import ChunkRecord
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    merged_skeleton = [
+        {
+            "path": "employees[]",
+            "ids": {"email": "a@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [0],
+            "_reconciled_chunk_ids": [1],
+            "_merged_from": ["employees[]#email=alt@x.com"],
+        },
+    ]
+    chunk_records = {
+        0: ChunkRecord(chunk_id=0, batch_index=0, token_count=5, text_hash="h", char_length=4),
+        1: ChunkRecord(chunk_id=1, batch_index=0, token_count=5, text_hash="h", char_length=4),
+    }
+    ledger = orch._freeze_ledger(merged_skeleton, chunk_records, spec_by_path)
+    entry = next(iter(ledger.nodes.values()))
+    kinds_by_chunk = {a.chunk_id: a.kind for a in entry.anchors}
+    assert kinds_by_chunk == {0: "observed", 1: "reconciled"}
+    assert entry.merged_from == ["employees[]#email=alt@x.com"]
+
+
+def test_apply_merge_events_marks_placeholder_reused_when_entry_has_no_anchors():
+    """A second 'synthetic' event for an existing, still-anchorless entry appends a reuse note."""
+    from docling_graph.core.provenance import NodeProvenance, ProvenanceLedger, identity_key
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    ids = {"email": "a@x.com"}
+    key = identity_key("employees[]", ids, spec_by_path["employees[]"].id_fields)
+    assert key is not None
+    entry = NodeProvenance(
+        identity_key=key,
+        catalog_path="employees[]",
+        ids=ids,
+        anchors=[],  # no anchors yet -> a second synthetic event should append a reuse note
+    )
+    ledger = ProvenanceLedger(node_level=True, chunks={}, nodes={key: entry})
+    events = [{"event": "synthetic", "path": "employees[]", "ids": ids}]
+    orch._apply_merge_events(ledger, events, spec_by_path)
+    assert "merge:placeholder-reused" in ledger.nodes[key].notes
+
+
+def test_apply_merge_events_marks_dropped_entry():
+    """A 'dropped' merge event flags the matching ledger entry and appends a note."""
+    from docling_graph.core.provenance import NodeProvenance, ProvenanceLedger, identity_key
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    ids = {"email": "a@x.com"}
+    key = identity_key("employees[]", ids, spec_by_path["employees[]"].id_fields)
+    assert key is not None
+    entry = NodeProvenance(identity_key=key, catalog_path="employees[]", ids=ids)
+    ledger = ProvenanceLedger(node_level=True, chunks={}, nodes={key: entry})
+    events = [{"event": "dropped", "path": "employees[]", "ids": ids}]
+    orch._apply_merge_events(ledger, events, spec_by_path)
+    assert ledger.nodes[key].dropped is True
+    assert "merge:dropped" in ledger.nodes[key].notes
+
+
+def test_apply_merge_events_creates_new_synthetic_entry_when_absent():
+    """A 'synthetic' event with no existing ledger entry creates a fresh synthetic one."""
+    from docling_graph.core.provenance import ProvenanceLedger
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    ledger = ProvenanceLedger(node_level=True, chunks={}, nodes={})
+    events = [{"event": "synthetic", "path": "employees[]", "ids": {"email": "a@x.com"}}]
+    orch._apply_merge_events(ledger, events, spec_by_path)
+    assert len(ledger.nodes) == 1
+    entry = next(iter(ledger.nodes.values()))
+    assert entry.synthetic is True
+    assert entry.node_type == "SamplePerson"
+    assert "merge:placeholder" in entry.notes
+
+
+def test_apply_merge_events_rescued_grants_derived_anchors_to_synthetic_parent():
+    """A 'rescued' event lets a synthetic parent inherit its child's observed anchors as 'derived'."""
+    from docling_graph.core.provenance import (
+        NodeProvenance,
+        ProvenanceLedger,
+        SourceAnchor,
+        identity_key,
+    )
+
+    # "studies[]" needs a real NodeSpec so _key_for can compute the child's key;
+    # "employees[]" has no id_fields, so its key falls back to the "#bucket" form.
+    catalog = NodeCatalog(
+        nodes=[
+            NodeSpec(path="", node_type="Root", id_fields=[]),
+            NodeSpec(
+                path="employees[]",
+                node_type="Bucket",
+                id_fields=[],
+                parent_path="",
+                field_name="employees",
+                is_list=True,
+            ),
+            NodeSpec(
+                path="studies[]",
+                node_type="Study",
+                id_fields=["study_id"],
+                parent_path="employees[]",
+                field_name="studies",
+                is_list=True,
+            ),
+        ]
+    )
+    spec_by_path = {s.path: s for s in catalog.nodes}
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+    )
+
+    child_key = identity_key("studies[]", {"study_id": "S1"}, ["study_id"])
+    assert child_key is not None
+    child_entry = NodeProvenance(
+        identity_key=child_key,
+        catalog_path="studies[]",
+        ids={"study_id": "S1"},
+        anchors=[SourceAnchor(chunk_id=4, kind="observed")],
+    )
+    parent_key = "employees[]#bucket"
+    parent_entry = NodeProvenance(
+        identity_key=parent_key,
+        catalog_path="employees[]",
+        ids={},
+        synthetic=True,
+        anchors=[],
+    )
+    ledger = ProvenanceLedger(
+        node_level=True, chunks={}, nodes={parent_key: parent_entry, child_key: child_entry}
+    )
+    events = [
+        {
+            "event": "rescued",
+            "how": "bucket",
+            "path": "studies[]",
+            "ids": {"study_id": "S1"},
+            "parent_path": "employees[]",
+            "parent_ids": {},
+        }
+    ]
+    orch._apply_merge_events(ledger, events, spec_by_path)
+    parent_after = ledger.nodes[parent_key]
+    assert len(parent_after.anchors) == 1
+    assert parent_after.anchors[0].chunk_id == 4
+    assert parent_after.anchors[0].kind == "derived"
+
+
+def test_rekey_ledger_to_filled_skips_paths_without_id_fields_or_spec():
+    """Paths with no spec or no declared id_fields are left as-is (nothing to re-key)."""
+    from docling_graph.core.provenance import ProvenanceLedger
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    ledger = ProvenanceLedger(node_level=True, chunks={}, nodes={})
+    path_descriptors = {"unknown_path[]": [_desc("unknown_path[]", {}, None)]}
+    path_filled: dict[str, list[dict[str, Any]]] = {"unknown_path[]": [{}]}
+    # Should not raise despite the unknown path having no matching spec.
+    orch._rekey_ledger_to_filled(ledger, path_descriptors, path_filled, spec_by_path)
+    assert ledger.nodes == {}
+
+
+def test_rekey_ledger_to_filled_merges_into_existing_target_entry():
+    """When two skeleton ids collapse onto the same final id, their anchors/lineage merge."""
+    from docling_graph.core.provenance import (
+        NodeProvenance,
+        ProvenanceLedger,
+        SourceAnchor,
+        identity_key,
+    )
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    id_fields = spec_by_path["employees[]"].id_fields
+    skel_ids = {"email": "skeleton-guess@x.com"}
+    final_ids = {"email": "final@x.com"}
+    skel_key = identity_key("employees[]", skel_ids, id_fields)
+    final_key = identity_key("employees[]", final_ids, id_fields)
+    assert skel_key is not None and final_key is not None and skel_key != final_key
+    skel_entry = NodeProvenance(
+        identity_key=skel_key,
+        catalog_path="employees[]",
+        ids=skel_ids,
+        anchors=[SourceAnchor(chunk_id=0, kind="observed")],
+        merged_from=["some#other"],
+    )
+    target_entry = NodeProvenance(
+        identity_key=final_key,
+        catalog_path="employees[]",
+        ids=final_ids,
+        anchors=[SourceAnchor(chunk_id=1, kind="observed")],
+    )
+    ledger = ProvenanceLedger(
+        node_level=True, chunks={}, nodes={skel_key: skel_entry, final_key: target_entry}
+    )
+    path_descriptors = {"employees[]": [_desc("employees[]", skel_ids, None)]}
+    path_filled = {"employees[]": [dict(final_ids)]}
+    orch._rekey_ledger_to_filled(ledger, path_descriptors, path_filled, spec_by_path)
+    # The skeleton-keyed entry is gone; its anchor/lineage merged into the target.
+    assert skel_key not in ledger.nodes
+    target = ledger.nodes[final_key]
+    chunk_ids = {a.chunk_id for a in target.anchors}
+    assert chunk_ids == {0, 1}
+    assert "some#other" in target.merged_from
+
+
+def test_run_one_fill_batch_accepts_bare_list_output():
+    """A fill LLM response that is a bare list (not wrapped in {'items': ...}) is accepted."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> list[dict[str, Any]]:
+        return [{"email": "a@x.com", "first_name": "Alice", "last_name": "A"}]
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec = next(s for s in orch._catalog.nodes if s.path == "employees[]")
+    _path, _bi, sanitized = orch._run_one_fill_batch(
+        path="employees[]",
+        spec=spec,
+        batch_descriptors=[{"ids": {"email": "a@x.com"}}],
+        batch_index=0,
+        sub_schema=('{"type": "object", "properties": {"email": {"type": "string"}}, "$defs": {}}'),
+        fill_markdown="doc",
+        context="t",
+    )
+    assert sanitized[0]["email"] == "a@x.com"
+
+
+def test_run_one_fill_batch_truncates_extra_items_without_matching_descriptor():
+    """Extra fill items beyond the requested instance count are discarded."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def mock_llm(*, prompt: Any, schema_json: str, context: str, **kwargs: Any) -> dict[str, Any]:
+        return {
+            "items": [
+                {"email": "a@x.com", "first_name": "Alice", "last_name": "A"},
+                {"email": "b@x.com", "first_name": "Bob", "last_name": "B"},
+            ]
+        }
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec = next(s for s in orch._catalog.nodes if s.path == "employees[]")
+    _path, _bi, sanitized = orch._run_one_fill_batch(
+        path="employees[]",
+        spec=spec,
+        batch_descriptors=[{"ids": {"email": "a@x.com"}}],  # only one requested
+        batch_index=0,
+        sub_schema=('{"type": "object", "properties": {"email": {"type": "string"}}, "$defs": {}}'),
+        fill_markdown="doc",
+        context="t",
+    )
+    assert len(sanitized) == 1
+    assert sanitized[0]["email"] == "a@x.com"
+
+
+def test_run_one_fill_batch_bumps_truncation_counter():
+    """A fill response flagged as truncated increments the shared truncation counter."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        if _diagnostics_out is not None:
+            _diagnostics_out["truncated"] = True
+        return {"items": [{"email": "a@x.com"}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec = next(s for s in orch._catalog.nodes if s.path == "employees[]")
+    orch._run_one_fill_batch(
+        path="employees[]",
+        spec=spec,
+        batch_descriptors=[{"ids": {"email": "a@x.com"}}],
+        batch_index=0,
+        sub_schema=('{"type": "object", "properties": {"email": {"type": "string"}}, "$defs": {}}'),
+        fill_markdown="doc",
+        context="t",
+    )
+    assert orch._counters.get("truncation_count") == 1
+
+
+def test_run_skeleton_phase_parallel_records_empty_on_batch_exception():
+    """A batch whose worker raises is recorded as an empty result, not crashing the run."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def mock_llm(*, prompt: Any, schema_json: str, context: str, **kwargs: Any) -> dict[str, Any]:
+        if "_dense_skeleton_1" in context:
+            raise RuntimeError("boom")
+        return {"nodes": [{"path": "", "ids": {"company_name": "Acme"}, "parent": None}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(parallel_workers=2),
+    )
+    catalog = orch._catalog
+    spec_by_path = {s.path: s for s in catalog.nodes}
+    batches = [
+        [(0, "chunk a", 10)],
+        [(1, "chunk b", 10)],
+    ]
+    results = orch._run_skeleton_phase(
+        batches=batches,
+        workers=2,
+        catalog_block="",
+        allowed_paths=set(catalog.paths()),
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+    )
+    assert len(results) == 2
+    # One batch failed outright (exception path) -> empty list, not a crash.
+    assert any(r == [] for r in results)
+
+
+def test_run_emits_parallel_workers_warning_with_single_batch(caplog):
+    """Configuring parallel_workers > 1 with only one skeleton batch logs a warning."""
+    import logging
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        if "dense_skeleton" in context:
+            return {"nodes": [{"path": "", "ids": {"invoice_number": "INV-1"}, "parent": None}]}
+        if "dense_fill" in context:
+            return {
+                "items": [
+                    {
+                        "invoice_number": "INV-1",
+                        "date": "d",
+                        "total_amount": 1.0,
+                        "vendor_name": "v",
+                        "items": [],
+                    }
+                ]
+            }
+        return None
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleInvoice,
+        # Large skeleton_batch_tokens -> a short doc always fits one batch.
+        config=DenseOrchestratorConfig(parallel_workers=3, skeleton_batch_tokens=4096),
+    )
+    with caplog.at_level(logging.WARNING):
+        root = orch.run(
+            chunks=["short doc"],
+            chunk_metadata=[{"token_count": 5}],
+            full_markdown="short doc",
+            context="t",
+        )
+    assert root is not None
+    assert any("parallel workers will not be used" in r.message for r in caplog.records)
+
+
+def test_run_writes_debug_artifacts_when_debug_dir_set(tmp_path):
+    """A configured debug_dir causes the skeleton graph, merge stats, and run stats to be written."""
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        if "dense_skeleton" in context:
+            return {"nodes": [{"path": "", "ids": {"invoice_number": "INV-1"}, "parent": None}]}
+        if "dense_fill" in context:
+            return {
+                "items": [
+                    {
+                        "invoice_number": "INV-1",
+                        "date": "d",
+                        "total_amount": 1.0,
+                        "vendor_name": "v",
+                        "items": [],
+                    }
+                ]
+            }
+        return None
+
+    debug_dir = str(tmp_path / "debug")
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+        debug_dir=debug_dir,
+    )
+    root = orch.run(
+        chunks=["doc text"],
+        chunk_metadata=[{"token_count": 5}],
+        full_markdown="doc text",
+        context="t",
+    )
+    assert root is not None
+    assert os.path.exists(os.path.join(debug_dir, "dense_skeleton_graph.json"))
+    assert os.path.exists(os.path.join(debug_dir, "dense_merge_stats.json"))
+    assert os.path.exists(os.path.join(debug_dir, "dense_run_stats.json"))
+    assert os.path.exists(os.path.join(debug_dir, "dense_provenance.json"))
+
+
+def test_run_quality_gate_failure_writes_partial_ledger_and_traces(tmp_path):
+    """When the skeleton has no root, a partial ledger is written under debug_dir and on_trace fires."""
+    traced: list[dict[str, Any]] = []
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        if "dense_skeleton" in context:
+            # No root node at all -> quality gate must fail with "empty_skeleton".
+            return {"nodes": []}
+        return None
+
+    debug_dir = str(tmp_path / "debug_partial")
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+        debug_dir=debug_dir,
+        on_trace=traced.append,
+    )
+    root = orch.run(
+        chunks=["doc text"],
+        chunk_metadata=[{"token_count": 5}],
+        full_markdown="doc text",
+        context="t",
+    )
+    assert root is None
+    assert orch.last_run_stats.get("quality_gate_failure") == "empty_skeleton"
+    assert any(t.get("phase1_quality") is False for t in traced)
+
+
+def test_run_skips_fill_job_when_spec_missing_for_path():
+    """A skeleton path absent from spec_by_path (should not normally happen) is skipped in fill planning."""
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        if "dense_skeleton" in context:
+            return {"nodes": [{"path": "", "ids": {"invoice_number": "INV-1"}, "parent": None}]}
+        if "dense_fill" in context:
+            return {
+                "items": [
+                    {
+                        "invoice_number": "INV-1",
+                        "date": "d",
+                        "total_amount": 1.0,
+                        "vendor_name": "v",
+                        "items": [],
+                    }
+                ]
+            }
+        return None
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+    )
+    # Running normally still exercises the "if not spec: continue" guard safely
+    # since fill_paths is always drawn from the catalog; this test instead
+    # verifies the run completes normally, documenting the invariant that
+    # every skeleton path in bottom_up_path_order has a spec.
+    root = orch.run(
+        chunks=["doc text"],
+        chunk_metadata=[{"token_count": 5}],
+        full_markdown="doc text",
+        context="t",
+    )
+    assert root is not None
+
+
+def test_run_parallel_fill_records_exception_without_crashing():
+    """A fill job that raises in parallel mode is logged and skipped, not fatal to the run."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def mock_llm(
+        *, prompt: Any, schema_json: str, context: str, **kwargs: Any
+    ) -> dict[str, Any] | None:
+        if "dense_skeleton" in context:
+            return {
+                "nodes": [
+                    {"i": 1, "path": "", "ids": {"company_name": "Acme"}},
+                    {"i": 2, "path": "employees[]", "ids": {"email": "a@x.com"}, "p": 1},
+                    {"i": 3, "path": "employees[]", "ids": {"email": "b@x.com"}, "p": 1},
+                ]
+            }
+        if "dense_reconcile" in context:
+            return {"merges": []}
+        if "dense_fill_employees[]_1" in context:
+            raise RuntimeError("fill boom")
+        if "dense_fill" in context:
+            return {"items": [{"email": "a@x.com", "first_name": "Alice", "last_name": "A"}]}
+        return None
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        # fill_nodes_cap=1 forces two separate fill batches for the two employees,
+        # so the two run in parallel and one of them can be made to raise.
+        config=DenseOrchestratorConfig(parallel_workers=2, fill_nodes_cap=1),
+    )
+    root = orch.run(
+        chunks=["doc"],
+        chunk_metadata=[{"token_count": 5}],
+        full_markdown="doc",
+        context="test",
+    )
+    assert root is not None

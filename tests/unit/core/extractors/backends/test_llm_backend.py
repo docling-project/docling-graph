@@ -12,6 +12,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from typing import Any, NoReturn
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -1149,3 +1150,955 @@ class TestDirectContractProvenance:
             markdown="a chunk", template=MockTemplate, context="chunk", is_partial=True
         )
         assert backend.last_provenance is None
+
+
+class TestLogInfoFormatting:
+    """_log_info formats kwargs into the rich-printed message (lines 156-160)."""
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.rich_print")
+    def test_log_info_with_kwargs_appends_formatted_pairs(self, mock_rich_print, llm_backend):
+        llm_backend._log_info("Processing", chunks=3, tokens=42)
+        printed = mock_rich_print.call_args[0][0]
+        assert "Processing" in printed
+        assert "3" in printed and "chunks" in printed
+        assert "42" in printed and "tokens" in printed
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.rich_print")
+    def test_log_info_without_kwargs(self, mock_rich_print, llm_backend):
+        llm_backend._log_info("Simple message")
+        printed = mock_rich_print.call_args[0][0]
+        assert printed == "[blue][LlmBackend][/blue] Simple message"
+
+
+class TestValidationErrorTraceEmit:
+    """_log_validation_error emits trace data when trace_data is set (line 192)."""
+
+    def test_validation_error_emits_trace_when_trace_data_set(self, llm_backend, mock_llm_client):
+        llm_backend.trace_data = MagicMock()
+        invalid_json = {"name": "Test Only"}
+        mock_llm_client.get_json_response.return_value = invalid_json
+        result = llm_backend.extract_from_markdown(markdown="Some content", template=MockTemplate)
+        assert result is None
+        llm_backend.trace_data.emit.assert_any_call(
+            "validation_error_raw_data",
+            "extraction",
+            {"context": "document", "raw_data": invalid_json},
+        )
+
+
+class TestScalarCoercionEdgeCases:
+    """_coerce_scalar_to_quantity_with_unit non-numeric-string and other-type branches (212-218)."""
+
+    def test_string_non_numeric_becomes_text_value(self, llm_backend):
+        result = llm_backend._coerce_scalar_to_quantity_with_unit("not-a-number")
+        assert result == {"text_value": "not-a-number"}
+
+    def test_non_str_non_numeric_value_stringified(self, llm_backend):
+        result = llm_backend._coerce_scalar_to_quantity_with_unit(None)
+        assert result == {"numeric_value": None, "text_value": "None"}
+
+
+class TestPathHelpersEdgeCases:
+    """_set_at_path / _delete_at_path edge cases (234, 243, 246, 250-251)."""
+
+    def test_set_at_path_empty_loc_is_noop(self, llm_backend):
+        data = {"a": 1}
+        LlmBackend._set_at_path(data, (), "ignored")
+        assert data == {"a": 1}
+
+    def test_delete_at_path_empty_loc_is_noop(self, llm_backend):
+        data = {"a": 1}
+        LlmBackend._delete_at_path(data, ())
+        assert data == {"a": 1}
+
+    def test_delete_at_path_parent_none_is_noop(self, llm_backend):
+        data = {"a": None}
+        # loc[:-1] resolves to data["a"] which is None, so the parent-is-None guard fires.
+        LlmBackend._delete_at_path(data, ("a", "leaf"))
+        assert data == {"a": None}
+
+    def test_delete_at_path_removes_list_element_by_index(self, llm_backend):
+        data = {"items": ["x", "y", "z"]}
+        LlmBackend._delete_at_path(data, ("items", 1))
+        assert data["items"] == ["x", "z"]
+
+    def test_delete_at_path_list_index_out_of_range_is_noop(self, llm_backend):
+        data = {"items": ["x"]}
+        LlmBackend._delete_at_path(data, ("items", 5))
+        assert data["items"] == ["x"]
+
+
+class TestApplyQuantityCoercionSkips:
+    """_apply_quantity_coercion skip branches for non-quantity errors and bad paths (264, 267-268, 270)."""
+
+    def test_skips_non_quantity_error(self, llm_backend):
+        data = {"gap": 1.0}
+        errors = [{"type": "float_type", "loc": ("gap",), "msg": "Input should be a valid dict"}]
+        changed = llm_backend._apply_quantity_coercion(data, errors)
+        assert changed is False
+
+    def test_skips_error_with_empty_loc(self, llm_backend):
+        data = {"gap": 1.0}
+        errors = [
+            {
+                "type": "model_type",
+                "loc": (),
+                "msg": "QuantityWithUnit expected",
+                "ctx": {"class_name": "QuantityWithUnit"},
+            }
+        ]
+        changed = llm_backend._apply_quantity_coercion(data, errors)
+        assert changed is False
+
+    def test_skips_error_with_unreachable_path(self, llm_backend):
+        data = {"gap": 1.0}
+        errors = [
+            {
+                "type": "model_type",
+                "loc": ("missing", "nested"),
+                "msg": "QuantityWithUnit expected",
+                "ctx": {"class_name": "QuantityWithUnit"},
+            }
+        ]
+        changed = llm_backend._apply_quantity_coercion(data, errors)
+        assert changed is False
+
+    def test_skips_when_value_already_dict(self, llm_backend):
+        data = {"gap": {"numeric_value": 1.0}}
+        errors = [
+            {
+                "type": "model_type",
+                "loc": ("gap",),
+                "msg": "QuantityWithUnit expected",
+                "ctx": {"class_name": "QuantityWithUnit"},
+            }
+        ]
+        changed = llm_backend._apply_quantity_coercion(data, errors)
+        assert changed is False
+
+
+class TestSchemaRefResolution:
+    """_resolve_schema_ref / _schema_node_properties_or_any_of / _get_field_schema_at_path (288, 299-304, 317-318, 325, 330)."""
+
+    def test_resolve_schema_ref_definitions_style(self):
+        defs = {"Foo": {"properties": {"x": {"type": "string"}}}}
+        node = {"$ref": "#/definitions/Foo"}
+        resolved = LlmBackend._resolve_schema_ref(node, defs)
+        assert resolved == {"properties": {"x": {"type": "string"}}}
+
+    def test_schema_node_properties_from_any_of(self):
+        defs: dict = {}
+        node = {"anyOf": [{"properties": {"y": {"type": "integer"}}}, {"type": "null"}]}
+        props = LlmBackend._schema_node_properties_or_any_of(node, defs)
+        assert props == {"y": {"type": "integer"}}
+
+    def test_schema_node_any_of_empty_list_returns_empty(self):
+        node = {"anyOf": []}
+        props = LlmBackend._schema_node_properties_or_any_of(node, {})
+        assert props == {}
+
+    def test_get_field_schema_at_path_handles_exception(self, llm_backend, monkeypatch):
+        class BadTemplate:
+            @staticmethod
+            def model_json_schema() -> NoReturn:
+                raise RuntimeError("boom")
+
+        result = LlmBackend._get_field_schema_at_path(BadTemplate, ("field",))
+        assert result is None
+
+    def test_get_field_schema_at_path_array_items(self):
+        class Item(BaseModel):
+            name: str
+
+        class Root(BaseModel):
+            items: list[Item]
+
+        schema = LlmBackend._get_field_schema_at_path(Root, ("items", 0, "name"))
+        assert schema is not None
+        assert schema.get("type") == "string"
+
+    def test_get_field_schema_at_path_missing_key_returns_none(self):
+        class Root(BaseModel):
+            name: str
+
+        result = LlmBackend._get_field_schema_at_path(Root, ("does_not_exist",))
+        assert result is None
+
+
+class TestEnumDefaultFromSchema:
+    """_enum_default_from_schema prefers OTHER, falls back to first enum value (340-343)."""
+
+    def test_prefers_other_case_insensitive(self):
+        schema = {"enum": ["FOO", "other", "BAR"]}
+        assert LlmBackend._enum_default_from_schema(schema) == "other"
+
+    def test_falls_back_to_first_when_no_other(self):
+        schema = {"enum": ["FOO", "BAR"]}
+        assert LlmBackend._enum_default_from_schema(schema) == "FOO"
+
+    def test_no_enum_returns_none(self):
+        assert LlmBackend._enum_default_from_schema({}) is None
+
+
+class TestFillMissingRequiredFieldsBranches:
+    """_fill_missing_required_fields dedup/skip/doc-id/enum branches (365, 368, 372-374, 382, 389, 394-406, 415)."""
+
+    def test_duplicate_loc_only_filled_once(self, llm_backend):
+        data = {"study_id": None}
+        errors = [
+            {"type": "missing", "loc": ("study_id",)},
+            {"type": "missing", "loc": ("study_id",)},
+        ]
+        # Force both entries to look "already seen" isn't directly observable,
+        # but calling with duplicate locs must not raise and must fill once.
+        data = {}
+        changed = llm_backend._fill_missing_required_fields(data, errors)
+        assert changed is True
+        assert "study_id" in data
+
+    def test_skips_error_with_non_string_leaf(self, llm_backend):
+        data = {"items": [1, 2]}
+        errors = [{"type": "missing", "loc": ("items", 0)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors)
+        assert changed is False
+
+    def test_skips_when_parent_not_dict_or_key_present(self, llm_backend):
+        data = {"name": "already set"}
+        errors = [{"type": "missing", "loc": ("name",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors)
+        assert changed is False
+
+    def test_root_document_reference_field_uses_template_name(self, llm_backend):
+        class InsuranceContract(BaseModel):
+            document_reference: str
+
+        data = {}
+        errors = [{"type": "missing", "loc": ("document_reference",)}]
+        changed = llm_backend._fill_missing_required_fields(
+            data, errors, template=InsuranceContract
+        )
+        assert changed is True
+        assert data["document_reference"] == "InsuranceContract"
+
+    def test_field_ending_in_document_uses_template_name(self, llm_backend):
+        class SomeTemplate(BaseModel):
+            source_document: str
+
+        data = {}
+        errors = [{"type": "missing", "loc": ("source_document",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=SomeTemplate)
+        assert changed is True
+        assert data["source_document"] == "SomeTemplate"
+
+    def test_enum_field_uses_schema_enum_default(self, llm_backend):
+        class Category(BaseModel):
+            pass
+
+        from enum import Enum
+
+        class Status(str, Enum):
+            OTHER = "OTHER"
+            ACTIVE = "ACTIVE"
+
+        class Root(BaseModel):
+            status: Status
+
+        data = {}
+        errors = [{"type": "missing", "loc": ("status",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=Root)
+        assert changed is True
+        assert data["status"] == "OTHER"
+
+    def test_non_id_string_field_without_enum_defaults_to_empty_string(self, llm_backend):
+        class Root(BaseModel):
+            summary: str
+
+        data = {}
+        errors = [{"type": "missing", "loc": ("summary",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=Root)
+        assert changed is True
+        assert data["summary"] == ""
+
+    def test_no_template_id_field_gets_generated_id(self, llm_backend):
+        data = {}
+        errors = [{"type": "missing", "loc": ("widget_id",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=None)
+        assert changed is True
+        assert data["widget_id"].startswith("WIDG-")
+
+    def test_no_template_non_id_field_defaults_to_empty_string(self, llm_backend):
+        data = {}
+        errors = [{"type": "missing", "loc": ("summary",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=None)
+        assert changed is True
+        assert data["summary"] == ""
+
+
+class TestExtractStringFromListOrDict:
+    """_extract_string_from_list_or_dict type branches (446-483)."""
+
+    def test_none_returns_none(self):
+        assert LlmBackend._extract_string_from_list_or_dict(None) is None
+
+    def test_blank_string_falls_through_to_none(self):
+        assert LlmBackend._extract_string_from_list_or_dict("   ") is None
+
+    def test_bool_scalar_stringified(self):
+        assert LlmBackend._extract_string_from_list_or_dict(True) == "True"
+
+    def test_int_scalar_stringified(self):
+        assert LlmBackend._extract_string_from_list_or_dict(42) == "42"
+
+    def test_list_of_plain_strings_returns_first_nonblank(self):
+        assert LlmBackend._extract_string_from_list_or_dict(["", "  ", "first"]) == "first"
+
+    def test_list_skips_complex_block_dict(self):
+        complex_item = {"conditions": "x", "nom": "should not use"}
+        result = LlmBackend._extract_string_from_list_or_dict([complex_item])
+        assert result is None
+
+    def test_list_of_dicts_extracts_identity_key(self):
+        result = LlmBackend._extract_string_from_list_or_dict([{"nom": "Alpha"}])
+        assert result == "Alpha"
+
+    def test_list_of_dicts_identity_key_scalar_value(self):
+        result = LlmBackend._extract_string_from_list_or_dict([{"id": 7}])
+        assert result == "7"
+
+    def test_list_of_dicts_falls_back_to_any_string_value(self):
+        result = LlmBackend._extract_string_from_list_or_dict([{"unrelated_key": "fallback text"}])
+        assert result == "fallback text"
+
+    def test_list_with_no_extractable_string_returns_none(self):
+        result = LlmBackend._extract_string_from_list_or_dict([{"count": 5}])
+        assert result is None
+
+    def test_dict_complex_block_returns_none(self):
+        result = LlmBackend._extract_string_from_list_or_dict({"conditions": "text", "nom": "X"})
+        assert result is None
+
+    def test_dict_identity_key_scalar_value(self):
+        result = LlmBackend._extract_string_from_list_or_dict({"id": 3.5})
+        assert result == "3.5"
+
+    def test_dict_falls_back_to_any_string_value(self):
+        result = LlmBackend._extract_string_from_list_or_dict({"other": "value here"})
+        assert result == "value here"
+
+    def test_dict_with_no_extractable_string_returns_none(self):
+        result = LlmBackend._extract_string_from_list_or_dict({"count": 5})
+        assert result is None
+
+    def test_other_type_returns_none(self):
+        assert LlmBackend._extract_string_from_list_or_dict(object()) is None
+
+
+class TestCoerceStringTypeErrorsSkips:
+    """_coerce_string_type_errors skip branches (501, 504-505, 507, 516, 521-522)."""
+
+    def test_skips_uncoercible_error_type(self, llm_backend):
+        data = {"name": "ok"}
+        errors = [{"type": "missing", "loc": ("name",)}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is False
+
+    def test_skips_error_with_empty_loc(self, llm_backend):
+        data = {"name": 1}
+        errors = [{"type": "int_type", "loc": ()}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is False
+
+    def test_skips_unreachable_path(self, llm_backend):
+        data = {"name": "ok"}
+        errors = [{"type": "int_type", "loc": ("missing", "path")}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is False
+
+    def test_skips_when_value_is_none(self, llm_backend):
+        data = {"name": None}
+        errors = [{"type": "string_type", "loc": ("name",)}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is False
+
+    def test_set_at_path_failure_is_caught(self, llm_backend):
+        # loc[:-1] resolves to a non-dict parent (a string), so _set_at_path raises
+        # TypeError when indexing into it; the method should swallow and continue.
+        data = {"name": "abc"}
+        errors = [{"type": "int_type", "loc": ("name", 0)}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is False
+
+
+class TestCoerceListTypeErrorsBranches:
+    """_coerce_list_type_errors skip/parse branches (538, 541-542, 544, 550-559, 561, 565, 569-570)."""
+
+    def test_skips_wrong_error_type(self, llm_backend):
+        data = {"tags": "a,b"}
+        errors = [{"type": "string_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is False
+
+    def test_skips_error_with_empty_loc(self, llm_backend):
+        data = {"tags": "a,b"}
+        errors = [{"type": "list_type", "loc": ()}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is False
+
+    def test_skips_unreachable_path(self, llm_backend):
+        data = {"tags": "a,b"}
+        errors = [{"type": "list_type", "loc": ("missing", "path")}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is False
+
+    def test_already_list_is_skipped(self, llm_backend):
+        data = {"tags": ["already", "list"]}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is False
+
+    def test_python_list_literal_string_is_parsed(self, llm_backend):
+        data = {"tags": "['a', 'b']"}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is True
+        assert data["tags"] == ["a", "b"]
+
+    def test_bracketed_non_list_syntax_falls_back_to_comma_split(self, llm_backend):
+        """Value has bracket-delimited shape but fails ast.literal_eval (SyntaxError/ValueError
+        at line 550-559), so it falls through to the comma-split/whole-string branch."""
+        data = {"tags": "[a, b]"}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is True
+        # "[a, b]" is not valid Python literal syntax (a, b are undefined names),
+        # so literal_eval raises and the comma-split path runs on the whole string.
+        assert data["tags"] == ["[a", "b]"]
+
+    def test_malformed_list_literal_without_closing_bracket_comma_split(self, llm_backend):
+        data = {"tags": "[a, b"}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is True
+        assert data["tags"] == ["[a", "b"]
+
+    def test_comma_separated_string_is_split(self, llm_backend):
+        data = {"tags": "alpha, beta, gamma"}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is True
+        assert data["tags"] == ["alpha", "beta", "gamma"]
+
+    def test_single_string_without_comma_wrapped_in_list(self, llm_backend):
+        data = {"tags": "solo"}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is True
+        assert data["tags"] == ["solo"]
+
+    def test_non_string_scalar_wrapped_in_list(self, llm_backend):
+        data = {"tags": 5}
+        errors = [{"type": "list_type", "loc": ("tags",)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is True
+        assert data["tags"] == [5]
+
+    def test_set_at_path_failure_is_caught(self, llm_backend):
+        data = {"tags": "solo"}
+        errors = [{"type": "list_type", "loc": ("tags", 0)}]
+        changed = llm_backend._coerce_list_type_errors(data, errors)
+        assert changed is False
+
+
+class TestPruneInvalidFieldsDedup:
+    """_prune_invalid_fields skips duplicate locs (584)."""
+
+    def test_duplicate_loc_pruned_only_once(self, llm_backend):
+        data = {"name": "ok", "bad": "value"}
+        errors = [
+            {"type": "string_type", "loc": ("bad",)},
+            {"type": "string_type", "loc": ("bad",)},
+        ]
+        llm_backend._prune_invalid_fields(data, errors)
+        assert "bad" not in data
+        assert data["name"] == "ok"
+
+
+class TestCountNonEmptyValues:
+    """_count_non_empty_values branches (648, 652, 654, 657)."""
+
+    def test_none_counts_zero(self):
+        assert LlmBackend._count_non_empty_values(None) == 0
+
+    def test_blank_string_counts_zero(self):
+        assert LlmBackend._count_non_empty_values("   ") == 0
+
+    def test_bool_counts_one(self):
+        assert LlmBackend._count_non_empty_values(True) == 1
+
+    def test_list_sums_recursively(self):
+        assert LlmBackend._count_non_empty_values(["a", "", "b"]) == 2
+
+    def test_dict_sums_recursively(self):
+        assert LlmBackend._count_non_empty_values({"a": "x", "b": ""}) == 1
+
+    def test_other_type_counts_one(self):
+        assert LlmBackend._count_non_empty_values(object()) == 1
+
+
+class TestCountSchemaLeafFieldsAndSparsity:
+    """_count_schema_leaf_fields ref-resolution/array/depth branches and sparsity gate (668-703)."""
+
+    def test_resolves_ref_in_defs(self, llm_backend):
+        schema = {
+            "properties": {"child": {"$ref": "#/$defs/Child"}},
+            "$defs": {"Child": {"properties": {"x": {"type": "string"}, "y": {"type": "string"}}}},
+        }
+        assert LlmBackend._count_schema_leaf_fields(schema) == 2
+
+    def test_array_of_objects_walks_items(self, llm_backend):
+        schema = {
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {"properties": {"a": {"type": "string"}}},
+                }
+            }
+        }
+        assert LlmBackend._count_schema_leaf_fields(schema) == 1
+
+    def test_non_dict_property_value_is_skipped(self, llm_backend):
+        schema = {"properties": {"weird": "not-a-dict", "ok": {"type": "string"}}}
+        assert LlmBackend._count_schema_leaf_fields(schema) == 1
+
+    def test_depth_limit_short_circuits(self, llm_backend):
+        # Build a deeply nested schema (depth > 6) to hit the depth guard.
+        node: dict = {"type": "string"}
+        for i in range(10):
+            node = {"properties": {f"level{i}": node}}
+        assert LlmBackend._count_schema_leaf_fields(node) >= 0  # does not raise / infinite loop
+
+    def test_is_sparse_structured_result_short_markdown_not_sparse(self, llm_backend):
+        assert llm_backend._is_sparse_structured_result({}, {}, "short") is False
+
+    def test_is_sparse_structured_result_few_schema_leafs_not_sparse(self, llm_backend):
+        schema = {"properties": {"a": {"type": "string"}}}
+        assert llm_backend._is_sparse_structured_result({"a": "x"}, schema, "x" * 500) is False
+
+    def test_is_sparse_structured_result_ratio_below_threshold(self, llm_backend):
+        schema = {"properties": {f"f{i}": {"type": "string"} for i in range(12)}}
+        parsed = {"f0": "only one value"}
+        assert llm_backend._is_sparse_structured_result(parsed, schema, "x" * 500) is True
+
+
+class TestGetClientMaxTokensBranches:
+    """_get_client_max_tokens fallback chain (951)."""
+
+    def test_falls_back_to_client_max_tokens_attribute(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client._generation = None
+        mock_llm_client.max_tokens = 2048
+        assert backend._get_client_max_tokens() == 2048
+
+    def test_returns_none_when_nothing_available(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client._generation = None
+        if hasattr(mock_llm_client, "max_tokens"):
+            del mock_llm_client.max_tokens
+        assert backend._get_client_max_tokens() is None
+
+
+class TestRetryMaxTokensNoCurrent:
+    """_retry_max_tokens_for_truncation returns None when no current budget known (1002)."""
+
+    def test_no_current_max_tokens_returns_none(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client._generation = None
+        if hasattr(mock_llm_client, "max_tokens"):
+            del mock_llm_client.max_tokens
+        assert backend._retry_max_tokens_for_truncation(None) is None
+
+
+class TestCallPromptNoJsonAndPassthrough:
+    """_call_prompt 'no JSON returned' branch and provider/model passthrough (1164-1165, 1189)."""
+
+    def test_no_json_returned_logs_warning_and_returns_none(self, llm_backend, mock_llm_client):
+        mock_llm_client.get_json_response.return_value = None
+        out = llm_backend._call_prompt(
+            {"system": "s", "user": "u"}, "{}", "ctx", structured_output_override=False
+        )
+        assert out is None
+
+    def test_provider_and_model_passthrough_from_client_diagnostics(
+        self, llm_backend, mock_llm_client
+    ):
+        mock_llm_client.get_json_response.return_value = {"ok": True}
+        mock_llm_client.last_call_diagnostics = {"provider": "anthropic", "model": "claude"}
+        llm_backend._call_prompt(
+            {"system": "s", "user": "u"}, "{}", "ctx", structured_output_override=False
+        )
+        assert llm_backend.last_call_diagnostics["provider"] == "anthropic"
+        assert llm_backend.last_call_diagnostics["model"] == "claude"
+
+
+class TestExtractFromChunkBatchesBranches:
+    """extract_from_chunk_batches direct-contract error and invalid-result branches (1280-1291)."""
+
+    def test_direct_contract_batch_extraction_returns_none(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="direct")
+        result = backend.extract_from_chunk_batches(
+            chunks=["a"], chunk_metadata=None, template=MockTemplate
+        )
+        assert result is None
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_empty_orchestrator_result_returns_none(self, mock_orch, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_orch.return_value = (None, {}, None)
+        result = backend.extract_from_chunk_batches(
+            chunks=["a"], chunk_metadata=None, template=MockTemplate
+        )
+        assert result is None
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_invalid_model_clears_provenance(self, mock_orch, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        from docling_graph.core.provenance import ProvenanceLedger
+
+        fake_ledger = MagicMock(spec=ProvenanceLedger)
+        mock_orch.return_value = ({"unrelated_field": "value"}, {"skeleton_nodes": 1}, fake_ledger)
+        result = backend.extract_from_chunk_batches(
+            chunks=["a"], chunk_metadata=None, template=MockTemplate
+        )
+        assert result is None
+        assert backend.last_provenance is None
+
+
+class TestExtractWithDenseContractChunking:
+    """_extract_with_dense_contract builds single-chunk metadata (1302-1306) via _run_dense_orchestrator (1338)."""
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_dense_contract_builds_single_chunk_with_token_estimate(
+        self, mock_orch, mock_llm_client
+    ):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_orch.return_value = ({"name": "A"}, {"skeleton_nodes": 1}, None)
+        markdown = "one two three four five"
+        result = backend._extract_with_dense_contract(markdown=markdown, context="doc")
+        assert result == {"name": "A"}
+        call_kwargs = mock_orch.call_args.kwargs
+        assert call_kwargs["chunks"] == [markdown]
+        assert call_kwargs["chunk_metadata"][0]["token_count"] == 5
+        assert call_kwargs["chunk_metadata"][0]["page_numbers"] == [0]
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_dense_llm_wrapper_delegates_to_call_prompt(self, mock_orch, mock_llm_client):
+        """The _dense_llm closure passed to run_dense_orchestrator forces legacy mode (1338-1346)."""
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+
+        def fake_orchestrator(*, llm_call_fn: Any, **kwargs: Any) -> tuple[dict, dict, None]:
+            # Invoke the closure the way the real orchestrator would.
+            result = llm_call_fn({"system": "s", "user": "u"}, "{}", "ctx")
+            return ({"delegated": result}, {}, None)
+
+        mock_orch.side_effect = fake_orchestrator
+        mock_llm_client.get_json_response.return_value = {"ok": True}
+        result = backend._extract_with_dense_contract(markdown="doc text", context="doc")
+        assert result == {"delegated": {"ok": True}}
+        # Confirm legacy-only mode: structured_output=False passed to client.
+        assert mock_llm_client.get_json_response.call_args.kwargs["structured_output"] is False
+
+
+class TestGenerateResponseBranches:
+    """generate() Response class text-building branches (1477-1486)."""
+
+    def test_generate_dict_response_serialized_to_json_text(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.get_json_response.return_value = {"key": "value"}
+        response = backend.generate(system_prompt="s", user_prompt="u")
+        assert json.loads(response.text) == {"key": "value"}
+
+    def test_generate_string_response_kept_as_is(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.get_json_response.return_value = "plain text response"
+        response = backend.generate(system_prompt="s", user_prompt="u")
+        assert response.text == "plain text response"
+
+    def test_generate_other_type_response_stringified(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client)
+        mock_llm_client.get_json_response.return_value = 12345
+        response = backend.generate(system_prompt="s", user_prompt="u")
+        assert response.text == "12345"
+
+
+class TestGleaningLlmCallClosure:
+    """The gleaning closure (_gleaning_llm_call, line ~917) delegates through _get_json_response."""
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.merge_gleaned_direct")
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_gleaning_pass_direct")
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_gleaning_closure_invokes_get_json_response(
+        self, mock_get_prompt, mock_gleaning, mock_merge, mock_llm_client
+    ):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="direct",
+            dense_config={"gleaning_enabled": True},
+        )
+        mock_get_prompt.return_value = {"system": "s", "user": "u"}
+        mock_llm_client.get_json_response.return_value = {"name": "Pre", "age": 10}
+
+        captured_llm_call_fn = {}
+
+        def fake_gleaning(
+            *, markdown: str, existing_result: Any, schema_json: str, llm_call_fn: Any
+        ) -> None:
+            captured_llm_call_fn["fn"] = llm_call_fn
+            # Exercise the closure directly to hit its body.
+            llm_call_fn({"system": "s2", "user": "u2"})
+            return None
+
+        mock_gleaning.side_effect = fake_gleaning
+        result = backend.extract_from_markdown(
+            markdown="Full doc content.", template=MockTemplate, context="doc"
+        )
+        assert result is not None
+        assert "fn" in captured_llm_call_fn
+        # get_json_response called once for primary extraction, once via the closure.
+        assert mock_llm_client.get_json_response.call_count == 2
+
+
+class TestFillMissingRequiredFieldsExceptionAndIdBranches:
+    """Remaining _fill_missing_required_fields branches: _get_at_path exception (373-374),
+    no-enum-default id-field branch with template (394-396), and empty field-schema fallback (400-406)."""
+
+    def test_get_at_path_exception_is_caught(self, llm_backend):
+        # loc[:-1] resolves through a string (not indexable by string key), raising TypeError.
+        data = {"name": "abc"}
+        errors = [{"type": "missing", "loc": ("name", "nested", "leaf")}]
+        changed = llm_backend._fill_missing_required_fields(data, errors)
+        assert changed is False
+
+    def test_template_present_no_enum_default_id_field_gets_generated_id(self, llm_backend):
+        class Root(BaseModel):
+            widget_id: str
+            label: str = "x"
+
+        data = {"label": "x"}
+        errors = [{"type": "missing", "loc": ("widget_id",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=Root)
+        assert changed is True
+        assert data["widget_id"].startswith("WIDG-")
+
+    def test_template_present_field_schema_not_found_falls_back_to_generated_id(self, llm_backend):
+        """When _get_field_schema_at_path can't resolve the field (falsy), the fallback
+        branch (400-404) still generates an id value using the template path."""
+
+        class Root(BaseModel):
+            name: str
+
+        # loc references a field not present in the schema at all, so
+        # _get_field_schema_at_path returns None -> falsy -> fallback branch.
+        data = {"name": "ok"}
+        errors = [{"type": "missing", "loc": ("ghost_id",)}]
+        # parent must be a dict missing the key for the pre-check to pass.
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=Root)
+        assert changed is True
+        assert data["ghost_id"].startswith("GHOS-")
+
+    def test_template_present_field_schema_not_found_non_id_falls_back_to_empty_string(
+        self, llm_backend
+    ):
+        """Same fallback branch as above (400-406), but a non-'_id' field name takes the
+        empty-string leaf (line 406) instead of generating an id."""
+
+        class Root(BaseModel):
+            name: str
+
+        data = {"name": "ok"}
+        errors = [{"type": "missing", "loc": ("ghost_summary",)}]
+        changed = llm_backend._fill_missing_required_fields(data, errors, template=Root)
+        assert changed is True
+        assert data["ghost_summary"] == ""
+
+
+class TestExtractStringFromListOrDictPlainString:
+    """Plain non-blank string short-circuit (line 448)."""
+
+    def test_plain_string_returned_stripped(self):
+        assert LlmBackend._extract_string_from_list_or_dict("  hello  ") == "hello"
+
+
+class TestCoerceStringTypeErrorsSetAtPathFailure:
+    """_set_at_path raising after a successful _get_at_path in _coerce_string_type_errors (521-522)."""
+
+    def test_set_at_path_failure_after_successful_get(self, llm_backend):
+        # data["items"] is a tuple (immutable): _get_at_path(data, ("items", 0)) reads
+        # the int element 1 successfully (coercible -> coerced = "1"), but _set_at_path's
+        # `parent[loc[-1]] = value` then raises TypeError because tuples don't support
+        # item assignment, exercising the except at 521-522.
+        data = {"items": (1, 2, 3)}
+        errors = [{"type": "int_type", "loc": ("items", 0)}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is False
+        assert data["items"] == (1, 2, 3)
+
+
+class TestCallLlmForExtractionDenseBranch:
+    """_call_llm_for_extraction dense-contract delegation and fallback-to-direct (730-738)."""
+
+    @patch(
+        "docling_graph.core.extractors.backends.llm_backend.LlmBackend._extract_with_dense_contract"
+    )
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_dense_result_returned_directly(
+        self, mock_get_prompt, mock_dense_extract, mock_llm_client
+    ):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_dense_extract.return_value = {"name": "FromDense"}
+        result = backend._call_llm_for_extraction(
+            markdown="doc",
+            schema_json="{}",
+            schema_dict={},
+            is_partial=False,
+            context="doc",
+            template=MockTemplate,
+        )
+        assert result == {"name": "FromDense"}
+        mock_dense_extract.assert_called_once()
+        mock_get_prompt.assert_not_called()
+
+    @patch(
+        "docling_graph.core.extractors.backends.llm_backend.LlmBackend._extract_with_dense_contract"
+    )
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_dense_empty_result_falls_back_to_direct(
+        self, mock_get_prompt, mock_dense_extract, mock_llm_client
+    ):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_dense_extract.return_value = None
+        mock_get_prompt.return_value = {"system": "s", "user": "u"}
+        mock_llm_client.get_json_response.return_value = {"name": "FromDirectFallback", "age": 1}
+        result = backend._call_llm_for_extraction(
+            markdown="doc",
+            schema_json="{}",
+            schema_dict={},
+            is_partial=False,
+            context="doc",
+            template=MockTemplate,
+        )
+        assert result == {"name": "FromDirectFallback", "age": 1}
+        mock_dense_extract.assert_called_once()
+        mock_get_prompt.assert_called_once()
+
+
+class TestCallLlmForExtractionStructuredOutputFalseReRaises:
+    """When structured_output=False, a ClientError from the primary call re-raises (line 775)."""
+
+    @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
+    def test_client_error_reraises_when_structured_output_disabled(
+        self, mock_get_prompt, mock_llm_client
+    ):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="direct",
+            structured_output=False,
+        )
+        mock_get_prompt.return_value = {"system": "s", "user": "u"}
+        mock_llm_client.get_json_response.side_effect = ClientError("hard failure")
+        # The ClientError propagates out of _call_llm_for_extraction's inner try,
+        # is caught by the outer except Exception, logged, and None is returned.
+        result = backend._call_llm_for_extraction(
+            markdown="doc",
+            schema_json="{}",
+            schema_dict={},
+            is_partial=False,
+            context="doc",
+            template=MockTemplate,
+        )
+        assert result is None
+
+
+class TestCallPromptStructuredOutputFalseReRaises:
+    """_call_prompt: when structured_output=False, ClientError from the primary
+    (non-legacy-only) call re-raises instead of falling back to legacy (line 1119)."""
+
+    def test_client_error_reraises_when_structured_output_disabled(self, mock_llm_client):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="dense",
+            structured_output=False,
+        )
+        mock_llm_client.get_json_response.side_effect = ClientError("hard failure")
+        # structured_output_override is None here (not False), so the "primary" branch
+        # runs; ClientError re-raises because self.structured_output is False, and the
+        # outer except Exception in _call_prompt logs and returns None.
+        out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "ctx")
+        assert out is None
+
+
+class TestCallPromptClientErrorEmitsTrace:
+    """_call_prompt: ClientError in the primary (non-legacy-only) branch, with
+    structured_output=True and trace_data set, emits before falling back to legacy (line 1121)."""
+
+    def test_client_error_emits_trace_then_falls_back_to_legacy(self, mock_llm_client):
+        backend = LlmBackend(
+            llm_client=mock_llm_client,
+            extraction_contract="dense",
+            structured_output=True,
+        )
+        backend.trace_data = MagicMock()
+        mock_llm_client.get_json_response.side_effect = [
+            ClientError("structured failed"),
+            {"ok": True},
+        ]
+        out = backend._call_prompt({"system": "s", "user": "u"}, "{}", "ctx")
+        assert out == {"ok": True}
+        backend.trace_data.emit.assert_called_once()
+        emit_args = backend.trace_data.emit.call_args[0]
+        assert emit_args[0] == "structured_output_fallback_triggered"
+        assert emit_args[2]["context"] == "ctx"
+
+
+class TestCallPromptRetryRaisesException:
+    """_call_prompt: the truncation-retry call itself raising is caught and logged (1243-1251)."""
+
+    def test_retry_call_raises_non_client_error(self, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_llm_client.context_limit = 64000
+        generation = MagicMock()
+        generation.max_tokens = 4000
+        mock_llm_client._generation = generation
+
+        first_error = ClientError("truncated", details={"truncated": True, "max_tokens": 4000})
+        mock_llm_client.get_json_response.side_effect = [first_error, RuntimeError("retry boom")]
+
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+        )
+        assert out is None
+        assert mock_llm_client.get_json_response.call_count == 2
+
+    def test_retry_call_raises_client_error_with_truncated_details_marks_futile(
+        self, mock_llm_client
+    ):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_llm_client.context_limit = 64000
+        generation = MagicMock()
+        generation.max_tokens = 4000
+        mock_llm_client._generation = generation
+
+        first_error = ClientError("truncated", details={"truncated": True, "max_tokens": 4000})
+        retry_error = ClientError("still truncated", details={"truncated": True})
+        mock_llm_client.get_json_response.side_effect = [first_error, retry_error]
+
+        out = backend._call_prompt(
+            {"system": "s", "user": "u"},
+            "{}",
+            "ctx",
+            structured_output_override=False,
+        )
+        assert out is None
+        assert backend._escalation_futile is True

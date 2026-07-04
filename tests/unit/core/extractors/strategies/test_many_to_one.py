@@ -228,6 +228,19 @@ class TestDirectExtraction:
         assert results == []
         assert doc is None
 
+    def test_vlm_no_models_returns_empty_and_none(self, mock_vlm_backend, patch_deps):
+        """VLM extract_from_document returns empty list -> [], None (149-151)."""
+        _, _, _, mock_is_vlm = patch_deps
+        mock_is_vlm.return_value = True
+        mock_vlm_backend.extract_from_document.side_effect = None
+        mock_vlm_backend.extract_from_document.return_value = []
+
+        strategy = ManyToOneStrategy(backend=mock_vlm_backend)
+        results, doc = strategy.extract("empty_doc.pdf", MockTemplate)
+
+        assert results == []
+        assert doc is None
+
     def test_vlm_exception_returns_empty_and_none(self, mock_vlm_backend, patch_deps):
         """VLM extract_from_document raises -> returns [], None and logger.error (148-153)."""
         _, _, _, mock_is_vlm = patch_deps
@@ -273,6 +286,22 @@ class TestDirectExtraction:
 
         assert results == []
         assert doc is mock_doc
+
+
+class TestExtractWithLlm:
+    """Test the _extract_with_llm conversion + delegation wrapper."""
+
+    def test_conversion_exception_returns_empty_and_none(self, mock_llm_backend, patch_deps):
+        """convert_to_docling_doc raising is caught by _extract_with_llm's own try/except (193-198)."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dp.return_value.convert_to_docling_doc.side_effect = RuntimeError("conversion boom")
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        results, doc = strategy.extract("test.pdf", MockTemplate)
+
+        assert results == []
+        assert doc is None
 
 
 class TestExtractFromDocument:
@@ -342,3 +371,462 @@ class TestDenseFallback:
 
         backend.extract_from_markdown.assert_not_called()
         assert models[0].name == "dense"
+
+
+class TestValidation:
+    """Test constructor validation and config branches."""
+
+    def test_dense_without_chunking_raises(self, mock_llm_backend, patch_deps):
+        """Dense contract requires chunking; disabling it must raise (line 67)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        with pytest.raises(ValueError, match="Dense extraction requires use_chunking=True"):
+            ManyToOneStrategy(
+                backend=mock_llm_backend,
+                extraction_contract="dense",
+                use_chunking=False,
+            )
+
+    def test_direct_without_chunking_uses_none_chunker_config(self, mock_llm_backend, patch_deps):
+        """use_chunking=False with direct contract is fine; chunker_config stays None."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        ManyToOneStrategy(
+            backend=mock_llm_backend,
+            extraction_contract="direct",
+            use_chunking=False,
+        )
+
+        _, kwargs = mock_dp.call_args
+        assert kwargs["chunker_config"] is None
+
+
+class TestDirectModeTraceData:
+    """Cover trace_data emission and dense/direct branches in _extract_direct_mode."""
+
+    def test_direct_mode_emits_trace_events_multi_page(self, mock_llm_backend, patch_deps):
+        """Non-empty page_markdowns path emits per-page events + completion (354-371, 434-451)."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_doc_processor = mock_dp.return_value
+        mock_doc_processor.extract_full_markdown.return_value = "full md"
+        mock_doc_processor.extract_page_markdowns.return_value = ["page one", "page two"]
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        strategy.trace_data = MagicMock()
+        mock_llm_backend.last_call_diagnostics = {"tokens": 42}
+
+        document = MagicMock()
+        models, doc = strategy._extract_direct_mode(mock_llm_backend, document, MockTemplate)
+
+        assert doc is document
+        assert len(models) == 1
+
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert emitted_events.count("page_markdown_extracted") == 2
+        assert "docling_conversion_completed" in emitted_events
+        assert "extraction_completed" in emitted_events
+
+    def test_direct_mode_propagates_trace_data_to_backend(self, patch_deps):
+        """When the backend declares a trace_data attribute, it is set to the strategy's (386-387)."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dp.return_value.extract_full_markdown.return_value = "full md"
+        mock_dp.return_value.extract_page_markdowns.return_value = []
+
+        backend = MagicMock()  # no spec -> hasattr(backend, "trace_data") is True
+        backend.__class__.__name__ = "MockLlmBackend"
+        backend.extract_from_markdown.return_value = MockTemplate(name="ok", value=1)
+        backend.last_call_diagnostics = None
+
+        strategy = ManyToOneStrategy(backend=backend)
+        strategy.trace_data = MagicMock()
+
+        strategy._extract_direct_mode(backend, MagicMock(), MockTemplate)
+
+        assert backend.trace_data is strategy.trace_data
+
+    def test_direct_mode_emits_trace_events_no_pages(self, mock_llm_backend, patch_deps):
+        """Empty page_markdowns falls back to a single synthetic page event (357-363)."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_doc_processor = mock_dp.return_value
+        mock_doc_processor.extract_full_markdown.return_value = "full md"
+        mock_doc_processor.extract_page_markdowns.return_value = []
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        strategy.trace_data = MagicMock()
+
+        document = MagicMock()
+        strategy._extract_direct_mode(mock_llm_backend, document, MockTemplate)
+
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert emitted_events.count("page_markdown_extracted") == 1
+        first_page_call = strategy.trace_data.emit.call_args_list[0]
+        assert first_page_call.args[2]["page_number"] == 1
+
+    def test_direct_mode_dense_success_emits_completed_and_skips_direct_call(
+        self, mock_llm_backend, patch_deps
+    ):
+        """Dense contract success path emits extraction_completed and returns early (389-419)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        mock_llm_backend.extract_from_chunk_batches = MagicMock()
+        mock_llm_backend.last_call_diagnostics = {"model": "dense-model"}
+
+        with patch(
+            "docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_document"
+        ) as mock_dense:
+            mock_dense.return_value = (MockTemplate(name="dense", value=9), 0.2)
+
+            strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="dense")
+            strategy.trace_data = MagicMock()
+
+            document = MagicMock()
+            models, doc = strategy._extract_direct_mode(mock_llm_backend, document, MockTemplate)
+
+        assert models[0].name == "dense"
+        assert doc is document
+        mock_llm_backend.extract_from_markdown.assert_not_called()
+
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert emitted_events.count("extraction_completed") == 1
+        completed_call = next(
+            call
+            for call in strategy.trace_data.emit.call_args_list
+            if call.args[0] == "extraction_completed"
+        )
+        assert completed_call.args[2]["source_type"] == "chunk_batch"
+        assert completed_call.args[2]["metadata"] == {"model": "dense-model"}
+
+    def test_direct_mode_dense_none_falls_back_and_emits_both_completed_events(
+        self, mock_llm_backend, patch_deps
+    ):
+        """Dense returns None -> falls through to direct call, emitting two completed events."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        mock_llm_backend.extract_from_chunk_batches = MagicMock()
+
+        with patch(
+            "docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_document"
+        ) as mock_dense:
+            mock_dense.return_value = (None, 0.1)
+
+            strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="dense")
+            strategy.trace_data = MagicMock()
+
+            document = MagicMock()
+            models, _doc = strategy._extract_direct_mode(mock_llm_backend, document, MockTemplate)
+
+        assert len(models) == 1
+        mock_llm_backend.extract_from_markdown.assert_called_once()
+
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert emitted_events.count("extraction_completed") == 2
+
+    def test_direct_mode_exception_emits_extraction_failed(self, mock_llm_backend, patch_deps):
+        """An exception inside the try block emits extraction_failed and returns [], document (461-477)."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dp.return_value.extract_full_markdown.side_effect = RuntimeError("boom")
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        strategy.trace_data = MagicMock()
+
+        document = MagicMock()
+        models, doc = strategy._extract_direct_mode(mock_llm_backend, document, MockTemplate)
+
+        assert models == []
+        assert doc is document
+        strategy.trace_data.emit.assert_called_once_with(
+            "extraction_failed",
+            "extraction",
+            {
+                "extraction_id": 0,
+                "source_type": "chunk",
+                "source_id": 0,
+                "parsed_model": None,
+                "extraction_time": 0.0,
+                "error": "boom",
+                "metadata": {},
+            },
+        )
+
+    def test_direct_mode_exception_without_trace_data_still_returns_empty(
+        self, mock_llm_backend, patch_deps
+    ):
+        """Exception path with trace_data left as None must not attempt to emit."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dp.return_value.extract_full_markdown.side_effect = RuntimeError("boom")
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        assert strategy.trace_data is None
+
+        document = MagicMock()
+        models, doc = strategy._extract_direct_mode(mock_llm_backend, document, MockTemplate)
+
+        assert models == []
+        assert doc is document
+
+
+class TestDirectModeFromTextTraceData:
+    """Cover trace_data emission and dense/direct branches in _extract_direct_mode_from_text."""
+
+    def test_from_text_emits_trace_events_direct_path(self, mock_llm_backend, patch_deps):
+        """Direct (non-dense) contract emits page + conversion + completed events (230-245, 296-313)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.last_call_diagnostics = {"tokens": 7}
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        strategy.trace_data = MagicMock()
+
+        models, doc = strategy._extract_direct_mode_from_text(
+            mock_llm_backend, "some text", MockTemplate
+        )
+
+        assert doc is None
+        assert len(models) == 1
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert "page_markdown_extracted" in emitted_events
+        assert "docling_conversion_completed" in emitted_events
+        assert emitted_events.count("extraction_completed") == 1
+
+    def test_from_text_propagates_trace_data_to_backend(self, patch_deps):
+        """When the backend declares a trace_data attribute, it is set to the strategy's (250-251)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        backend = MagicMock()  # no spec -> hasattr(backend, "trace_data") is True
+        backend.__class__.__name__ = "MockLlmBackend"
+        backend.extract_from_markdown.return_value = MockTemplate(name="ok", value=1)
+        backend.last_call_diagnostics = None
+
+        strategy = ManyToOneStrategy(backend=backend)
+        strategy.trace_data = MagicMock()
+
+        strategy._extract_direct_mode_from_text(backend, "some text", MockTemplate)
+
+        assert backend.trace_data is strategy.trace_data
+
+    def test_from_text_dense_success_emits_completed_and_skips_direct_call(
+        self, mock_llm_backend, patch_deps
+    ):
+        """Dense contract success emits extraction_completed with source_type chunk and returns early."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.extract_from_chunk_batches = MagicMock()
+
+        with patch(
+            "docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_text"
+        ) as mock_dense:
+            mock_dense.return_value = (MockTemplate(name="dense-text", value=3), 0.05)
+
+            strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="dense")
+            strategy.trace_data = MagicMock()
+
+            models, doc = strategy._extract_direct_mode_from_text(
+                mock_llm_backend, "some text", MockTemplate
+            )
+
+        assert doc is None
+        assert models[0].name == "dense-text"
+        mock_llm_backend.extract_from_markdown.assert_not_called()
+
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert emitted_events.count("extraction_completed") == 1
+
+    def test_from_text_dense_success_includes_backend_diagnostics(
+        self, mock_llm_backend, patch_deps
+    ):
+        """Non-empty last_call_diagnostics on the backend is merged into emitted metadata (266)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.extract_from_chunk_batches = MagicMock()
+        mock_llm_backend.last_call_diagnostics = {"tokens": 99}
+
+        with patch(
+            "docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_text"
+        ) as mock_dense:
+            mock_dense.return_value = (MockTemplate(name="dense-text", value=3), 0.05)
+
+            strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="dense")
+            strategy.trace_data = MagicMock()
+
+            strategy._extract_direct_mode_from_text(mock_llm_backend, "some text", MockTemplate)
+
+        completed_call = next(
+            call
+            for call in strategy.trace_data.emit.call_args_list
+            if call.args[0] == "extraction_completed"
+        )
+        assert completed_call.args[2]["metadata"] == {"tokens": 99}
+
+    def test_from_text_dense_none_falls_back_to_direct(self, mock_llm_backend, patch_deps):
+        """Dense returns None -> falls through to backend.extract_from_markdown (283-294)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.extract_from_chunk_batches = MagicMock()
+
+        with patch(
+            "docling_graph.core.extractors.strategies.many_to_one.extract_dense_from_text"
+        ) as mock_dense:
+            mock_dense.return_value = (None, 0.05)
+
+            strategy = ManyToOneStrategy(backend=mock_llm_backend, extraction_contract="dense")
+            strategy.trace_data = MagicMock()
+
+            models, doc = strategy._extract_direct_mode_from_text(
+                mock_llm_backend, "some text", MockTemplate
+            )
+
+        assert doc is None
+        assert len(models) == 1
+        mock_llm_backend.extract_from_markdown.assert_called_once()
+        emitted_events = [call.args[0] for call in strategy.trace_data.emit.call_args_list]
+        assert emitted_events.count("extraction_completed") == 2
+
+    def test_from_text_direct_returns_no_model(self, mock_llm_backend, patch_deps):
+        """Direct call returning None -> [], None (318-320)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.extract_from_markdown.side_effect = None
+        mock_llm_backend.extract_from_markdown.return_value = None
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+
+        models, doc = strategy._extract_direct_mode_from_text(
+            mock_llm_backend, "some text", MockTemplate
+        )
+
+        assert models == []
+        assert doc is None
+
+    def test_from_text_exception_emits_extraction_failed(self, mock_llm_backend, patch_deps):
+        """Exception inside the try block emits extraction_failed and returns [], None (322-338)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.extract_from_markdown.side_effect = RuntimeError("text boom")
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        strategy.trace_data = MagicMock()
+
+        models, doc = strategy._extract_direct_mode_from_text(
+            mock_llm_backend, "some text", MockTemplate
+        )
+
+        assert models == []
+        assert doc is None
+        strategy.trace_data.emit.assert_called_with(
+            "extraction_failed",
+            "extraction",
+            {
+                "extraction_id": 0,
+                "source_type": "chunk",
+                "source_id": 0,
+                "parsed_model": None,
+                "extraction_time": 0.0,
+                "error": "text boom",
+                "metadata": {},
+            },
+        )
+
+    def test_from_text_exception_without_trace_data_still_returns_empty(
+        self, mock_llm_backend, patch_deps
+    ):
+        """Exception path with trace_data left as None must not attempt to emit."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_llm_backend.extract_from_markdown.side_effect = RuntimeError("text boom")
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        assert strategy.trace_data is None
+
+        models, doc = strategy._extract_direct_mode_from_text(
+            mock_llm_backend, "some text", MockTemplate
+        )
+
+        assert models == []
+        assert doc is None
+
+    def test_extract_with_llm_from_text_delegates(self, mock_llm_backend, patch_deps):
+        """Public wrapper _extract_with_llm_from_text delegates to the contract-driven method."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        models, doc = strategy._extract_with_llm_from_text(
+            mock_llm_backend, "hello text", MockTemplate
+        )
+
+        assert doc is None
+        assert len(models) == 1
+
+    def test_extract_with_llm_from_text_exception_returns_empty(self, mock_llm_backend, patch_deps):
+        """A raise inside _extract_direct_mode_from_text bubbling past its own try is still caught
+        by the outer wrapper's except block (211-218)."""
+        _, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        with patch.object(
+            strategy, "_extract_direct_mode_from_text", side_effect=RuntimeError("outer boom")
+        ):
+            models, doc = strategy._extract_with_llm_from_text(
+                mock_llm_backend, "hello text", MockTemplate
+            )
+
+        assert models == []
+        assert doc is None
+
+
+class TestAttachDirectProvenanceEdgeCases:
+    """Cover the early-return and error branches of _attach_direct_provenance."""
+
+    def test_no_chunker_keeps_document_level_fallback(self, mock_llm_backend, patch_deps):
+        """chunker is None -> early return, ledger left untouched (492-493)."""
+        from docling_graph.core.provenance import document_level_ledger
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        original_ledger = document_level_ledger("whole doc text")
+        mock_llm_backend.last_provenance = original_ledger
+        strategy.doc_processor.chunker = None
+
+        strategy._attach_direct_provenance(mock_llm_backend, MagicMock())
+
+        assert mock_llm_backend.last_provenance is original_ledger
+
+    def test_chunking_exception_logs_and_returns(self, mock_llm_backend, patch_deps):
+        """extract_chunks_with_metadata raising is logged and swallowed (494-498)."""
+        from docling_graph.core.provenance import document_level_ledger
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        original_ledger = document_level_ledger("whole doc text")
+        mock_llm_backend.last_provenance = original_ledger
+        strategy.doc_processor.chunker = MagicMock()
+        strategy.doc_processor.extract_chunks_with_metadata = MagicMock(
+            side_effect=RuntimeError("chunk boom")
+        )
+
+        strategy._attach_direct_provenance(mock_llm_backend, MagicMock())
+
+        assert mock_llm_backend.last_provenance is original_ledger
+
+    def test_empty_chunks_keeps_document_level_fallback(self, mock_llm_backend, patch_deps):
+        """Empty chunk list -> early return (499-500)."""
+        from docling_graph.core.provenance import document_level_ledger
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        original_ledger = document_level_ledger("whole doc text")
+        mock_llm_backend.last_provenance = original_ledger
+        strategy.doc_processor.chunker = MagicMock()
+        strategy.doc_processor.extract_chunks_with_metadata = MagicMock(return_value=([], []))
+
+        strategy._attach_direct_provenance(mock_llm_backend, MagicMock())
+
+        assert mock_llm_backend.last_provenance is original_ledger
