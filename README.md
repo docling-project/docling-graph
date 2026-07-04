@@ -28,7 +28,7 @@ Docling-Graph turns documents into validated **Pydantic** objects, then builds a
 
 This transformation enables high-precision use cases in **chemistry, finance, and legal** domains, where AI must capture exact entity connections (compounds and reactions, instruments and dependencies, properties and measurements) **rather than rely on approximate text embeddings**.
 
-This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** routed through **LiteLLM** for local runtimes (vLLM, Ollama) and API providers (Mistral, OpenAI, Gemini, IBM WatsonX), all orchestrated through a flexible, config-driven pipeline.
+This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** routed through **LiteLLM** for local runtimes (vLLM, Ollama) and API providers (Mistral, OpenAI, Gemini, IBM watsonx), all orchestrated through a flexible, config-driven pipeline.
 
 
 
@@ -38,31 +38,27 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 - **🧠 Extraction:** [LLM](docs/fundamentals/pipeline-configuration/backend-selection.md) or [VLM](docs/fundamentals/pipeline-configuration/backend-selection.md) backends, with [chunking](docs/fundamentals/extraction-process/chunking-strategies.md) and [processing modes](docs/fundamentals/pipeline-configuration/processing-modes.md).
 
-- **💎 Graphs:** Pydantic → [NetworkX](docs/fundamentals/graph-management/graph-conversion.md) directed graphs with stable IDs and edge metadata.
-
-- **🔗 Provenance:** Deterministic [data grounding](docs/fundamentals/graph-management/provenance.md) — every node traces back to its exact source chunk and page, with no extra LLM calls.
+- **💎 Graphs:** Pydantic to [NetworkX](docs/fundamentals/graph-management/graph-conversion.md) directed graphs with stable IDs, edge and [provenance](docs/fundamentals/graph-management/provenance.md) metadata.
 
 - **📦 Export:** [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export), and other KG-friendly formats.
 
 - **🔍 Visualization:** [Interactive HTML](docs/fundamentals/graph-management/visualization.md) and Markdown reports.
 
+- **🐛 Trace capture:** [Debug exports](docs/usage/advanced/trace-data-debugging.md) for extraction and fallback diagnostics.
+
 ### Latest Changes
 
-- **🔗 Data grounding:** Deterministic [provenance](docs/fundamentals/graph-management/provenance.md) ledger — every node carries its source chunk, page, and (when found verbatim) exact character span. No extra LLM calls; works with both extraction contracts.
+- **✨ Dense extraction:** Advanced [skeleton-then-flesh](docs/fundamentals/extraction-process/dense-extraction.md) extraction mode for complex documents.
 
-- **🪜 Dense extraction:** Two-phase [skeleton-then-fill](docs/fundamentals/extraction-process/dense-extraction.md) contract — discovers every entity instance first, then fills each with full data from the document.
-
-- **📐 Structured extraction:** LLM output is schema-enforced by default; see [CLI](docs/usage/cli/convert-command.md#structured-output-mode) and [API](docs/usage/api/llm-model-config.md) to disable.
-
-- **✨ LiteLLM:** Single [interface](docs/reference/llm-clients.md) for vLLM, OpenAI, Mistral, WatsonX, and more.
-
-- **🐛 Trace capture:** [Debug exports](docs/usage/advanced/trace-data-debugging.md) for extraction and fallback diagnostics.
+- **📍 Data grounding:** Deterministic [provenance](docs/fundamentals/graph-management/provenance.md) ledger with no extra LLM calls.
 
 ### Coming Soon
 
-* 💾 **Graph Fusion:** Combine and reconcile disparate knowledge graphs into a unified structure.
+* 🦆 **DocLang Support:** Leverage the [DocLang](https://doclang.ai/) input format to unlock advanced document structure parsing.
 
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
+
+* 🔗 **Graph Fusion:** Combine and reconcile disparate knowledge graphs into a unified structure.
 
 * 🧲 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 
@@ -89,10 +85,10 @@ export OPENAI_API_KEY="..."        # OpenAI
 export MISTRAL_API_KEY="..."       # Mistral
 export GEMINI_API_KEY="..."        # Google Gemini
 
-# IBM WatsonX
-export WATSONX_API_KEY="..."       # IBM WatsonX API Key
-export WATSONX_PROJECT_ID="..."    # IBM WatsonX Project ID
-export WATSONX_URL="..."           # IBM WatsonX URL (optional)
+# IBM watsonx
+export WATSONX_API_KEY="..."       # IBM watsonx API Key
+export WATSONX_PROJECT_ID="..."    # IBM watsonx Project ID
+export WATSONX_URL="..."           # IBM watsonx URL (optional)
 ```
 
 ### Basic Usage
