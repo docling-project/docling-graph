@@ -1,6 +1,7 @@
 """Tests for ledger-to-graph binding (spec hook H9) and cleaner provenance union (H10)."""
 
 import networkx as nx
+from pydantic import BaseModel, ConfigDict
 
 from docling_graph.core.converters.graph_converter import GraphConverter
 from docling_graph.core.converters.node_id_registry import NodeIDRegistry
@@ -15,6 +16,17 @@ from docling_graph.core.provenance import (
 from docling_graph.core.provenance.binder import bind_provenance
 from docling_graph.core.utils.graph_cleaner import GraphCleaner
 from tests.fixtures.sample_templates.test_template import SampleCompany, SamplePerson
+
+
+class TwoFieldEntity(BaseModel):
+    """Root entity with a two-field identity, used only to exercise a verbatim
+    match that unions hits across id fields into more chunks than the compact
+    view's per-node anchor cap."""
+
+    field_a: str
+    field_b: str
+
+    model_config = ConfigDict(graph_id_fields=["field_a", "field_b"])
 
 
 def _company_ledger(
@@ -68,7 +80,11 @@ def _company(email: str = "jane@acme.com") -> SampleCompany:
 
 
 def _convert_with_binding(
-    company: SampleCompany, ledger: ProvenanceLedger
+    company: SampleCompany,
+    ledger: ProvenanceLedger,
+    *,
+    include_spans: bool = False,
+    template: type = SampleCompany,
 ) -> tuple[nx.DiGraph, NodeIDRegistry, dict[str, int]]:
     registry = NodeIDRegistry()
     converter = GraphConverter(registry=registry)
@@ -81,7 +97,8 @@ def _convert_with_binding(
                 models=models,
                 ledger=ledger,
                 registry=registry,
-                template=SampleCompany,
+                template=template,
+                include_spans=include_spans,
             )
         )
 
@@ -188,6 +205,70 @@ class TestBindProvenance:
         assert stats["bound_document"] == 2
         assert stats["unresolved"] == 0
 
+    def test_root_grounded_via_distinctive_nonidentity_field(self):
+        # V2: the root is document-scoped by identity, but a distinctive
+        # non-identity attribute (industry) appears verbatim -> the root is
+        # pinned to that exact chunk instead of staying whole-document.
+        ledger = _company_ledger(
+            chunk_text={0: "we operate in the Aerospace-Robotics sector", 1: "team page"}
+        )
+        company = SampleCompany(
+            company_name="Acme",
+            industry="Aerospace-Robotics",
+            founded_year=1999,
+            employees=[SamplePerson(first_name="Jane", last_name="Doe", email="jane@acme.com")],
+        )
+        graph, registry, _ = _convert_with_binding(company, ledger)
+
+        root_view = graph.nodes[registry.get_node_id(company)][PROVENANCE_NODE_ATTR]
+        assert root_view["match"] == "verbatim"
+        assert root_view["chunks"] == [0]
+        assert root_view["pages"] == [1]
+
+    def test_distinctive_field_grounding_includes_spans_in_detailed_mode(self):
+        # V1 + detailed mode: a located non-identity field surfaces char spans.
+        ledger = _company_ledger(
+            chunk_text={0: "led by Jane Zylkowski, principal engineer", 1: "team page"}
+        )
+        company = SampleCompany(
+            company_name="Acme",
+            industry="Robotics",
+            founded_year=1999,
+            employees=[
+                SamplePerson(first_name="Jane", last_name="Zylkowski", email="ghost@nowhere.test")
+            ],
+        )
+        graph, registry, _ = _convert_with_binding(company, ledger, include_spans=True)
+
+        emp_view = graph.nodes[registry.get_node_id(company.employees[0])][PROVENANCE_NODE_ATTR]
+        assert emp_view["match"] == "verbatim"
+        assert emp_view["spans"]
+        assert emp_view["spans"][0]["chunk"] == 0
+
+    def test_verbatim_match_across_two_id_fields_caps_and_omits_chunks(self):
+        # A two-field identity's verbatim hits union across BOTH fields; when the
+        # union exceeds the compact view's per-node anchor cap (8), the excess is
+        # reported via chunks_omitted rather than silently truncated.
+        chunk_text = {i: f"AAACODE appears here (chunk {i})" for i in range(6)}
+        chunk_text.update({6 + i: f"BBBCODE appears here (chunk {6 + i})" for i in range(3)})
+        chunks = {
+            i: ChunkRecord(chunk_id=i, batch_index=0, page_numbers=(i + 1,), text=text)
+            for i, text in chunk_text.items()
+        }
+        ledger = ProvenanceLedger(
+            node_level=True,
+            document=DocumentOrigin(document_id="doc-2f", source="x.pdf"),
+            chunks=chunks,
+        )
+        entity = TwoFieldEntity(field_a="AAACODE", field_b="BBBCODE")
+        graph, registry, stats = _convert_with_binding(entity, ledger, template=TwoFieldEntity)
+
+        view = graph.nodes[registry.get_node_id(entity)][PROVENANCE_NODE_ATTR]
+        assert view["match"] == "verbatim"
+        assert len(view["chunks"]) == 8
+        assert view["chunks_omitted"] == 1
+        assert stats["bound_verbatim"] == 1
+
 
 class TestDirectContractBinding:
     """Direct contract (issue #1): a chunk-index ledger with no per-node entries;
@@ -223,6 +304,28 @@ class TestDirectContractBinding:
         assert "unresolved" not in {
             graph.nodes[n].get(PROVENANCE_NODE_ATTR, {}).get("status") for n in graph.nodes
         }
+        assert stats["bound_verbatim"] >= 1
+
+    def test_distinctive_field_grounds_node_when_id_absent(self):
+        # V1: the employee's identifier (email) is not in the text, but a
+        # distinctive non-identity field (last_name) is -> verbatim grounding
+        # instead of a document-scope fallback.
+        ledger = self._direct_ledger(
+            {0: "intro paragraph", 1: "signed by Zylkowski, chief engineer"}
+        )
+        company = SampleCompany(
+            company_name="Acme",
+            industry="Robotics",
+            founded_year=1999,
+            employees=[
+                SamplePerson(first_name="Jane", last_name="Zylkowski", email="ghost@nowhere.test")
+            ],
+        )
+        graph, registry, stats = _convert_with_binding(company, ledger)
+
+        emp_view = graph.nodes[registry.get_node_id(company.employees[0])][PROVENANCE_NODE_ATTR]
+        assert emp_view["match"] == "verbatim"
+        assert emp_view["chunks"] == [1]
         assert stats["bound_verbatim"] >= 1
 
 

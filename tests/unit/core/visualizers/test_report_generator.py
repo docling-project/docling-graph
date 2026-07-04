@@ -231,4 +231,66 @@ class TestDenseStatsSection:
         text = out.read_text(encoding="utf-8")
         assert "## Dense Extraction Statistics" in text
         assert "**Skeleton nodes discovered**: 12" in text
-        assert "**Skeleton retention (%)**: 100.0" in text
+        assert "**Merge retention (post-fill, %)**: 100.0" in text
+
+    def test_dense_stats_warns_on_failed_batches(self, tmp_path):
+        """A lossy run (chunks dropped) must surface a prominent warning, not hide behind 100%."""
+        import networkx as nx
+
+        from docling_graph.core.visualizers.report_generator import ReportGenerator
+
+        graph = nx.DiGraph()
+        graph.add_node("A", id="A", label="Thing", type="entity", name="a")
+        out = tmp_path / "report.md"
+        ReportGenerator().visualize(
+            graph,
+            out,
+            extraction_contract="dense",
+            dense_stats={
+                "skeleton_nodes": 30,
+                "retention_pct": 100.0,
+                "chunk_coverage_pct": 78.0,
+                "skeleton_batches_failed": 1,
+                "dropped_chunk_ids": [15],
+            },
+        )
+        text = out.read_text(encoding="utf-8")
+        assert "content may be missing" in text
+        assert "15" in text
+        assert "**Source chunk coverage (%)**: 78.0" in text
+
+    def test_dense_stats_empty_dict_falls_back_to_no_statistics_message(self):
+        """A dense_stats dict with no recognized keys renders the fallback line."""
+        text = ReportGenerator._create_dense_stats({"unrecognized_key": 1})
+        assert "*No dense statistics available.*" in text
+
+
+class TestDroppedRelationshipsSection:
+    """Q3: the report surfaces relationships lost to phantom-node removal."""
+
+    def test_dropped_relationships_section_rendered(self, tmp_path):
+        graph = nx.DiGraph()
+        graph.add_node("A", id="A", label="Thing", type="entity", name="a")
+        graph.graph["dropped_relationships"] = [
+            {"source": "A", "label": "KNOWS", "target": "phantom-1"},
+        ]
+        out = tmp_path / "report.md"
+        ReportGenerator().visualize(graph, out)
+
+        text = out.read_text(encoding="utf-8")
+        assert "## Dropped Relationships" in text
+        assert "`A` -[KNOWS]-> `phantom-1`" in text
+
+    def test_dropped_relationships_section_absent_when_none_dropped(self, tmp_path):
+        graph = nx.DiGraph()
+        graph.add_node("A", id="A", label="Thing", type="entity", name="a")
+        out = tmp_path / "report.md"
+        ReportGenerator().visualize(graph, out)
+
+        text = out.read_text(encoding="utf-8")
+        assert "## Dropped Relationships" not in text
+
+    def test_dropped_relationships_list_truncates_beyond_twenty_five(self):
+        dropped = [{"source": f"n{i}", "label": "REL", "target": f"n{i + 1}"} for i in range(30)]
+        text = ReportGenerator._create_dropped_relationships(dropped)
+        assert "and 5 more" in text

@@ -1,13 +1,30 @@
-"""Unit tests for the fuzzy dedupe resolver (aggressive mode)."""
+"""Unit tests for the fuzzy dedupe resolver (aggressive mode) and the
+deterministic containment merge (standard mode)."""
 
+import re
+import unicodedata
 from typing import Any
 
-from docling_graph.core.extractors.contracts.dense.resolvers import resolve_skeleton_nodes
+from docling_graph.core.extractors.contracts.dense.resolvers import (
+    merge_contained_skeleton_nodes,
+    resolve_skeleton_nodes,
+)
 
 
 def _key(node: dict[str, Any]) -> tuple[Any, ...]:
     ids = node.get("ids") or {}
     return (node.get("path"), tuple(sorted((k, str(v).lower()) for k, v in ids.items())))
+
+
+def _canon_key(node: dict[str, Any]) -> tuple[Any, ...]:
+    """Mirror identity_pairs canonicalization (casefold + alphanumeric only)."""
+
+    def canon(value: Any) -> str:
+        text = unicodedata.normalize("NFKD", str(value)).casefold()
+        return re.sub(r"[^a-z0-9]", "", text)
+
+    ids = node.get("ids") or {}
+    return (node.get("path"), tuple(sorted((k, canon(v)) for k, v in ids.items())))
 
 
 def test_ocr_accent_noise_merges_and_parents_remap() -> None:
@@ -62,3 +79,134 @@ def test_different_paths_never_merge() -> None:
     kept, stats = resolve_skeleton_nodes(nodes, _key)
     assert stats["merged_count"] == 0
     assert len(kept) == 2
+
+
+def test_containment_merges_qualifier_variants_keeping_base() -> None:
+    """Q2: a descriptive superset id merges into its canonical base (shorter kept)."""
+    nodes = [
+        {"path": "components[]", "ids": {"material_name": "LiFePO4 (LFP)"}, "parent": None},
+        {
+            "path": "components[]",
+            "ids": {"material_name": "nanoscaled LiFePO4 (LFP)"},
+            "parent": None,
+        },
+        {"path": "components[]", "ids": {"material_name": "PVDF"}, "parent": None},
+        {
+            "path": "components[]",
+            "ids": {"material_name": "Polyvinylidene difluoride (PVDF)"},
+            "parent": None,
+        },
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, _canon_key)
+    assert stats["merged_count"] == 2
+    assert sorted(n["ids"]["material_name"] for n in kept) == ["LiFePO4 (LFP)", "PVDF"]
+
+
+def test_containment_remaps_child_parent_to_base() -> None:
+    nodes = [
+        {"path": "components[]", "ids": {"material_name": "LiFePO4"}, "parent": None},
+        {"path": "components[]", "ids": {"material_name": "nanoscaled LiFePO4"}, "parent": None},
+        {
+            "path": "components[].measurements[]",
+            "ids": {"m": "d50"},
+            "parent": {"path": "components[]", "ids": {"material_name": "nanoscaled LiFePO4"}},
+        },
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, _canon_key)
+    assert stats["merged_count"] == 1
+    child = next(n for n in kept if n["path"] == "components[].measurements[]")
+    assert child["parent"]["ids"] == {"material_name": "LiFePO4"}
+
+
+def test_containment_respects_digit_signature() -> None:
+    """A superset that differs numerically is a different entity, never merged."""
+    nodes = [
+        {"path": "sections[]", "ids": {"title": "Article 5"}, "parent": None},
+        {"path": "sections[]", "ids": {"title": "Article 50"}, "parent": None},
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, _canon_key)
+    assert stats["merged_count"] == 0
+    assert len(kept) == 2
+
+
+def test_containment_skips_ambiguous_multi_base_superset() -> None:
+    """A superset containing two distinct shorter ids is ambiguous -> left alone."""
+    nodes = [
+        {"path": "items[]", "ids": {"name": "alpha"}, "parent": None},
+        {"path": "items[]", "ids": {"name": "beta"}, "parent": None},
+        {"path": "items[]", "ids": {"name": "alphabeta"}, "parent": None},
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, _canon_key)
+    assert stats["merged_count"] == 0
+    assert len(kept) == 3
+
+
+def test_containment_skips_nodes_without_ids() -> None:
+    """A node with no usable ids has empty canonical text and is never a superset."""
+    nodes = [
+        {"path": "items[]", "ids": {}, "parent": None},
+        {"path": "items[]", "ids": {"name": "widget"}, "parent": None},
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, _canon_key)
+    assert stats["merged_count"] == 0
+    assert len(kept) == 2
+
+
+def test_containment_key_fn_with_unkeyable_marker_is_never_a_containment_candidate() -> None:
+    """A positional-fallback key (the orchestrator's "__key" marker for id-less
+    siblings) must never be treated as containment text, even if it happens to
+    look like a substring of another node's id."""
+
+    def key_with_unkeyable(node: dict) -> tuple:
+        ids = node.get("ids") or {}
+        if not ids:
+            return (node.get("path"), (("__key", str(id(node))),))
+        return _canon_key(node)
+
+    nodes = [
+        {"path": "items[]", "ids": {}, "parent": None},
+        {"path": "items[]", "ids": {"name": "widget assembly"}, "parent": None},
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, key_with_unkeyable)
+    assert stats["merged_count"] == 0
+    assert len(kept) == 2
+
+
+def test_containment_key_fn_returning_malformed_key_is_treated_as_unkeyable() -> None:
+    """A key_fn that doesn't return a (path, pairs) tuple never crashes the merge."""
+
+    def bad_key_fn(node: dict) -> str:
+        return "not-a-tuple"
+
+    nodes = [
+        {"path": "items[]", "ids": {"name": "widget"}, "parent": None},
+        {"path": "items[]", "ids": {"name": "widget assembly"}, "parent": None},
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, bad_key_fn)
+    assert stats["merged_count"] == 0
+    assert len(kept) == 2
+
+
+def test_containment_merge_unions_existing_source_bookkeeping() -> None:
+    """Absorbing a superset's provenance bookkeeping into the kept base node."""
+    nodes = [
+        {
+            "path": "components[]",
+            "ids": {"material_name": "LiFePO4"},
+            "parent": None,
+            "_source_batch_indexes": [0],
+            "_source_chunk_ids": [1],
+        },
+        {
+            "path": "components[]",
+            "ids": {"material_name": "nanoscaled LiFePO4"},
+            "parent": None,
+            "_source_batch_indexes": [1],
+            "_source_chunk_ids": [2],
+        },
+    ]
+    kept, stats = merge_contained_skeleton_nodes(nodes, _canon_key)
+    assert stats["merged_count"] == 1
+    base = kept[0]
+    assert base["_source_batch_indexes"] == [0, 1]
+    assert base["_source_chunk_ids"] == [1, 2]

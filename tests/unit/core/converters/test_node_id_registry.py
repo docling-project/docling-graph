@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 from pydantic import BaseModel
 
@@ -9,6 +11,12 @@ class PersonModel(BaseModel):
     age: int
 
     model_config = {"graph_id_fields": ["name"]}
+
+
+class TaggedItemModel(BaseModel):
+    tags: List[str]
+
+    model_config = {"graph_id_fields": ["tags"]}
 
 
 class CompanyModel(BaseModel):
@@ -116,3 +124,55 @@ def test_deterministic_ids(registry):
 
     # Same model should produce same ID across different registries
     assert node_id_1 == node_id_2
+
+
+class BienModel(BaseModel):
+    nom: str
+
+    model_config = {"graph_id_fields": ["nom"]}
+
+
+class ArticleModel(BaseModel):
+    title: str
+
+    model_config = {"graph_id_fields": ["title"]}
+
+
+def test_case_and_diacritic_variants_share_id(registry):
+    """Q1: registry canonicalizes identity, so case/diacritic-only variants merge.
+
+    Regression for the split-identity bug: the registry used to fingerprint raw
+    values, so "électroménager"/"Électroménager" produced two node ids that
+    dense dedup (which canonicalizes) could never reconcile.
+    """
+    lower = BienModel(nom="électroménager")
+    upper = BienModel(nom="Électroménager")
+    assert registry.get_node_id(lower) == registry.get_node_id(upper)
+
+
+def test_digit_bearing_identities_stay_distinct(registry):
+    """Q1 guard: canonicalization keeps digits, so numbered siblings never merge."""
+    a5 = ArticleModel(title="Article 5")
+    a6 = ArticleModel(title="Article 6")
+    assert registry.get_node_id(a5) != registry.get_node_id(a6)
+
+
+def test_list_valued_identity_canonicalizes_each_element(registry):
+    """A list-valued id field is canonicalized element-wise, so case-only
+    variants of the same tag set fingerprint identically."""
+    lower = TaggedItemModel(tags=["Alpha", "beta"])
+    upper = TaggedItemModel(tags=["alpha", "BETA"])
+    assert registry.get_node_id(lower) == registry.get_node_id(upper)
+
+
+def test_list_valued_identity_dedupes_and_ignores_order(registry):
+    """Duplicate and reordered tags fingerprint the same once canonicalized."""
+    a = TaggedItemModel(tags=["x", "y", "x"])
+    b = TaggedItemModel(tags=["y", "x"])
+    assert registry.get_node_id(a) == registry.get_node_id(b)
+
+
+def test_list_valued_identity_differs_by_content(registry):
+    a = TaggedItemModel(tags=["x", "y"])
+    b = TaggedItemModel(tags=["x", "z"])
+    assert registry.get_node_id(a) != registry.get_node_id(b)

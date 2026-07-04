@@ -1,5 +1,6 @@
 """Tests for pipeline stages."""
 
+import json
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
@@ -282,6 +283,74 @@ class TestDoclingExportStage:
 
         # Should return context (may have exported even if export_docling=False)
         assert result.config == config
+
+    def test_writes_chunks_json_when_provenance_present(self, tmp_path):
+        """Chunk records captured in the provenance ledger get dumped to chunks.json."""
+        from docling_graph.core.provenance.models import ChunkRecord, ProvenanceLedger
+        from docling_graph.core.utils.output_manager import OutputDirectoryManager
+
+        config = PipelineConfig(
+            source="test.pdf",
+            template="pydantic.BaseModel",
+            backend="llm",
+            inference="local",
+            output_dir=str(tmp_path),
+        )
+
+        mock_doc = Mock()
+        mock_doc.export_to_markdown.return_value = "# Test Document"
+        mock_doc.export_to_dict.return_value = {"test": "data"}
+
+        output_manager = OutputDirectoryManager(tmp_path, "test.pdf")
+        ledger = ProvenanceLedger(
+            chunks={
+                1: ChunkRecord(chunk_id=1, batch_index=0, text="second chunk"),
+                0: ChunkRecord(chunk_id=0, batch_index=0, text="first chunk"),
+            }
+        )
+        context = PipelineContext(
+            config=config,
+            docling_document=mock_doc,
+            output_manager=output_manager,
+            provenance=ledger,
+        )
+
+        stage = DoclingExportStage()
+        stage.execute(context)
+
+        chunks_path = output_manager.get_docling_dir() / "chunks.json"
+        assert chunks_path.exists()
+        data = json.loads(chunks_path.read_text(encoding="utf-8"))
+        assert [c["chunk_id"] for c in data] == [0, 1]
+        assert data[0]["text"] == "first chunk"
+
+    def test_skips_chunks_json_when_no_provenance(self, tmp_path):
+        """No provenance ledger means no chunks.json (nothing to dump)."""
+        from docling_graph.core.utils.output_manager import OutputDirectoryManager
+
+        config = PipelineConfig(
+            source="test.pdf",
+            template="pydantic.BaseModel",
+            backend="llm",
+            inference="local",
+            output_dir=str(tmp_path),
+        )
+
+        mock_doc = Mock()
+        mock_doc.export_to_markdown.return_value = "# Test Document"
+        mock_doc.export_to_dict.return_value = {"test": "data"}
+
+        output_manager = OutputDirectoryManager(tmp_path, "test.pdf")
+        context = PipelineContext(
+            config=config,
+            docling_document=mock_doc,
+            output_manager=output_manager,
+        )
+
+        stage = DoclingExportStage()
+        stage.execute(context)
+
+        assert not (output_manager.get_docling_dir() / "chunks.json").exists()
 
 
 class TestGraphConversionStage:
