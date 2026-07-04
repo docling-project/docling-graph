@@ -59,7 +59,6 @@ vlm = [
 ]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
 semantic = [
-    "spacy",
     "rapidfuzz",
 ]
 
@@ -185,7 +184,7 @@ combine-as-imports = true
 
 [tool.mypy]
 pretty = true
-python_version = "3.10"
+python_version = "3.12"
 no_implicit_optional = true
 exclude = ["^site/", "^docs/examples/"]
 plugins = "pydantic.mypy"
@@ -212,7 +211,6 @@ module = [
     "tiktoken.*",
     "google.*",
     "rapidfuzz",
-    "spacy",
 ]
 ignore_missing_imports = true
 
