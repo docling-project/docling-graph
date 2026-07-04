@@ -114,7 +114,7 @@ Pass it to the pipeline via `PipelineConfig(llm_client=your_client)` (or `run_pi
 
 ### Example: custom LiteLLM-backed client (custom URL)
 
-Use this pattern to point at an OpenAI-compatible or custom endpoint (e.g. on-prem WatsonX, vLLM, proxy) while reusing docling-graph’s `ResponseHandler` for consistent JSON parsing:
+Use this pattern to point at an OpenAI-compatible or custom endpoint (e.g. on-prem watsonx, vLLM, proxy) while reusing docling-graph’s `ResponseHandler` for consistent JSON parsing:
 
 ```python
 from typing import Any, Dict, List, Mapping
@@ -229,6 +229,6 @@ For OpenAI-compatible endpoints, use a model string like `openai/<model-name>` s
 
 ## See Also
 
-- **[API Keys Setup](../fundamentals/installation/api-keys.md)** - Configure API keys (including optional LM Studio API key and WatsonX)
+- **[API Keys Setup](../fundamentals/installation/api-keys.md)** - Configure API keys (including optional LM Studio API key and watsonx)
 - **[Model Configuration](../fundamentals/pipeline-configuration/model-configuration.md)** - Model setup (vLLM, Ollama, LM Studio, remote providers)
 - **[Remote Inference](../fundamentals/pipeline-configuration/backend-selection.md)** - Backend selection

@@ -321,7 +321,7 @@ export GEMINI_API_KEY="your-api-key"
 - Flash: $0.00025/1K input tokens, $0.00075/1K output tokens
 - Pro: $0.00125/1K input tokens, $0.005/1K output tokens
 
-#### 4. IBM WatsonX
+#### 4. IBM watsonx
 
 **Best for:** Enterprise deployments, IBM ecosystem
 
@@ -342,7 +342,7 @@ export WATSONX_API_KEY="your-api-key"
 export WATSONX_PROJECT_ID="your-project-id"
 ```
 
-**See:** [API Keys Setup](../installation/api-keys.md) for WatsonX configuration details.
+**See:** [API Keys Setup](../installation/api-keys.md) for watsonx configuration details.
 
 ---
 

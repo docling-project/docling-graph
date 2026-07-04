@@ -7,7 +7,7 @@ Remote LLM providers require API keys for authentication. This guide covers:
 - **OpenAI** (GPT-4, GPT-3.5-turbo)
 - **Mistral AI** (Mistral Small, Medium, Large)
 - **Google Gemini** (Gemini Pro, Gemini Flash)
-- **IBM WatsonX** (Granite, Llama, Mixtral)
+- **IBM watsonx** (Granite, Llama, Mixtral)
 
 !!! info "API Keys Not Required"
     API keys are **not required** for:
@@ -31,7 +31,7 @@ export MISTRAL_API_KEY="..."
 # Google Gemini
 export GEMINI_API_KEY="..."
 
-# IBM WatsonX
+# IBM watsonx
 export WATSONX_API_KEY="..."
 export WATSONX_PROJECT_ID="..."
 export WATSONX_URL="https://us-south.ml.cloud.ibm.com"  # Optional
@@ -54,7 +54,7 @@ $env:MISTRAL_API_KEY="..."
 # Google Gemini
 $env:GEMINI_API_KEY="..."
 
-# IBM WatsonX
+# IBM watsonx
 $env:WATSONX_API_KEY="..."
 $env:WATSONX_PROJECT_ID="..."
 $env:WATSONX_URL="https://us-south.ml.cloud.ibm.com"
@@ -243,13 +243,13 @@ uv run docling-graph convert document.pdf \
 | gemini-2.5-flash | 1M | $0.075 / $0.30 | Very fast, cheap |
 | gemini-pro | 32K | $0.50 / $1.50 | Balanced |
 
-### IBM WatsonX
+### IBM watsonx
 
 #### 1. Get Credentials
 
 1. Visit [IBM Cloud](https://cloud.ibm.com/)
 2. Create or log into account
-3. Navigate to [WatsonX](https://www.ibm.com/watsonx)
+3. Navigate to [watsonx](https://www.ibm.com/watsonx)
 4. Create a project
 5. Get API key and project ID from project settings
 
@@ -264,7 +264,7 @@ export WATSONX_URL="https://us-south.ml.cloud.ibm.com"  # Optional, defaults to 
 #### 3. Verify
 
 ```bash
-uv run python -c "import os; print('WatsonX key set:', bool(os.getenv('WATSONX_API_KEY'))); print('WatsonX project set:', bool(os.getenv('WATSONX_PROJECT_ID')))"
+uv run python -c "import os; print('watsonx key set:', bool(os.getenv('WATSONX_API_KEY'))); print('watsonx project set:', bool(os.getenv('WATSONX_PROJECT_ID')))"
 ```
 
 #### 4. Test
@@ -286,8 +286,8 @@ uv run docling-graph convert document.pdf \
 | meta-llama/llama-3-70b-instruct | 8K | High quality |
 | mistralai/mixtral-8x7b-instruct-v01 | 32K | Complex tasks |
 
-!!! tip "WatsonX Configuration"
-    For detailed WatsonX configuration, refer to the [Model Configuration](../pipeline-configuration/model-configuration.md) guide.
+!!! tip "watsonx Configuration"
+    For detailed watsonx configuration, refer to the [Model Configuration](../pipeline-configuration/model-configuration.md) guide.
 
 ## Verification
 
@@ -301,8 +301,8 @@ providers = {
     'OpenAI': 'OPENAI_API_KEY',
     'Mistral': 'MISTRAL_API_KEY',
     'Gemini': 'GEMINI_API_KEY',
-    'WatsonX API': 'WATSONX_API_KEY',
-    'WatsonX Project': 'WATSONX_PROJECT_ID'
+    'watsonx API': 'WATSONX_API_KEY',
+    'watsonx Project': 'WATSONX_PROJECT_ID'
 }
 
 for name, var in providers.items():
@@ -317,8 +317,8 @@ Expected output:
 OpenAI               ✅ Set
 Mistral              ✅ Set
 Gemini               ✅ Set
-WatsonX API          ✅ Set
-WatsonX Project      ✅ Set
+watsonx API          ✅ Set
+watsonx Project      ✅ Set
 ```
 
 ### Test Connection
@@ -393,7 +393,7 @@ For production:
 **Gemini**:
 - Console: https://makersuite.google.com/
 
-**WatsonX**:
+**watsonx**:
 - IBM Cloud Dashboard
 
 ### Set Usage Limits
@@ -514,7 +514,7 @@ Error: Insufficient credits
 | **OpenAI** | High quality, reliable | Expensive | Complex extraction |
 | **Mistral** | Good balance, affordable | Smaller context | General purpose |
 | **Gemini** | Very cheap, fast | Newer, less tested | High volume |
-| **WatsonX** | Enterprise features | Setup complexity | Enterprise use |
+| **watsonx** | Enterprise features | Setup complexity | Enterprise use |
 
 ## Next Steps
 

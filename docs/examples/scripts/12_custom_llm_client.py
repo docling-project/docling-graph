@@ -8,7 +8,7 @@ Description:
 
 Use Cases:
     - Custom inference URL (on-prem, proxy, OpenAI-compatible endpoint)
-    - On-prem WatsonX or other enterprise endpoints
+    - On-prem watsonx or other enterprise endpoints
     - vLLM / Ollama / LM Studio behind a custom base URL
     - Full control over the HTTP client and auth
 

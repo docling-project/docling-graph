@@ -196,7 +196,7 @@ class Invoice(BaseModel):
 
 **Characteristics**:
 - Requires markdown conversion first
-- Local (vLLM, Ollama) or remote (OpenAI, Mistral, Gemini, WatsonX)
+- Local (vLLM, Ollama) or remote (OpenAI, Mistral, Gemini, watsonx)
 - Supports chunking for large documents
 - Better for complex extraction
 

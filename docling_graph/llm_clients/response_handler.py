@@ -46,7 +46,7 @@ class ResponseHandler:
         Args:
             raw_response: Raw string response from LLM
             client_name: Name of the client (for error messages)
-            aggressive_clean: Apply more aggressive cleaning (for WatsonX, etc.)
+            aggressive_clean: Apply more aggressive cleaning (for watsonx, etc.)
             truncated: Whether response was truncated (hit max_tokens limit)
             max_tokens: Max tokens limit (for warning messages)
 
@@ -319,7 +319,7 @@ class ResponseHandler:
         """
         Apply aggressive cleaning for problematic responses.
 
-        This is used for providers like WatsonX that may include
+        This is used for providers like watsonx that may include
         extra text before/after the JSON.
 
         Args:

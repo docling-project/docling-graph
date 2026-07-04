@@ -390,7 +390,7 @@ docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --model "gemini-1.5-pro"
 ```
 
-**WatsonX:**
+**watsonx:**
 ```bash
 docling-graph convert "docs/examples/data/research_paper/rheology.pdf" \
     --template "docs.examples.templates.rheology_research.ScholarlyRheologyPaper" \
