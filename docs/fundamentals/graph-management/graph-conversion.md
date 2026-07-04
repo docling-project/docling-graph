@@ -245,6 +245,18 @@ cleaned_graph = cleaner.clean_graph(graph)
 print(f"Removed {graph.number_of_nodes() - cleaned_graph.number_of_nodes()} phantom nodes")
 ```
 
+### What was lost when a phantom is removed
+
+Removing a phantom node also drops every edge that pointed to or from it — which means a *relationship* was lost, not just a node. `GraphCleaner` records each dropped edge as `{"source", "label", "target"}`:
+
+```python
+cleaner.clean_graph(graph)
+for rel in cleaner.last_dropped_relationships:
+    print(f"{rel['source']} -[{rel['label']}]-> {rel['target']}")
+```
+
+The same list is stashed on the graph itself (`graph.graph["dropped_relationships"]`), which is how the markdown report's **Dropped Relationships** section surfaces it without extra plumbing — useful for spotting which specific relationship a run silently lost, not just how many.
+
 ---
 
 ## Complete Examples

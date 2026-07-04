@@ -373,9 +373,12 @@ class ScholarlyRheologyPaper(BaseModel):
 
     title: str = Field(
         description=(
-            "Full title of the research paper. "
-            "LOOK FOR: Large bold text at the top of the first page. "
+            "Full title of the research paper — the TITLE line only. "
+            "LOOK FOR: Large bold text at the top of the first page, above the "
+            "author list. "
             "EXTRACT: Exactly as written, including subtitles. "
+            "DO NOT use the first sentence of the abstract or any body text — the "
+            "abstract is a separate field. The title is the heading, not prose. "
             "EXAMPLES: 'Rheological Properties of LiFePO4 Cathode Slurries'"
         ),
         examples=["Rheological Properties of LiFePO4 Cathode Slurries"],
@@ -638,9 +641,16 @@ class SlurryComponent(BaseModel):
 
     material_name: str = Field(
         description=(
-            "Material name or formula. "
-            "LOOK FOR: Chemical formulas, trade names. "
-            "EXTRACT: Full name. "
+            "Canonical material name or formula — this is the entity's identity. "
+            "LOOK FOR: Chemical formulas, trade names, abbreviations. "
+            "EXTRACT: The canonical short name/formula (its abbreviation when the "
+            "paper defines one), NOT a descriptive phrase. Descriptive qualifiers "
+            "such as size or morphology ('nanoscaled', 'micron-scaled', "
+            "'spherical') are PROPERTIES, not identity — keep them out of "
+            "material_name so 'nanoscaled LiFePO4 (LFP)' and 'LiFePO4 (LFP)' "
+            "resolve to the SAME component 'LiFePO4'. Likewise prefer the "
+            "defined abbreviation ('PVDF') over the spelled-out name "
+            "('Polyvinylidene difluoride'). "
             "EXAMPLES: 'LiFePO4', 'PVDF', 'Carbon black Super C65'"
         ),
         examples=["LiFePO4", "PVDF", "Carbon black Super C65"],

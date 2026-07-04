@@ -255,6 +255,13 @@ class Exclusion(BaseModel):
     """
     Clause d'exclusion (commune ou spécifique).
     Identity uses short exclusion_id for stable deduplication.
+
+    GRANULARITY: model one coherent exclusion CLAUSE per Exclusion (a full
+    excluded peril with its condition), not one node per generic keyword. Do NOT
+    fragment a single clause into several bare one-word exclusions such as
+    'usure', 'perte' or 'travaux' — those are usually facets of one clause and
+    over-fragment the graph. Choose a meaningful exclusion_id that names the
+    clause, not a lone category word.
     """
 
     model_config = ConfigDict(
@@ -266,6 +273,7 @@ class Exclusion(BaseModel):
         description=(
             "Short stable identifier for this exclusion (deduplication). "
             "Use a normalized code or short label as in document (e.g. 'vol-sans-effraction', 'defaut-entretien'). "
+            "Name the whole clause, not a bare category word ('usure', 'travaux'). "
             "Avoid long free text; keep under ~50 chars."
         ),
         examples=[

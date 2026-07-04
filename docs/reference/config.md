@@ -86,7 +86,7 @@ Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extra
 | `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
 | `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
 | `dense_fill_context` | `"scoped"` or `"full"` | `"scoped"` | Document context per fill call: scoped batches where the node was observed, or the full document. |
-| `dense_dedupe` | `"off"`, `"standard"` or `"aggressive"` | `"standard"` | Skeleton dedupe intensity. `off`: exact canonical-id dedup only. `standard`: adds one id-space LLM reconciliation call that collapses same-entity aliases found at different granularities. `aggressive`: also merges near-identical same-path identifier strings (OCR noise); similarity thresholds are handled internally, and identifiers that differ numerically never merge. |
+| `dense_dedupe` | `"off"`, `"standard"` or `"aggressive"` | `"standard"` | Skeleton dedupe intensity. `off`: exact canonical-id dedup only. `standard`: adds a deterministic containment merge (a same-path id that is a superset of another, digit-signature-guarded) plus one id-space LLM reconciliation call that collapses same-entity aliases found at different granularities. `aggressive`: also merges near-identical same-path identifier strings (OCR noise); similarity thresholds are handled internally, and identifiers that differ numerically never merge. |
 
 Mandatory cleanup — root singleton collapse, barren-branch pruning, and the root-required quality gate — are pipeline invariants and not configurable.
 

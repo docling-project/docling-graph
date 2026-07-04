@@ -202,7 +202,7 @@ def bind_provenance(
 ) -> dict[str, int]
 ```
 
-Walks the validated model tree along the same catalog paths the extraction contract used, resolves each entity's node ID through the **same** `NodeIDRegistry` instance the graph converter used (so binding can never disagree on IDs), and annotates each node with a `compact_view`. Runs the deterministic verbatim locator against each node's *final* identifier values — this is what lets grounding survive the dense fill phase refining a skeleton placeholder into a real value.
+Walks the validated model tree along the same catalog paths the extraction contract used, resolves each entity's node ID through the **same** `NodeIDRegistry` instance the graph converter used (so binding can never disagree on IDs), and annotates each node with a `compact_view`. Runs the deterministic verbatim locator against each node's *final* identifier values — this is what lets grounding survive the dense fill phase refining a skeleton placeholder into a real value. When the identity values don't locate (e.g. a direct-mode synthesized id that never appears verbatim), the binder falls back to the node's other short, distinctive `str` fields — a matched description or name grounds the node exactly instead of falling to a coarser tier. The same fallback applies to the root/`scope:document` entry, so a root with a distinctive attribute (an insurer name, a paper title) is pinned to its chunk instead of staying whole-document by default.
 
 Returns bind stats (`nodes_seen`, `bound_verbatim`, `bound_observed`, `bound_document`, `unresolved`) and also writes them to `ledger.bind_stats`.
 
