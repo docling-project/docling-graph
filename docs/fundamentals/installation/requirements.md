@@ -321,7 +321,7 @@ Legend:
 | OpenAI | ❌ | ✅ | No | Yes |
 | Mistral | ❌ | ✅ | No | Yes |
 | Gemini | ❌ | ✅ | No | Yes |
-| WatsonX | ❌ | ✅ | No | Yes |
+| watsonx | ❌ | ✅ | No | Yes |
 
 ## Verification Checklist
 

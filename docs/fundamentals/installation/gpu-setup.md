@@ -8,7 +8,7 @@ GPU acceleration significantly improves performance for:
 - **Local LLM**: vLLM inference (8-24 GB VRAM)
 
 !!! info "Remote Inference"
-    Remote LLM providers (OpenAI, Mistral, Gemini, WatsonX) do not require a GPU, but using one could still improve Docling conversion performance.
+    Remote LLM providers (OpenAI, Mistral, Gemini, watsonx) do not require a GPU, but using one could still improve Docling conversion performance.
 
 ## Important: Package Conflict Notice
 
