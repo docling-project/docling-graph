@@ -36,21 +36,21 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 - **✍🏻 Input formats:** [Docling](https://docling-project.github.io/docling/usage/supported_formats/)’s supported inputs: PDF, images, markdown, Office, HTML, and more.
 
-- **🧠 Extraction:** [LLM](docs/fundamentals/pipeline-configuration/backend-selection.md) or [VLM](docs/fundamentals/pipeline-configuration/backend-selection.md) backends, with [chunking](docs/fundamentals/extraction-process/chunking-strategies.md) and [processing modes](docs/fundamentals/pipeline-configuration/processing-modes.md).
+- **🧠 Extraction:** [LLM](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/backend-selection/) or [VLM](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/backend-selection/) backends, with [chunking](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/chunking-strategies/) and [processing modes](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/processing-modes/).
 
-- **💎 Graphs:** Pydantic to [NetworkX](docs/fundamentals/graph-management/graph-conversion.md) directed graphs with stable IDs, edge and [provenance](docs/fundamentals/graph-management/provenance.md) metadata.
+- **💎 Graphs:** Pydantic to [NetworkX](https://docling-project.github.io/docling-graph/fundamentals/graph-management/graph-conversion/) directed graphs with stable IDs, edge and [provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/) metadata.
 
-- **📦 Export:** [CSV](docs/fundamentals/graph-management/export-formats.md#csv-export), [Cypher](docs/fundamentals/graph-management/export-formats.md#cypher-export), and other KG-friendly formats.
+- **📦 Export:** [CSV](https://docling-project.github.io/docling-graph/fundamentals/graph-management/export-formats/#csv-export), [Cypher](https://docling-project.github.io/docling-graph/fundamentals/graph-management/export-formats/#cypher-export), and other KG-friendly formats.
 
-- **🔍 Visualization:** [Interactive HTML](docs/fundamentals/graph-management/visualization.md) and Markdown reports.
+- **🔍 Visualization:** [Interactive HTML](https://docling-project.github.io/docling-graph/fundamentals/graph-management/visualization/) and Markdown reports.
 
-- **🐛 Trace capture:** [Debug exports](docs/usage/advanced/trace-data-debugging.md) for extraction and fallback diagnostics.
+- **🐛 Trace capture:** [Debug exports](https://docling-project.github.io/docling-graph/usage/advanced/trace-data-debugging/) for extraction and fallback diagnostics.
 
 ### Latest Changes
 
-- **✨ Dense extraction:** Advanced [skeleton-then-flesh](docs/fundamentals/extraction-process/dense-extraction.md) extraction mode for complex documents.
+- **✨ Dense extraction:** Advanced [skeleton-then-flesh](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/dense-extraction/) extraction mode for complex documents.
 
-- **📍 Data grounding:** Deterministic [provenance](docs/fundamentals/graph-management/provenance.md) ledger with no extra LLM calls.
+- **📍 Data grounding:** Deterministic [provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/) ledger with no extra LLM calls.
 
 ### Coming Soon
 
@@ -76,7 +76,7 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 pip install docling-graph
 ```
 
-This installs the core package with VLM support and LiteLLM for LLM providers. For detailed installation instructions (including optional extras and GPU setup), see [Installation Guide](docs/fundamentals/installation/index.md).
+This installs the core package with VLM support and LiteLLM for LLM providers. For detailed installation instructions (including optional extras and GPU setup), see [Installation Guide](https://docling-project.github.io/docling-graph/fundamentals/installation/).
 
 ### API Key Setup (Remote Inference)
 
@@ -142,9 +142,9 @@ print(f"Extracted {len(models)} model(s)")
 print(f"Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 ```
 
-Every node above also carries a deterministic `__provenance__` attribute by default (`provenance="standard"`), pointing back to the source chunk and page it was extracted from — no extra LLM calls involved. See [Data Grounding & Provenance](docs/fundamentals/graph-management/provenance.md).
+Every node above also carries a deterministic `__provenance__` attribute by default (`provenance="standard"`), pointing back to the source chunk and page it was extracted from — no extra LLM calls involved. See [Data Grounding & Provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/).
 
-For debugging, use `--debug` with the CLI to save intermediate artifacts to disk; see [Trace Data & Debugging](docs/usage/advanced/trace-data-debugging.md). For more examples, see [Examples](docs/usage/examples/index.md).
+For debugging, use `--debug` with the CLI to save intermediate artifacts to disk; see [Trace Data & Debugging](https://docling-project.github.io/docling-graph/usage/advanced/trace-data-debugging/). For more examples, see [Examples](https://docling-project.github.io/docling-graph/usage/examples/).
 
 
 
@@ -176,32 +176,32 @@ class Organization(BaseModel):
 ```
 
 For complete guidance, see:
-- [Schema Definition Guide](docs/fundamentals/schema-definition/index.md)
-- [Template Basics](docs/fundamentals/schema-definition/template-basics.md)
+- [Schema Definition Guide](https://docling-project.github.io/docling-graph/fundamentals/schema-definition/)
+- [Template Basics](https://docling-project.github.io/docling-graph/fundamentals/schema-definition/template-basics/)
 - [Example Templates](docs/examples/README.md)
 
 
 
 ## Documentation
 
-Comprehensive documentation can be found on [Docling Graph's Page](https://ibm.github.io/docling-graph/).
+Comprehensive documentation can be found on [Docling Graph's Page](https://docling-project.github.io/docling-graph/).
 
 ### Documentation Structure
 
 The documentation follows the docling-graph pipeline stages:
 
-1. [Introduction](docs/introduction/index.md) - Overview and core concepts
-2. [Installation](docs/fundamentals/installation/index.md) - Setup and environment configuration
-3. [Schema Definition](docs/fundamentals/schema-definition/index.md) - Creating Pydantic templates
-4. [Pipeline Configuration](docs/fundamentals/pipeline-configuration/index.md) - Configuring the extraction pipeline
-5. [Extraction Process](docs/fundamentals/extraction-process/index.md) - Document conversion and extraction
-6. [Graph Management](docs/fundamentals/graph-management/index.md) - Converting, grounding, exporting, and visualizing graphs
-7. [CLI Reference](docs/usage/cli/index.md) - Command-line interface guide
-8. [Python API](docs/usage/api/index.md) - Programmatic usage
-9. [Examples](docs/usage/examples/index.md) - Working code examples
-10. [Advanced Topics](docs/usage/advanced/index.md) - Performance, testing, error handling
-11. [API Reference](docs/reference/index.md) - Detailed API documentation
-12. [Community](docs/community/index.md) - Contributing and development guide
+1. [Introduction](https://docling-project.github.io/docling-graph/introduction/) - Overview and core concepts
+2. [Installation](https://docling-project.github.io/docling-graph/fundamentals/installation/) - Setup and environment configuration
+3. [Schema Definition](https://docling-project.github.io/docling-graph/fundamentals/schema-definition/) - Creating Pydantic templates
+4. [Pipeline Configuration](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/) - Configuring the extraction pipeline
+5. [Extraction Process](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/) - Document conversion and extraction
+6. [Graph Management](https://docling-project.github.io/docling-graph/fundamentals/graph-management/) - Converting, grounding, exporting, and visualizing graphs
+7. [CLI Reference](https://docling-project.github.io/docling-graph/usage/cli/) - Command-line interface guide
+8. [Python API](https://docling-project.github.io/docling-graph/usage/api/) - Programmatic usage
+9. [Examples](https://docling-project.github.io/docling-graph/usage/examples/) - Working code examples
+10. [Advanced Topics](https://docling-project.github.io/docling-graph/usage/advanced/) - Performance, testing, error handling
+11. [API Reference](https://docling-project.github.io/docling-graph/reference/) - Detailed API documentation
+12. [Community](https://docling-project.github.io/docling-graph/community/) - Contributing and development guide
 
 
 
@@ -210,7 +210,7 @@ The documentation follows the docling-graph pipeline stages:
 We welcome contributions! Please see:
 
 - [Contributing Guidelines](.github/CONTRIBUTING.md) - How to contribute
-- [Development Guide](docs/community/index.md) - Development setup
+- [Development Guide](https://docling-project.github.io/docling-graph/community/) - Development setup
 
 ### Development Setup
 

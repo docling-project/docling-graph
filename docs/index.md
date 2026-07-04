@@ -16,12 +16,13 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Key Features
 
-- **✍🏻 Multi-Format Input**: Ingest PDFs, images, URLs, raw text, Markdown and more.
-- **🧠 Flexible Extraction:** VLM or LLM-based (vLLM, Ollama, Mistral, Gemini, watsonx, etc.)
-- **🔨 Smart Graphs:** Convert Pydantic models to NetworkX graphs with stable node IDs
-- **📦 Multiple Export:** CSV (Neo4j-compatible), Cypher scripts, JSON, Markdown
-- **📊 Rich Visualizations:** Interactive HTML and detailed Markdown reports
-- **⚙️ Type-Safe Configuration:** Pydantic-based validation
+- **✍🏻 Multi-Format Input:** PDF, images, Office, HTML, Markdown, URLs, and more.
+- **🧠 Flexible Extraction:** LLM/VLM backends with configurable pipelines.
+- **⚙️ Type-Safe IR:** Pydantic-based information retrieval.
+- **💎 Knowledge Graphs:** Pydantic to NetworkX conversion with stable IDs.
+- **📍 Provenance:** Deterministic source grounding with no extra LLM calls.
+- **📦 Multiple Exports:** CSV, Cypher, JSON, Markdown, and Neo4j-ready formats.
+- **📊 Visual Reports:** Interactive HTML and Markdown.
 
 ---
 
