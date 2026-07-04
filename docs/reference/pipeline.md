@@ -335,7 +335,8 @@ outputs/
     │
     ├── docling/                      # Docling exports
     │   ├── document.json             # Docling JSON (if enabled)
-    │   └── document.md               # Markdown export (if enabled)
+    │   ├── document.md               # Markdown export (if enabled)
+    │   └── chunks.json               # Chunker output (text, pages, doc_item_refs) — if provenance is on
     │
     ├── docling_graph/                # Docling-graph outputs
     │   ├── graph.json                # Graph JSON
@@ -343,7 +344,8 @@ outputs/
     │   ├── edges.csv                 # Graph edges (if CSV export)
     │   ├── graph.cypher              # Cypher script (if Cypher export)
     │   ├── graph.html                # Interactive visualization
-    │   └── report.md                 # Extraction report
+    │   ├── report.md                 # Extraction report
+    │   └── provenance.json           # Provenance ledger (node-to-chunk grounding) — if provenance is on
     │
     └── debug/                        # Debug output (if debug=True)
         └── trace_data.json           # Compact summary + ordered steps with canonical artifacts

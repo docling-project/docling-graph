@@ -75,7 +75,7 @@ No verbatim match, but the dense skeleton phase saw the node while reading a kno
 
 ### 3. Document scope
 
-The whole document is the best available answer — used for the root node (which the dense fill phase always reads against the full document) and, for the **direct** contract, any node whose identifier can't be located verbatim:
+The whole document is the fallback answer for the root node and, for the **direct** contract, any node whose identifier can't be located verbatim:
 
 ```json
 {
@@ -83,6 +83,8 @@ The whole document is the best available answer — used for the root node (whic
   "scope": "document"
 }
 ```
+
+This is a fallback, not a fixed fate: before settling for document scope, the binder also tries the node's other short, distinctive `str` fields (not just its identity). A root whose id is generic (`document_number`) but whose `assureur`/`title` field is a distinctive phrase found verbatim in the text is pinned to that exact chunk instead — same locator, same guards (below), applied to a wider set of fields. Document scope only survives when nothing on the node is distinctive enough to locate.
 
 ### 4. Unresolved (dense only)
 
@@ -183,6 +185,8 @@ Written next to `graph.json` (i.e. `docling_graph/provenance.json`) whenever `pr
 | `nodes` | One entry per grounded identity, keyed by a canonical `identity_key` (`"{catalog_path}|{field}={canonical_value},..."`). Holds the anchor list, dedup/reconciliation lineage (`merged_from`), and audit flags (`synthetic`, `dropped`). |
 | `bind_stats` | Coverage counters from the last binding pass — how many nodes landed in each resolution tier. |
 
+The same `chunks` records are also written standalone to `docling/chunks.json` (a flat list ordered by `chunk_id`), so you can inspect exactly what the chunker produced without digging through `provenance.json` — handy for comparing a node's `chunks: [10]` reference against the chunk text side by side.
+
 ### Anchor kinds
 
 Each entry in `anchors` carries a `kind`, ordered by evidence strength (strongest first):
@@ -203,6 +207,8 @@ Both contracts use the **same binder and the same deterministic verbatim scan**;
 **Dense** builds a *node-level* ledger (`node_level: true`): the Phase 1 skeleton records which chunk batch a node was observed in, and the fill phase's per-node identifiers are the ones the binder scans for verbatim matches. Because Phase 2 often refines a rough skeleton placeholder into the real value (e.g. skeleton `"SlurryComponent"` → filled `"LiFePO4"`), the ledger entry is **re-keyed to the final filled identifier** before binding, so grounding survives that refinement. A node that is neither verbatim-locatable nor skeleton-observed is `unresolved`.
 
 **Direct** (single-call, whole-document extraction) has no skeleton, so it builds a *chunk index only* (`node_level: false`) — the document is chunked purely to give the binder something to scan (this does not change what gets extracted; the LLM call is unchanged). Every extracted node is verbatim-located the same way; a node whose identifier can't be found falls back to document scope instead of `unresolved`, since a direct call has no per-node signal to fall back to.
+
+Direct-mode entities are frequently given a **synthesized** identifier (e.g. `EXP-LFP-PVDF-5WT-761`) that never appears verbatim in the source, which used to mean an automatic drop to document scope. The locator now also tries the entity's other short, distinctive `str` fields (a `description`, a `name`) when the identity value doesn't locate — the same fallback used for the root (see [Document scope](#3-document-scope) above) — so direct-mode nodes are verbatim-grounded far more often in practice, even though their id is invented.
 
 | | Dense | Direct |
 |---|---|---|

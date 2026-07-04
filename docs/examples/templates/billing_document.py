@@ -228,6 +228,13 @@ class Tax(BaseModel):
     """
     Tax information component (can be line-level or document-level).
     Deduplicated by content.
+
+    IMPORTANT — scope: when this Tax is attached to a single LineItem it
+    describes THAT line's tax only; when attached to InvoiceTotals.taxes it
+    describes a document-level tax bracket. A line's tax_amount is the tax on
+    that line alone and must NOT be set to the invoice's whole-document VAT
+    total. If a line does not state its own tax, omit the line-level Tax rather
+    than copying the document total onto every line.
     """
 
     model_config = ConfigDict(is_entity=False)
@@ -269,8 +276,11 @@ class Tax(BaseModel):
     tax_amount: float | None = Field(
         None,
         description=(
-            "WHAT: Calculated tax amount. "
+            "WHAT: Calculated tax amount for THIS tax's scope only. "
             "EXTRACT: Numeric value only (e.g., 200.00, 100.10). "
+            "SCOPE: On a line item, this is the tax for that single line — do NOT "
+            "copy the invoice's whole-document VAT total here (that belongs in "
+            "InvoiceTotals.tax_total). If the line's own tax is not shown, omit it. "
             "LOOK FOR: 'Tax Amount', 'VAT Amount', 'Tax' column in totals or tax breakdown. "
             "EXAMPLES: 200.00, 100.10. "
         ),
