@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4066,6 +4038,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4853,7 +4853,7 @@
 <td><code>extraction_contract</code></td>
 <td><code>str</code></td>
 <td><code>"direct"</code></td>
-<td>Extraction contract: <code>"direct"</code>, <code>"staged"</code>, or <code>"delta"</code> (see <a href="../../../fundamentals/extraction-process/delta-extraction/">Delta Extraction</a>)</td>
+<td>Extraction contract: <code>"direct"</code> or <code>"dense"</code> (see <a href="../../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a>)</td>
 </tr>
 <tr>
 <td><code>docling_config</code></td>
@@ -4871,13 +4871,13 @@
 <td><code>gleaning_enabled</code></td>
 <td><code>bool</code></td>
 <td><code>True</code></td>
-<td>Run optional second-pass extraction to improve recall (direct and delta only).</td>
+<td>Run one optional second-pass extraction to improve recall (direct contract).</td>
 </tr>
 <tr>
-<td><code>gleaning_max_passes</code></td>
-<td><code>int</code></td>
-<td><code>1</code></td>
-<td>Max gleaning passes when gleaning is enabled.</td>
+<td><code>dense_dedupe</code></td>
+<td><code>str</code></td>
+<td><code>"standard"</code></td>
+<td>Dense skeleton dedupe intensity: <code>"off"</code>, <code>"standard"</code>, or <code>"aggressive"</code>.</td>
 </tr>
 <tr>
 <td><code>dump_to_disk</code></td>

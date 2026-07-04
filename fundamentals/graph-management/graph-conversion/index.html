@@ -18,7 +18,7 @@
         <link rel="prev" href="../">
       
       
-        <link rel="next" href="../graph-analysis/">
+        <link rel="next" href="../provenance/">
       
       
         
@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1721,42 +1693,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2199,6 +2143,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#provenance-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance Binding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#graph-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2276,6 +2231,17 @@
     <span class="md-ellipsis">
       
         Manual Cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-was-lost-when-a-phantom-is-removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What was lost when a phantom is removed
       
     </span>
   </a>
@@ -2411,10 +2377,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#custom-node-ids" class="md-nav__link">
+  <a href="#custom-node-identity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Custom Node IDs
+        Custom Node Identity
       
     </span>
   </a>
@@ -2602,6 +2568,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -4236,6 +4230,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4651,6 +4673,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#provenance-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance Binding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#graph-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4728,6 +4761,17 @@
     <span class="md-ellipsis">
       
         Manual Cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-was-lost-when-a-phantom-is-removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What was lost when a phantom is removed
       
     </span>
   </a>
@@ -4863,10 +4907,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#custom-node-ids" class="md-nav__link">
+  <a href="#custom-node-identity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Custom Node IDs
+        Custom Node Identity
       
     </span>
   </a>
@@ -5073,12 +5117,14 @@
 <h1 id="graph-conversion">Graph Conversion<a class="headerlink" href="#graph-conversion" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Graph conversion</strong> transforms Pydantic models into NetworkX directed graphs, creating nodes for entities and edges for relationships. This is the foundation of knowledge graph creation.</p>
-<p><strong>In this guide:</strong>
-- Conversion process
-- Node and edge creation
-- Node ID registry
-- Graph validation
-- Automatic cleanup</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Conversion process</li>
+<li>Node and edge creation</li>
+<li>Node ID registry</li>
+<li>Graph validation</li>
+<li>Automatic cleanup</li>
+</ul>
 <hr />
 <h2 id="conversion-process">Conversion Process<a class="headerlink" href="#conversion-process" title="Permanent link">&para;</a></h2>
 <h3 id="high-level-flow">High-Level Flow<a class="headerlink" href="#high-level-flow" title="Permanent link">&para;</a></h3>
@@ -5123,7 +5169,7 @@ flowchart LR
 <hr />
 <h2 id="graphconverter">GraphConverter<a class="headerlink" href="#graphconverter" title="Permanent link">&para;</a></h2>
 <h3 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Create converter</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">()</span>
@@ -5134,7 +5180,7 @@ flowchart LR
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created graph with </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2"> nodes and </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2"> edges&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="with-configuration">With Configuration<a class="headerlink" href="#with-configuration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Don&#39;t create bidirectional edges</span>
@@ -5169,9 +5215,11 @@ flowchart LR
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;entity&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">&quot;__class__&quot;</span><span class="p">:</span> <span class="s2">&quot;Organization&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Acme Corp&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="kc">None</span>  <span class="c1"># Reference to nested entity</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Reference to nested entity</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="s2">&quot;__provenance__&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;document_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="s2">&quot;verbatim&quot;</span><span class="p">,</span> <span class="s2">&quot;chunks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]},</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
 </code></pre></div>
+<p><code>__provenance__</code> is added by the <a href="../provenance/">data-grounding binder</a> when <code>provenance</code> is not <code>"off"</code> (the default). Being a dunder attribute, it can never collide with a template field. See <a href="../provenance/">Data Grounding &amp; Provenance</a>.</p>
 <hr />
 <h2 id="edge-creation">Edge Creation<a class="headerlink" href="#edge-creation" title="Permanent link">&para;</a></h2>
 <h3 id="automatic-edge-generation">Automatic Edge Generation<a class="headerlink" href="#automatic-edge-generation" title="Permanent link">&para;</a></h3>
@@ -5215,22 +5263,22 @@ flowchart LR
 <a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">assert</span> <span class="n">id1</span> <span class="o">==</span> <span class="n">id2</span>  <span class="c1"># True</span>
 </code></pre></div>
 <h3 id="id-generation">ID Generation<a class="headerlink" href="#id-generation" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_node_id</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate deterministic node ID.&quot;&quot;&quot;</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">class_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="c1"># Use stable fields for identity</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">stable_fields</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;__class__&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="p">}</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="c1"># Create content hash</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stable_fields</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>    <span class="n">hash_suffix</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">blake2b</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">8</span><span class="p">]</span>
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">hash_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+<p>The registry's <code>get_node_id()</code> derives an ID from a content fingerprint — a <code>blake2b</code> hash of the model's identity fields, truncated to 16 hex characters — and formats it as <code>"{ClassName}_{fingerprint}"</code>:</p>
+<ul>
+<li><strong>Entities</strong> (have <code>graph_id_fields</code> in <code>model_config</code>): the fingerprint is computed from those fields only, so two instances with the same identity field values always get the same ID regardless of other differing fields.</li>
+<li><strong>Components</strong> (<code>is_entity=False</code>, no <code>graph_id_fields</code>): the fingerprint is computed from <em>all</em> non-empty scalar fields, so identical components are deduplicated by content.</li>
+</ul>
+<p>This logic is internal to <code>NodeIDRegistry</code> — to change how a model's identity is derived, set <code>graph_id_fields</code> on that model's <code>model_config</code> rather than subclassing the registry (see <a href="../../../introduction/key-concepts/#node-id-generation">Key Concepts: Node ID Generation</a>).</p>
+<hr />
+<h2 id="provenance-binding">Provenance Binding<a class="headerlink" href="#provenance-binding" title="Permanent link">&para;</a></h2>
+<p><code>pydantic_list_to_graph()</code> accepts an optional <code>provenance_binder</code> — a callable that annotates each node with a <code>__provenance__</code> attribute after edges are created but <strong>before</strong> automatic cleanup, so that when cleanup merges duplicate nodes, their provenance views are unioned rather than one being lost.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">pydantic_list_to_graph</span><span class="p">(</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">model_instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">provenance_binder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">,</span> <span class="n">GraphMetadata</span><span class="p">]:</span>
 </code></pre></div>
+<p>The pipeline builds this closure automatically (using the <strong>same</strong> <code>NodeIDRegistry</code> instance the converter uses, so binding can never disagree on node IDs) whenever <code>provenance</code> is not <code>"off"</code>; <code>GraphConverter</code> itself has no dependency on the provenance module. See <a href="../provenance/">Data Grounding &amp; Provenance</a> for what the binder does and the resulting node attribute shape.</p>
 <hr />
 <h2 id="graph-validation">Graph Validation<a class="headerlink" href="#graph-validation" title="Permanent link">&para;</a></h2>
 <h3 id="automatic-validation">Automatic Validation<a class="headerlink" href="#automatic-validation" title="Permanent link">&para;</a></h3>
@@ -5278,211 +5326,221 @@ flowchart LR
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cleaned_graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="s2"> phantom nodes&quot;</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="what-was-lost-when-a-phantom-is-removed">What was lost when a phantom is removed<a class="headerlink" href="#what-was-lost-when-a-phantom-is-removed" title="Permanent link">&para;</a></h3>
+<p>Removing a phantom node also drops every edge that pointed to or from it — which means a <em>relationship</em> was lost, not just a node. <code>GraphCleaner</code> records each dropped edge as <code>{"source", "label", "target"}</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">cleaner</span><span class="o">.</span><span class="n">clean_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">last_dropped_relationships</span><span class="p">:</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> -[</span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">]-&gt; </span><span class="si">{</span><span class="n">rel</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The same list is stashed on the graph itself (<code>graph.graph["dropped_relationships"]</code>), which is how the markdown report's <strong>Dropped Relationships</strong> section surfaces it without extra plumbing — useful for spotting which specific relationship a run silently lost, not just how many.</p>
 <hr />
 <h2 id="complete-examples">Complete Examples<a class="headerlink" href="#complete-examples" title="Permanent link">&para;</a></h2>
 <h3 id="basic-conversion">📍 Basic Conversion<a class="headerlink" href="#basic-conversion" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">my_templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">BillingDocument</span><span class="p">,</span> <span class="n">Organization</span><span class="p">,</span> <span class="n">LineItem</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Create sample models</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    <span class="n">BillingDocument</span><span class="p">(</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>        <span class="n">document_no</span><span class="o">=</span><span class="s2">&quot;INV-001&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>        <span class="n">issued_by</span><span class="o">=</span><span class="n">Organization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Acme Corp&quot;</span><span class="p">),</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>        <span class="n">line_items</span><span class="o">=</span><span class="p">[</span>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>            <span class="n">LineItem</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Product A&quot;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>            <span class="n">LineItem</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Product B&quot;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
-<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>        <span class="p">],</span>
-<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>        <span class="n">total</span><span class="o">=</span><span class="mi">300</span>
-<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>    <span class="p">)</span>
-<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="p">]</span>
-<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>
-<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="c1"># Convert to graph</span>
-<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">()</span>
-<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
-<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>
-<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node types: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">my_templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">BillingDocument</span><span class="p">,</span> <span class="n">Organization</span><span class="p">,</span> <span class="n">LineItem</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Create sample models</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">models</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">BillingDocument</span><span class="p">(</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="n">document_no</span><span class="o">=</span><span class="s2">&quot;INV-001&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>        <span class="n">issued_by</span><span class="o">=</span><span class="n">Organization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Acme Corp&quot;</span><span class="p">),</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="n">line_items</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>            <span class="n">LineItem</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Product A&quot;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>            <span class="n">LineItem</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Product B&quot;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="p">],</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>        <span class="n">total</span><span class="o">=</span><span class="mi">300</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>    <span class="p">)</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="p">]</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="c1"># Convert to graph</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">()</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node types: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="with-reverse-edges">📍 With Reverse Edges<a class="headerlink" href="#with-reverse-edges" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="c1"># Create bidirectional edges</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># Original edge: BillingDocument -&gt; Organization (ISSUED_BY)</span>
-<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="c1"># Reverse edge: Organization -&gt; Invoice (reverse_ISSUED_BY)</span>
-<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>
-<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total edges (with reverse): </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># Create bidirectional edges</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># Original edge: BillingDocument -&gt; Organization (ISSUED_BY)</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="c1"># Reverse edge: Organization -&gt; Invoice (reverse_ISSUED_BY)</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total edges (with reverse): </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="shared-registry-for-batches">📍 Shared Registry for Batches<a class="headerlink" href="#shared-registry-for-batches" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span><span class="p">,</span> <span class="n">NodeIDRegistry</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># Create shared registry</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">registry</span> <span class="o">=</span> <span class="n">NodeIDRegistry</span><span class="p">()</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># Convert first batch</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="n">converter1</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="n">graph1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">converter1</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">batch1_models</span><span class="p">)</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="c1"># Convert second batch (same registry)</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="n">converter2</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="n">graph2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">converter2</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">batch2_models</span><span class="p">)</span>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="c1"># Same entities get same IDs across batches</span>
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registry has </span><span class="si">{</span><span class="n">registry</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()[</span><span class="s1">&#39;total_entities&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> unique entities&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters.node_id_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeIDRegistry</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Create shared registry</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="n">registry</span> <span class="o">=</span> <span class="n">NodeIDRegistry</span><span class="p">()</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Convert first batch</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">converter1</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="n">graph1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">converter1</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">batch1_models</span><span class="p">)</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="c1"># Convert second batch (same registry)</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="n">converter2</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="n">graph2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">converter2</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">batch2_models</span><span class="p">)</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="c1"># Same entities get same IDs across batches</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registry has </span><span class="si">{</span><span class="n">registry</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()[</span><span class="s1">&#39;total_entities&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> unique entities&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="custom-configuration">📍 Custom Configuration<a class="headerlink" href="#custom-configuration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span><span class="p">,</span> <span class="n">GraphConfig</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># Create custom config</span>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">GraphConfig</span><span class="p">(</span>
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="n">validate_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="n">node_id_prefix</span><span class="o">=</span><span class="s2">&quot;doc_&quot;</span>
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="p">)</span>
-<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
-<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<p><code>add_reverse_edges</code> and <code>validate_graph</code> are set directly on <code>GraphConverter</code> — they are read from these constructor arguments, not from the <code>config</code> object's matching-named fields:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validate_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+</code></pre></div>
+<p><code>GraphConfig</code> itself mainly carries fixed internal constants (<code>NODE_ID_HASH_LENGTH</code>, <code>MAX_STRING_LENGTH</code>, <code>TRUNCATE_SUFFIX</code>); pass a custom instance only if you need to override those:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphConverter</span><span class="p">,</span> <span class="n">GraphConfig</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">GraphConfig</span><span class="p">(),</span> <span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="graph-metadata">Graph Metadata<a class="headerlink" href="#graph-metadata" title="Permanent link">&para;</a></h2>
 <h3 id="metadata-structure">Metadata Structure<a class="headerlink" href="#metadata-structure" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nd">@dataclass</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">GraphMetadata</span><span class="p">:</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">node_count</span><span class="p">:</span> <span class="nb">int</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">edge_count</span><span class="p">:</span> <span class="nb">int</span>
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">node_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="n">edge_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">avg_degree</span><span class="p">:</span> <span class="nb">float</span>
-<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>    <span class="n">density</span><span class="p">:</span> <span class="nb">float</span>
-<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>    <span class="n">source_model_count</span><span class="p">:</span> <span class="nb">int</span>
+<p><code>GraphMetadata</code> is a frozen Pydantic model (<code>docling_graph.core.converters.models</code>), not a plain dataclass:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GraphMetadata</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">node_count</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">edge_count</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="n">node_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="n">edge_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># defaults to now(), UTC</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="n">source_models</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">average_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 <h3 id="using-metadata">Using Metadata<a class="headerlink" href="#using-metadata" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Graph Statistics:&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Density: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">density</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Avg degree: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">avg_degree</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
-<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Node Types:&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">for</span> <span class="n">node_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">node_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">node_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
-<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Edge Types:&quot;</span><span class="p">)</span>
-<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="k">for</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">edge_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">edge_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Graph Statistics:&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Source models: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">source_models</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">average_degree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Avg degree: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">average_degree</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Node Types:&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="k">for</span> <span class="n">node_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">node_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">node_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Edge Types:&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="k">for</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">edge_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">edge_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="advanced-features">Advanced Features<a class="headerlink" href="#advanced-features" title="Permanent link">&para;</a></h2>
 <h3 id="reverse-edges">Reverse Edges<a class="headerlink" href="#reverse-edges" title="Permanent link">&para;</a></h3>
 <p>Create bidirectional relationships:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># For each edge A -&gt; B, creates B -&gt; A</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="c1"># Useful for graph traversal in both directions</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">add_reverse_edges</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="c1"># For each edge A -&gt; B, creates B -&gt; A</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="c1"># Useful for graph traversal in both directions</span>
 </code></pre></div>
-<h3 id="custom-node-ids">Custom Node IDs<a class="headerlink" href="#custom-node-ids" title="Permanent link">&para;</a></h3>
-<p>Provide custom node ID logic:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeIDRegistry</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">CustomRegistry</span><span class="p">(</span><span class="n">NodeIDRegistry</span><span class="p">):</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">generate_node_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>        <span class="c1"># Custom ID generation</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;custom_</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="nb">hash</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="n">registry</span> <span class="o">=</span> <span class="n">CustomRegistry</span><span class="p">()</span>
-<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
+<h3 id="custom-node-identity">Custom Node Identity<a class="headerlink" href="#custom-node-identity" title="Permanent link">&para;</a></h3>
+<p><code>NodeIDRegistry</code> has no public subclass hook for ID generation — identity is controlled entirely by <code>graph_id_fields</code> on the model's <code>model_config</code> (see <a href="#id-generation">ID Generation</a> above), not by overriding registry internals:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">Invoice</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;graph_id_fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;invoice_number&quot;</span><span class="p">]}</span>  <span class="c1"># drives the ID fingerprint</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">invoice_number</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span>
 </code></pre></div>
+<p>To share ID assignment across separate <code>GraphConverter</code> calls (e.g. batch runs), pass the <strong>same</strong> <code>NodeIDRegistry</code> instance — see <a href="#shared-registry-for-batches">Shared Registry for Batches</a> above.</p>
 <hr />
 <h2 id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permanent link">&para;</a></h2>
 <h3 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Process large model lists efficiently</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="c1"># Convert in single call (efficient)</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">all_models</span><span class="p">)</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="c1"># Don&#39;t convert one by one (inefficient)</span>
-<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="c1"># for model in models:</span>
-<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="c1">#     graph, _ = converter.pydantic_list_to_graph([model])</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Process large model lists efficiently</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="c1"># Convert in single call (efficient)</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">all_models</span><span class="p">)</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="c1"># Don&#39;t convert one by one (inefficient)</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="c1"># for model in models:</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="c1">#     graph, _ = converter.pydantic_list_to_graph([model])</span>
 </code></pre></div>
 <h3 id="memory-management">Memory Management<a class="headerlink" href="#memory-management" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># For very large graphs</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Remove unnecessary nodes</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">validate_graph</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># Skip validation for speed</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="p">)</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
-<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>
-<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="c1"># Clear registry after conversion</span>
-<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="n">converter</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># For very large graphs</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Remove unnecessary nodes</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">validate_graph</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># Skip validation for speed</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="p">)</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="c1"># NodeIDRegistry has no in-place reset; start a new one (and a new</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="c1"># GraphConverter) for the next, unrelated document instead of reusing it.</span>
 </code></pre></div>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="empty-graph">🐛 Empty Graph<a class="headerlink" href="#empty-graph" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Check if models have entities</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;model_config&#39;</span><span class="p">):</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>        <span class="n">is_entity</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_entity&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: is_entity=</span><span class="si">{</span><span class="n">is_entity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Check if models have entities</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;model_config&#39;</span><span class="p">):</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>        <span class="n">is_entity</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_entity&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: is_entity=</span><span class="si">{</span><span class="n">is_entity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <h3 id="missing-edges">🐛 Missing Edges<a class="headerlink" href="#missing-edges" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Ensure relationships are defined</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">BillingDocument</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">issued_by</span><span class="p">:</span> <span class="n">Organization</span>  <span class="c1"># Must be typed as entity</span>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="c1"># Not: issued_by: dict  # Won&#39;t create edge</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Ensure relationships are defined</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">BillingDocument</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    <span class="n">issued_by</span><span class="p">:</span> <span class="n">Organization</span>  <span class="c1"># Must be typed as entity</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="c1"># Not: issued_by: dict  # Won&#39;t create edge</span>
 </code></pre></div></p>
 <h3 id="duplicate-nodes">🐛 Duplicate Nodes<a class="headerlink" href="#duplicate-nodes" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Enable auto cleanup</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Enable auto cleanup</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
 </code></pre></div></p>
 <h3 id="validation-fails">🐛 Validation Fails<a class="headerlink" href="#validation-fails" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Check graph structure</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="c1"># Inspect nodes</span>
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="k">for</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">))[:</span><span class="mi">5</span><span class="p">]:</span>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node: </span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s2">, Data: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Check graph structure</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="c1"># Inspect nodes</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="k">for</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">))[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node: </span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s2">, Data: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="use-shared-registry-for-batches">👍 Use Shared Registry for Batches<a class="headerlink" href="#use-shared-registry-for-batches" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># ✅ Good - Consistent IDs across batches</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">registry</span> <span class="o">=</span> <span class="n">NodeIDRegistry</span><span class="p">()</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    <span class="n">graph</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># ✅ Good - Consistent IDs across batches</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">registry</span> <span class="o">=</span> <span class="n">NodeIDRegistry</span><span class="p">()</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="n">graph</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="enable-auto-cleanup">👍 Enable Auto Cleanup<a class="headerlink" href="#enable-auto-cleanup" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># ✅ Good - Clean graphs</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># ✅ Good - Clean graphs</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">auto_cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="validate-in-development">👍 Validate in Development<a class="headerlink" href="#validate-in-development" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># ✅ Good - Catch issues early</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">validate_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># ✅ Good - Catch issues early</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">validate_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="disable-validation-in-production">👍 Disable Validation in Production<a class="headerlink" href="#disable-validation-in-production" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># ✅ Good - Faster in production</span>
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">validate_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># ✅ Good - Faster in production</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">(</span><span class="n">validate_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand graph conversion:</p>
 <ol>
+<li><strong><a href="../provenance/">Data Grounding &amp; Provenance →</a></strong> - Trace nodes back to source chunks and pages</li>
 <li><strong><a href="../export-formats/">Export Formats →</a></strong> - Export graphs to CSV, Cypher, JSON</li>
 <li><strong><a href="../visualization/">Visualization →</a></strong> - Visualize your graphs</li>
 <li><strong><a href="../neo4j-integration/">Neo4j Integration →</a></strong> - Import into Neo4j</li>

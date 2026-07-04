@@ -12,10 +12,10 @@
         <meta name="author" content="IBM Research">
       
       
-        <link rel="canonical" href="https://ibm.github.io/docling-graph/fundamentals/extraction-process/staged-extraction/">
+        <link rel="canonical" href="https://ibm.github.io/docling-graph/fundamentals/extraction-process/dense-extraction/">
       
       
-        <link rel="prev" href="../delta-extraction/">
+        <link rel="prev" href="../extraction-backends/">
       
       
         <link rel="next" href="../model-merging/">
@@ -29,7 +29,7 @@
     
     
       
-        <title>Staged Extraction - Docling Graph Documentation</title>
+        <title>Dense Extraction - Docling Graph Documentation</title>
       
     
     
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Staged Extraction
+              Dense Extraction
             
           </span>
         </div>
@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1718,34 +1690,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../delta-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -1763,7 +1707,7 @@
   <span class="md-ellipsis">
     
   
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1781,7 +1725,7 @@
   <span class="md-ellipsis">
     
   
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1824,25 +1768,42 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#schema-requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Schema requirements
+        Schema Requirements
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Schema requirements">
+    <nav class="md-nav" aria-label="Schema Requirements">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#staged-friendly-template-guidelines" class="md-nav__link">
+  <a href="#schema-tips-for-dense" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Staged-friendly template guidelines
+        Schema tips for dense
       
     </span>
   </a>
@@ -1867,10 +1828,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#preset-and-overrides" class="md-nav__link">
+  <a href="#provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Preset and overrides
+        Provenance
       
     </span>
   </a>
@@ -1878,21 +1839,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#id-pass" class="md-nav__link">
+  <a href="#performance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ID pass
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quality-gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quality gate
+        Performance
       
     </span>
   </a>
@@ -1944,10 +1894,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#trace-and-debugging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Steps
+        Trace and debugging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related
       
     </span>
   </a>
@@ -2127,6 +2088,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3769,6 +3758,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -3986,25 +4003,42 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#schema-requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Schema requirements
+        Schema Requirements
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Schema requirements">
+    <nav class="md-nav" aria-label="Schema Requirements">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#staged-friendly-template-guidelines" class="md-nav__link">
+  <a href="#schema-tips-for-dense" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Staged-friendly template guidelines
+        Schema tips for dense
       
     </span>
   </a>
@@ -4029,10 +4063,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#preset-and-overrides" class="md-nav__link">
+  <a href="#provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Preset and overrides
+        Provenance
       
     </span>
   </a>
@@ -4040,21 +4074,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#id-pass" class="md-nav__link">
+  <a href="#performance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ID pass
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quality-gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quality gate
+        Performance
       
     </span>
   </a>
@@ -4106,10 +4129,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#trace-and-debugging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Steps
+        Trace and debugging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related
       
     </span>
   </a>
@@ -4136,72 +4170,133 @@
   
 
 
-<h1 id="staged-extraction-experimental">Staged Extraction - EXPERIMENTAL<a class="headerlink" href="#staged-extraction-experimental" title="Permanent link">&para;</a></h1>
+<h1 id="dense-extraction">Dense Extraction<a class="headerlink" href="#dense-extraction" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p><strong>Staged extraction</strong> is a multi-pass extraction mode for the LLM backend when using <strong>many-to-one</strong> processing. It is useful for complex nested templates and for models that benefit from smaller, focused tasks.</p>
-<p>Set <code>extraction_contract="staged"</code> in your config or use <code>--extraction-contract staged</code> on the CLI. Staged currently uses <strong>legacy prompt-schema mode</strong> only (no API-level structured output) to avoid provider-specific failures; the global <code>structured_output</code> setting does not apply to staged.</p>
-<div class="admonition warning">
-<p class="admonition-title">Experimental feature - Not production-ready</p>
-<p><strong>Staged extraction</strong> is still in an <strong>experimental</strong> phase.</p>
-<p>Expect ongoing quality improvements, but also be aware that <strong>clean breaks</strong> may happen and <strong>backward compatibility is not guaranteed</strong> yet.</p>
-</div>
+<p><strong>Dense extraction</strong> is an LLM extraction contract for <strong>many-to-one</strong> processing that combines granular document structure with rich per-node data via a <strong>two-phase "Skeleton-then-Fill"</strong> flow. It is fully autonomous and designed for chunked, structure-aware extraction.</p>
+<p>Set <code>extraction_contract="dense"</code> in your config or use <code>--extraction-contract dense</code> on the CLI. Chunking must be enabled (<code>use_chunking=True</code>, which is the default for many-to-one).</p>
+<p><strong>Structured output:</strong> Dense currently uses <strong>legacy prompt-schema mode only</strong> (no API-level structured output). This avoids provider-specific failures, empty/null JSON on skeleton batches, and repeated structured-output failures on fill. The global <code>structured_output</code> setting does not apply to dense.</p>
 <p><strong>When to use:</strong></p>
 <ul>
-<li>Nested Pydantic templates with lists and sub-objects (e.g. offers with included guarantees)</li>
-<li>You want stable identity-first extraction (IDs from the document, then fill)</li>
-<li>Direct single-pass extraction struggles with consistency</li>
+<li>You want both <strong>fine-grained structure</strong> (many distinct entities, e.g. every figure/experiment/curve) and <strong>dense attribute data</strong> (protocols, derived quantities, model fits) in one run.</li>
+<li>You need chunk-aware many-to-one extraction that first discovers entity instances and then fills them with complete per-node data.</li>
 </ul>
-<p><strong>When to use direct (default):</strong></p>
+<p><strong>When to use direct or dense:</strong></p>
 <ul>
-<li>Flat or simple templates</li>
-<li>You prefer a single extraction pass and programmatic merge</li>
+<li><strong>Direct</strong>: Flat or simple templates; single-pass extraction.</li>
+<li><strong>Dense</strong>: Complex or long documents where you need strong structure discovery plus rich per-entity data.</li>
 </ul>
+<blockquote>
+<p><strong>Large documents:</strong> a direct extraction returns the whole result in one LLM response, so a document much larger than the model's output budget will truncate no matter how the prompt is tuned. When this is detected on a direct run, the backend prints a one-time hint suggesting <code>extraction_contract="dense"</code>, which splits the work across many calls.</p>
+</blockquote>
 <hr />
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>Staged extraction runs three conceptual phases:</p>
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>%%{init: {'theme': 'redux-dark', 'look': 'default', 'layout': 'elk'}}%%
+flowchart TD
+    %% 1. Define Classes
+    classDef input fill:#E3F2FD,stroke:#90CAF9,color:#0D47A1
+    classDef config fill:#FFF8E1,stroke:#FFECB3,color:#5D4037
+    classDef output fill:#E8F5E9,stroke:#A5D6A7,color:#1B5E20
+    classDef decision fill:#FFE0B2,stroke:#FFB74D,color:#E65100
+    classDef data fill:#EDE7F6,stroke:#B39DDB,color:#4527A0
+    classDef operator fill:#F3E5F5,stroke:#CE93D8,color:#6A1B9A
+    classDef process fill:#ECEFF1,stroke:#B0BEC5,color:#263238
+
+    %% 2. Define Nodes
+    A@{ shape: terminal, label: "Chunked Document" }
+
+    B@{ shape: tag-proc, label: "Phase 1: Skeleton" }
+    C@{ shape: procs, label: "Identify Entities\n(Handle Contract)" }
+    D@{ shape: lin-proc, label: "Merge Batches + Dedupe" }
+    E@{ shape: db, label: "Skeleton Graph" }
+
+    F{"Root instance&lt;br/&gt;found?"}
+
+    G@{ shape: procs, label: "Fallback: Direct&lt;br/&gt;Extraction" }
+
+    H@{ shape: tag-proc, label: "Phase 2: Fill" }
+    I@{ shape: procs, label: "Fill Node Batches\n(Scoped Context, Bottom-Up)" }
+    J@{ shape: lin-proc, label: "Merge via Rescue Ladder" }
+    K@{ shape: tag-proc, label: "Prune Barren Branches" }
+
+    L@{ shape: doc, label: "Structured Result" }
+
+    %% 3. Define Connections
+    A --&gt; B
+    B --&gt; C
+    C --&gt; D
+    D --&gt; E
+    E --&gt; F
+
+    F -- No --&gt; G
+    G --&gt; L
+
+    F -- Yes --&gt; H
+    H --&gt; I
+    I --&gt; J
+    J --&gt; K
+    K --&gt; L
+
+    %% 4. Apply Classes
+    class A input
+    class B,H,K operator
+    class C,D,G,I,J process
+    class E data
+    class F decision
+    class L output</code></pre>
 <ol>
 <li>
-<p><strong>Catalog</strong> — Built from your Pydantic template. Derives all extractable node types and paths (e.g. root, <code>offres[]</code>, <code>offres[].garanties_incluses[]</code>) and their <code>graph_id_fields</code> and parent rules.</p>
+<p><strong>Phase 1 (Skeleton)</strong> — Chunks are packed into token-bounded batches. For each batch, the LLM is asked to <strong>identify every distinct entity</strong> per catalog path using a compact <strong>handle contract</strong>: each node is</p>
+<ul>
+<li>
+<p><strong>Truncation resilience (split before escalate)</strong> — If a skeleton batch is too entity-dense to fit one response within the model's output budget (common on small local models with a low output cap), the model's output is truncated and nodes are lost. A multi-chunk batch is <strong>split in half and each half retried first</strong> (recursively, down to single chunks) — splitting attacks the actual cause (too much content per call), while escalating the output budget first would just spend tokens chasing a repetition loop. Only once a batch is down to a <strong>single chunk that still can't be split further</strong> is one retry with a larger output budget attempted, bounded by the model's true context window (probed automatically from LiteLLM metadata or the local server's <code>/models</code> endpoint, e.g. vLLM's <code>max_model_len</code> — never configured by the user); if that also truncates, escalation is disabled for the rest of the run. If a single chunk is still unrecoverable after that, it is retried once more with a <strong>minimal root-and-direct-children projection</strong> (a much smaller output ask) so a degraded but chunk-grounded node survives where possible. Only if that also fails is the chunk's content recorded as dropped — surfaced as <code>skeleton_batches_failed</code> / <code>dropped_chunk_ids</code> in the run stats (see below), never silently lost. This is fully domain-agnostic and needs no per-model tuning; it is the primary safeguard that keeps large or deeply nested documents from silently losing entities or failing the quality gate.</p>
 </li>
 <li>
-<p><strong>ID pass</strong> — The LLM discovers <strong>node instances</strong> per path with only the identifiers (from <code>graph_id_fields</code>) and parent linkage. Output is a <strong>skeleton</strong>: path, ids, parent. No full content yet. By default only paths that have identity fields are sent (reducing prompt size and truncation). ID pass can be auto-sharded when the catalog is large (root and top-level paths first); shards run in parallel when <code>parallel_workers</code> &gt; 1.</p>
+<p><strong>Small-model robustness</strong> — Skeleton responses are validated <strong>per node</strong>: malformed entries (e.g. echoed schema fragments from very small models) are skipped and counted, while valid nodes in the same batch are kept. Model-emitted paths that drop the <code>[]</code> list markers are canonicalized against the catalog instead of being discarded. The root (path <code>""</code>) is a singleton by definition, so paraphrased root identifiers across batches are collapsed into a single root node.</p>
 </li>
 <li>
-<p><strong>Fill pass</strong> — For each path, the LLM fills full schema content for the skeleton instances. Paths are processed in <strong>bottom-up</strong> order (leaf paths first). Fill calls can run in parallel. Each path gets a <strong>projected</strong> schema (no nested child paths in the same call), so root and children stay consistent. Results are merged into the root model by parent linkage.</p>
+<p><strong>Skeleton dedupe (<code>dense_dedupe</code>)</strong> — After batch merge, duplicate skeleton nodes are collapsed.</p>
+<ul>
+<li><code>off</code>: exact canonical-id dedup only (case/diacritic-insensitive; see <a href="../../schema-definition/best-practices/#identity-and-resolution-primitives">identity rules</a>).</li>
+<li><code>standard</code> (default): adds two passes on top of exact dedup — a deterministic <strong>containment merge</strong> (a same-path id that is a superset of another, e.g. <code>"nanoscaled LiFePO4 (LFP)"</code> containing <code>"LiFePO4 (LFP)"</code>, collapses into the shorter/base id, guarded by matching digit signatures and a unique-base requirement) and one cheap id-space LLM call (no document content) that reviews the per-path instance lists and proposes alias groups—instances that refer to the same real-world entity at different granularities (e.g. a generic <code>"LFP slurry batch"</code> alongside the specific <code>"LFP_20vol_5wtPVDF_4wtCB"</code>). Aliases are merged into the most specific instance. The reconciliation prompt explicitly forbids merging instances that differ by any parameter, quantity, condition, date, or index, and invalid responses are ignored, so both passes can only merge, never lose nodes.</li>
+<li><code>aggressive</code>: also fuzzy-merges near-identical same-path identifier strings (OCR noise such as dropped accents or spacing), on top of the containment merge. The similarity threshold is internal, and identifiers that differ in any digit run never merge.</li>
+</ul>
+</li>
+</ul>
 </li>
 <li>
-<p><strong>Quality gate</strong> — After merge, a quick check runs (e.g. root instance present, minimum instances). If it fails, the pipeline can <strong>fall back to direct extraction</strong> so you still get a result; the trace will indicate why (e.g. <code>fallback_reason: "quality_gate_failed"</code>).</p>
+<p><strong>Quality gate</strong> — After Phase 1, the pipeline requires a non-empty skeleton with at least one root instance. This is an invariant, not an option. If the gate fails, <code>dense</code> returns <code>None</code> and the strategy falls back to a direct single-call extraction of the full document. A sparse-but-valid dense result is always kept (there is no sparsity veto on dense output; dense relies on this gate instead).</p>
+</li>
+<li>
+<p><strong>Phase 2 (Fill)</strong> — The skeleton is converted to per-path <strong>descriptors</strong> (path, ids, parent). Paths are processed in <strong>bottom-up</strong> order. For each path, descriptors are batched (up to <code>dense_fill_nodes_cap</code> per call). The LLM receives a <strong>scoped document context</strong> (by default, the skeleton batches where the instances were observed plus the document head; the root instance always gets the full document — set <code>dense_fill_context="full"</code> to always send everything) and the complete list of instance identifiers; it returns one filled object per instance, in order, according to the projected schema for that path. Short responses are padded so skeleton instances are never silently dropped, and identity values already captured by the skeleton are restored whenever the fill response omits them or returns something unusable (null, empty string, nested object). Filled objects are merged into a template-shaped root by attaching each object to its parent via descriptor linkage. Because LLMs drift on parent identifiers, the merge applies a <strong>rescue ladder</strong> per instance: exact id match → unique parent instance → unique fuzzy (canonical containment) id match → id-only placeholder parent materialized up the chain. Instances whose parent ids are entirely empty are rescued into a shared id-less bucket parent rather than dropped. After merge, branch nodes with no filled children and no scalar data (barren branches) are pruned — an invariant, not an option. Recoveries and drops are counted, logged, and written to <code>dense_merge_stats.json</code> in debug mode.</p>
+</li>
+<li>
+<p><strong>Output</strong> — A single template-shaped dict (validated to your Pydantic model as with other contracts).y</p>
 </li>
 </ol>
-<p><strong>List paths and many-to-many</strong> — For paths that are lists under another list (e.g. <code>offres[].garanties_incluses[]</code>), the same child entity can belong to multiple parents. The pipeline keeps <strong>one descriptor per (parent, child) pair</strong> in the ID pass and merge, and fills each <strong>unique child once</strong> in the fill pass, then reuses that filled object for every parent. That preserves many-to-many relationships in the graph (e.g. one guarantee linked to several offers) without duplicate fill calls.</p>
-<p><img alt="Staged Extraction" src="../../../assets/screenshots/staged_extraction.png" /></p>
 <hr />
-<h2 id="schema-requirements">Schema requirements<a class="headerlink" href="#schema-requirements" title="Permanent link">&para;</a></h2>
-<p>Staged extraction succeeds when the <strong>ID pass</strong> can discover node instances (root and nested entities) and the <strong>quality gate</strong> passes. Your Pydantic template should be designed with that in mind:</p>
+<h2 id="schema-requirements">Schema Requirements<a class="headerlink" href="#schema-requirements" title="Permanent link">&para;</a></h2>
+<p>Dense builds its <strong>own catalog</strong> from your Pydantic template:</p>
 <ul>
-<li><strong>Root model</strong> must have <code>graph_id_fields</code> so at least one root instance can be discovered.</li>
-<li><strong>Entities</strong> that should appear in the ID pass must have <code>graph_id_fields</code>; use required, short, extractable fields and add schema examples.</li>
-<li><strong>Components</strong> (<code>is_entity=False</code>) are not identity paths by default; use <code>edge()</code> with <code>edge_label</code> when they must appear in the catalog.</li>
-<li>Keep <strong>nesting depth</strong> and catalog size reasonable to avoid truncation and excessive sharding.</li>
+<li><strong>Paths</strong> — Root <code>""</code>, then nested paths like <code>studies[]</code>, <code>studies[].experiments[]</code>. Phase 1 and Phase 2 use only these paths.</li>
+<li><strong>Identity</strong> — Entities with <code>graph_id_fields</code> get stable keys for skeleton dedup and parent linkage.</li>
+<li><strong>Projected fill schema</strong> — For Phase 2, the schema for each path is the model schema for that path <strong>minus</strong> nested child-path fields (so the LLM fills one node type at a time).</li>
 </ul>
-<p>For a domain-agnostic checklist, identity best practices, and troubleshooting (e.g. mapping <code>missing_root_instance</code> or <code>insufficient_id_instances</code> to schema fixes), see <a href="../../schema-definition/staged-extraction-schema/">Schema design for staged extraction</a>.</p>
-<h3 id="staged-friendly-template-guidelines">Staged-friendly template guidelines<a class="headerlink" href="#staged-friendly-template-guidelines" title="Permanent link">&para;</a></h3>
-<p>Templates with <strong>many nested entities</strong> (e.g. <code>list[Exclusion]</code> with <code>Exclusion</code> containing <code>list[Bien]</code>) produce a large catalog and more ID-pass shards. That can lead to slower runs, more truncation, and retries. To keep the ID pass fast and reliable:</p>
+<p>Best practices for identity and linkage from the schema-definition guides apply to dense as well.</p>
+<h3 id="schema-tips-for-dense">Schema tips for dense<a class="headerlink" href="#schema-tips-for-dense" title="Permanent link">&para;</a></h3>
+<p>When your documents have <strong>series of values</strong> (e.g. one batch with solid loading φ = 0.10 … 0.29) or <strong>conditional values</strong> (e.g. different pre-shear rates for different concentrations), define <strong>SeriesDefinition</strong> and <strong>ConditionalValue</strong> in your template (or reuse the pattern from the <a href="../../../examples/templates/rheology_research.py">rheology template</a>):</p>
 <ul>
-<li>Prefer <strong><code>list[str]</code></strong> (or other shallow types) for high-cardinality nested concepts when you only need labels or short values (e.g. exclusion titles, bien names). The catalog does not create node paths for <code>list[str]</code>, so you get fewer paths and smaller ID responses.</li>
-<li>Reserve <strong>nested Pydantic entities</strong> (<code>list[SomeModel]</code>) for when you need full structure and identity in the graph (e.g. deduplication by id, edges to other entities).</li>
+<li><strong>Series-aware:</strong> Add <code>SeriesDefinition | None</code> to entities that can represent a series (Batch, Sample, Condition). The fill phase can then populate <code>variable_name</code> and <code>variable_values</code> (or <code>range_min</code>/<code>range_max</code>) so one node holds the full variation instead of forcing the skeleton to emit many nodes. See <a href="../../schema-definition/advanced-patterns/#series-and-conditional-values">Advanced patterns: Series and conditional values</a>.</li>
+<li><strong>Conditional logic:</strong> Replace scalar fields that can vary by context (e.g. <code>pre_shear_rate: float</code>) with <code>List[ConditionalValue]</code> so the fill phase can return multiple <code>{value, unit, condition}</code> entries when the document gives different values under different conditions.</li>
 </ul>
-<p>Example: the MRH insurance template has a full variant (<a href="../../../examples/templates/cgv_mrh.py"><code>docs/examples/templates/cgv_mrh.py</code></a>) with <code>Garantie.exclusions_specifiques: list[Exclusion]</code> and <code>Exclusion.biens_exclus: list[Bien]</code>, which yields many catalog paths. The staged-optimized variant (<a href="../../../examples/templates/cgv_mrh_staged.py"><code>docs/examples/templates/cgv_mrh_staged.py</code></a>) uses <code>exclusions_specifiques: list[str]</code> and <code>biens_couverts: list[str]</code> on <code>Garantie</code>/<code>Option</code>, reducing catalog size and ID pass time while still filling the root structure. Use the staged variant when you want faster extraction and do not need full entity nodes for every exclusion or bien.</p>
+<p>The <strong>Phase 1 (skeleton) prompt</strong> instructs the LLM to extract both <strong>localized</strong> entities (per-identifier instances such as specific figures or tables) and <strong>global/singleton</strong> entities (shared configs, protocols, methodologies) so that root-level or shared nodes are not dropped when they lack a figure- or table-style label. It also includes a granularity heuristic: container nodes (e.g. Dataset with child Curves) should be split into separate instances when child identifiers differ (e.g. Figure 2a vs Figure 7c) or when data comes from distinct sources (different Figures/Tables). No schema change is required for this; the prompt is generic.</p>
 <hr />
 <h2 id="configuration-and-options">Configuration and options<a class="headerlink" href="#configuration-and-options" title="Permanent link">&para;</a></h2>
-<p>All options can be set in Python via <code>PipelineConfig</code> or a config dict passed to <code>run_pipeline()</code>. CLI flags (when available) override config-file defaults.</p>
-<h3 id="preset-and-overrides">Preset and overrides<a class="headerlink" href="#preset-and-overrides" title="Permanent link">&para;</a></h3>
-<p>The <strong>preset</strong> (<code>standard</code> or <code>advanced</code>) sets default values for retries, workers, fill cap, and ID shard size. Overrides apply when provided.</p>
+<p>All options can be set in Python via <code>PipelineConfig</code> or a config dict; each has a 1:1 CLI flag (e.g. <code>--dense-dedupe</code>, <code>--dense-fill-context</code>).</p>
 <table>
 <thead>
 <tr>
-<th>Python (<code>PipelineConfig</code> / config dict)</th>
-<th>CLI flag</th>
+<th>Python (config dict)</th>
 <th>Default</th>
 <th>Description</th>
 </tr>
@@ -4209,124 +4304,55 @@
 <tbody>
 <tr>
 <td><code>extraction_contract</code></td>
-<td><code>--extraction-contract</code></td>
 <td><code>"direct"</code></td>
-<td>Set to <code>"staged"</code> to enable staged extraction.</td>
+<td>Set to <code>"dense"</code> to enable dense extraction.</td>
 </tr>
 <tr>
-<td><code>staged_tuning_preset</code></td>
-<td><code>--staged-tuning</code></td>
+<td><code>use_chunking</code></td>
+<td><code>True</code></td>
+<td>Must be enabled for dense.</td>
+</tr>
+<tr>
+<td><code>dense_skeleton_batch_tokens</code></td>
+<td><code>1024</code></td>
+<td>Max tokens per skeleton batch (Phase 1). Capped at 4096. Recommended 1024–2048 for long documents so multiple batches (and parallel workers) are used.</td>
+</tr>
+<tr>
+<td><code>chunk_max_tokens</code></td>
+<td>e.g. <code>512</code></td>
+<td>Max tokens per chunk. <strong>Required for batching:</strong> if the document is one giant chunk, you get one batch regardless of <code>dense_skeleton_batch_tokens</code>. Use 512–1024 per chunk so long documents split into many chunks, then into multiple skeleton batches.</td>
+</tr>
+<tr>
+<td><code>dense_fill_nodes_cap</code></td>
+<td><code>5</code></td>
+<td>Max node instances per LLM call in the fill pass (Phase 2).</td>
+</tr>
+<tr>
+<td><code>dense_fill_context</code></td>
+<td><code>"scoped"</code></td>
+<td>Document context per fill call: <code>"scoped"</code> sends only the skeleton batches where the node was observed (plus the document head); <code>"full"</code> always sends the whole document. Scoped keeps Phase 2 cost proportional to the entities being filled.</td>
+</tr>
+<tr>
+<td><code>dense_dedupe</code></td>
 <td><code>"standard"</code></td>
-<td>Preset: <code>"standard"</code> or <code>"advanced"</code> (advanced = larger ID shards, larger fill batches).</td>
-</tr>
-<tr>
-<td><code>staged_pass_retries</code></td>
-<td><code>--staged-retries</code></td>
-<td>preset (<code>standard</code>: 2)</td>
-<td>Retries per staged pass when the LLM returns invalid JSON.</td>
+<td>Skeleton dedupe intensity: <code>off</code> (exact dedup only), <code>standard</code> (adds the id-space reconciliation LLM call), <code>aggressive</code> (also fuzzy-merges OCR-noise id variants; internal thresholds, numeric differences never merge).</td>
 </tr>
 <tr>
 <td><code>parallel_workers</code></td>
-<td><code>--parallel-workers</code></td>
-<td>preset (<code>standard</code>: 1)</td>
-<td>Parallel workers for the fill pass and for the ID pass shards; also used for delta.</td>
-</tr>
-<tr>
-<td><code>staged_nodes_fill_cap</code></td>
-<td><code>--staged-nodes-fill-cap</code></td>
-<td>preset (<code>standard</code>: 5)</td>
-<td>Max node instances per LLM call in the fill pass.</td>
-</tr>
-<tr>
-<td><code>staged_id_shard_size</code></td>
-<td><code>--staged-id-shard-size</code></td>
-<td>preset (<code>standard</code>: 0)</td>
-<td>Paths per ID-pass call; <code>0</code> = no sharding or auto-shard when catalog is large.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="id-pass">ID pass<a class="headerlink" href="#id-pass" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Python (config dict)</th>
-<th>CLI flag</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>staged_id_identity_only</code></td>
-<td><em>(config only)</em></td>
-<td><code>True</code></td>
-<td>Use only paths with identity fields in the ID pass (smaller prompts).</td>
-</tr>
-<tr>
-<td><code>staged_id_compact_prompt</code></td>
-<td><em>(config only)</em></td>
-<td><code>True</code></td>
-<td>Use compact ID prompt and omit full schema in user message.</td>
-</tr>
-<tr>
-<td><code>staged_id_auto_shard_threshold</code></td>
-<td><em>(config only)</em></td>
-<td><code>10</code></td>
-<td>If catalog paths exceed this and shard size is 0, auto-enable sharding.</td>
-</tr>
-<tr>
-<td><code>staged_id_shard_min_size</code></td>
-<td><em>(config only)</em></td>
-<td><code>2</code></td>
-<td>Minimum paths per shard when auto-sharding.</td>
-</tr>
-<tr>
-<td><code>staged_id_max_tokens</code></td>
-<td><code>--staged-id-max-tokens</code></td>
-<td><code>16384</code></td>
-<td>Max tokens for ID pass responses; avoids truncation on large catalogs. Set to <code>None</code> to use client default.</td>
-</tr>
-<tr>
-<td><code>staged_fill_max_tokens</code></td>
-<td><code>--staged-fill-max-tokens</code></td>
-<td><code>None</code></td>
-<td>Max tokens for fill pass responses; <code>None</code> = client default.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="quality-gate">Quality gate<a class="headerlink" href="#quality-gate" title="Permanent link">&para;</a></h3>
-<p>When the <strong>quality gate</strong> fails (e.g. no root instance, too few instances), the pipeline returns <strong>direct extraction</strong> instead of the staged result. Check the trace for <code>quality_gate</code> and <code>fallback_reason</code>.</p>
-<table>
-<thead>
-<tr>
-<th>Python (config dict)</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>staged_quality_require_root</code></td>
-<td><code>True</code></td>
-<td>Require at least one root instance; if not met, gate fails.</td>
-</tr>
-<tr>
-<td><code>staged_quality_min_instances</code></td>
 <td><code>1</code></td>
-<td>Minimum total skeleton instances for gate.</td>
-</tr>
-<tr>
-<td><code>staged_quality_max_parent_lookup_miss</code></td>
-<td><code>0</code></td>
-<td>Max allowed parent lookup misses before gate fails.</td>
+<td>When &gt; 1, Phase 1 skeleton batches and Phase 2 fill batches run in parallel to reduce wall-clock time.</td>
 </tr>
 </tbody>
 </table>
-<p>Quality gate options are not CLI flags; set them in a config file or config dict.</p>
+<p>Mandatory cleanup steps are <strong>invariants</strong> with no config surface: root singleton collapse, the root-required quality gate, barren-branch pruning, identity restoration from skeleton ids, and root-id semantic validation always run. The last clears a root identifier whose field name promises a number (e.g. <code>document_number</code>) but which holds multi-word, digit-free prose — a sparse-document mis-capture where the model grabbed a brand or title for lack of a real number — so Phase 2 can leave it empty instead of locking in the wrong value.</p>
+<p>Every dense run writes its health counters to <code>metadata.json</code> (<code>results.dense</code>) and the markdown report (<strong>Dense Extraction Statistics</strong>): skeleton nodes discovered, effective parallel worker count, Phase 1/2 wall-clock, truncated responses, batch splits, reconciled aliases, recovered/dropped parent links, and <strong>merge retention %</strong> (the fraction of skeleton nodes that survived the fill→graph merge). Two additional counters make source coverage — not just merge health — visible: <code>skeleton_batches_failed</code> and <code>dropped_chunk_ids</code> count chunks that produced <strong>no</strong> skeleton node even after the truncation-recovery ladder above, and <code>chunk_coverage_pct</code> is the fraction of chunks that contributed at least one node. Merge retention can read 100% even when whole chunks were lost upstream of the merge step, so the report renders a prominent warning whenever <code>skeleton_batches_failed &gt; 0</code> rather than letting a lossy run hide behind a clean-looking retention figure. Regressions in these failure modes are therefore visible per run without debugging. With <code>debug=True</code>, artifacts such as <code>dense_skeleton_graph.json</code>, <code>dense_merge_stats.json</code> and <code>dense_run_stats.json</code> are written to the debug directory.</p>
+<h3 id="provenance">Provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h3>
+<p>Dense is the contract with the richest <a href="../../graph-management/provenance/">grounding</a>: the skeleton phase's per-batch bookkeeping lets every extracted node be traced back to the chunk(s) it was observed in, and — when its final identifier appears verbatim in the document — to an exact chunk and page. This is fully deterministic and adds no prompt or output-schema overhead; it is controlled by the separate top-level <code>provenance</code> setting (default <code>"standard"</code>), not by any dense-specific option. See <a href="../../graph-management/provenance/">Data Grounding &amp; Provenance</a> for the full picture, including how it differs for the direct contract.</p>
+<h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
+<p>For long documents, set <code>parallel_workers</code> (e.g. 2–4) so that Phase 1 skeleton batches and Phase 2 fill batches run in parallel; this reduces wall-clock time without changing merge logic or output quality. <strong>Chunk and batch sizing:</strong> Both <strong>chunk size</strong> (<code>chunk_max_tokens</code>, e.g. 512–1024 per chunk) and <strong>dense_skeleton_batch_tokens</strong> (e.g. 1024–2048) determine how many Phase 1 batches you get. If the chunker produces one huge chunk for the whole document, you will get only one batch no matter how low you set <code>dense_skeleton_batch_tokens</code>. Set a strict max tokens per chunk so the document splits into many chunks; then the batch token limit groups those chunks into multiple batches. The options <code>dense_fill_nodes_cap</code> and <code>dense_skeleton_batch_tokens</code> trade off the number of LLM calls vs tokens per call (fewer, larger batches mean fewer calls but more tokens per request). <strong>Fill context:</strong> with the default <code>dense_fill_context="scoped"</code>, each Phase 2 call sends only the document regions where the node was observed instead of the whole document; on long documents this cuts Phase 2 token volume by an order of magnitude. Use <code>dense_fill_context="full"</code> if your entities are described far away from where they are first mentioned.</p>
 <hr />
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h3>
-<p>Pass options via <code>PipelineConfig</code> or a dict to <code>run_pipeline()</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span><span class="p">,</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -4334,63 +4360,67 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;staged&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">staged_tuning_preset</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;advanced&quot;</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="c1"># Optional overrides (preset defaults applied when not set):</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># staged_pass_retries=2,</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="c1"># parallel_workers=2,</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="c1"># staged_nodes_fill_cap=5,</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># staged_id_shard_size=0,</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="c1"># staged_id_max_tokens=16384,  # default; set None for client default</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="c1"># staged_fill_max_tokens=None,</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="c1"># staged_quality_require_root=True,</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="c1"># staged_quality_min_instances=1,</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="c1"># staged_quality_max_parent_lookup_miss=0,</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="p">)</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">dense_skeleton_batch_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">dense_fill_nodes_cap</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h3>
-<p>Staged-related flags (when using <code>--extraction-contract staged</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Enable staged</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Preset and overrides</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span>--staged-tuning<span class="w"> </span>standard<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span>--staged-retries<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span>--parallel-workers<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span>--staged-nodes-fill-cap<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span>--staged-id-shard-size<span class="w"> </span><span class="m">0</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Token limits (e.g. to avoid truncation)</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>staged<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span>--staged-id-max-tokens<span class="w"> </span><span class="m">8192</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span>--staged-fill-max-tokens<span class="w"> </span><span class="m">8192</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--template<span class="w"> </span><span class="s2">&quot;templates.MyNestedTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--extraction-contract<span class="w"> </span>dense
 </code></pre></div>
-<p>Options such as <code>staged_id_identity_only</code>, <code>staged_id_compact_prompt</code>, <code>staged_id_auto_shard_threshold</code>, and <code>staged_quality_*</code> have no CLI flags; set them in a config file or in a config dict when using the Python API.</p>
-<p>See <a href="../../../reference/config/">Configuration reference</a> and <a href="../../../usage/cli/convert-command/#staged-extraction-tuning">convert command</a> for the full list.</p>
-<p><strong>When to adjust:</strong></p>
-<ul>
-<li><strong>Structured output</strong>: Staged uses legacy prompt-schema mode only (no API structured output); the global <code>structured_output</code> setting does not apply to staged.</li>
-<li><strong>Truncation or invalid ID output</strong>: Default <code>staged_id_max_tokens=16384</code> reduces ID-pass truncation; increase or set <code>staged_fill_max_tokens</code> if fill responses are cut off.</li>
-<li><strong>Slow ID pass or “Response Truncated”</strong>: For large catalogs or long documents, the ID pass can hit the response token limit, causing truncation, validation errors, retries, and shard splits—and much longer runtimes. Set <code>staged_id_max_tokens</code> explicitly (e.g. <code>16384</code> or <code>32768</code>) via CLI <code>--staged-id-max-tokens</code> or config so ID responses are less likely to truncate; this reduces retries and speeds up the ID pass.</li>
-<li><strong>Staged fallback to direct</strong>: If the trace shows <code>fallback_reason: "quality_gate_failed"</code>, check <code>quality_gate.reasons</code> (e.g. missing root instance). Relax <code>staged_quality_require_root</code> or <code>staged_quality_min_instances</code> only if your template legitimately has no root or very few instances.</li>
-<li><strong>Large catalogs</strong>: Defaults use identity-only paths and auto-sharding; tune <code>staged_id_auto_shard_threshold</code> or <code>staged_id_shard_size</code> via config if the ID pass is still too heavy. For very large catalogs, also increase <code>staged_id_max_tokens</code> to avoid truncation and extra retries.</li>
-</ul>
 <hr />
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<h2 id="trace-and-debugging">Trace and debugging<a class="headerlink" href="#trace-and-debugging" title="Permanent link">&para;</a></h2>
+<p>When dense runs, the pipeline emits a <code>dense_trace_emitted</code> trace event (see <a href="../../../usage/advanced/trace-data-debugging/">Trace Data Debugging</a>) containing:</p>
 <ul>
-<li><a href="../../schema-definition/staged-extraction-schema/">Schema design for staged extraction</a> — Identity fields, linkage, and schema checklist for staged mode</li>
-<li><a href="../extraction-backends/">Extraction Backends</a> — LLM vs VLM and extraction contracts</li>
-<li><a href="../model-merging/">Model Merging</a> — How chunk results are merged</li>
-<li><a href="../../../reference/config/">Configuration reference</a> — Full config and staged fields</li>
+<li><code>contract: "dense"</code></li>
+<li><code>phase1_elapsed</code>, <code>phase2_elapsed</code> (seconds)</li>
+<li><code>skeleton_nodes</code>, <code>path_counts</code></li>
+<li><code>merge_stats</code>, <code>run_stats</code> (the same counters written to <code>metadata.json</code> and the report)</li>
+</ul>
+<p>With <code>debug=True</code>, the debug directory (<code>outputs/{document}_{timestamp}/debug/</code>) contains:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dense_skeleton_graph.json</code></td>
+<td>Merged Phase 1 skeleton nodes (paths + identities, no property values)</td>
+</tr>
+<tr>
+<td><code>dense_merge_stats.json</code></td>
+<td>Phase 2 merge-into-root stats: attached/recovered/dropped instance counts</td>
+</tr>
+<tr>
+<td><code>dense_run_stats.json</code></td>
+<td>The same run-level counters surfaced in <code>metadata.json</code> <code>results.dense</code></td>
+</tr>
+<tr>
+<td><code>dense_provenance.json</code></td>
+<td>The full provenance ledger for the run (present when <code>provenance</code> is not <code>"off"</code>; see <a href="../../graph-management/provenance/">Data Grounding &amp; Provenance</a>)</td>
+</tr>
+<tr>
+<td><code>trace_data.json</code></td>
+<td>The full step-by-step pipeline trace</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../extraction-backends/">Extraction Backends</a> — LLM vs VLM and contracts</li>
+<li><a href="../../pipeline-configuration/configuration-basics/">Pipeline Configuration</a> — Core runtime settings</li>
+<li><a href="../../schema-definition/">Schema Definition</a> — Template design guidance</li>
+<li><a href="../../graph-management/provenance/">Data Grounding &amp; Provenance</a> — tracing nodes back to source chunks and pages</li>
+<li><a href="../../../reference/config/">Configuration reference</a></li>
 </ul>
 
 

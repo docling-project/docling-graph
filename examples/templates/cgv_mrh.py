@@ -254,7 +254,14 @@ class Bien(BaseModel):
 class Exclusion(BaseModel):
     """
     Clause d'exclusion (commune ou spécifique).
-    Identity uses short exclusion_id for delta-friendly deduplication.
+    Identity uses short exclusion_id for stable deduplication.
+
+    GRANULARITY: model one coherent exclusion CLAUSE per Exclusion (a full
+    excluded peril with its condition), not one node per generic keyword. Do NOT
+    fragment a single clause into several bare one-word exclusions such as
+    'usure', 'perte' or 'travaux' — those are usually facets of one clause and
+    over-fragment the graph. Choose a meaningful exclusion_id that names the
+    clause, not a lone category word.
     """
 
     model_config = ConfigDict(
@@ -266,6 +273,7 @@ class Exclusion(BaseModel):
         description=(
             "Short stable identifier for this exclusion (deduplication). "
             "Use a normalized code or short label as in document (e.g. 'vol-sans-effraction', 'defaut-entretien'). "
+            "Name the whole clause, not a bare category word ('usure', 'travaux'). "
             "Avoid long free text; keep under ~50 chars."
         ),
         examples=[
@@ -563,7 +571,12 @@ class Offre(BaseModel):
         label="INCLUTGARANTIE",
         default_factory=list,
         validation_alias=AliasChoices("garanties_incluses", "garantiesincluses"),
-        description="Garanties incluses / non optionnelles dans le tableau des garanties.",
+        description=(
+            "Garanties incluses / non optionnelles dans le tableau des garanties. "
+            "Référence par nom UNIQUEMENT (renseigner seulement 'nom', identique au nom "
+            "utilisé dans AssuranceMRH.garanties) ; ne pas répéter ici le détail des "
+            "garanties, il est extrait une seule fois au niveau du document."
+        ),
         examples=[[{"nom": "Dégâts des eaux"}, {"nom": "Incendie et événements assimilés"}]],
     )
 
@@ -571,7 +584,11 @@ class Offre(BaseModel):
         label="GARANTIEOPTIONNELLE",
         default_factory=list,
         validation_alias=AliasChoices("garanties_optionnelles", "garantiesoptionnelles"),
-        description="Garanties marquées 'En option' dans le tableau.",
+        description=(
+            "Garanties marquées 'En option' dans le tableau. "
+            "Référence par nom UNIQUEMENT (renseigner seulement 'nom') ; "
+            "le détail complet vit dans AssuranceMRH.garanties."
+        ),
         examples=[[{"nom": "Dommages électriques"}, {"nom": "Piscine"}]],
     )
 
@@ -620,7 +637,11 @@ class AssuranceMRH(BaseModel):
     reference_document: str = Field(
         "",
         validation_alias=AliasChoices("reference_document", "referencedocument"),
-        description="Référence/identifiant du document (couverture, pied de page) si présent.",
+        description=(
+            "Code de référence court du document, copié tel quel depuis la couverture ou le "
+            "pied de page (ex. 'CGV-MRH-2023'). Ne PAS mettre le nom du produit ou de la "
+            "marque ici ; si aucun code n'est présent, laisser vide."
+        ),
         examples=["CGV-MRH-2023", "HABITATION 2023-10"],
     )
     assureur: str | None = Field(
@@ -641,6 +662,18 @@ class AssuranceMRH(BaseModel):
         examples=["Assurance Habitation", "Multirisque Habitation", "MRH"],
     )
 
+    garanties: list[Garantie] = edge(
+        label="AGARANTIE",
+        default_factory=list,
+        description=(
+            "Toutes les garanties décrites dans le document, avec leur détail complet "
+            "(description, biens couverts, plafonds, franchises, conditions, exclusions "
+            "spécifiques). C'est ICI que le détail de chaque garantie doit être extrait, "
+            "une seule fois, depuis le chapitre qui la décrit."
+        ),
+        examples=[[{"nom": "Dégâts des eaux"}, {"nom": "Vol et Vandalisme"}]],
+    )
+
     offres: list[Offre] = edge(
         label="AOFFRE",
         default_factory=list,
@@ -648,7 +681,30 @@ class AssuranceMRH(BaseModel):
         examples=[[{"nom": "ESSENTIELLE"}, {"nom": "CONFORT"}]],
     )
 
+    exclusions_communes: list[Exclusion] = edge(
+        label="AEXCLUSIONCOMMUNE",
+        default_factory=list,
+        validation_alias=AliasChoices("exclusions_communes", "exclusionscommunes"),
+        description=(
+            "Exclusions communes à toutes les garanties (typiquement Article 7 "
+            "'Exclusions communes' ou équivalent). Une Exclusion par puce ou alinéa. "
+            "Ne pas y répéter les exclusions spécifiques d'une garantie "
+            "(elles vont dans Garantie.exclusions_specifiques)."
+        ),
+        examples=[
+            [
+                {"exclusion_id": "guerre"},
+                {"exclusion_id": "risque-nucleaire"},
+            ]
+        ],
+    )
+
     @field_validator("offres", mode="before")
     @classmethod
     def filtrer_offres(cls, v: Any) -> Any:
         return _filtrer_liste(v, "offres", champs_requis=["nom"])
+
+    @field_validator("exclusions_communes", mode="before")
+    @classmethod
+    def filtrer_exclusions_communes(cls, v: Any) -> Any:
+        return _filtrer_liste(v, "exclusions_communes", champs_requis=["exclusion_id"])

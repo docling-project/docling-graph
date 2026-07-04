@@ -1156,34 +1156,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1700,42 +1672,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1910,6 +1854,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3552,6 +3524,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/llm-clients/" class="md-nav__link">
         
   
@@ -3761,15 +3761,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#example-scripts-0113" class="md-nav__link">
+  <a href="#example-scripts-0115" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example Scripts (01–13)
+        Example Scripts (01–15)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Example Scripts (01–13)">
+    <nav class="md-nav" aria-label="Example Scripts (01–15)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3799,6 +3799,17 @@
     <span class="md-ellipsis">
       
         Optimization &amp; Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Grounding
       
     </span>
   </a>
@@ -3865,7 +3876,7 @@
 <tbody>
 <tr>
 <td><code>docs/examples/scripts/</code></td>
-<td>Python example scripts (01–13)</td>
+<td>Python example scripts (01–15)</td>
 </tr>
 <tr>
 <td><code>docs/examples/templates/</code></td>
@@ -3873,7 +3884,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="example-scripts-0113">Example Scripts (01–13)<a class="headerlink" href="#example-scripts-0113" title="Permanent link">&para;</a></h2>
+<h2 id="example-scripts-0115">Example Scripts (01–15)<a class="headerlink" href="#example-scripts-0115" title="Permanent link">&para;</a></h2>
 <h3 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong><code>01_quickstart_vlm_image.py</code></strong> — VLM extraction from an invoice image</li>
@@ -3891,11 +3902,13 @@
 <ol>
 <li><strong><code>08_chunking_consolidation.py</code></strong> — Chunking and merge behavior</li>
 <li><strong><code>09_batch_processing.py</code></strong> — Batch processing with error handling</li>
-<li><strong><code>10_provider_configs.py</code></strong> — OpenAI, Mistral, Gemini, WatsonX</li>
-<li><strong><code>11_staged_extraction.py</code></strong> — Staged extraction (ID pass → fill pass → merge) for complex templates</li>
+<li><strong><code>10_provider_configs.py</code></strong> — OpenAI, Mistral, Gemini, watsonx</li>
 <li><strong><code>12_custom_llm_client.py</code></strong> — Custom LLM client (bring your own URL) with full pipeline</li>
-<li><strong><code>13_delta_extraction.py</code></strong> — Delta extraction (chunk → batch → graph IR → merge → projection) for long documents</li>
 <li><strong><code>14_streaming_responses.py</code></strong> — Streaming LLM responses for real-time processing and progress feedback</li>
+</ol>
+<h3 id="data-grounding">Data Grounding<a class="headerlink" href="#data-grounding" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong><code>15_provenance_grounding.py</code></strong> — Trace extracted nodes back to source chunks and pages via <code>__provenance__</code> and <code>provenance.json</code></li>
 </ol>
 <p>For CLI usage, see <a href="../usage/cli/">CLI Reference</a> and <a href="../usage/cli/convert-command/">convert command</a>.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>

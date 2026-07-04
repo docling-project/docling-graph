@@ -1247,34 +1247,6 @@
   
   
     <li class="md-nav__item">
-      <a href="staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="best-practices/" class="md-nav__link">
         
   
@@ -1797,42 +1769,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2010,6 +1954,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3652,6 +3624,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -3903,21 +3903,21 @@
 
 
 <h1 id="schema-definition">Schema Definition<a class="headerlink" href="#schema-definition" title="Permanent link">&para;</a></h1>
-<p>Pydantic templates are the schema contract for all extraction modes (<code>direct</code>, <code>staged</code>, <code>delta</code>).</p>
+<p>Pydantic templates are the schema contract for the supported extraction modes (<code>direct</code>, <code>dense</code>). The pipeline is domain-agnostic; the template is where all domain knowledge lives.</p>
 <h2 id="core-rules">Core rules<a class="headerlink" href="#core-rules" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Use explicit entities (<code>graph_id_fields</code>) and components (<code>is_entity=False</code>).</li>
-<li>Keep identity fields short, stable, and required when possible; prefer descriptive IDs over raw section/figure labels.</li>
-<li>Prefer 2-4 nesting levels; flatten deeply recursive structures.</li>
-<li>Use <code>edge(label=...)</code> consistently for relationship-bearing fields.</li>
-<li>Write extraction-oriented descriptions and realistic examples for every important field.</li>
-<li>Use validators to correct semantic errors (e.g. wrong unit in amount) and to deduplicate root-level lists when using chunked extraction.</li>
+<li>Identity fields: <strong>required, scalar, short, copied verbatim</strong> from the document — never invented, list-valued, or enum-typed. Give 2-5 document-derived examples per id field.</li>
+<li>Non-identity fields: <strong>optional or defaulted</strong>, so partial output from smaller models degrades gracefully instead of failing validation.</li>
+<li>Prefer 2-4 nesting levels; never nest the same rich entity model at several paths — give it one root-level home and reference it by name elsewhere.</li>
+<li>Use <code>edge(label=...)</code> consistently for relationship-bearing fields; edges optional by default.</li>
+<li>Keep field descriptions to a locator plus one normalization rule; never instruct computation or unit conversion (the pipeline grounds numbers digit-for-digit).</li>
+<li>Use validators to normalize what models actually emit (scalars, strings, stringified lists) and to deduplicate identity-less root lists — never to reject whole payloads.</li>
 </ul>
 <h2 id="extraction-focused-design">Extraction-focused design<a class="headerlink" href="#extraction-focused-design" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Direct:</strong> optimize semantic clarity and validation tolerance.</li>
-<li><strong>Staged:</strong> optimize ID discovery and parent linkage determinism.</li>
-<li><strong>Delta:</strong> optimize path fidelity, flat properties, canonicalized values, and merge-safe identities.</li>
+<li><strong>Direct:</strong> optimize semantic clarity and validation tolerance; keep templates flat (single-response output budget).</li>
+<li><strong>Dense:</strong> optimize identity discovery, parent linkage, and chunk-aware per-entity filling; identity examples are the only id guidance Phase 1 sees.</li>
 </ul>
 <h2 id="recommended-reading-order">Recommended reading order<a class="headerlink" href="#recommended-reading-order" title="Permanent link">&para;</a></h2>
 <ol>
@@ -3926,7 +3926,6 @@
 <li><code>field-definitions.md</code></li>
 <li><code>relationships.md</code></li>
 <li><code>best-practices.md</code></li>
-<li><code>staged-extraction-schema.md</code></li>
 <li><code>validation.md</code></li>
 <li><code>advanced-patterns.md</code></li>
 </ol>

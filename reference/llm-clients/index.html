@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://ibm.github.io/docling-graph/reference/llm-clients/">
       
       
-        <link rel="prev" href="../exporters/">
+        <link rel="prev" href="../provenance/">
       
       
         <link rel="next" href="../../community/">
@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3558,6 +3530,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -4086,27 +4086,6 @@
 <a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Received result:&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="c1"># Process result in real-time</span>
 </code></pre></div>
-<p><strong>Benefits of Streaming:</strong></p>
-<ul>
-<li><strong>Reduced Latency</strong>: Get first results faster without waiting for complete response</li>
-<li><strong>Progress Feedback</strong>: Provide real-time updates in interactive applications</li>
-<li><strong>Memory Efficiency</strong>: Handle large responses incrementally</li>
-<li><strong>Better UX</strong>: Show progress indicators and intermediate results to users</li>
-</ul>
-<p><strong>When to Use Streaming:</strong></p>
-<ul>
-<li>Interactive applications requiring immediate feedback</li>
-<li>Processing large documents where partial results are useful</li>
-<li>Applications with progress indicators or real-time UI updates</li>
-<li>Real-time data processing pipelines</li>
-</ul>
-<p><strong>When to Use Non-Streaming:</strong></p>
-<ul>
-<li>Batch processing where latency doesn't matter</li>
-<li>Simple scripts without UI feedback</li>
-<li>Cases where complete response is needed before processing</li>
-<li>Maximum compatibility (all models support non-streaming)</li>
-</ul>
 <p><strong>Implementation Notes:</strong></p>
 <p>The current implementation accumulates the full streaming response before yielding the final parsed result. This provides a foundation for future chunk-by-chunk streaming while maintaining compatibility with the existing JSON parsing and validation pipeline.</p>
 <p><strong>Error Handling:</strong></p>
@@ -4128,7 +4107,7 @@
 </ul>
 <p>Pass it to the pipeline via <code>PipelineConfig(llm_client=your_client)</code> (or <code>run_pipeline({"llm_client": your_client, ...})</code>). When <code>llm_client</code> is set, the pipeline uses it and does not initialize a provider/model client from config.</p>
 <h3 id="example-custom-litellm-backed-client-custom-url">Example: custom LiteLLM-backed client (custom URL)<a class="headerlink" href="#example-custom-litellm-backed-client-custom-url" title="Permanent link">&para;</a></h3>
-<p>Use this pattern to point at an OpenAI-compatible or custom endpoint (e.g. on-prem WatsonX, vLLM, proxy) while reusing docling-graph’s <code>ResponseHandler</code> for consistent JSON parsing:</p>
+<p>Use this pattern to point at an OpenAI-compatible or custom endpoint (e.g. on-prem watsonx, vLLM, proxy) while reusing docling-graph’s <code>ResponseHandler</code> for consistent JSON parsing:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">litellm</span>
@@ -4235,7 +4214,7 @@
 <hr />
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><a href="../../fundamentals/installation/api-keys/">API Keys Setup</a></strong> - Configure API keys (including optional LM Studio API key and WatsonX)</li>
+<li><strong><a href="../../fundamentals/installation/api-keys/">API Keys Setup</a></strong> - Configure API keys (including optional LM Studio API key and watsonx)</li>
 <li><strong><a href="../../fundamentals/pipeline-configuration/model-configuration/">Model Configuration</a></strong> - Model setup (vLLM, Ollama, LM Studio, remote providers)</li>
 <li><strong><a href="../../fundamentals/pipeline-configuration/backend-selection/">Remote Inference</a></strong> - Backend selection</li>
 </ul>

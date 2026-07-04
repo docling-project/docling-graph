@@ -1758,34 +1758,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../best-practices/" class="md-nav__link">
         
   
@@ -2308,42 +2280,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2521,6 +2465,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4163,6 +4135,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4927,12 +4927,14 @@
 <h1 id="validation-and-normalization">Validation and Normalization<a class="headerlink" href="#validation-and-normalization" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Validators ensure data quality and consistency in your extracted data. Pydantic provides powerful validation mechanisms that can transform, normalize, and validate field values before they're stored in your knowledge graph.</p>
-<p><strong>In this guide:</strong>
-- Field validators for single-field validation
-- Model validators for cross-field validation
-- Pre-validators for data transformation
-- Common validation patterns
-- Normalization helpers</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Field validators for single-field validation</li>
+<li>Model validators for cross-field validation</li>
+<li>Pre-validators for data transformation</li>
+<li>Common validation patterns</li>
+<li>Normalization helpers</li>
+</ul>
 <hr />
 <h2 id="field-validators">Field Validators<a class="headerlink" href="#field-validators" title="Permanent link">&para;</a></h2>
 <h3 id="basic-field-validator">Basic Field Validator<a class="headerlink" href="#basic-field-validator" title="Permanent link">&para;</a></h3>
@@ -4977,11 +4979,13 @@
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">return</span> <span class="n">v</span>
 </code></pre></div>
-<p><strong>Use cases:</strong>
-- Normalizing strings (lowercase, strip whitespace)
-- Converting types (string to list)
-- Parsing complex formats
-- Cleaning input data</p>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Normalizing strings (lowercase, strip whitespace)</li>
+<li>Converting types (string to list)</li>
+<li>Parsing complex formats</li>
+<li>Cleaning input data</li>
+</ul>
 <h3 id="pre-validator-examples">Pre-Validator Examples<a class="headerlink" href="#pre-validator-examples" title="Permanent link">&para;</a></h3>
 <h4 id="email-normalization">📍 Email Normalization<a class="headerlink" href="#email-normalization" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -5060,11 +5064,13 @@
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Currency must be 3 uppercase letters (ISO 4217)&quot;</span><span class="p">)</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="k">return</span> <span class="n">v</span>
 </code></pre></div>
-<p><strong>Use cases:</strong>
-- Validating format constraints
-- Checking value ranges
-- Enforcing business rules
-- Verifying data integrity</p>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Validating format constraints</li>
+<li>Checking value ranges</li>
+<li>Enforcing business rules</li>
+<li>Verifying data integrity</li>
+</ul>
 <h3 id="post-validator-examples">Post-Validator Examples<a class="headerlink" href="#post-validator-examples" title="Permanent link">&para;</a></h3>
 <h4 id="currency-code-validation">📍 Currency Code Validation<a class="headerlink" href="#currency-code-validation" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MonetaryAmount</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -5546,10 +5552,12 @@
 <a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Monetary amount must be non-negative, got </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a>    <span class="k">return</span> <span class="n">v</span>
 </code></pre></div>
-<p><strong>What happens:</strong>
-- LLM extracts: <code>allowance_total: -258.12</code> (negative because it's a discount)
-- Validator rejects: "Monetary amount must be non-negative"
-- <strong>Result:</strong> Entire extraction fails, losing ALL extracted data</p>
+<p><strong>What happens:</strong></p>
+<ul>
+<li>LLM extracts: <code>allowance_total: -258.12</code> (negative because it's a discount)</li>
+<li>Validator rejects: "Monetary amount must be non-negative"</li>
+<li><strong>Result:</strong> Entire extraction fails, losing ALL extracted data</li>
+</ul>
 <h3 id="the-solution-lenient-validators">The Solution: Lenient Validators<a class="headerlink" href="#the-solution-lenient-validators" title="Permanent link">&para;</a></h3>
 <p><strong>Lenient validators</strong> coerce invalid values instead of rejecting them:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># ✅ Lenient validator - coerces instead of rejecting</span>
@@ -5578,16 +5586,22 @@
 <a id="__codelineno-35-24" name="__codelineno-35-24" href="#__codelineno-35-24"></a>        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 <a id="__codelineno-35-25" name="__codelineno-35-25" href="#__codelineno-35-25"></a>    <span class="k">return</span> <span class="n">v</span>
 </code></pre></div>
-<p><strong>Benefits:</strong>
-- ✅ Extraction succeeds even with "invalid" data
-- ✅ Data quality issues are logged for review
-- ✅ 99% correct data is preserved instead of lost
-- ✅ Semantic differences are handled gracefully</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>✅ Extraction succeeds even with "invalid" data</li>
+<li>✅ Data quality issues are logged for review</li>
+<li>✅ 99% correct data is preserved instead of lost</li>
+<li>✅ Semantic differences are handled gracefully</li>
+</ul>
 <h3 id="when-to-use-lenient-validators">When to Use Lenient Validators<a class="headerlink" href="#when-to-use-lenient-validators" title="Permanent link">&para;</a></h3>
 <p>Use lenient validators for:</p>
 <ol>
-<li><strong>Semantic Variations</strong></li>
-<li>Negative amounts for discounts/allowances</li>
+<li>
+<p><strong>Semantic Variations</strong></p>
+</li>
+<li>
+<p>Negative amounts for discounts/allowances</p>
+</li>
 <li>Lowercase currency codes (normalize to uppercase)</li>
 <li>
 <p>Different date formats (parse and normalize)</p>
@@ -5595,7 +5609,9 @@
 <li>
 <p><strong>Common LLM Mistakes</strong></p>
 </li>
-<li>Missing spaces in addresses</li>
+<li>
+<p>Missing spaces in addresses</p>
+</li>
 <li>Wrong case in enums</li>
 <li>
 <p>Currency symbols instead of codes</p>
@@ -5603,15 +5619,21 @@
 <li>
 <p><strong>Non-Critical Validation</strong></p>
 </li>
-<li>Format preferences (3-letter currency codes)</li>
+<li>
+<p>Format preferences (3-letter currency codes)</p>
+</li>
 <li>Range constraints (quantity &gt; 0)</li>
 <li>Pattern matching (email format)</li>
 </ol>
 <h3 id="when-to-use-strict-validators">When to Use Strict Validators<a class="headerlink" href="#when-to-use-strict-validators" title="Permanent link">&para;</a></h3>
 <p>Use strict validators only for:</p>
 <ol>
-<li><strong>Critical Data Integrity</strong></li>
-<li>Required fields that must be present</li>
+<li>
+<p><strong>Critical Data Integrity</strong></p>
+</li>
+<li>
+<p>Required fields that must be present</p>
+</li>
 <li>Type safety (must be a number, not a string)</li>
 <li>
 <p>Business rules that cannot be violated</p>
@@ -5619,7 +5641,9 @@
 <li>
 <p><strong>Security Concerns</strong></p>
 </li>
-<li>SQL injection prevention</li>
+<li>
+<p>SQL injection prevention</p>
+</li>
 <li>Path traversal prevention</li>
 <li>XSS prevention</li>
 </ol>
@@ -5698,10 +5722,12 @@
 <a id="__codelineno-40-15" name="__codelineno-40-15" href="#__codelineno-40-15"></a>        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 <a id="__codelineno-40-16" name="__codelineno-40-16" href="#__codelineno-40-16"></a>    <span class="k">return</span> <span class="n">v</span>
 </code></pre></div>
-<p><strong>Log Levels:</strong>
-- <code>logger.info()</code> - Normal coercion (e.g., lowercase → uppercase)
-- <code>logger.warning()</code> - Data quality issues (e.g., negative → positive)
-- <code>logger.error()</code> - Serious issues that couldn't be fixed</p>
+<p><strong>Log Levels:</strong></p>
+<ul>
+<li><code>logger.info()</code> - Normal coercion (e.g., lowercase → uppercase)</li>
+<li><code>logger.warning()</code> - Data quality issues (e.g., negative → positive)</li>
+<li><code>logger.error()</code> - Serious issues that couldn't be fixed</li>
+</ul>
 <h3 id="complete-example-lenient-monetaryamount">Complete Example: Lenient MonetaryAmount<a class="headerlink" href="#complete-example-lenient-monetaryamount" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>

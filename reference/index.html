@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3926,6 +3898,34 @@
   
   
     <li class="md-nav__item">
+      <a href="provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="llm-clients/" class="md-nav__link">
         
   
@@ -4468,15 +4468,17 @@
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Complete API reference for docling-graph modules, classes, and functions.</p>
-<p><strong>What's Included:</strong>
-- Pipeline API
-- Configuration classes
-- Protocol definitions
-- Exception hierarchy
-- Converter classes
-- Extractor classes
-- Exporter classes
-- LLM client interfaces</p>
+<p><strong>What's Included:</strong></p>
+<ul>
+<li>Pipeline API</li>
+<li>Configuration classes</li>
+<li>Protocol definitions</li>
+<li>Exception hierarchy</li>
+<li>Converter classes</li>
+<li>Extractor classes</li>
+<li>Exporter classes</li>
+<li>LLM client interfaces</li>
+</ul>
 <hr />
 <h2 id="quick-links">Quick Links<a class="headerlink" href="#quick-links" title="Permanent link">&para;</a></h2>
 <h3 id="core-apis">Core APIs<a class="headerlink" href="#core-apis" title="Permanent link">&para;</a></h3>
@@ -4537,6 +4539,13 @@ Graph export formats.</p>
 <li><code>JSONExporter</code> - JSON format</li>
 <li><code>DoclingExporter</code> - Docling documents</li>
 </ul>
+<p><strong><a href="provenance/">Provenance</a></strong><br />
+Deterministic node-to-source grounding.</p>
+<ul>
+<li><code>ProvenanceLedger</code>, <code>NodeProvenance</code>, <code>ChunkRecord</code> - Ledger models</li>
+<li><code>bind_provenance()</code> - Binds <code>__provenance__</code> onto graph nodes</li>
+<li><code>locate_values()</code> - Verbatim identifier locator</li>
+</ul>
 <p><strong><a href="llm-clients/">LLM Clients</a></strong><br />
 LiteLLM-backed client for all LLM calls.</p>
 <ul>
@@ -4546,7 +4555,7 @@ LiteLLM-backed client for all LLM calls.</p>
 <h2 id="module-structure">Module Structure<a class="headerlink" href="#module-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docling_graph/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── __init__.py              # Public API exports
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── pipeline.py              # run_pipeline()
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── pipeline/                # run_pipeline(), stages, orchestrator
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── config.py                # PipelineConfig
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── protocols.py             # Protocol definitions
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── exceptions.py            # Exception hierarchy
@@ -4555,20 +4564,21 @@ LiteLLM-backed client for all LLM calls.</p>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── converters/          # Graph conversion
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── extractors/          # Extraction strategies
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── exporters/           # Export formats
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   └── visualizers/         # Visualization
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── llm_clients/             # LLM integrations
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── base.py
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── ollama.py
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── mistral.py
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── openai.py
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── gemini.py
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   └── vllm.py
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>└── pipeline/                # Pipeline orchestration
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    ├── context.py
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    ├── stages.py
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    └── orchestrator.py
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── provenance/          # Data grounding (deterministic node-to-source)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   └── visualizers/         # Visualization
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── llm_clients/             # LLM integrations
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── base.py
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── ollama.py
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── mistral.py
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── openai.py
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── gemini.py
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   └── vllm.py
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>└── pipeline/                # Pipeline orchestration
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    ├── context.py
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    ├── stages.py
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    └── orchestrator.py
 </code></pre></div>
 <hr />
 <h2 id="import-patterns">Import Patterns<a class="headerlink" href="#import-patterns" title="Permanent link">&para;</a></h2>
@@ -4768,6 +4778,7 @@ LiteLLM-backed client for all LLM calls.</p>
 <li><strong><a href="converters/">Converters →</a></strong> - Graph conversion</li>
 <li><strong><a href="extractors/">Extractors →</a></strong> - Extraction strategies</li>
 <li><strong><a href="exporters/">Exporters →</a></strong> - Export formats</li>
+<li><strong><a href="provenance/">Provenance →</a></strong> - Data grounding</li>
 <li><strong><a href="llm-clients/">LLM Clients →</a></strong> - LLM integrations</li>
 </ol>
 <hr />

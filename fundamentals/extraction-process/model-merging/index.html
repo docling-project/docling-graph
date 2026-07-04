@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://ibm.github.io/docling-graph/fundamentals/extraction-process/model-merging/">
       
       
-        <link rel="prev" href="../staged-extraction/">
+        <link rel="prev" href="../dense-extraction/">
       
       
         <link rel="next" href="../batch-processing/">
@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1721,42 +1693,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../delta-extraction/" class="md-nav__link">
+      <a href="../dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2599,6 +2543,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4241,6 +4213,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -5083,14 +5083,16 @@
 <h1 id="model-merging">Model Merging<a class="headerlink" href="#model-merging" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Model merging</strong> is the process of consolidating multiple Pydantic model instances into a single unified model. This is essential when extracting from multiple chunks or pages.</p>
-<p><strong>In this guide:</strong>
-- Why merging is needed
-- Programmatic vs LLM merging
-- Optional LLM consolidation
-- Zero data loss strategies
-- Deduplication strategies
-- Conflict resolution
-- Best practices</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Why merging is needed</li>
+<li>Programmatic vs LLM merging</li>
+<li>Optional LLM consolidation</li>
+<li>Zero data loss strategies</li>
+<li>Deduplication strategies</li>
+<li>Conflict resolution</li>
+<li>Best practices</li>
+</ul>
 <hr />
 <h2 id="why-merging-matters">Why Merging Matters<a class="headerlink" href="#why-merging-matters" title="Permanent link">&para;</a></h2>
 <h3 id="the-multi-extraction-problem">The Multi-Extraction Problem<a class="headerlink" href="#the-multi-extraction-problem" title="Permanent link">&para;</a></h3>
@@ -5288,15 +5290,19 @@ flowchart LR
 <h3 id="what-is-llm-consolidation">What is LLM Consolidation?<a class="headerlink" href="#what-is-llm-consolidation" title="Permanent link">&para;</a></h3>
 <p><strong>LLM consolidation</strong> uses an LLM to intelligently merge models, resolving conflicts and improving accuracy. The backend merges chunk results programmatically first, then optionally runs an LLM consolidation step.</p>
 <h3 id="when-to-use">When to Use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use LLM consolidation when:</strong>
-- High accuracy is needed
-- Complex conflict resolution required
-- Budget allows extra API calls</p>
-<p>❌ <strong>Don't use LLM consolidation when:</strong>
-- Speed is priority
-- Cost is primary concern
-- Simple merging sufficient
-- Processing high volume (&gt;1000 docs)</p>
+<p>✅ <strong>Use LLM consolidation when:</strong></p>
+<ul>
+<li>High accuracy is needed</li>
+<li>Complex conflict resolution required</li>
+<li>Budget allows extra API calls</li>
+</ul>
+<p>❌ <strong>Don't use LLM consolidation when:</strong></p>
+<ul>
+<li>Speed is priority</li>
+<li>Cost is primary concern</li>
+<li>Simple merging sufficient</li>
+<li>Processing high volume (&gt;1000 docs)</li>
+</ul>
 <hr />
 <h3 id="how-it-works_1">How It Works<a class="headerlink" href="#how-it-works_1" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>%%{init: {'theme': 'redux-dark', 'look': 'default', 'layout': 'elk'}}%%
@@ -5810,7 +5816,7 @@ flowchart LR
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand model merging:</p>
 <ol>
-<li><strong><a href="../staged-extraction/">Staged Extraction →</a></strong> - Multi-pass extraction for complex templates</li>
+<li><strong><a href="../dense-extraction/">Dense Extraction →</a></strong> - Skeleton-then-fill extraction for complex templates</li>
 <li><strong><a href="../batch-processing/">Batch Processing →</a></strong> - Optimize chunk processing</li>
 <li><strong><a href="../extraction-backends/">Extraction Backends →</a></strong> - Understand backends</li>
 <li><strong><a href="../../../usage/advanced/performance-tuning/">Performance Tuning →</a></strong> - Optimize consolidation</li>

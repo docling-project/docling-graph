@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -2501,10 +2473,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#staged-extraction-tuning" class="md-nav__link">
+  <a href="#dense-extraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Staged Extraction Tuning
+        Dense extraction
       
     </span>
   </a>
@@ -2512,10 +2484,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#delta-extraction-tuning" class="md-nav__link">
+  <a href="#provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Delta Extraction Tuning
+        Provenance
       
     </span>
   </a>
@@ -4305,6 +4277,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4687,10 +4687,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#staged-extraction-tuning" class="md-nav__link">
+  <a href="#dense-extraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Staged Extraction Tuning
+        Dense extraction
       
     </span>
   </a>
@@ -4698,10 +4698,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#delta-extraction-tuning" class="md-nav__link">
+  <a href="#provenance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Delta Extraction Tuning
+        Provenance
       
     </span>
   </a>
@@ -5425,80 +5425,53 @@
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span>--no-use-chunking
 </code></pre></div></p>
 <hr />
-<h3 id="staged-extraction-tuning">Staged Extraction Tuning<a class="headerlink" href="#staged-extraction-tuning" title="Permanent link">&para;</a></h3>
-<p>These flags apply when <code>--extraction-contract staged</code> is used in many-to-one mode.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>--staged-tuning<span class="w"> </span><span class="o">{</span>standard<span class="p">|</span>advanced<span class="o">}</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>--staged-retries<span class="w"> </span>INT
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>--parallel-workers<span class="w"> </span>INT
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>--staged-nodes-fill-cap<span class="w"> </span>INT
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>--staged-id-shard-size<span class="w"> </span>INT
+<h3 id="dense-extraction">Dense extraction<a class="headerlink" href="#dense-extraction" title="Permanent link">&para;</a></h3>
+<p>Use <code>--extraction-contract dense</code> for two-phase <strong>skeleton-then-fill</strong> extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. See <a href="../../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a> and <a href="../../../reference/config/">Configuration reference</a>.</p>
+<p>Dense options map 1:1 to CLI flags:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>--dense-skeleton-batch-tokens<span class="w"> </span>INT<span class="w">   </span><span class="c1"># max tokens per Phase 1 skeleton batch (default: 1024)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>--dense-fill-nodes-cap<span class="w"> </span>INT<span class="w">          </span><span class="c1"># max node instances per Phase 2 fill call (default: 5)</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>--dense-fill-context<span class="w"> </span><span class="o">[</span>scoped<span class="p">|</span>full<span class="o">]</span><span class="w">  </span><span class="c1"># document context per fill call (default: scoped)</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>--dense-dedupe<span class="w"> </span><span class="o">[</span>off<span class="p">|</span>standard<span class="p">|</span>aggressive<span class="o">]</span><span class="w">  </span><span class="c1"># skeleton dedupe intensity (default: standard)</span>
 </code></pre></div>
-<ul>
-<li><code>--staged-tuning</code>: preset defaults (<code>standard</code> or <code>advanced</code>).</li>
-<li><code>--staged-retries</code>: retries per staged pass for invalid JSON responses.</li>
-<li><code>--parallel-workers</code>: parallel workers for extraction (staged fill pass and delta batch calls).</li>
-<li><code>--staged-nodes-fill-cap</code>: max node instances per fill-pass call.</li>
-<li><code>--staged-id-shard-size</code>: max catalog paths per ID-pass call (<code>0</code> disables sharding).</li>
-</ul>
-<p>ID pass always runs sequentially across shards for stable skeleton assembly.</p>
-<h3 id="delta-extraction-tuning">Delta Extraction Tuning<a class="headerlink" href="#delta-extraction-tuning" title="Permanent link">&para;</a></h3>
-<p>These flags apply when <code>--extraction-contract delta</code> is used in many-to-one mode (chunking must be enabled). To configure delta resolvers and quality gates interactively, run <code>docling-graph init</code> and choose <strong>delta</strong> as the extraction contract; the wizard will prompt for resolver enable/mode and optional quality tweaks (see <a href="../init-command/#step-3-delta-extraction-tuning-only-when-delta-is-selected">init Command</a>).</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>--llm-batch-token-size<span class="w"> </span>INT
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>--parallel-workers<span class="w"> </span>INT
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>--delta-normalizer-validate-paths<span class="w"> </span>/<span class="w"> </span>--no-delta-normalizer-validate-paths
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>--delta-normalizer-canonicalize-ids<span class="w"> </span>/<span class="w"> </span>--no-delta-normalizer-canonicalize-ids
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>--delta-normalizer-strip-nested-properties<span class="w"> </span>/<span class="w"> </span>--no-delta-normalizer-strip-nested-properties
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>--delta-resolvers-enabled<span class="w"> </span>/<span class="w"> </span>--no-delta-resolvers-enabled
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>--delta-resolvers-mode<span class="w"> </span><span class="o">{</span>off<span class="p">|</span>fuzzy<span class="p">|</span>semantic<span class="p">|</span>chain<span class="o">}</span>
-<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>--delta-resolver-fuzzy-threshold<span class="w"> </span>FLOAT
-<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>--delta-resolver-semantic-threshold<span class="w"> </span>FLOAT
+<h4 id="gleaning-direct-contract">Gleaning (direct contract)<a class="headerlink" href="#gleaning-direct-contract" title="Permanent link">&para;</a></h4>
+<p>Optional second-pass extraction ("what did you miss?") to improve recall on the <strong>direct</strong> contract. Enabled by default.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>--gleaning<span class="w"> </span>/<span class="w"> </span>--no-gleaning
 </code></pre></div>
-<ul>
-<li><code>--llm-batch-token-size</code>: max input tokens per delta batch (default: 1024).</li>
-<li><code>--parallel-workers</code>: parallel workers for delta batch LLM calls.</li>
-<li>Delta normalizer flags control path validation, ID canonicalization, and nested property stripping.</li>
-<li>Resolvers optionally merge near-duplicate entities after merge (<code>fuzzy</code>, <code>semantic</code>, or <code>chain</code>).</li>
-</ul>
-<p>Quality gate options (e.g. <code>delta_quality_max_parent_lookup_miss</code>, <code>delta_quality_require_relationships</code>) are not CLI flags; set them in <code>config.yaml</code> under <code>defaults</code> or use the init wizard when selecting delta.</p>
-<p>See <a href="../../../fundamentals/extraction-process/delta-extraction/">Delta Extraction</a> for full options and quality gate settings.</p>
-<h4 id="gleaning-direct-and-delta">Gleaning (direct and delta)<a class="headerlink" href="#gleaning-direct-and-delta" title="Permanent link">&para;</a></h4>
-<p>Optional second-pass extraction ("what did you miss?") to improve recall. Applies to <strong>direct</strong> and <strong>delta</strong> contracts only (not staged). Enabled by default.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>--gleaning-enabled<span class="w"> </span>/<span class="w"> </span>--no-gleaning-enabled
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>--gleaning-max-passes<span class="w"> </span>INT
+<p><strong>Example (dense with tuned batching):</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span>--dense-dedupe<span class="w"> </span>aggressive<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">2</span>
 </code></pre></div>
-<ul>
-<li><code>--gleaning-enabled</code>: run one extra extraction pass and merge additional entities/relations (default: enabled).</li>
-<li><code>--gleaning-max-passes</code>: max number of gleaning passes when enabled (default: 1).</li>
-</ul>
-<p><strong>Example (delta with gleaning):</strong></p>
+<p><strong>Example (basic dense):</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>delta<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span>--gleaning-enabled<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">    </span>--gleaning-max-passes<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">2</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">2</span>
 </code></pre></div>
-<p><strong>Example (basic delta):</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>delta<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">    </span>--llm-batch-token-size<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">2</span>
+<h3 id="provenance">Provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h3>
+<p>Deterministic data grounding — maps every graph node back to its source chunk(s) and page(s). No LLM involvement; applies to <strong>both</strong> <code>direct</code> and <code>dense</code> contracts. Enabled by default.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>--provenance<span class="w"> </span><span class="o">{</span>off<span class="p">|</span>standard<span class="p">|</span>detailed<span class="o">}</span>
 </code></pre></div>
-<p><strong>Example (delta with resolvers):</strong></p>
+<ul>
+<li><code>standard</code> (default): <code>__provenance__</code> node attribute + <code>provenance.json</code> export.</li>
+<li><code>detailed</code>: also embeds character-offset spans in the node attribute.</li>
+<li><code>off</code>: disables grounding entirely (output is byte-identical to the feature not existing).</li>
+</ul>
+<p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>delta<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>--delta-resolvers-enabled<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span>--delta-resolvers-mode<span class="w"> </span>fuzzy<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span>--delta-resolver-fuzzy-threshold<span class="w"> </span><span class="m">0</span>.9<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">2</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>--provenance<span class="w"> </span>detailed
 </code></pre></div>
+<p>See <a href="../../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance</a> for the node attribute shape and the full <code>provenance.json</code> schema.</p>
+<hr />
 <h3 id="structured-output-mode">Structured Output Mode<a class="headerlink" href="#structured-output-mode" title="Permanent link">&para;</a></h3>
 <p>Structured output is enabled by default for LLM extraction and enforces schema
 through LiteLLM <code>response_format=json_schema</code>.</p>
@@ -5518,10 +5491,9 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>staged<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>--staged-nodes-fill-cap<span class="w"> </span><span class="m">12</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span>--staged-id-shard-size<span class="w"> </span><span class="m">2</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>--parallel-workers<span class="w"> </span><span class="m">4</span>
 </code></pre></div>
 <hr />
 <h3 id="llm-streaming">LLM Streaming<a class="headerlink" href="#llm-streaming" title="Permanent link">&para;</a></h3>
@@ -5551,10 +5523,12 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">    </span>--no-llm-streaming
 </code></pre></div>
-<p><strong>See Also:</strong>
-- <a href="../cli-recipes/#streaming-responses">Streaming Responses Recipe</a> - CLI examples
-- <a href="../../api/programmatic-examples/#example-9-streaming-responses">Python API Streaming</a> - Programmatic usage
-- <a href="../../../reference/llm-clients/#streaming-responses">LLM Clients Reference</a> - Streaming API details</p>
+<p><strong>See Also:</strong></p>
+<ul>
+<li><a href="../cli-recipes/#streaming-responses">Streaming Responses Recipe</a> - CLI examples</li>
+<li><a href="../../api/programmatic-examples/#example-9-streaming-responses">Python API Streaming</a> - Programmatic usage</li>
+<li><a href="../../../reference/llm-clients/#streaming-responses">LLM Clients Reference</a> - Streaming API details</li>
+</ul>
 <hr />
 <h2 id="docling-configuration">Docling Configuration<a class="headerlink" href="#docling-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="pipeline-selection">Pipeline Selection<a class="headerlink" href="#pipeline-selection" title="Permanent link">&para;</a></h3>
@@ -5794,12 +5768,13 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a>│   ├── document.json            # Docling format
 <a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a>│   └── document.md              # Markdown export
 <a id="__codelineno-47-6" name="__codelineno-47-6" href="#__codelineno-47-6"></a>└── docling_graph/               # Graph outputs
-<a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a>    ├── graph.json               # Complete graph
+<a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a>    ├── graph.json               # Complete graph (nodes carry __provenance__)
 <a id="__codelineno-47-8" name="__codelineno-47-8" href="#__codelineno-47-8"></a>    ├── nodes.csv                # Node data
 <a id="__codelineno-47-9" name="__codelineno-47-9" href="#__codelineno-47-9"></a>    ├── edges.csv                # Edge data
-<a id="__codelineno-47-10" name="__codelineno-47-10" href="#__codelineno-47-10"></a>    ├── graph.html               # Interactive visualization
-<a id="__codelineno-47-11" name="__codelineno-47-11" href="#__codelineno-47-11"></a>    └── report.md                # Summary report
-<a id="__codelineno-47-12" name="__codelineno-47-12" href="#__codelineno-47-12"></a>    └── ...
+<a id="__codelineno-47-10" name="__codelineno-47-10" href="#__codelineno-47-10"></a>    ├── provenance.json          # Grounding ledger (unless --provenance off)
+<a id="__codelineno-47-11" name="__codelineno-47-11" href="#__codelineno-47-11"></a>    ├── graph.html               # Interactive visualization
+<a id="__codelineno-47-12" name="__codelineno-47-12" href="#__codelineno-47-12"></a>    └── report.md                # Summary report
+<a id="__codelineno-47-13" name="__codelineno-47-13" href="#__codelineno-47-13"></a>    └── ...
 </code></pre></div>
 <hr />
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>

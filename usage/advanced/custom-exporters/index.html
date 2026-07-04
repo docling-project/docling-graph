@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3883,6 +3855,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4370,10 +4370,12 @@
 <h1 id="custom-exporters">Custom Exporters<a class="headerlink" href="#custom-exporters" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Create custom exporters to output knowledge graphs in specialized formats for your specific use case or database system.</p>
-<p><strong>Prerequisites:</strong>
-- Understanding of <a href="../../../fundamentals/graph-management/">Graph Management</a>
-- Familiarity with NetworkX graphs
-- Knowledge of target output format</p>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>Understanding of <a href="../../../fundamentals/graph-management/">Graph Management</a></li>
+<li>Familiarity with NetworkX graphs</li>
+<li>Knowledge of target output format</li>
+</ul>
 <hr />
 <h2 id="exporter-protocol">Exporter Protocol<a class="headerlink" href="#exporter-protocol" title="Permanent link">&para;</a></h2>
 <p>All exporters must implement the <code>BaseExporter</code> protocol:</p>

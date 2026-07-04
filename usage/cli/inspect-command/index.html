@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4166,6 +4138,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4936,12 +4936,14 @@
 <h1 id="inspect-command">inspect Command<a class="headerlink" href="#inspect-command" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The <code>inspect</code> command creates <strong>interactive HTML visualizations</strong> of your knowledge graphs that open in your browser.</p>
-<p><strong>Key Features:</strong>
-- Interactive node/edge exploration
-- CSV and JSON import
-- Self-contained HTML output
-- Automatic browser opening
-- Shareable visualizations</p>
+<p><strong>Key Features:</strong></p>
+<ul>
+<li>Interactive node/edge exploration</li>
+<li>CSV and JSON import</li>
+<li>Self-contained HTML output</li>
+<li>Automatic browser opening</li>
+<li>Shareable visualizations</li>
+</ul>
 <hr />
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>PATH<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -5081,28 +5083,36 @@
 <hr />
 <h2 id="interactive-features">Interactive Features<a class="headerlink" href="#interactive-features" title="Permanent link">&para;</a></h2>
 <h3 id="node-exploration">Node Exploration<a class="headerlink" href="#node-exploration" title="Permanent link">&para;</a></h3>
-<p><strong>Click on a node to:</strong>
-- View node properties
-- Highlight connected edges
-- See relationship details
-- Filter by node type</p>
+<p><strong>Click on a node to:</strong></p>
+<ul>
+<li>View node properties</li>
+<li>Highlight connected edges</li>
+<li>See relationship details</li>
+<li>Filter by node type</li>
+</ul>
 <h3 id="edge-exploration">Edge Exploration<a class="headerlink" href="#edge-exploration" title="Permanent link">&para;</a></h3>
-<p><strong>Click on an edge to:</strong>
-- View relationship type
-- See source and target nodes
-- View edge properties</p>
+<p><strong>Click on an edge to:</strong></p>
+<ul>
+<li>View relationship type</li>
+<li>See source and target nodes</li>
+<li>View edge properties</li>
+</ul>
 <h3 id="graph-navigation">Graph Navigation<a class="headerlink" href="#graph-navigation" title="Permanent link">&para;</a></h3>
-<p><strong>Controls:</strong>
-- <strong>Zoom:</strong> Mouse wheel or pinch
-- <strong>Pan:</strong> Click and drag
-- <strong>Reset:</strong> Double-click background
-- <strong>Search:</strong> Use search box to find nodes</p>
+<p><strong>Controls:</strong></p>
+<ul>
+<li><strong>Zoom:</strong> Mouse wheel or pinch</li>
+<li><strong>Pan:</strong> Click and drag</li>
+<li><strong>Reset:</strong> Double-click background</li>
+<li><strong>Search:</strong> Use search box to find nodes</li>
+</ul>
 <h3 id="layout-options">Layout Options<a class="headerlink" href="#layout-options" title="Permanent link">&para;</a></h3>
-<p><strong>Available layouts:</strong>
-- <strong>Force-directed:</strong> Automatic positioning
-- <strong>Hierarchical:</strong> Top-down structure
-- <strong>Circular:</strong> Nodes in a circle
-- <strong>Grid:</strong> Regular grid layout</p>
+<p><strong>Available layouts:</strong></p>
+<ul>
+<li><strong>Force-directed:</strong> Automatic positioning</li>
+<li><strong>Hierarchical:</strong> Top-down structure</li>
+<li><strong>Circular:</strong> Nodes in a circle</li>
+<li><strong>Grid:</strong> Regular grid layout</li>
+</ul>
 <hr />
 <h2 id="output-structure">Output Structure<a class="headerlink" href="#output-structure" title="Permanent link">&para;</a></h2>
 <h3 id="html-file-contents">HTML File Contents<a class="headerlink" href="#html-file-contents" title="Permanent link">&para;</a></h3>
@@ -5127,10 +5137,12 @@
 <p>The command validates that required files exist:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/
 </code></pre></div>
-<p><strong>Checks:</strong>
-- Directory exists
-- <code>nodes.csv</code> exists
-- <code>edges.csv</code> exists</p>
+<p><strong>Checks:</strong></p>
+<ul>
+<li>Directory exists</li>
+<li><code>nodes.csv</code> exists</li>
+<li><code>edges.csv</code> exists</li>
+</ul>
 <p><strong>Error if missing:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>[bold red]Error:[/bold red] nodes.csv not found in outputs/
 </code></pre></div></p>
@@ -5138,10 +5150,12 @@
 <h3 id="json-validation">JSON Validation<a class="headerlink" href="#json-validation" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>graph.json<span class="w"> </span>--format<span class="w"> </span>json
 </code></pre></div>
-<p><strong>Checks:</strong>
-- File exists
-- File has <code>.json</code> extension
-- Valid JSON format</p>
+<p><strong>Checks:</strong></p>
+<ul>
+<li>File exists</li>
+<li>File has <code>.json</code> extension</li>
+<li>Valid JSON format</li>
+</ul>
 <p><strong>Error if invalid:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>[bold red]Error:[/bold red] For JSON format, path must be a .json file
 </code></pre></div></p>
@@ -5302,16 +5316,20 @@
 </tbody>
 </table>
 <h3 id="when-to-use-inspect">When to Use inspect<a class="headerlink" href="#when-to-use-inspect" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use inspect for:</strong>
-- Quick visualization during development
-- Sharing results with non-technical users
-- Small to medium graphs (&lt;1000 nodes)
-- No database setup required</p>
-<p>❌ <strong>Use Neo4j for:</strong>
-- Large graphs (&gt;1000 nodes)
-- Complex queries
-- Production deployments
-- Team collaboration</p>
+<p>✅ <strong>Use inspect for:</strong></p>
+<ul>
+<li>Quick visualization during development</li>
+<li>Sharing results with non-technical users</li>
+<li>Small to medium graphs (&lt;1000 nodes)</li>
+<li>No database setup required</li>
+</ul>
+<p>❌ <strong>Use Neo4j for:</strong></p>
+<ul>
+<li>Large graphs (&gt;1000 nodes)</li>
+<li>Complex queries</li>
+<li>Production deployments</li>
+<li>Team collaboration</li>
+</ul>
 <hr />
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="save-important-visualizations">👍 Save Important Visualizations<a class="headerlink" href="#save-important-visualizations" title="Permanent link">&para;</a></h3>

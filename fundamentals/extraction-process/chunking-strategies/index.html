@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2604,42 +2576,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../delta-extraction/" class="md-nav__link">
+      <a href="../dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2817,6 +2761,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4459,6 +4431,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -5519,14 +5519,16 @@
 <h1 id="chunking-strategies">Chunking Strategies<a class="headerlink" href="#chunking-strategies" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Chunking</strong> is the process of intelligently splitting documents into optimal pieces for LLM processing. Docling Graph uses <strong>structure-aware chunking</strong> that preserves document semantics, tables, and hierarchies.</p>
-<p><strong>In this guide:</strong>
-- Why chunking matters
-- Structure-aware vs naive chunking
-- Real tokenizer integration
-- Token management with safety margins
-- Schema-aware chunking
-- Provider-specific optimization
-- Performance tuning</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Why chunking matters</li>
+<li>Structure-aware vs naive chunking</li>
+<li>Real tokenizer integration</li>
+<li>Token management with safety margins</li>
+<li>Schema-aware chunking</li>
+<li>Provider-specific optimization</li>
+<li>Performance tuning</li>
+</ul>
 <div class="admonition tip">
 <p class="admonition-title">New: Real Tokenizer Integration</p>
 <p>Docling Graph now uses real tokenizers for accurate token counting instead of character-based heuristics. This prevents context window overflows and enables more efficient chunk packing with a 20% safety margin.</p>
@@ -5575,11 +5577,13 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">naive_chunk</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">max_chars</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">max_chars</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">max_chars</span><span class="p">)]</span>
 </code></pre></div>
-<p><strong>Problems:</strong>
-- Breaks tables mid-row
-- Splits lists
-- Ignores semantic boundaries
-- Loses context</p>
+<p><strong>Problems:</strong></p>
+<ul>
+<li>Breaks tables mid-row</li>
+<li>Splits lists</li>
+<li>Ignores semantic boundaries</li>
+<li>Loses context</li>
+</ul>
 <hr />
 <h3 id="structure-aware-chunking">✅ Structure-Aware Chunking<a class="headerlink" href="#structure-aware-chunking" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># ✅ Good - Preserves structure</span>
@@ -5592,11 +5596,13 @@
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">chunks</span> <span class="o">=</span> <span class="n">chunker</span><span class="o">.</span><span class="n">chunk_document</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Benefits:</strong>
-- Preserves tables
-- Keeps lists intact
-- Respects sections
-- Maintains context</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Preserves tables</li>
+<li>Keeps lists intact</li>
+<li>Respects sections</li>
+<li>Maintains context</li>
+</ul>
 <hr />
 <h2 id="documentchunker">DocumentChunker<a class="headerlink" href="#documentchunker" title="Permanent link">&para;</a></h2>
 <h3 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h3>
@@ -5629,12 +5635,14 @@
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">merge_peers</span><span class="o">=</span><span class="kc">True</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Supported providers:</strong>
-- <code>mistral</code> - Mistral AI models
-- <code>openai</code> - OpenAI models
-- <code>ollama</code> - Ollama local models
-- <code>watsonx</code> - IBM watsonx models
-- <code>google</code> - Google Gemini models</p>
+<p><strong>Supported providers:</strong></p>
+<ul>
+<li><code>mistral</code> - Mistral AI models</li>
+<li><code>openai</code> - OpenAI models</li>
+<li><code>ollama</code> - Ollama local models</li>
+<li><code>watsonx</code> - IBM watsonx models</li>
+<li><code>google</code> - Google Gemini models</li>
+</ul>
 <hr />
 <h3 id="custom-tokenizer">Custom Tokenizer<a class="headerlink" href="#custom-tokenizer" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Use specific tokenizer</span>
@@ -6291,7 +6299,7 @@ reduce available content tokens deterministically without heuristic ratios.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand chunking:</p>
 <ol>
-<li><strong><a href="../staged-extraction/">Staged Extraction →</a></strong> - Multi-pass extraction for complex templates</li>
+<li><strong><a href="../dense-extraction/">Dense Extraction →</a></strong> - Skeleton-then-fill extraction for complex templates</li>
 <li><strong><a href="../extraction-backends/">Extraction Backends →</a></strong> - Learn about LLM and VLM backends</li>
 <li><strong><a href="../batch-processing/">Batch Processing →</a></strong> - Optimize chunk processing</li>
 <li><strong><a href="../model-merging/">Model Merging →</a></strong> - Consolidate chunk extractions</li>

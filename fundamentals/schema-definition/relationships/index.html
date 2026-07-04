@@ -1641,34 +1641,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../best-practices/" class="md-nav__link">
         
   
@@ -2191,42 +2163,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2404,6 +2348,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4046,6 +4018,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4698,12 +4698,14 @@ with 30+ classes, EN 16931/Peppol BIS compliance, and uses <code>CONTAINS_LINE</
 </blockquote>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Relationships (edges) connect nodes in your knowledge graph. The <code>edge()</code> helper function marks fields as graph relationships and defines their labels. Well-designed edges create meaningful, queryable graph structures.</p>
-<p><strong>In this guide:</strong>
-- Using the <code>edge()</code> function
-- Edge label conventions
-- Single vs list relationships
-- Common edge patterns
-- Relationship best practices</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Using the <code>edge()</code> function</li>
+<li>Edge label conventions</li>
+<li>Single vs list relationships</li>
+<li>Common edge patterns</li>
+<li>Relationship best practices</li>
+</ul>
 <hr />
 <h2 id="using-the-edge-function">Using the edge() Function<a class="headerlink" href="#using-the-edge-function" title="Permanent link">&para;</a></h2>
 <h3 id="basic-syntax">Basic Syntax<a class="headerlink" href="#basic-syntax" title="Permanent link">&para;</a></h3>
@@ -4744,15 +4746,19 @@ with 30+ classes, EN 16931/Peppol BIS compliance, and uses <code>CONTAINS_LINE</
 <hr />
 <h2 id="edge-label-conventions">Edge Label Conventions<a class="headerlink" href="#edge-label-conventions" title="Permanent link">&para;</a></h2>
 <h3 id="naming-standards">Naming Standards<a class="headerlink" href="#naming-standards" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>DO:</strong>
-- Use ALL_CAPS with underscores
-- Use verb phrases that describe the relationship
-- Choose descriptive, domain-appropriate verbs
-- Be consistent across your template</p>
-<p>❌ <strong>DON'T:</strong>
-- Use camelCase, lowercase, or mixed case
-- Use vague labels like "LINK" or "RELATED"
-- Mix naming styles</p>
+<p>✅ <strong>DO:</strong></p>
+<ul>
+<li>Use ALL_CAPS with underscores</li>
+<li>Use verb phrases that describe the relationship</li>
+<li>Choose descriptive, domain-appropriate verbs</li>
+<li>Be consistent across your template</li>
+</ul>
+<p>❌ <strong>DON'T:</strong></p>
+<ul>
+<li>Use camelCase, lowercase, or mixed case</li>
+<li>Use vague labels like "LINK" or "RELATED"</li>
+<li>Mix naming styles</li>
+</ul>
 <h3 id="good-vs-bad-labels">Good vs Bad Labels<a class="headerlink" href="#good-vs-bad-labels" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># ✅ Good - Clear, descriptive, consistent</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">issued_by</span><span class="p">:</span> <span class="n">Organization</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;ISSUED_BY&quot;</span><span class="p">)</span>

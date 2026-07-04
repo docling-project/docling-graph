@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2055,10 +2027,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-staged-extraction" class="md-nav__link">
+  <a href="#4-dense-extraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Staged Extraction
+        4. Dense Extraction
       
     </span>
   </a>
@@ -2066,10 +2038,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-delta-extraction" class="md-nav__link">
+  <a href="#5-model-merging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Delta Extraction
+        5. Model Merging
       
     </span>
   </a>
@@ -2077,32 +2049,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-model-merging" class="md-nav__link">
+  <a href="#6-batch-processing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Model Merging
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-batch-processing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Batch Processing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8-pipeline-orchestration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Pipeline Orchestration
+        6. Batch Processing
       
     </span>
   </a>
@@ -2364,42 +2314,14 @@
   
   
     <li class="md-nav__item">
-      <a href="delta-extraction/" class="md-nav__link">
+      <a href="dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2577,6 +2499,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4219,6 +4169,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4807,10 +4785,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-staged-extraction" class="md-nav__link">
+  <a href="#4-dense-extraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Staged Extraction
+        4. Dense Extraction
       
     </span>
   </a>
@@ -4818,10 +4796,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-delta-extraction" class="md-nav__link">
+  <a href="#5-model-merging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Delta Extraction
+        5. Model Merging
       
     </span>
   </a>
@@ -4829,32 +4807,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-model-merging" class="md-nav__link">
+  <a href="#6-batch-processing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Model Merging
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-batch-processing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Batch Processing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#8-pipeline-orchestration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Pipeline Orchestration
+        6. Batch Processing
       
     </span>
   </a>
@@ -5039,12 +4995,14 @@
 <h1 id="the-extraction-process">The Extraction Process<a class="headerlink" href="#the-extraction-process" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The <strong>Extraction Process</strong> is the core of Docling Graph, transforming raw documents into structured knowledge graphs through a multi-stage pipeline. This section explains each stage in detail.</p>
-<p><strong>What you'll learn:</strong>
-- How documents are converted to structured format
-- Intelligent chunking strategies
-- Extraction backends (LLM vs VLM)
-- Model merging and consolidation
-- Pipeline orchestration</p>
+<p><strong>What you'll learn:</strong></p>
+<ul>
+<li>How documents are converted to structured format</li>
+<li>Intelligent chunking strategies</li>
+<li>Extraction backends (LLM vs VLM)</li>
+<li>Model merging and consolidation</li>
+<li>Pipeline orchestration</li>
+</ul>
 <hr />
 <h2 id="the-four-stage-pipeline">The Four-Stage Pipeline<a class="headerlink" href="#the-four-stage-pipeline" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>%%{init: {'theme': 'redux-dark', 'look': 'default', 'layout': 'elk'}}%%
@@ -5084,41 +5042,49 @@ flowchart LR
     class F output</code></pre>
 <h3 id="stage-1-document-conversion">Stage 1: Document Conversion<a class="headerlink" href="#stage-1-document-conversion" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Convert PDF/images to structured Docling format</p>
-<p><strong>Process:</strong>
-- OCR or Vision pipeline
-- Layout analysis
-- Table extraction
-- Text extraction</p>
+<p><strong>Process:</strong></p>
+<ul>
+<li>OCR or Vision pipeline</li>
+<li>Layout analysis</li>
+<li>Table extraction</li>
+<li>Text extraction</li>
+</ul>
 <p><strong>Output:</strong> DoclingDocument with structure</p>
 <p><strong>Learn more:</strong> <a href="document-conversion/">Document Conversion →</a></p>
 <hr />
 <h3 id="stage-2-chunking">Stage 2: Chunking<a class="headerlink" href="#stage-2-chunking" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Split document into optimal chunks for LLM processing</p>
-<p><strong>Process:</strong>
-- Structure-aware splitting
-- Token counting
-- Semantic boundaries
-- Context preservation</p>
+<p><strong>Process:</strong></p>
+<ul>
+<li>Structure-aware splitting</li>
+<li>Token counting</li>
+<li>Semantic boundaries</li>
+<li>Context preservation</li>
+</ul>
 <p><strong>Output:</strong> List of contextualized chunks</p>
 <p><strong>Learn more:</strong> <a href="chunking-strategies/">Chunking Strategies →</a></p>
 <hr />
 <h3 id="stage-3-extraction">Stage 3: Extraction<a class="headerlink" href="#stage-3-extraction" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Extract structured data using LLM/VLM</p>
-<p><strong>Process:</strong>
-- Backend selection (LLM/VLM)
-- Batch processing
-- Schema validation
-- Error handling</p>
+<p><strong>Process:</strong></p>
+<ul>
+<li>Backend selection (LLM/VLM)</li>
+<li>Batch processing</li>
+<li>Schema validation</li>
+<li>Error handling</li>
+</ul>
 <p><strong>Output:</strong> List of Pydantic models</p>
 <p><strong>Learn more:</strong> <a href="extraction-backends/">Extraction Backends →</a></p>
 <hr />
 <h3 id="stage-4-merging">Stage 4: Merging<a class="headerlink" href="#stage-4-merging" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Consolidate multiple extractions into single model</p>
-<p><strong>Process:</strong>
-- Programmatic merging
-- LLM consolidation (optional)
-- Conflict resolution
-- Validation</p>
+<p><strong>Process:</strong></p>
+<ul>
+<li>Programmatic merging</li>
+<li>LLM consolidation (optional)</li>
+<li>Conflict resolution</li>
+<li>Validation</li>
+</ul>
 <p><strong>Output:</strong> Single consolidated model</p>
 <p><strong>Learn more:</strong> <a href="model-merging/">Model Merging →</a></p>
 <hr />
@@ -5131,11 +5097,13 @@ flowchart LR
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Default</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Process:</strong>
-1. Convert entire document
-2. Chunk intelligently
-3. Extract from each chunk
-4. Merge into single model</p>
+<p><strong>Process:</strong></p>
+<ol>
+<li>Convert entire document</li>
+<li>Chunk intelligently</li>
+<li>Extract from each chunk</li>
+<li>Merge into single model</li>
+</ol>
 <p><strong>Output:</strong> 1 consolidated model</p>
 <hr />
 <h3 id="one-to-one">One-to-One<a class="headerlink" href="#one-to-one" title="Permanent link">&para;</a></h3>
@@ -5146,10 +5114,12 @@ flowchart LR
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Process:</strong>
-1. Convert entire document
-2. Extract from each page
-3. Return separate models</p>
+<p><strong>Process:</strong></p>
+<ol>
+<li>Convert entire document</li>
+<li>Extract from each page</li>
+<li>Return separate models</li>
+</ol>
 <p><strong>Output:</strong> N models (one per page)</p>
 <hr />
 <h2 id="backend-comparison">Backend Comparison<a class="headerlink" href="#backend-comparison" title="Permanent link">&para;</a></h2>
@@ -5193,8 +5163,7 @@ flowchart LR
 <p>For LLM many-to-one extraction you can choose:</p>
 <ul>
 <li><strong>direct</strong> (default): Single-pass extraction then programmatic merge.</li>
-<li><strong>staged</strong>: Catalog → ID pass → fill pass → merge; better for complex nested templates. See <a href="staged-extraction/">Staged Extraction</a>.</li>
-<li><strong>delta</strong>: Chunk → token-bounded batches → flat graph IR → normalize → merge → projection; for long documents and graph-first extraction. Supports optional resolvers and configurable quality gates. Use <code>docling-graph init</code> and select <strong>delta</strong> to configure resolvers and quality interactively. See <a href="delta-extraction/">Delta Extraction</a>.</li>
+<li><strong>dense</strong>: Two-phase skeleton-then-fill (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See <a href="dense-extraction/">Dense Extraction</a>.</li>
 </ul>
 <hr />
 <h2 id="pipeline-stages-in-code">Pipeline Stages in Code<a class="headerlink" href="#pipeline-stages-in-code" title="Permanent link">&para;</a></h2>
@@ -5341,7 +5310,7 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">ExtractorFactory</span><span class="o">.</span><span class="n">create_extractor</span><span class="p">(</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">backend_name</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;staged&quot; / &quot;delta&quot; for complex or chunk-based extraction</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;dense&quot; for chunked skeleton-then-fill extraction</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">)</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">models</span><span class="p">,</span> <span class="n">doc</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
@@ -5415,64 +5384,62 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <h2 id="section-contents">Section Contents<a class="headerlink" href="#section-contents" title="Permanent link">&para;</a></h2>
 <h3 id="1-document-conversion_1">1. <a href="document-conversion/">Document Conversion</a><a class="headerlink" href="#1-document-conversion_1" title="Permanent link">&para;</a></h3>
 <p>Learn how documents are converted to structured format using Docling pipelines.</p>
-<p><strong>Topics:</strong>
-- OCR vs Vision pipelines
-- Layout analysis
-- Table extraction
-- Multi-language support</p>
+<p><strong>Topics:</strong></p>
+<ul>
+<li>OCR vs Vision pipelines</li>
+<li>Layout analysis</li>
+<li>Table extraction</li>
+<li>Multi-language support</li>
+</ul>
 <hr />
 <h3 id="2-chunking-strategies">2. <a href="chunking-strategies/">Chunking Strategies</a><a class="headerlink" href="#2-chunking-strategies" title="Permanent link">&para;</a></h3>
 <p>Understand intelligent document chunking for optimal LLM processing.</p>
-<p><strong>Topics:</strong>
-- Structure-aware chunking
-- Token management
-- Semantic boundaries
-- Provider-specific optimization</p>
+<p><strong>Topics:</strong></p>
+<ul>
+<li>Structure-aware chunking</li>
+<li>Token management</li>
+<li>Semantic boundaries</li>
+<li>Provider-specific optimization</li>
+</ul>
 <hr />
 <h3 id="3-extraction-backends">3. <a href="extraction-backends/">Extraction Backends</a><a class="headerlink" href="#3-extraction-backends" title="Permanent link">&para;</a></h3>
 <p>Deep dive into LLM and VLM extraction backends.</p>
-<p><strong>Topics:</strong>
-- LLM backend (text-based)
-- VLM backend (vision-based)
-- Backend selection
-- Extraction contracts (direct, staged, delta)</p>
+<p><strong>Topics:</strong></p>
+<ul>
+<li>LLM backend (text-based)</li>
+<li>VLM backend (vision-based)</li>
+<li>Backend selection</li>
+<li>Extraction contracts (direct and dense)</li>
+</ul>
 <hr />
-<h3 id="4-staged-extraction">4. <a href="staged-extraction/">Staged Extraction</a><a class="headerlink" href="#4-staged-extraction" title="Permanent link">&para;</a></h3>
-<p>Multi-pass extraction for complex nested templates (ID pass → fill pass → merge).</p>
-<p><strong>Topics:</strong>
-- When to use staged
-- Tuning (presets, parallel_workers, fill cap, id shard size)</p>
+<h3 id="4-dense-extraction">4. <a href="dense-extraction/">Dense Extraction</a><a class="headerlink" href="#4-dense-extraction" title="Permanent link">&para;</a></h3>
+<p>Two-phase extraction for chunked many-to-one workflows (skeleton → fill).</p>
+<p><strong>Topics:</strong></p>
+<ul>
+<li>When to use dense</li>
+<li>Skeleton and fill phases</li>
+<li>Configuration (dense_skeleton_batch_tokens, dense_fill_nodes_cap, parallel_workers)</li>
+</ul>
 <hr />
-<h3 id="5-delta-extraction">5. <a href="delta-extraction/">Delta Extraction</a><a class="headerlink" href="#5-delta-extraction" title="Permanent link">&para;</a></h3>
-<p>Chunk-based graph extraction: token-bounded batches → flat graph IR → normalize → merge → projection.</p>
-<p><strong>Topics:</strong>
-- When to use delta
-- Batch planning, IR normalizer, resolvers, quality gate
-- Configuration (llm_batch_token_size, parallel_workers, delta_* options)</p>
-<hr />
-<h3 id="6-model-merging">6. <a href="model-merging/">Model Merging</a><a class="headerlink" href="#6-model-merging" title="Permanent link">&para;</a></h3>
+<h3 id="5-model-merging">5. <a href="model-merging/">Model Merging</a><a class="headerlink" href="#5-model-merging" title="Permanent link">&para;</a></h3>
 <p>Learn how multiple extractions are consolidated into single models.</p>
-<p><strong>Topics:</strong>
-- Programmatic merging
-- LLM consolidation
-- Conflict resolution
-- Validation strategies</p>
+<p><strong>Topics:</strong></p>
+<ul>
+<li>Programmatic merging</li>
+<li>LLM consolidation</li>
+<li>Conflict resolution</li>
+<li>Validation strategies</li>
+</ul>
 <hr />
-<h3 id="7-batch-processing">7. <a href="batch-processing/">Batch Processing</a><a class="headerlink" href="#7-batch-processing" title="Permanent link">&para;</a></h3>
+<h3 id="6-batch-processing">6. <a href="batch-processing/">Batch Processing</a><a class="headerlink" href="#6-batch-processing" title="Permanent link">&para;</a></h3>
 <p>Optimize extraction with intelligent batching.</p>
-<p><strong>Topics:</strong>
-- Chunk batching
-- Context window management
-- Adaptive batch sizing
-- Performance tuning</p>
-<hr />
-<h3 id="8-pipeline-orchestration">8. Pipeline Orchestration<a class="headerlink" href="#8-pipeline-orchestration" title="Permanent link">&para;</a></h3>
-<p>Understand how pipeline stages are coordinated through the extraction process.</p>
-<p><strong>Topics:</strong>
-- Stage execution
-- Context management
-- Error handling
-- Resource cleanup</p>
+<p><strong>Topics:</strong></p>
+<ul>
+<li>Chunk batching</li>
+<li>Context window management</li>
+<li>Adaptive batch sizing</li>
+<li>Performance tuning</li>
+</ul>
 <hr />
 <h2 id="quick-examples">Quick Examples<a class="headerlink" href="#quick-examples" title="Permanent link">&para;</a></h2>
 <h3 id="basic-extraction">📍 Basic Extraction<a class="headerlink" href="#basic-extraction" title="Permanent link">&para;</a></h3>

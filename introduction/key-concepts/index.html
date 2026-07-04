@@ -652,6 +652,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#graph" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -934,6 +945,17 @@
     <span class="md-ellipsis">
       
         HTML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provenance-ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance Ledger
       
     </span>
   </a>
@@ -1569,34 +1591,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2113,42 +2107,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2323,6 +2289,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3965,6 +3959,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4212,6 +4234,17 @@
     <span class="md-ellipsis">
       
         Edge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance
       
     </span>
   </a>
@@ -4507,6 +4540,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#provenance-ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance Ledger
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4603,14 +4647,20 @@
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Target: Organization_AcmeCorp
 </code></pre></div></p>
 <p>This represents: "Document INV001 was issued by Acme Corp"</p>
+<h3 id="provenance">Provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h3>
+<p><strong>Provenance</strong> (data grounding) is a deterministic link from a graph node back to the source chunk(s) and page(s) it came from — computed entirely from pipeline bookkeeping, never from the LLM. Enabled by default, it adds a <code>__provenance__</code> attribute to every entity node:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">node_data</span><span class="p">[</span><span class="s2">&quot;__provenance__&quot;</span><span class="p">]</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># {&quot;document_id&quot;: &quot;...&quot;, &quot;match&quot;: &quot;verbatim&quot;, &quot;chunks&quot;: [2], &quot;pages&quot;: [1]}</span>
+</code></pre></div>
+<p>A full ledger (<code>provenance.json</code>) with the underlying chunk text is also written, so any node can be traced back to its exact source snippet. See <a href="../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance</a>.</p>
 <h3 id="graph">Graph<a class="headerlink" href="#graph" title="Permanent link">&para;</a></h3>
 <p>A <strong>graph</strong> is the complete network of nodes and edges representing your extracted knowledge.</p>
 <p><strong>Graph Structure</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Document_INV001
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  ├─ ISSUED_BY → Organization_AcmeCorp
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  ├─ SENT_TO → Person_JohnDoe
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  └─ CONTAINS_LINE → LineItem_001
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>      └─ HAS_PRODUCT → Product_Widget
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Document_INV001
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  ├─ ISSUED_BY → Organization_AcmeCorp
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  ├─ SENT_TO → Person_JohnDoe
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  └─ CONTAINS_LINE → LineItem_001
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>      └─ HAS_PRODUCT → Product_Widget
 </code></pre></div></p>
 <h2 id="pydantic-templates">Pydantic Templates<a class="headerlink" href="#pydantic-templates" title="Permanent link">&para;</a></h2>
 <h3 id="what-is-a-template">What is a Template?<a class="headerlink" href="#what-is-a-template" title="Permanent link">&para;</a></h3>
@@ -4621,47 +4671,47 @@
 <li><strong>Graph Structure</strong>: Defines how entities and relationships map to nodes and edges</li>
 </ol>
 <h3 id="template-example">Template Example<a class="headerlink" href="#template-example" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">edge</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to define graph relationships&quot;&quot;&quot;</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;edge_label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">Organization</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;An organization entity&quot;&quot;&quot;</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="s1">&#39;graph_id_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="p">}</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Legal name of the organization&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Acme Corp&quot;</span><span class="p">,</span> <span class="s2">&quot;Tech Solutions Ltd&quot;</span><span class="p">]</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="p">)</span>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>
-<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span class="n">tax_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tax identification number&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;123456789&quot;</span><span class="p">,</span> <span class="s2">&quot;FR12345678901&quot;</span><span class="p">]</span>
-<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>    <span class="p">)</span>
-<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>
-<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="k">class</span><span class="w"> </span><span class="nc">Invoice</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;An invoice document&quot;&quot;&quot;</span>
-<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>        <span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>        <span class="s1">&#39;graph_id_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;invoice_number&#39;</span><span class="p">]</span>
-<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>    <span class="p">}</span>
-<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>
-<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>    <span class="n">invoice_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Unique invoice identifier&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;INV-2024-001&quot;</span><span class="p">,</span> <span class="s2">&quot;INV-123456&quot;</span><span class="p">]</span>
-<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>    <span class="p">)</span>
-<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>
-<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>    <span class="c1"># This creates an edge in the graph</span>
-<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>    <span class="n">issuer</span><span class="p">:</span> <span class="n">Organization</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span>
-<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ISSUED_BY&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Organization that issued this invoice&quot;</span>
-<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>    <span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">edge</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to define graph relationships&quot;&quot;&quot;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;edge_label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">Organization</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;An organization entity&quot;&quot;&quot;</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="s1">&#39;graph_id_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="p">}</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Legal name of the organization&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Acme Corp&quot;</span><span class="p">,</span> <span class="s2">&quot;Tech Solutions Ltd&quot;</span><span class="p">]</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="p">)</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>    <span class="n">tax_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tax identification number&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;123456789&quot;</span><span class="p">,</span> <span class="s2">&quot;FR12345678901&quot;</span><span class="p">]</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>    <span class="p">)</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="k">class</span><span class="w"> </span><span class="nc">Invoice</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;An invoice document&quot;&quot;&quot;</span>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>        <span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>        <span class="s1">&#39;graph_id_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;invoice_number&#39;</span><span class="p">]</span>
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a>    <span class="p">}</span>
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>
+<a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a>    <span class="n">invoice_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Unique invoice identifier&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;INV-2024-001&quot;</span><span class="p">,</span> <span class="s2">&quot;INV-123456&quot;</span><span class="p">]</span>
+<a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a>    <span class="p">)</span>
+<a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a>
+<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a>    <span class="c1"># This creates an edge in the graph</span>
+<a id="__codelineno-6-38" name="__codelineno-6-38" href="#__codelineno-6-38"></a>    <span class="n">issuer</span><span class="p">:</span> <span class="n">Organization</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span>
+<a id="__codelineno-6-39" name="__codelineno-6-39" href="#__codelineno-6-39"></a>        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ISSUED_BY&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-40" name="__codelineno-6-40" href="#__codelineno-6-40"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Organization that issued this invoice&quot;</span>
+<a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a>    <span class="p">)</span>
 </code></pre></div>
 <p><strong>Result</strong>: When extracted, this creates:
 - An <code>Invoice</code> node
@@ -4687,7 +4737,7 @@
 - Documents requiring deep understanding</p>
 <p><strong>Characteristics</strong>:
 - Requires markdown conversion first
-- Local (vLLM, Ollama) or remote (OpenAI, Mistral, Gemini, WatsonX)
+- Local (vLLM, Ollama) or remote (OpenAI, Mistral, Gemini, watsonx)
 - Supports chunking for large documents
 - Better for complex extraction</p>
 <h2 id="processing-modes">Processing Modes<a class="headerlink" href="#processing-modes" title="Permanent link">&para;</a></h2>
@@ -4698,9 +4748,9 @@
 - Document is a batch of separate items (e.g., multiple invoices in one PDF)
 - You need page-level granularity</p>
 <p><strong>Example</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>3-page PDF with 3 invoices
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>→ 3 separate Invoice models
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>→ 3 separate subgraphs
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>3-page PDF with 3 invoices
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>→ 3 separate Invoice models
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>→ 3 separate subgraphs
 </code></pre></div></p>
 <h3 id="many-to-one">Many-to-One<a class="headerlink" href="#many-to-one" title="Permanent link">&para;</a></h3>
 <p><strong>What</strong>: Process all pages together, producing one merged Pydantic model for the entire document.</p>
@@ -4709,9 +4759,9 @@
 - Information flows across pages
 - You want a document-level view</p>
 <p><strong>Example</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>10-page rheology research
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>→ 1 merged ResearchPaper model
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>→ 1 unified graph
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>10-page rheology research
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>→ 1 merged ResearchPaper model
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>→ 1 unified graph
 </code></pre></div></p>
 <h2 id="chunking">Chunking<a class="headerlink" href="#chunking" title="Permanent link">&para;</a></h2>
 <h3 id="why-chunking">Why Chunking?<a class="headerlink" href="#why-chunking" title="Permanent link">&para;</a></h3>
@@ -4737,14 +4787,14 @@
 <h2 id="graph-construction">Graph Construction<a class="headerlink" href="#graph-construction" title="Permanent link">&para;</a></h2>
 <h3 id="node-id-generation">Node ID Generation<a class="headerlink" href="#node-id-generation" title="Permanent link">&para;</a></h3>
 <p><strong>For Entities</strong> (with <code>graph_id_fields</code>):
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Person with graph_id_fields=[&#39;name&#39;, &#39;dob&#39;]</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span> <span class="n">dob</span><span class="o">=</span><span class="s2">&quot;1990-01-15&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="err">→</span> <span class="n">Node</span> <span class="n">ID</span><span class="p">:</span> <span class="s2">&quot;Person_JohnDoe_1990-01-15&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Person with graph_id_fields=[&#39;name&#39;, &#39;dob&#39;]</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span> <span class="n">dob</span><span class="o">=</span><span class="s2">&quot;1990-01-15&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="err">→</span> <span class="n">Node</span> <span class="n">ID</span><span class="p">:</span> <span class="s2">&quot;Person_JohnDoe_1990-01-15&quot;</span>
 </code></pre></div></p>
 <p><strong>For Components</strong> (content-based):
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Address with is_entity=False</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;Boston&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="err">→</span> <span class="n">Node</span> <span class="n">ID</span><span class="p">:</span> <span class="s2">&quot;Address_</span><span class="si">{content_hash}</span><span class="s2">&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Address with is_entity=False</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;Boston&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="err">→</span> <span class="n">Node</span> <span class="n">ID</span><span class="p">:</span> <span class="s2">&quot;Address_</span><span class="si">{content_hash}</span><span class="s2">&quot;</span>
 </code></pre></div></p>
 <h3 id="deduplication">Deduplication<a class="headerlink" href="#deduplication" title="Permanent link">&para;</a></h3>
 <p><strong>Entities</strong>: Deduplicated by <code>graph_id_fields</code>
@@ -4753,17 +4803,17 @@
 - Same field values → Same node</p>
 <h3 id="example-graph">Example Graph<a class="headerlink" href="#example-graph" title="Permanent link">&para;</a></h3>
 <p>Given these models:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">author1</span> <span class="o">=</span> <span class="n">Author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dr. Smith&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">author2</span> <span class="o">=</span> <span class="n">Author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dr. Jones&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">paper</span> <span class="o">=</span> <span class="n">Paper</span><span class="p">(</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Advanced AI&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">authors</span><span class="o">=</span><span class="p">[</span><span class="n">author1</span><span class="p">,</span> <span class="n">author2</span><span class="p">]</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">author1</span> <span class="o">=</span> <span class="n">Author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dr. Smith&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">author2</span> <span class="o">=</span> <span class="n">Author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dr. Jones&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">paper</span> <span class="o">=</span> <span class="n">Paper</span><span class="p">(</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Advanced AI&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">authors</span><span class="o">=</span><span class="p">[</span><span class="n">author1</span><span class="p">,</span> <span class="n">author2</span><span class="p">]</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">)</span>
 </code></pre></div>
 <p>Resulting graph:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Paper_AdvancedAI
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  ├─ HAS_AUTHOR → Author_DrSmith
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  └─ HAS_AUTHOR → Author_DrJones
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>Paper_AdvancedAI
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>  ├─ HAS_AUTHOR → Author_DrSmith
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>  └─ HAS_AUTHOR → Author_DrJones
 </code></pre></div>
 <h2 id="export-formats">Export Formats<a class="headerlink" href="#export-formats" title="Permanent link">&para;</a></h2>
 <h3 id="csv">CSV<a class="headerlink" href="#csv" title="Permanent link">&para;</a></h3>
@@ -4775,7 +4825,7 @@
 <h3 id="cypher">Cypher<a class="headerlink" href="#cypher" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Purpose</strong>: Neo4j script execution</li>
-<li><strong>Files</strong>: <code>document_graph.cypher</code></li>
+<li><strong>Files</strong>: <code>graph.cypher</code></li>
 <li><strong>Best For</strong>: Development and incremental updates</li>
 </ul>
 <h3 id="json">JSON<a class="headerlink" href="#json" title="Permanent link">&para;</a></h3>
@@ -4789,6 +4839,12 @@
 <li><strong>Purpose</strong>: Interactive visualization</li>
 <li><strong>Files</strong>: <code>graph.html</code></li>
 <li><strong>Best For</strong>: Exploration and presentation</li>
+</ul>
+<h3 id="provenance-ledger">Provenance Ledger<a class="headerlink" href="#provenance-ledger" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: Deterministic node-to-source grounding</li>
+<li><strong>Files</strong>: <code>provenance.json</code></li>
+<li><strong>Best For</strong>: Auditing, citation, RAG grounding</li>
 </ul>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand the core concepts:</p>

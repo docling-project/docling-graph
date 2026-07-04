@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2208,42 +2180,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2421,6 +2365,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4063,6 +4035,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4727,12 +4727,14 @@
 <h1 id="backend-selection-llm-vs-vlm">Backend Selection: LLM vs VLM<a class="headerlink" href="#backend-selection-llm-vs-vlm" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Docling Graph supports two extraction backends: <strong>LLM (Language Model)</strong> for text-based extraction and <strong>VLM (Vision-Language Model)</strong> for vision-based extraction. Choosing the right backend is crucial for extraction quality and performance.</p>
-<p><strong>In this guide:</strong>
-- LLM vs VLM comparison
-- When to use each backend
-- Performance characteristics
-- Cost considerations
-- Switching between backends</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>LLM vs VLM comparison</li>
+<li>When to use each backend</li>
+<li>Performance characteristics</li>
+<li>Cost considerations</li>
+<li>Switching between backends</li>
+</ul>
 <hr />
 <h2 id="backend-comparison">Backend Comparison<a class="headerlink" href="#backend-comparison" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison-table">Quick Comparison Table<a class="headerlink" href="#quick-comparison-table" title="Permanent link">&para;</a></h3>
@@ -4855,15 +4857,21 @@ flowchart LR
 </ul>
 <h3 id="llm-advantages">LLM Advantages<a class="headerlink" href="#llm-advantages" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Flexible Inference</strong></li>
-<li>Local: Use your own GPU/CPU</li>
+<li>
+<p><strong>Flexible Inference</strong></p>
+</li>
+<li>
+<p>Local: Use your own GPU/CPU</p>
+</li>
 <li>
 <p>Remote: Use cloud APIs (OpenAI, Mistral, Gemini)</p>
 </li>
 <li>
 <p><strong>Fast Processing</strong></p>
 </li>
-<li>Quick markdown conversion</li>
+<li>
+<p>Quick markdown conversion</p>
+</li>
 <li>Efficient text processing</li>
 <li>
 <p>Parallel chunking support</p>
@@ -4871,7 +4879,9 @@ flowchart LR
 <li>
 <p><strong>Cost Effective</strong></p>
 </li>
-<li>Local inference: Free (after GPU cost)</li>
+<li>
+<p>Local inference: Free (after GPU cost)</p>
+</li>
 <li>Remote inference: Pay per token</li>
 <li>
 <p>Generally cheaper than VLM</p>
@@ -4879,14 +4889,20 @@ flowchart LR
 <li>
 <p><strong>Easy Setup</strong></p>
 </li>
-<li>No GPU required for remote</li>
+<li>
+<p>No GPU required for remote</p>
+</li>
 <li>Simple API key configuration</li>
 <li>Wide model selection</li>
 </ol>
 <h3 id="llm-limitations">LLM Limitations<a class="headerlink" href="#llm-limitations" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Text-Only Processing</strong></li>
-<li>Loses visual information</li>
+<li>
+<p><strong>Text-Only Processing</strong></p>
+</li>
+<li>
+<p>Loses visual information</p>
+</li>
 <li>May miss layout cues</li>
 <li>
 <p>Can't process images directly</p>
@@ -4894,7 +4910,9 @@ flowchart LR
 <li>
 <p><strong>OCR Dependency</strong></p>
 </li>
-<li>Relies on Docling OCR quality</li>
+<li>
+<p>Relies on Docling OCR quality</p>
+</li>
 <li>May struggle with poor scans</li>
 <li>
 <p>Handwriting not well supported</p>
@@ -4902,7 +4920,9 @@ flowchart LR
 <li>
 <p><strong>Context Limits</strong></p>
 </li>
-<li>Large documents need chunking</li>
+<li>
+<p>Large documents need chunking</p>
+</li>
 <li>May lose cross-page context</li>
 <li>Requires consolidation for coherence</li>
 </ol>
@@ -4967,23 +4987,31 @@ flowchart LR
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="when-to-use-vlm">When to Use VLM<a class="headerlink" href="#when-to-use-vlm" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use VLM when:</strong>
-- Documents have complex visual layouts
-- Images contain critical information
-- Tables have intricate structures
-- Forms have specific visual patterns
-- Highest accuracy is required
-- You have GPU available</p>
-<p>❌ <strong>Don't use VLM when:</strong>
-- Documents are simple text
-- You need remote API support
-- GPU is not available
-- Processing speed is critical
-- Cost is a major concern</p>
+<p>✅ <strong>Use VLM when:</strong></p>
+<ul>
+<li>Documents have complex visual layouts</li>
+<li>Images contain critical information</li>
+<li>Tables have intricate structures</li>
+<li>Forms have specific visual patterns</li>
+<li>Highest accuracy is required</li>
+<li>You have GPU available</li>
+</ul>
+<p>❌ <strong>Don't use VLM when:</strong></p>
+<ul>
+<li>Documents are simple text</li>
+<li>You need remote API support</li>
+<li>GPU is not available</li>
+<li>Processing speed is critical</li>
+<li>Cost is a major concern</li>
+</ul>
 <h3 id="vlm-advantages">VLM Advantages<a class="headerlink" href="#vlm-advantages" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Visual Understanding</strong></li>
-<li>Processes layout and structure</li>
+<li>
+<p><strong>Visual Understanding</strong></p>
+</li>
+<li>
+<p>Processes layout and structure</p>
+</li>
 <li>Understands visual relationships</li>
 <li>Handles complex tables</li>
 <li>
@@ -4992,7 +5020,9 @@ flowchart LR
 <li>
 <p><strong>Higher Accuracy</strong></p>
 </li>
-<li>Best for complex documents</li>
+<li>
+<p>Best for complex documents</p>
+</li>
 <li>Understands visual context</li>
 <li>Fewer extraction errors</li>
 <li>
@@ -5001,15 +5031,21 @@ flowchart LR
 <li>
 <p><strong>No OCR Dependency</strong></p>
 </li>
-<li>Direct image processing</li>
+<li>
+<p>Direct image processing</p>
+</li>
 <li>Better with poor scans</li>
 <li>Handles handwriting better</li>
 <li>Preserves visual information</li>
 </ol>
 <h3 id="vlm-limitations">VLM Limitations<a class="headerlink" href="#vlm-limitations" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Local Only</strong></li>
-<li>Requires local GPU</li>
+<li>
+<p><strong>Local Only</strong></p>
+</li>
+<li>
+<p>Requires local GPU</p>
+</li>
 <li>No remote API support</li>
 <li>Higher setup complexity</li>
 <li>
@@ -5018,7 +5054,9 @@ flowchart LR
 <li>
 <p><strong>Slower Processing</strong></p>
 </li>
-<li>Image processing overhead</li>
+<li>
+<p>Image processing overhead</p>
+</li>
 <li>Larger model size</li>
 <li>More GPU memory needed</li>
 <li>
@@ -5027,7 +5065,9 @@ flowchart LR
 <li>
 <p><strong>Higher Cost</strong></p>
 </li>
-<li>GPU required</li>
+<li>
+<p>GPU required</p>
+</li>
 <li>More expensive hardware</li>
 <li>Higher power consumption</li>
 <li>Larger storage needs</li>
@@ -5275,7 +5315,7 @@ flowchart LR
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="c1"># LLM-specific</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Split large documents</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">max_batch_size</span><span class="o">=</span><span class="mi">5</span>  <span class="c1"># Process multiple chunks</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">chunk_max_tokens</span><span class="o">=</span><span class="mi">512</span>  <span class="c1"># Max tokens per chunk</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="vlm-specific-settings">VLM-Specific Settings<a class="headerlink" href="#vlm-specific-settings" title="Permanent link">&para;</a></h3>

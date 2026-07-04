@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3881,6 +3853,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../llm-clients/" class="md-nav__link">
         
   
@@ -4466,12 +4466,14 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">DoclingGraphError</span><span class="p">):</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when configuration is invalid or missing.&quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Common Causes:</strong>
-- Missing required environment variables
-- Invalid configuration file
-- Unsupported model or provider
-- Missing required parameters
-- Invalid parameter combinations</p>
+<p><strong>Common Causes:</strong></p>
+<ul>
+<li>Missing required environment variables</li>
+<li>Invalid configuration file</li>
+<li>Unsupported model or provider</li>
+<li>Missing required parameters</li>
+<li>Invalid parameter combinations</li>
+</ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurationError</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
@@ -4501,12 +4503,14 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ClientError</span><span class="p">(</span><span class="n">DoclingGraphError</span><span class="p">):</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when LLM client operation fails.&quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Common Causes:</strong>
-- API authentication failure
-- Network timeout
-- Invalid API response
-- Rate limit exceeded
-- Model not available</p>
+<p><strong>Common Causes:</strong></p>
+<ul>
+<li>API authentication failure</li>
+<li>Network timeout</li>
+<li>Invalid API response</li>
+<li>Rate limit exceeded</li>
+<li>Model not available</li>
+</ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientError</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
@@ -4544,12 +4548,14 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ExtractionError</span><span class="p">(</span><span class="n">DoclingGraphError</span><span class="p">):</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when document extraction fails.&quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Common Causes:</strong>
-- Document parsing failure
-- Empty extraction result
-- Invalid document format
-- Extraction timeout
-- Model inference failure</p>
+<p><strong>Common Causes:</strong></p>
+<ul>
+<li>Document parsing failure</li>
+<li>Empty extraction result</li>
+<li>Invalid document format</li>
+<li>Extraction timeout</li>
+<li>Model inference failure</li>
+</ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtractionError</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
@@ -4589,12 +4595,14 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ValidationError</span><span class="p">(</span><span class="n">DoclingGraphError</span><span class="p">):</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when data validation fails.&quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Common Causes:</strong>
-- Pydantic validation error
-- Schema mismatch
-- Invalid data structure
-- Missing required fields
-- Type mismatch</p>
+<p><strong>Common Causes:</strong></p>
+<ul>
+<li>Pydantic validation error</li>
+<li>Schema mismatch</li>
+<li>Invalid data structure</li>
+<li>Missing required fields</li>
+<li>Type mismatch</li>
+</ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">PydanticValidationError</span>
@@ -4633,12 +4641,14 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GraphError</span><span class="p">(</span><span class="n">DoclingGraphError</span><span class="p">):</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when graph operation fails.&quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Common Causes:</strong>
-- Invalid graph structure
-- Node/edge creation failure
-- Graph validation error
-- Export failure
-- Circular dependencies</p>
+<p><strong>Common Causes:</strong></p>
+<ul>
+<li>Invalid graph structure</li>
+<li>Node/edge creation failure</li>
+<li>Graph validation error</li>
+<li>Export failure</li>
+<li>Circular dependencies</li>
+</ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphError</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
@@ -4677,11 +4687,13 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PipelineError</span><span class="p">(</span><span class="n">DoclingGraphError</span><span class="p">):</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when pipeline execution fails.&quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Common Causes:</strong>
-- Stage execution failure
-- Resource initialization error
-- Cleanup failure
-- Unexpected pipeline state</p>
+<p><strong>Common Causes:</strong></p>
+<ul>
+<li>Stage execution failure</li>
+<li>Resource initialization error</li>
+<li>Cleanup failure</li>
+<li>Unexpected pipeline state</li>
+</ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineError</span>
 <a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>

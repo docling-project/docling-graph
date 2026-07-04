@@ -3,7 +3,7 @@ Example 10: Multi-Provider Configurations
 
 Description:
     Demonstrates how to configure and use different LLM providers (OpenAI, Mistral,
-    Gemini, WatsonX). Shows provider-specific settings and model selection.
+    Gemini, watsonx). Shows provider-specific settings and model selection.
 
 Use Cases:
     - Comparing provider performance
@@ -76,7 +76,7 @@ def get_provider_configs() -> List[Tuple[str, str, str, str]]:
         ("OpenAI GPT-4", "openai", "gpt-4-turbo-preview", "OPENAI_API_KEY"),
         ("Mistral Large", "mistral", "mistral-large-latest", "MISTRAL_API_KEY"),
         ("Google Gemini", "gemini", "gemini-1.5-pro", "GEMINI_API_KEY"),
-        ("IBM WatsonX", "watsonx", "ibm/granite-4-h-small", "WATSONX_API_KEY"),
+        ("IBM watsonx", "watsonx", "ibm/granite-4-h-small", "WATSONX_API_KEY"),
     ]
 
 
@@ -139,7 +139,7 @@ def main() -> None:
         console.print("  • OpenAI: [cyan]export OPENAI_API_KEY='sk-...'[/cyan]")
         console.print("  • Mistral: [cyan]export MISTRAL_API_KEY='...'[/cyan]")
         console.print("  • Gemini: [cyan]export GEMINI_API_KEY='...'[/cyan]")
-        console.print("  • WatsonX: [cyan]export WATSONX_API_KEY='...'[/cyan]")
+        console.print("  • watsonx: [cyan]export WATSONX_API_KEY='...'[/cyan]")
         console.print("            [cyan]export WATSONX_PROJECT_ID='...'[/cyan]")
         sys.exit(1)
 
@@ -170,7 +170,7 @@ def main() -> None:
     table.add_row("OpenAI", "GPT-4 Turbo", "Highest quality, best reasoning", "$$$ (Premium)")
     table.add_row("Mistral", "Mistral Large", "Good balance, fast", "$$ (Moderate)")
     table.add_row("Gemini", "Gemini 1.5 Pro", "Long context, multimodal", "$$ (Moderate)")
-    table.add_row("WatsonX", "Granite", "Enterprise, compliance", "$ (Enterprise)")
+    table.add_row("watsonx", "Granite", "Enterprise, compliance", "$ (Enterprise)")
 
     console.print(table)
 
@@ -190,7 +190,7 @@ def main() -> None:
     console.print("  • Multimodal capabilities needed")
     console.print("  • Google Cloud integration")
 
-    console.print("\n[cyan]Choose WatsonX when:[/cyan]")
+    console.print("\n[cyan]Choose watsonx when:[/cyan]")
     console.print("  • Enterprise compliance required")
     console.print("  • IBM ecosystem integration")
     console.print("  • Custom model fine-tuning")

@@ -18,7 +18,7 @@
         <link rel="prev" href="../chunking-strategies/">
       
       
-        <link rel="next" href="../delta-extraction/">
+        <link rel="next" href="../dense-extraction/">
       
       
         
@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2280,42 +2252,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../delta-extraction/" class="md-nav__link">
+      <a href="../dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2493,6 +2437,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4135,6 +4107,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4871,13 +4871,15 @@
 <h1 id="extraction-backends">Extraction Backends<a class="headerlink" href="#extraction-backends" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Extraction backends</strong> are the engines that extract structured data from documents. Docling Graph supports two types: <strong>LLM backends</strong> (text-based) and <strong>VLM backends</strong> (vision-based).</p>
-<p><strong>In this guide:</strong>
-- LLM vs VLM comparison
-- Backend selection criteria
-- Configuration and usage
-- Extraction contracts (direct, staged, delta)
-- Performance optimization
-- Error handling</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>LLM vs VLM comparison</li>
+<li>Backend selection criteria</li>
+<li>Configuration and usage</li>
+<li>Extraction contracts (direct and dense)</li>
+<li>Performance optimization</li>
+<li>Error handling</li>
+</ul>
 <hr />
 <h2 id="backend-types">Backend Types<a class="headerlink" href="#backend-types" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison">Quick Comparison<a class="headerlink" href="#quick-comparison" title="Permanent link">&para;</a></h3>
@@ -4983,15 +4985,18 @@ flowchart LR
 <p>For many-to-one extraction with the LLM backend you can choose:</p>
 <ul>
 <li><strong>direct</strong> (default): Single-pass extraction; chunks are extracted and merged programmatically.</li>
-<li><strong>staged</strong>: Multi-pass extraction (catalog → ID pass → fill pass → merge), better for complex nested templates and weaker models. See <a href="../staged-extraction/">Staged Extraction</a>.</li>
-<li><strong>delta</strong>: Chunk → token-bounded batches → flat graph IR (nodes/relationships) → normalize → merge → projection; for long documents and graph-first extraction. Requires chunking. See <a href="../delta-extraction/">Delta Extraction</a>.</li>
+<li><strong>dense</strong>: Two-phase skeleton-then-fill (Phase 1: identify all entities per path; Phase 2: fill each with full schema data). Requires chunking. See <a href="../dense-extraction/">Dense Extraction</a>.</li>
 </ul>
 <hr />
 <h3 id="llm-backend-features">LLM Backend Features<a class="headerlink" href="#llm-backend-features" title="Permanent link">&para;</a></h3>
 <h4 id="strengths">✅ Strengths<a class="headerlink" href="#strengths" title="Permanent link">&para;</a></h4>
 <ol>
-<li><strong>Fast Processing</strong></li>
-<li>Quick text extraction</li>
+<li>
+<p><strong>Fast Processing</strong></p>
+</li>
+<li>
+<p>Quick text extraction</p>
+</li>
 <li>Efficient chunking</li>
 <li>
 <p>Parallel processing</p>
@@ -4999,7 +5004,9 @@ flowchart LR
 <li>
 <p><strong>Cost Effective</strong></p>
 </li>
-<li>Local models are free</li>
+<li>
+<p>Local models are free</p>
+</li>
 <li>Remote APIs are affordable</li>
 <li>
 <p>No GPU required (local)</p>
@@ -5007,7 +5014,9 @@ flowchart LR
 <li>
 <p><strong>Flexible</strong></p>
 </li>
-<li>Multiple providers</li>
+<li>
+<p>Multiple providers</p>
+</li>
 <li>Easy to switch models</li>
 <li>
 <p>API or local</p>
@@ -5015,14 +5024,20 @@ flowchart LR
 <li>
 <p><strong>Accurate for Text</strong></p>
 </li>
-<li>Excellent for standard documents</li>
+<li>
+<p>Excellent for standard documents</p>
+</li>
 <li>Good table understanding</li>
 <li>Strong reasoning</li>
 </ol>
 <h4 id="limitations">❌ Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h4>
 <ol>
-<li><strong>Text-Only</strong></li>
-<li>No visual understanding</li>
+<li>
+<p><strong>Text-Only</strong></p>
+</li>
+<li>
+<p>No visual understanding</p>
+</li>
 <li>Relies on OCR quality</li>
 <li>
 <p>May miss layout cues</p>
@@ -5030,7 +5045,9 @@ flowchart LR
 <li>
 <p><strong>Context Limits</strong></p>
 </li>
-<li>Requires chunking for large docs</li>
+<li>
+<p>Requires chunking for large docs</p>
+</li>
 <li>May lose cross-page context</li>
 <li>Needs merging</li>
 </ol>
@@ -5198,8 +5215,12 @@ flowchart LR
 <h3 id="vlm-backend-features">VLM Backend Features<a class="headerlink" href="#vlm-backend-features" title="Permanent link">&para;</a></h3>
 <h4 id="strengths_1">✅ Strengths<a class="headerlink" href="#strengths_1" title="Permanent link">&para;</a></h4>
 <ol>
-<li><strong>Visual Understanding</strong></li>
-<li>Sees layout and structure</li>
+<li>
+<p><strong>Visual Understanding</strong></p>
+</li>
+<li>
+<p>Sees layout and structure</p>
+</li>
 <li>Understands images</li>
 <li>
 <p>Handles complex formats</p>
@@ -5207,7 +5228,9 @@ flowchart LR
 <li>
 <p><strong>No Chunking Needed</strong></p>
 </li>
-<li>Processes pages directly</li>
+<li>
+<p>Processes pages directly</p>
+</li>
 <li>No context window limits</li>
 <li>
 <p>Simpler pipeline</p>
@@ -5215,7 +5238,9 @@ flowchart LR
 <li>
 <p><strong>Robust to OCR Issues</strong></p>
 </li>
-<li>Doesn't rely on OCR</li>
+<li>
+<p>Doesn't rely on OCR</p>
+</li>
 <li>Handles poor quality</li>
 <li>
 <p>Better for handwriting</p>
@@ -5223,14 +5248,20 @@ flowchart LR
 <li>
 <p><strong>Layout Aware</strong></p>
 </li>
-<li>Understands visual hierarchy</li>
+<li>
+<p>Understands visual hierarchy</p>
+</li>
 <li>Recognizes forms</li>
 <li>Detects tables visually</li>
 </ol>
 <h4 id="limitations_1">❌ Limitations<a class="headerlink" href="#limitations_1" title="Permanent link">&para;</a></h4>
 <ol>
-<li><strong>Slower</strong></li>
-<li>More computation</li>
+<li>
+<p><strong>Slower</strong></p>
+</li>
+<li>
+<p>More computation</p>
+</li>
 <li>GPU recommended</li>
 <li>
 <p>Longer processing time</p>
@@ -5238,7 +5269,9 @@ flowchart LR
 <li>
 <p><strong>Local Only</strong></p>
 </li>
-<li>No remote API support</li>
+<li>
+<p>No remote API support</p>
+</li>
 <li>Requires local GPU</li>
 <li>
 <p>Higher resource usage</p>
@@ -5246,7 +5279,9 @@ flowchart LR
 <li>
 <p><strong>Model Size</strong></p>
 </li>
-<li>Large models (2B-8B params)</li>
+<li>
+<p>Large models (2B-8B params)</p>
+</li>
 <li>More memory needed</li>
 <li>Longer startup time</li>
 </ol>
@@ -5521,10 +5556,12 @@ flowchart LR
 <a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Uses real tokenizer with 20% safety margin</span>
 <a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Benefits:</strong>
-- Prevents context window overflows
-- More efficient chunk packing
-- Better resource utilization</p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Prevents context window overflows</li>
+<li>More efficient chunk packing</li>
+<li>Better resource utilization</li>
+</ul>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="llm-returns-empty-results">🐛 LLM Returns Empty Results<a class="headerlink" href="#llm-returns-empty-results" title="Permanent link">&para;</a></h3>
@@ -5592,16 +5629,18 @@ flowchart LR
 <a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Automatically uses 95% threshold (default)</span>
 <a id="__codelineno-27-28" name="__codelineno-27-28" href="#__codelineno-27-28"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Why Different Thresholds?</strong>
-- <strong>OpenAI/Google</strong>: Robust to near-limit contexts → aggressive batching
-- <strong>Anthropic</strong>: More conservative → moderate batching
-- <strong>Ollama/Local</strong>: Variable performance → conservative batching</p>
+<p><strong>Why Different Thresholds?</strong></p>
+<ul>
+<li><strong>OpenAI/Google</strong>: Robust to near-limit contexts → aggressive batching</li>
+<li><strong>Anthropic</strong>: More conservative → moderate batching</li>
+<li><strong>Ollama/Local</strong>: Variable performance → conservative batching</li>
+</ul>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand extraction backends:</p>
 <ol>
-<li><strong><a href="../staged-extraction/">Staged Extraction →</a></strong> - Multi-pass extraction for complex templates</li>
-<li><strong><a href="../delta-extraction/">Delta Extraction →</a></strong> - Chunk-based graph extraction for long documents</li>
+<li><strong><a href="../dense-extraction/">Dense Extraction →</a></strong> - Skeleton-then-fill for granular structure and rich data</li>
+<li><strong><a href="../../../usage/advanced/error-handling/">Error Handling →</a></strong> - Diagnose extraction failures</li>
 <li><strong><a href="../model-merging/">Model Merging →</a></strong> - Learn how to consolidate extractions</li>
 <li><strong><a href="../batch-processing/">Batch Processing →</a></strong> - Optimize chunk processing</li>
 <li><strong><a href="../../../usage/advanced/performance-tuning/">Performance Tuning →</a></strong> - Advanced optimization</li>

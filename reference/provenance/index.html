@@ -12,13 +12,13 @@
         <meta name="author" content="IBM Research">
       
       
-        <link rel="canonical" href="https://ibm.github.io/docling-graph/introduction/quickstart/">
+        <link rel="canonical" href="https://ibm.github.io/docling-graph/reference/provenance/">
       
       
-        <link rel="prev" href="../use-cases/">
+        <link rel="prev" href="../exporters/">
       
       
-        <link rel="next" href="../../fundamentals/">
+        <link rel="next" href="../llm-clients/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Quick Start - Docling Graph Documentation</title>
+        <title>Provenance - Docling Graph Documentation</title>
       
     
     
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quick Start
+              Provenance
             
           </span>
         </div>
@@ -251,13 +251,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../introduction/" class="md-tabs__link">
           
   
   
@@ -313,11 +311,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../reference/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -424,31 +424,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -466,7 +463,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -484,7 +481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../introduction/" class="md-nav__link">
         
   
   
@@ -512,7 +509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+      <a href="../../introduction/architecture/" class="md-nav__link">
         
   
   
@@ -540,7 +537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../key-concepts/" class="md-nav__link">
+      <a href="../../introduction/key-concepts/" class="md-nav__link">
         
   
   
@@ -568,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/" class="md-nav__link">
+      <a href="../../introduction/use-cases/" class="md-nav__link">
         
   
   
@@ -593,35 +590,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Quick Start
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../introduction/quickstart/" class="md-nav__link">
         
   
   
@@ -637,157 +609,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-create-a-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Create a Template
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-run-extraction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Run Extraction
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 3: Run Extraction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-using-cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option A: Using CLI
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-using-python-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option B: Using Python API
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#improve-your-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Improve Your Template
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#add-relationships" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Add Relationships
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#try-different-backends" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Try Different Backends
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#learn-more" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Learn More
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3428,28 +3249,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -3467,7 +3291,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -3485,7 +3309,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -3513,7 +3337,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/pipeline/" class="md-nav__link">
+      <a href="../pipeline/" class="md-nav__link">
         
   
   
@@ -3541,7 +3365,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/config/" class="md-nav__link">
+      <a href="../config/" class="md-nav__link">
         
   
   
@@ -3569,7 +3393,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/protocols/" class="md-nav__link">
+      <a href="../protocols/" class="md-nav__link">
         
   
   
@@ -3597,7 +3421,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/exceptions/" class="md-nav__link">
+      <a href="../exceptions/" class="md-nav__link">
         
   
   
@@ -3625,7 +3449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/converters/" class="md-nav__link">
+      <a href="../converters/" class="md-nav__link">
         
   
   
@@ -3653,7 +3477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/extractors/" class="md-nav__link">
+      <a href="../extractors/" class="md-nav__link">
         
   
   
@@ -3681,7 +3505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/exporters/" class="md-nav__link">
+      <a href="../exporters/" class="md-nav__link">
         
   
   
@@ -3706,10 +3530,35 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../reference/provenance/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -3725,6 +3574,296 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#provenanceledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ProvenanceLedger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentorigin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DocumentOrigin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunkrecord" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChunkRecord
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sourceanchor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SourceAnchor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodeprovenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NodeProvenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ledger-builders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ledger builders
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ledger builders">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#document_level_ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        document_level_ledger()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunk_index_ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chunk_index_ledger()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identity-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity &amp; views
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identity &amp; views">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identity_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        identity_key()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compact_view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compact_view()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge_compact_views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_compact_views()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provenance_node_attr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PROVENANCE_NODE_ATTR
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binding
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Binding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bind_provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bind_provenance()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anchor-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anchor scan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anchor scan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#locate_identifier-locate_values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        locate_identifier() / locate_values()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refine_ledger_spans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refine_ledger_spans()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related APIs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3737,7 +3876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/llm-clients/" class="md-nav__link">
+      <a href="../llm-clients/" class="md-nav__link">
         
   
   
@@ -3946,44 +4085,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-installation" class="md-nav__link">
+  <a href="#models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Installation
+        Models
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-create-a-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Create a Template
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-run-extraction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Run Extraction
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 3: Run Extraction">
+    <nav class="md-nav" aria-label="Models">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#option-a-using-cli" class="md-nav__link">
+  <a href="#provenanceledger" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option A: Using CLI
+        ProvenanceLedger
       
     </span>
   </a>
@@ -3991,10 +4108,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#option-b-using-python-api" class="md-nav__link">
+  <a href="#documentorigin" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option B: Using Python API
+        DocumentOrigin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunkrecord" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChunkRecord
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sourceanchor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SourceAnchor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodeprovenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NodeProvenance
       
     </span>
   </a>
@@ -4007,22 +4157,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
+  <a href="#ledger-builders" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Troubleshooting
+        Ledger builders
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Troubleshooting">
+    <nav class="md-nav" aria-label="Ledger builders">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#improve-your-template" class="md-nav__link">
+  <a href="#document_level_ledger" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Improve Your Template
+        document_level_ledger()
       
     </span>
   </a>
@@ -4030,21 +4180,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#add-relationships" class="md-nav__link">
+  <a href="#chunk_index_ledger" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Add Relationships
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#try-different-backends" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Try Different Backends
+        chunk_index_ledger()
       
     </span>
   </a>
@@ -4057,10 +4196,149 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#learn-more" class="md-nav__link">
+  <a href="#identity-views" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Learn More
+        Identity &amp; views
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identity &amp; views">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identity_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        identity_key()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compact_view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compact_view()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge_compact_views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_compact_views()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provenance_node_attr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PROVENANCE_NODE_ATTR
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binding
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Binding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bind_provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bind_provenance()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anchor-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anchor scan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anchor scan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#locate_identifier-locate_values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        locate_identifier() / locate_values()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refine_ledger_spans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refine_ledger_spans()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related APIs
       
     </span>
   </a>
@@ -4087,173 +4365,210 @@
   
 
 
-<h1 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h1>
+<h1 id="provenance-api">Provenance API<a class="headerlink" href="#provenance-api" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Get started with docling-graph in <strong>5 minutes</strong> by extracting structured data from a simple billing document.</p>
-<p><strong>What You'll Learn:</strong></p>
+<p>Deterministic data grounding: maps graph nodes back to their source document chunks and pages. No LLM involvement — the ledger is built from pipeline bookkeeping and bound to graph nodes after conversion.</p>
+<p><strong>Module:</strong> <code>docling_graph.core.provenance</code></p>
+<p>See the <a href="../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance guide</a> for the conceptual overview and JSON examples; this page documents the underlying types and functions.</p>
+<hr />
+<h2 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h2>
+<p>All models are plain structural Pydantic (<code>docling_graph.core.provenance.models</code>); none of them appear inside user templates.</p>
+<h3 id="provenanceledger">ProvenanceLedger<a class="headerlink" href="#provenanceledger" title="Permanent link">&para;</a></h3>
+<p>The complete grounding record for one pipeline run. Persisted as <code>provenance.json</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ProvenanceLedger</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">document</span><span class="p">:</span> <span class="n">DocumentOrigin</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">,</span> <span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;chunk&quot;</span><span class="p">,</span> <span class="s2">&quot;span&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;chunk&quot;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">node_level</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">chunks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ChunkRecord</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">nodes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NodeProvenance</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">bind_stats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>document</code></td>
+<td>Source identity (<code>DocumentOrigin</code>); finalized once extraction completes, so it may be <code>None</code> mid-run.</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td>The best precision this run achieved: <code>"document"</code> (whole-document fallback), <code>"chunk"</code> (batch-level), or <code>"span"</code> (at least one verbatim char-offset anchor exists).</td>
+</tr>
+<tr>
+<td><code>node_level</code></td>
+<td><code>True</code> for the dense contract (per-node skeleton entries in <code>nodes</code>); <code>False</code> for direct (chunk index only).</td>
+</tr>
+<tr>
+<td><code>chunks</code></td>
+<td><code>chunk_id -&gt; ChunkRecord</code>, including the enriched chunk <strong>text</strong> — the ledger is self-contained.</td>
+</tr>
+<tr>
+<td><code>nodes</code></td>
+<td><code>identity_key -&gt; NodeProvenance</code>, one entry per grounded identity.</td>
+</tr>
+<tr>
+<td><code>bind_stats</code></td>
+<td>Populated after binding: <code>nodes_seen</code>, <code>bound_verbatim</code>, <code>bound_observed</code>, <code>bound_document</code>, <code>unresolved</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">pages_for_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">NodeProvenance</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Sorted union of page numbers covered by an entry&#39;s anchors.&quot;&quot;&quot;</span>
+</code></pre></div>
+<h3 id="documentorigin">DocumentOrigin<a class="headerlink" href="#documentorigin" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DocumentOrigin</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># content hash of the normalized source bytes</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>                 <span class="c1"># path or URL as provided</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">input_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">converted_at</span><span class="p">:</span> <span class="n">datetime</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">template_schema_hash</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</code></pre></div>
+<h3 id="chunkrecord">ChunkRecord<a class="headerlink" href="#chunkrecord" title="Permanent link">&para;</a></h3>
+<p>One chunker output unit — the atomic grounding unit.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ChunkRecord</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">chunk_id</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">batch_index</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">page_numbers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">doc_item_refs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>   <span class="c1"># docling self_refs, e.g. &quot;#/texts/42&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">headings</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">token_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">text_hash</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">char_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>                        <span class="c1"># the enriched chunk text</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">resplit_of</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>         <span class="c1"># parent chunk when produced by chunk_text_fallback</span>
+</code></pre></div>
+<h3 id="sourceanchor">SourceAnchor<a class="headerlink" href="#sourceanchor" title="Permanent link">&para;</a></h3>
+<p>One deterministic link from a node to a location in the source.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">SourceAnchor</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">chunk_id</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;observed&quot;</span><span class="p">,</span> <span class="s2">&quot;verbatim&quot;</span><span class="p">,</span> <span class="s2">&quot;derived&quot;</span><span class="p">,</span> <span class="s2">&quot;reconciled&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;observed&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">span</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># char offsets into the chunk&#39;s enriched text</span>
+</code></pre></div>
+<h3 id="nodeprovenance">NodeProvenance<a class="headerlink" href="#nodeprovenance" title="Permanent link">&para;</a></h3>
+<p>Full lineage for one grounded identity.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">NodeProvenance</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">identity_key</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">catalog_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">node_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">ids</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">anchors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SourceAnchor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">merged_from</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># identity keys absorbed via dedup/reconciliation</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">synthetic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>       <span class="c1"># rescue-ladder placeholder/bucket parent</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">dropped</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>         <span class="c1"># instance dropped downstream; kept for audit</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">fill_batches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">notes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># e.g. &quot;scope:document&quot;, &quot;identity:unkeyed&quot;</span>
+</code></pre></div>
+<hr />
+<h2 id="ledger-builders">Ledger builders<a class="headerlink" href="#ledger-builders" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">document_level_ledger</span><span class="p">,</span> <span class="n">chunk_index_ledger</span>
+</code></pre></div>
+<h3 id="document_level_ledger">document_level_ledger()<a class="headerlink" href="#document_level_ledger" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">document_level_ledger</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProvenanceLedger</span>
+</code></pre></div>
+<p>Last-resort ledger with no chunk index — used only when a chunker is unavailable. Every node grounds to <code>{"scope": "document"}</code>.</p>
+<h3 id="chunk_index_ledger">chunk_index_ledger()<a class="headerlink" href="#chunk_index_ledger" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">chunk_index_ledger</span><span class="p">(</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">chunks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">,</span> <span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;chunk&quot;</span><span class="p">,</span> <span class="s2">&quot;span&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;chunk&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProvenanceLedger</span>
+</code></pre></div>
+<p>Builds a <code>node_level=False</code> ledger from a chunk list and its metadata (as returned by <code>DocumentProcessor.extract_chunks_with_metadata</code>). This is what the <strong>direct</strong> contract uses so its nodes can still be verbatim-located.</p>
+<hr />
+<h2 id="identity-views">Identity &amp; views<a class="headerlink" href="#identity-views" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">identity_key</span><span class="p">,</span> <span class="n">identity_pairs</span><span class="p">,</span> <span class="n">canonical_id_text</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">compact_view</span><span class="p">,</span> <span class="n">merge_compact_views</span><span class="p">,</span> <span class="n">PROVENANCE_NODE_ATTR</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="identity_key">identity_key()<a class="headerlink" href="#identity_key" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">identity_key</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">id_fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Canonical, order-independent identity string for <code>(catalog path, ids)</code> — <code>"{path}|{field}={canonical_value},..."</code>, or <code>None</code> when no id value survives canonicalization. This is the single source of truth for identity: both the dense orchestrator's skeleton dedup and the binder derive their keys from this function (via <code>identity_pairs</code>), so recording and resolution can never disagree.</p>
+<h3 id="compact_view">compact_view()<a class="headerlink" href="#compact_view" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">compact_view</span><span class="p">(</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">entry</span><span class="p">:</span> <span class="n">NodeProvenance</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">ledger</span><span class="p">:</span> <span class="n">ProvenanceLedger</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">max_anchors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">include_spans</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+<p>Builds the small dict stored as a graph node's <code>__provenance__</code> attribute from a full ledger entry — verbatim anchors take precedence over approximate ones; see <a href="../../fundamentals/graph-management/provenance/#anchor-kinds">anchor kinds</a>.</p>
+<h3 id="merge_compact_views">merge_compact_views()<a class="headerlink" href="#merge_compact_views" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">merge_compact_views</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Unions two compact views (used by <code>GraphCleaner</code> when merging duplicate nodes). Never widens a claim: <code>unresolved</code> yields to any resolved view, and <code>approximate</code> is only kept when <em>both</em> sides lack a precise location.</p>
+<h3 id="provenance_node_attr">PROVENANCE_NODE_ATTR<a class="headerlink" href="#provenance_node_attr" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">PROVENANCE_NODE_ATTR</span> <span class="o">=</span> <span class="s2">&quot;__provenance__&quot;</span>
+</code></pre></div>
+<p>The graph node attribute key. Import this constant rather than hardcoding the string.</p>
+<hr />
+<h2 id="binding">Binding<a class="headerlink" href="#binding" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance.binder</span><span class="w"> </span><span class="kn">import</span> <span class="n">bind_provenance</span>
+</code></pre></div>
+<h3 id="bind_provenance">bind_provenance()<a class="headerlink" href="#bind_provenance" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">bind_provenance</span><span class="p">(</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">models</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">ledger</span><span class="p">:</span> <span class="n">ProvenanceLedger</span><span class="p">,</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">registry</span><span class="p">:</span> <span class="n">NodeIDRegistry</span><span class="p">,</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">template</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="n">include_spans</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</code></pre></div>
+<p>Walks the validated model tree along the same catalog paths the extraction contract used, resolves each entity's node ID through the <strong>same</strong> <code>NodeIDRegistry</code> instance the graph converter used (so binding can never disagree on IDs), and annotates each node with a <code>compact_view</code>. Runs the deterministic verbatim locator against each node's <em>final</em> identifier values — this is what lets grounding survive the dense fill phase refining a skeleton placeholder into a real value. When the identity values don't locate (e.g. a direct-mode synthesized id that never appears verbatim), the binder falls back to the node's other short, distinctive <code>str</code> fields — a matched description or name grounds the node exactly instead of falling to a coarser tier. The same fallback applies to the root/<code>scope:document</code> entry, so a root with a distinctive attribute (an insurer name, a paper title) is pinned to its chunk instead of staying whole-document by default.</p>
+<p>Returns bind stats (<code>nodes_seen</code>, <code>bound_verbatim</code>, <code>bound_observed</code>, <code>bound_document</code>, <code>unresolved</code>) and also writes them to <code>ledger.bind_stats</code>.</p>
+<p>Not called directly in normal usage — <code>GraphConverter.pydantic_list_to_graph()</code> invokes it through an injected <code>provenance_binder</code> closure so the converter itself stays agnostic of the provenance module. See <a href="../../fundamentals/graph-management/graph-conversion/">Graph Conversion</a>.</p>
+<hr />
+<h2 id="anchor-scan">Anchor scan<a class="headerlink" href="#anchor-scan" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance.anchor_scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">locate_identifier</span><span class="p">,</span> <span class="n">locate_values</span><span class="p">,</span> <span class="n">refine_ledger_spans</span>
+</code></pre></div>
+<h3 id="locate_identifier-locate_values">locate_identifier() / locate_values()<a class="headerlink" href="#locate_identifier-locate_values" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">locate_identifier</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chunk_texts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">locate_values</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">chunk_texts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span>
+</code></pre></div>
+<p>Pure string search: returns <code>(chunk_id, span)</code> pairs where a distinctive identifier appears verbatim. Guards against false precision — short and short-numeric values are skipped, and a value that matches too many chunks is treated as non-distinctive and skipped entirely rather than diluting the node's grounding. <code>locate_values</code> is the union across all of a node's identifier fields, and is what <code>bind_provenance</code> calls with each node's real values.</p>
+<h3 id="refine_ledger_spans">refine_ledger_spans()<a class="headerlink" href="#refine_ledger_spans" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">refine_ledger_spans</span><span class="p">(</span><span class="n">ledger</span><span class="p">:</span> <span class="n">ProvenanceLedger</span><span class="p">,</span> <span class="n">chunk_texts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</code></pre></div>
+<p>Bulk variant that scans every non-synthetic ledger entry's <em>recorded</em> ids (rather than a specific model's final ids) and appends verbatim anchors in place. Returns the count added. Available for direct ledger post-processing; <code>bind_provenance</code> is the primary caller of the underlying locator in normal pipeline usage.</p>
+<hr />
+<h2 id="import-patterns">Import patterns<a class="headerlink" href="#import-patterns" title="Permanent link">&para;</a></h2>
+<p><code>docling_graph.core.provenance</code> re-exports the models, ledger builders, and identity/view helpers. <code>binder</code> and <code>anchor_scan</code> are separate submodules (imported directly) to keep the package import-light — the dense orchestrator imports the top-level package at module load.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Guide-level usage — reading an existing ledger</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProvenanceLedger</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">ledger</span> <span class="o">=</span> <span class="n">ProvenanceLedger</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;provenance.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="p">)</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="c1"># Building a ledger for a custom pipeline stage</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">ChunkRecord</span><span class="p">,</span> <span class="n">DocumentOrigin</span><span class="p">,</span> <span class="n">NodeProvenance</span><span class="p">,</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>    <span class="n">ProvenanceLedger</span><span class="p">,</span> <span class="n">SourceAnchor</span><span class="p">,</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="p">)</span>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="c1"># Binding and the locator are separate submodules</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance.binder</span><span class="w"> </span><span class="kn">import</span> <span class="n">bind_provenance</span>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.provenance.anchor_scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">locate_values</span>
+</code></pre></div>
+<hr />
+<h2 id="related-apis">Related APIs<a class="headerlink" href="#related-apis" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Basic template creation</li>
-<li>Running your first extraction</li>
-<li>Viewing results</li>
-</ul>
-<p><strong>Prerequisites:</strong></p>
-<ul>
-<li>Python 3.10+</li>
-<li>A sample billing document (PDF or image)</li>
-</ul>
-<hr />
-<h2 id="step-1-installation">Step 1: Installation<a class="headerlink" href="#step-1-installation" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Verify installation</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>docling-graph<span class="w"> </span>--version
-</code></pre></div>
-<hr />
-<h2 id="step-2-create-a-template">Step 2: Create a Template<a class="headerlink" href="#step-2-create-a-template" title="Permanent link">&para;</a></h2>
-<p>Create a file <code>simple_billing_doc.py</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="sd">&quot;&quot;&quot;Simple billing document template for quickstart.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">SimpleBillingDoc</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple billing document model.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">document_no</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The unique document identifier&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;INV-001&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-001&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="p">)</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Document date in any format&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">,</span> <span class="s2">&quot;January 15, 2024&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="p">)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total amount to be paid&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="mf">1234.56</span><span class="p">,</span> <span class="mf">999.99</span><span class="p">]</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="p">)</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="n">currency</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Currency code&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USD&quot;</span><span class="p">,</span> <span class="s2">&quot;EUR&quot;</span><span class="p">,</span> <span class="s2">&quot;GBP&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="p">)</span>
-</code></pre></div>
-<hr />
-<h2 id="step-3-run-extraction">Step 3: Run Extraction<a class="headerlink" href="#step-3-run-extraction" title="Permanent link">&para;</a></h2>
-<h3 id="option-a-using-cli">Option A: Using CLI<a class="headerlink" href="#option-a-using-cli" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Process billing document</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>billing_doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;simple_billing_doc.SimpleBillingDoc&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;quickstart_output&quot;</span>
-</code></pre></div>
-<h3 id="option-b-using-python-api">Option B: Using Python API<a class="headerlink" href="#option-b-using-python-api" title="Permanent link">&para;</a></h3>
-<p>Create <code>run_quickstart.py</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="sd">&quot;&quot;&quot;Quickstart extraction script.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># Configure pipeline</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;billing_doc.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;simple_billing_doc.SimpleBillingDoc&quot;</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># Run extraction</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing billing document...&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="n">graph</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">knowledge_graph</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Complete! Extracted </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="s2"> nodes&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>Run it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>run_quickstart.py
-</code></pre></div>
-<hr />
-<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<p><strong>Template Not Found:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Ensure template is in current directory or use absolute path</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>billing_doc.pdf<span class="w"> </span>--template<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">/simple_billing_doc.SimpleBillingDoc&quot;</span>
-</code></pre></div></p>
-<p><strong>No Data Extracted:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Use verbose logging to debug</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docling-graph<span class="w"> </span>--verbose<span class="w"> </span>convert<span class="w"> </span>billing_doc.pdf<span class="w"> </span>--template<span class="w"> </span>simple_billing_doc.SimpleBillingDoc
-</code></pre></div></p>
-<p><strong>API Key Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Use local inference (default) or set API key</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-key&#39;</span>
-</code></pre></div></p>
-<h3 id="improve-your-template">Improve Your Template<a class="headerlink" href="#improve-your-template" title="Permanent link">&para;</a></h3>
-<p>Add more fields:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ImprovedBillingDoc</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Improved billing document with more fields.&quot;&quot;&quot;</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">document_no</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Document number&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Document date&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total amount&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">currency</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Currency&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="c1"># New fields</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">issuer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Company that issued the document&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Acme Corp&quot;</span><span class="p">,</span> <span class="s2">&quot;ABC Company&quot;</span><span class="p">]</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>    <span class="p">)</span>
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="n">client_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Client receiving the document&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span> <span class="s2">&quot;XYZ Inc&quot;</span><span class="p">]</span>
-<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="p">)</span>
-<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>
-<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>    <span class="n">subtotal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Amount before tax&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="mf">1000.00</span><span class="p">]</span>
-<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>    <span class="p">)</span>
-<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>
-<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>    <span class="n">tax_amount</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tax amount&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="mf">234.56</span><span class="p">]</span>
-<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>    <span class="p">)</span>
-</code></pre></div>
-<h3 id="add-relationships">Add Relationships<a class="headerlink" href="#add-relationships" title="Permanent link">&para;</a></h3>
-<p>Create nested entities:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Address component.&quot;&quot;&quot;</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">street</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">city</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">postal_code</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">Organization</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Organization entity.&quot;&quot;&quot;</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">address</span><span class="p">:</span> <span class="n">Address</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">edge</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for graph edges.&quot;&quot;&quot;</span>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;edge_label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="k">class</span><span class="w"> </span><span class="nc">BillingDoc</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Billing document with relationships.&quot;&quot;&quot;</span>
-<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>    <span class="n">document_no</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span>
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    <span class="n">issued_by</span><span class="p">:</span> <span class="n">Organization</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;ISSUED_BY&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="try-different-backends">Try Different Backends<a class="headerlink" href="#try-different-backends" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># VLM for images (faster)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>billing_doc.jpg<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;simple_billing_doc.SimpleBillingDoc&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span>--backend<span class="w"> </span>vlm
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="c1"># LLM for complex documents</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>billing_doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;simple_billing_doc.SimpleBillingDoc&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span>--inference<span class="w"> </span>remote
-</code></pre></div>
-<hr />
-<h2 id="learn-more">Learn More<a class="headerlink" href="#learn-more" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong><a href="../../usage/examples/billing-document/">Billing Document Extraction</a></strong> - Full billing document with relationships</li>
-<li><strong><a href="../../fundamentals/schema-definition/">Schema Definition</a></strong> - Template creation guide</li>
-<li><strong><a href="../../usage/cli/">CLI Reference</a></strong> - All CLI commands</li>
+<li><strong><a href="../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance guide</a></strong> — concepts, JSON shapes, configuration</li>
+<li><strong><a href="../converters/">Converters</a></strong> — <code>GraphConverter.pydantic_list_to_graph()</code>, <code>NodeIDRegistry</code></li>
+<li><strong><a href="../config/">Config</a></strong> — the <code>provenance</code> field on <code>PipelineConfig</code></li>
+<li><strong><a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a></strong> — the skeleton phase that produces node-level observed anchors</li>
 </ul>
 
 

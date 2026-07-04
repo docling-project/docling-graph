@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2436,42 +2408,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2649,6 +2593,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4291,6 +4263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -5183,12 +5183,14 @@
 <h1 id="export-configuration">Export Configuration<a class="headerlink" href="#export-configuration" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Export configuration controls how Docling Graph outputs extracted data and knowledge graphs. Multiple export formats are supported, allowing you to integrate with various downstream tools and databases.</p>
-<p><strong>In this guide:</strong>
-- Export formats (CSV, Cypher, JSON)
-- Output directory structure
-- Format-specific options
-- Export best practices
-- Integration scenarios</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Export formats (CSV, Cypher, JSON)</li>
+<li>Output directory structure</li>
+<li>Format-specific options</li>
+<li>Export best practices</li>
+<li>Integration scenarios</li>
+</ul>
 <hr />
 <h2 id="export-formats">Export Formats<a class="headerlink" href="#export-formats" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison">Quick Comparison<a class="headerlink" href="#quick-comparison" title="Permanent link">&para;</a></h3>
@@ -5255,17 +5257,21 @@
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>org_acme,LOCATED_AT,addr_123
 </code></pre></div>
 <h3 id="when-to-use-csv">When to Use CSV<a class="headerlink" href="#when-to-use-csv" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use CSV when:</strong>
-- Analyzing data in Excel/spreadsheets
-- Importing into SQL databases
-- Need human-readable format
-- Performing data analysis
-- Creating reports</p>
-<p>❌ <strong>Don't use CSV when:</strong>
-- Need direct Neo4j import
-- Want programmatic access
-- Require nested structures
-- Need type preservation</p>
+<p>✅ <strong>Use CSV when:</strong></p>
+<ul>
+<li>Analyzing data in Excel/spreadsheets</li>
+<li>Importing into SQL databases</li>
+<li>Need human-readable format</li>
+<li>Performing data analysis</li>
+<li>Creating reports</li>
+</ul>
+<p>❌ <strong>Don't use CSV when:</strong></p>
+<ul>
+<li>Need direct Neo4j import</li>
+<li>Want programmatic access</li>
+<li>Require nested structures</li>
+<li>Need type preservation</li>
+</ul>
 <hr />
 <h2 id="cypher-export">Cypher Export<a class="headerlink" href="#cypher-export" title="Permanent link">&para;</a></h2>
 <h3 id="what-is-cypher-export">What is Cypher Export?<a class="headerlink" href="#what-is-cypher-export" title="Permanent link">&para;</a></h3>
@@ -5299,17 +5305,21 @@
 <a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">LOCATED_AT</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="when-to-use-cypher">When to Use Cypher<a class="headerlink" href="#when-to-use-cypher" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use Cypher when:</strong>
-- Importing into Neo4j
-- Building graph databases
-- Need graph queries
-- Want graph visualization
-- Performing graph analytics</p>
-<p>❌ <strong>Don't use Cypher when:</strong>
-- Not using Neo4j
-- Need tabular format
-- Want simple data analysis
-- Require Excel compatibility</p>
+<p>✅ <strong>Use Cypher when:</strong></p>
+<ul>
+<li>Importing into Neo4j</li>
+<li>Building graph databases</li>
+<li>Need graph queries</li>
+<li>Want graph visualization</li>
+<li>Performing graph analytics</li>
+</ul>
+<p>❌ <strong>Don't use Cypher when:</strong></p>
+<ul>
+<li>Not using Neo4j</li>
+<li>Need tabular format</li>
+<li>Want simple data analysis</li>
+<li>Require Excel compatibility</li>
+</ul>
 <h3 id="neo4j-import">Neo4j Import<a class="headerlink" href="#neo4j-import" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Import into Neo4j</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>cat<span class="w"> </span>outputs/graph.cypher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cypher-shell<span class="w"> </span>-u<span class="w"> </span>neo4j<span class="w"> </span>-p<span class="w"> </span>password
@@ -5370,12 +5380,14 @@
 <a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="when-to-use-json">When to Use JSON<a class="headerlink" href="#when-to-use-json" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use JSON when:</strong>
-- Building APIs
-- Programmatic processing
-- Need nested structures
-- Want type preservation
-- Integrating with applications</p>
+<p>✅ <strong>Use JSON when:</strong></p>
+<ul>
+<li>Building APIs</li>
+<li>Programmatic processing</li>
+<li>Need nested structures</li>
+<li>Want type preservation</li>
+<li>Integrating with applications</li>
+</ul>
 <hr />
 <h2 id="output-directory-structure">Output Directory Structure<a class="headerlink" href="#output-directory-structure" title="Permanent link">&para;</a></h2>
 <h3 id="default-structure">Default Structure<a class="headerlink" href="#default-structure" title="Permanent link">&para;</a></h3>
@@ -5493,12 +5505,14 @@
 <h2 id="visualization">Visualization<a class="headerlink" href="#visualization" title="Permanent link">&para;</a></h2>
 <h3 id="interactive-html-visualization">Interactive HTML Visualization<a class="headerlink" href="#interactive-html-visualization" title="Permanent link">&para;</a></h3>
 <p>Always generated: <code>outputs/visualization.html</code></p>
-<p><strong>Features:</strong>
-- Interactive graph visualization
-- Node and edge inspection
-- Zoom and pan
-- Search functionality
-- Export to image</p>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Interactive graph visualization</li>
+<li>Node and edge inspection</li>
+<li>Zoom and pan</li>
+<li>Search functionality</li>
+<li>Export to image</li>
+</ul>
 <p><strong>Open in browser:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Open visualization</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>open<span class="w"> </span>outputs/visualization.html<span class="w">  </span><span class="c1"># macOS</span>
@@ -5507,12 +5521,14 @@
 </code></pre></div></p>
 <h3 id="markdown-report">Markdown Report<a class="headerlink" href="#markdown-report" title="Permanent link">&para;</a></h3>
 <p>Always generated: <code>outputs/report.md</code></p>
-<p><strong>Contains:</strong>
-- Extraction summary
-- Graph statistics
-- Node and edge counts
-- Processing time
-- Configuration used</p>
+<p><strong>Contains:</strong></p>
+<ul>
+<li>Extraction summary</li>
+<li>Graph statistics</li>
+<li>Node and edge counts</li>
+<li>Processing time</li>
+<li>Configuration used</li>
+</ul>
 <hr />
 <h2 id="export-format-selection">Export Format Selection<a class="headerlink" href="#export-format-selection" title="Permanent link">&para;</a></h2>
 <h3 id="by-use-case">By Use Case<a class="headerlink" href="#by-use-case" title="Permanent link">&para;</a></h3>

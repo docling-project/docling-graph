@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3787,6 +3759,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4780,23 +4780,6 @@
 <p><strong>Run:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>examples/streaming_extraction.py
 </code></pre></div></p>
-<p><strong>Benefits:</strong>
-- <strong>Reduced Latency</strong>: Get first results faster
-- <strong>Progress Feedback</strong>: Show real-time updates to users
-- <strong>Better UX</strong>: Display progress indicators during processing
-- <strong>Memory Efficiency</strong>: Handle large responses incrementally</p>
-<p><strong>When to Use Streaming:</strong>
-- Interactive web applications with progress bars
-- Real-time data processing pipelines
-- Applications requiring immediate user feedback
-- Processing large documents where partial results are useful</p>
-<p><strong>When to Use Non-Streaming:</strong>
-- Batch processing where latency doesn't matter
-- Simple scripts without UI feedback
-- Cases where complete response is needed before processing</p>
-<p><strong>See Also:</strong>
-- <a href="../../../examples/scripts/14_streaming_responses.py">Example 14: Streaming Responses</a> - Complete streaming examples
-- <a href="../../../reference/llm-clients/#streaming-responses">LLM Clients Reference</a> - Streaming API documentation</p>
 <hr />
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="use-environment-variables-for-secrets">👍 Use Environment Variables for Secrets<a class="headerlink" href="#use-environment-variables-for-secrets" title="Permanent link">&para;</a></h3>

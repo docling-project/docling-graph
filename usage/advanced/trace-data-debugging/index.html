@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3229,6 +3201,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#provenance-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quick-inspection" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3699,6 +3682,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -3930,6 +3941,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#provenance-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provenance Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quick-inspection" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4038,9 +4060,10 @@
 <li><code>docling_conversion.artifacts.pages</code></li>
 <li><code>data_extraction.artifacts.extractions</code></li>
 <li><code>data_extraction.artifacts.fallbacks</code></li>
-<li><code>data_extraction.artifacts.staged_traces</code> (when extraction_contract="staged")</li>
-<li><code>data_extraction.artifacts.delta_trace</code> / delta debug artifacts (when extraction_contract="delta")</li>
+<li><code>data_extraction.artifacts.dense_traces</code> and related dense debug artifacts (when extraction_contract="dense")</li>
+<li><code>data_extraction.artifacts.provenance</code> — ledger summary (document id, resolution, node/chunk counts) once extraction attaches a <a href="../../../fundamentals/graph-management/provenance/">provenance ledger</a> (present unless <code>provenance="off"</code>)</li>
 <li><code>graph_mapping.artifacts.graph</code></li>
+<li><code>graph_mapping.artifacts.provenance_bound</code> — binder coverage stats (<code>nodes_seen</code>, <code>bound_verbatim</code>, <code>bound_observed</code>, <code>bound_document</code>, <code>unresolved</code>)</li>
 <li><code>pipeline.artifacts.start|finish|failure</code></li>
 </ul>
 <h2 id="structured-output-diagnostics">Structured Output Diagnostics<a class="headerlink" href="#structured-output-diagnostics" title="Permanent link">&para;</a></h2>
@@ -4052,20 +4075,25 @@
 - <code>fallback_error_class</code>
 - <code>structured_primary_attempt_parsed_json</code>
 - <code>structured_primary_attempt_raw</code></p>
+<h2 id="provenance-diagnostics">Provenance Diagnostics<a class="headerlink" href="#provenance-diagnostics" title="Permanent link">&para;</a></h2>
+<p>The provenance artifacts are lightweight run-level summaries — for the full grounding data (chunk text, per-node anchors), use <code>debug/dense_provenance.json</code> (dense) or <code>docling_graph/provenance.json</code> (always, when <code>provenance</code> is not <code>"off"</code>). See <a href="../../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance</a>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>jq<span class="w"> </span><span class="s1">&#39;.steps[] | select(.name == &quot;graph_mapping&quot;) | .artifacts.provenance_bound&#39;</span><span class="w"> </span>debug/trace_data.json
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># {&quot;nodes_seen&quot;: 16, &quot;bound_verbatim&quot;: 7, &quot;bound_observed&quot;: 8, &quot;bound_document&quot;: 1, &quot;unresolved&quot;: 0}</span>
+</code></pre></div>
 <h2 id="quick-inspection">Quick Inspection<a class="headerlink" href="#quick-inspection" title="Permanent link">&para;</a></h2>
 <h3 id="jq">jq<a class="headerlink" href="#jq" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>jq<span class="w"> </span><span class="s1">&#39;.steps[] | {name, runtime_seconds, status}&#39;</span><span class="w"> </span>debug/trace_data.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>jq<span class="w"> </span><span class="s1">&#39;.steps[] | {name, runtime_seconds, status}&#39;</span><span class="w"> </span>debug/trace_data.json
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>jq<span class="w"> </span><span class="s1">&#39;.steps[] | select(.name == &quot;data_extraction&quot;) | .artifacts.fallbacks&#39;</span><span class="w"> </span>debug/trace_data.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>jq<span class="w"> </span><span class="s1">&#39;.steps[] | select(.name == &quot;data_extraction&quot;) | .artifacts.fallbacks&#39;</span><span class="w"> </span>debug/trace_data.json
 </code></pre></div>
 <h3 id="python">Python<a class="headerlink" href="#python" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;debug/trace_data.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">])</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;runtime_seconds&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">])</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;debug/trace_data.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">])</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;runtime_seconds&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">])</span>
 </code></pre></div>
 <h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
 <ul>

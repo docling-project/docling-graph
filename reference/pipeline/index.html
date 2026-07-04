@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3998,6 +3970,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../llm-clients/" class="md-nav__link">
         
   
@@ -4687,58 +4687,82 @@
 <p>The pipeline executes the following stages in order:</p>
 <h3 id="1-template-loading">1. Template Loading<a class="headerlink" href="#1-template-loading" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Load and validate Pydantic templates</p>
-<p><strong>Actions:</strong>
-- Import template module
-- Validate template structure
-- Check for required fields</p>
-<p><strong>Errors:</strong>
-- <code>ConfigurationError</code> if template not found
-- <code>ValidationError</code> if template invalid</p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Import template module</li>
+<li>Validate template structure</li>
+<li>Check for required fields</li>
+</ul>
+<p><strong>Errors:</strong></p>
+<ul>
+<li><code>ConfigurationError</code> if template not found</li>
+<li><code>ValidationError</code> if template invalid</li>
+</ul>
 <h3 id="2-extraction">2. Extraction<a class="headerlink" href="#2-extraction" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Extract structured data from documents</p>
-<p><strong>Actions:</strong>
-- Convert document with Docling
-- Extract using backend (VLM or LLM)
-- Validate extracted data</p>
-<p><strong>Errors:</strong>
-- <code>ExtractionError</code> if extraction fails
-- <code>ValidationError</code> if data invalid</p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Convert document with Docling</li>
+<li>Extract using backend (VLM or LLM)</li>
+<li>Validate extracted data</li>
+</ul>
+<p><strong>Errors:</strong></p>
+<ul>
+<li><code>ExtractionError</code> if extraction fails</li>
+<li><code>ValidationError</code> if data invalid</li>
+</ul>
 <h3 id="3-docling-export-optional">3. Docling Export (Optional)<a class="headerlink" href="#3-docling-export-optional" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Export Docling document outputs</p>
-<p><strong>Actions:</strong>
-- Export Docling JSON
-- Export markdown
-- Export per-page markdown</p>
-<p><strong>Controlled by:</strong>
-- <code>export_docling</code>
-- <code>export_docling_json</code>
-- <code>export_markdown</code>
-- <code>export_per_page_markdown</code></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Export Docling JSON</li>
+<li>Export markdown</li>
+<li>Export per-page markdown</li>
+</ul>
+<p><strong>Controlled by:</strong></p>
+<ul>
+<li><code>export_docling</code></li>
+<li><code>export_docling_json</code></li>
+<li><code>export_markdown</code></li>
+<li><code>export_per_page_markdown</code></li>
+</ul>
 <h3 id="4-graph-conversion">4. Graph Conversion<a class="headerlink" href="#4-graph-conversion" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Convert extracted data to knowledge graphs</p>
-<p><strong>Actions:</strong>
-- Create NetworkX graph
-- Generate stable node IDs
-- Create edges from relationships</p>
-<p><strong>Errors:</strong>
-- <code>GraphError</code> if conversion fails</p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Create NetworkX graph</li>
+<li>Generate stable node IDs</li>
+<li>Create edges from relationships</li>
+</ul>
+<p><strong>Errors:</strong></p>
+<ul>
+<li><code>GraphError</code> if conversion fails</li>
+</ul>
 <h3 id="5-export">5. Export<a class="headerlink" href="#5-export" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Export graphs in multiple formats</p>
-<p><strong>Actions:</strong>
-- Export to CSV (nodes.csv, edges.csv)
-- Export to Cypher (graph.cypher)
-- Export to JSON (graph.json)</p>
-<p><strong>Controlled by:</strong>
-- <code>export_format</code></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Export to CSV (nodes.csv, edges.csv)</li>
+<li>Export to Cypher (graph.cypher)</li>
+<li>Export to JSON (graph.json)</li>
+</ul>
+<p><strong>Controlled by:</strong></p>
+<ul>
+<li><code>export_format</code></li>
+</ul>
 <h3 id="6-visualization">6. Visualization<a class="headerlink" href="#6-visualization" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Generate reports and interactive visualizations</p>
-<p><strong>Actions:</strong>
-- Create HTML visualization
-- Generate markdown report
-- Calculate statistics</p>
-<p><strong>Outputs:</strong>
-- <code>graph_visualization.html</code>
-- <code>extraction_report.md</code></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li>Create HTML visualization</li>
+<li>Generate markdown report</li>
+<li>Calculate statistics</li>
+</ul>
+<p><strong>Outputs:</strong></p>
+<ul>
+<li><code>graph_visualization.html</code></li>
+<li><code>extraction_report.md</code></li>
+</ul>
 <hr />
 <h2 id="pipeline-context">Pipeline Context<a class="headerlink" href="#pipeline-context" title="Permanent link">&para;</a></h2>
 <p>Internal context object passed between stages:</p>
@@ -4834,7 +4858,7 @@
 </tr>
 <tr>
 <td><code>extraction_contract</code></td>
-<td><code>"direct"</code>, <code>"staged"</code>, or <code>"delta"</code></td>
+<td><code>"direct"</code> or <code>"dense"</code></td>
 <td><code>"direct"</code></td>
 <td>LLM extraction contract for many-to-one mode</td>
 </tr>
@@ -4849,9 +4873,8 @@
 <p>Contract behavior notes:</p>
 <ul>
 <li><code>direct</code>: one-pass structured extraction from full content.</li>
-<li><code>staged</code>: ID discovery + fill pass + merge assembly.</li>
-<li><code>delta</code>: chunk/batch graph extraction + normalization + merge + projection.</li>
-<li><code>delta</code> requires chunking-enabled many-to-one flow.</li>
+<li><code>dense</code>: chunked skeleton discovery followed by fill passes and merge assembly.</li>
+<li><code>dense</code> requires chunking-enabled many-to-one flow.</li>
 <li>Contract implementations are isolated by folder under <code>core/extractors/contracts/</code>.</li>
 </ul>
 <h3 id="export">Export<a class="headerlink" href="#export" title="Permanent link">&para;</a></h3>
@@ -4943,7 +4966,7 @@
 <a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
 <a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="c1"># Processing</span>
 <a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="s2">&quot;extraction_contract&quot;</span><span class="p">:</span> <span class="s2">&quot;staged&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="s2">&quot;extraction_contract&quot;</span><span class="p">:</span> <span class="s2">&quot;dense&quot;</span><span class="p">,</span>
 <a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="s2">&quot;use_chunking&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
 <a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="c1"># Export</span>
@@ -4966,18 +4989,20 @@
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    │
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    ├── docling/                      # Docling exports
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    │   ├── document.json             # Docling JSON (if enabled)
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    │   └── document.md               # Markdown export (if enabled)
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    │
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    ├── docling_graph/                # Docling-graph outputs
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    │   ├── graph.json                # Graph JSON
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    │   ├── nodes.csv                 # Graph nodes (if CSV export)
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    │   ├── edges.csv                 # Graph edges (if CSV export)
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    │   ├── graph.cypher              # Cypher script (if Cypher export)
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    │   ├── graph.html                # Interactive visualization
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    │   └── report.md                 # Extraction report
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    │
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    └── debug/                        # Debug output (if debug=True)
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>        └── trace_data.json           # Compact summary + ordered steps with canonical artifacts
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    │   ├── document.md               # Markdown export (if enabled)
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    │   └── chunks.json               # Chunker output (text, pages, doc_item_refs) — if provenance is on
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    │
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    ├── docling_graph/                # Docling-graph outputs
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    │   ├── graph.json                # Graph JSON
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    │   ├── nodes.csv                 # Graph nodes (if CSV export)
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    │   ├── edges.csv                 # Graph edges (if CSV export)
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    │   ├── graph.cypher              # Cypher script (if Cypher export)
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    │   ├── graph.html                # Interactive visualization
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    │   ├── report.md                 # Extraction report
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    │   └── provenance.json           # Provenance ledger (node-to-chunk grounding) — if provenance is on
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    │
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    └── debug/                        # Debug output (if debug=True)
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>        └── trace_data.json           # Compact summary + ordered steps with canonical artifacts
 </code></pre></div>
 <h3 id="metadatajson-structure">metadata.json Structure<a class="headerlink" href="#metadatajson-structure" title="Permanent link">&para;</a></h3>
 <p>The <code>metadata.json</code> file contains pipeline configuration, results, and performance metrics:</p>
@@ -5000,17 +5025,16 @@
 <a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">      </span><span class="nt">&quot;inference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
 <a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mistral-small-latest&quot;</span><span class="p">,</span>
 <a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">      </span><span class="nt">&quot;provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="nt">&quot;use_chunking&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">      </span><span class="nt">&quot;max_batch_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">  </span><span class="nt">&quot;processing_time_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">15.42</span><span class="p">,</span>
-<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">  </span><span class="nt">&quot;results&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="w">    </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
-<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="nt">&quot;edges&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
-<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="w">    </span><span class="nt">&quot;extracted_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
-<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a><span class="p">}</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="nt">&quot;use_chunking&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">  </span><span class="nt">&quot;processing_time_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">15.42</span><span class="p">,</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">  </span><span class="nt">&quot;results&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">    </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="w">    </span><span class="nt">&quot;edges&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="nt">&quot;extracted_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="output-directory-manager">Output Directory Manager<a class="headerlink" href="#output-directory-manager" title="Permanent link">&para;</a></h3>
 <p>The <code>OutputDirectoryManager</code> organizes all outputs into a structured hierarchy:</p>

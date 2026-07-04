@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3977,6 +3949,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4626,120 +4626,121 @@
 <a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Person entity with unique identification.&quot;&quot;&quot;</span>
 <a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>
-<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>    <span class="c1"># Graph ID: Unique by name + date of birth</span>
-<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
-<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;given_names&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>    <span class="p">)</span>
-<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>
-<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>    <span class="n">given_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;List of given names (first names)&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;John&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Mary&quot;</span><span class="p">,</span> <span class="s2">&quot;Jane&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Pierre&quot;</span><span class="p">,</span> <span class="s2">&quot;Louis&quot;</span><span class="p">]]</span>
-<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>    <span class="p">)</span>
-<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>
-<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Family name (surname)&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Smith&quot;</span><span class="p">,</span> <span class="s2">&quot;Johnson&quot;</span><span class="p">,</span> <span class="s2">&quot;Doe&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>    <span class="p">)</span>
-<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>
-<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>    <span class="n">alternate_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Alternate or maiden name&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="s2">&quot;MJ&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>    <span class="p">)</span>
-<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>
-<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date of birth in YYYY-MM-DD format&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;1990-05-15&quot;</span><span class="p">,</span> <span class="s2">&quot;1985-12-01&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>    <span class="p">)</span>
-<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>
-<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a>    <span class="n">place_of_birth</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;City and/or country of birth&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;New York, USA&quot;</span><span class="p">,</span> <span class="s2">&quot;Paris, France&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>    <span class="p">)</span>
-<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>
-<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>    <span class="n">gender</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Gender&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;Male&quot;</span><span class="p">,</span> <span class="s2">&quot;Female&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a>    <span class="p">)</span>
-<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a>
-<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a>    <span class="c1"># Relationship</span>
-<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a>    <span class="n">lives_at</span><span class="p">:</span> <span class="n">Address</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span>
-<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a>        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;LIVES_AT&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Home address&quot;</span>
-<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>    <span class="p">)</span>
-<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a>
-<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a>    <span class="c1"># --- Validators ---</span>
-<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a>
-<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;given_names&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a>    <span class="nd">@classmethod</span>
-<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">ensure_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure given_names is a list.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a>            <span class="c1"># Handle comma or space separated</span>
-<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a>            <span class="k">if</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a>                <span class="k">return</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
-<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>            <span class="k">return</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
-<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>        <span class="k">return</span> <span class="n">v</span>
-<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a>
-<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;lives_at&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a>    <span class="nd">@classmethod</span>
-<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_address</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-<a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse address string into Address object.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a>        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a>            <span class="k">return</span> <span class="n">v</span>
-<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a>
-<a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a>            <span class="c1"># Simple parsing</span>
-<a id="__codelineno-1-126" name="__codelineno-1-126" href="#__codelineno-1-126"></a>            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
-<a id="__codelineno-1-127" name="__codelineno-1-127" href="#__codelineno-1-127"></a>            <span class="k">return</span> <span class="p">{</span>
-<a id="__codelineno-1-128" name="__codelineno-1-128" href="#__codelineno-1-128"></a>                <span class="s2">&quot;street_address&quot;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-129" name="__codelineno-1-129" href="#__codelineno-1-129"></a>                <span class="s2">&quot;city&quot;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-130" name="__codelineno-1-130" href="#__codelineno-1-130"></a>                <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span>
-<a id="__codelineno-1-131" name="__codelineno-1-131" href="#__codelineno-1-131"></a>            <span class="p">}</span>
-<a id="__codelineno-1-132" name="__codelineno-1-132" href="#__codelineno-1-132"></a>        <span class="k">return</span> <span class="n">v</span>
-<a id="__codelineno-1-133" name="__codelineno-1-133" href="#__codelineno-1-133"></a>
-<a id="__codelineno-1-134" name="__codelineno-1-134" href="#__codelineno-1-134"></a><span class="c1"># --- Root Entity: IDCard ---</span>
-<a id="__codelineno-1-135" name="__codelineno-1-135" href="#__codelineno-1-135"></a>
-<a id="__codelineno-1-136" name="__codelineno-1-136" href="#__codelineno-1-136"></a><span class="k">class</span><span class="w"> </span><span class="nc">IDCard</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-1-137" name="__codelineno-1-137" href="#__codelineno-1-137"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Identity document.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-138" name="__codelineno-1-138" href="#__codelineno-1-138"></a>
-<a id="__codelineno-1-139" name="__codelineno-1-139" href="#__codelineno-1-139"></a>    <span class="c1"># Graph ID: Unique by document number</span>
-<a id="__codelineno-1-140" name="__codelineno-1-140" href="#__codelineno-1-140"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;document_number&quot;</span><span class="p">])</span>
-<a id="__codelineno-1-141" name="__codelineno-1-141" href="#__codelineno-1-141"></a>
-<a id="__codelineno-1-142" name="__codelineno-1-142" href="#__codelineno-1-142"></a>    <span class="n">document_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-143" name="__codelineno-1-143" href="#__codelineno-1-143"></a>        <span class="o">...</span><span class="p">,</span>
-<a id="__codelineno-1-144" name="__codelineno-1-144" href="#__codelineno-1-144"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Unique document identifier&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-145" name="__codelineno-1-145" href="#__codelineno-1-145"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;A12345678&quot;</span><span class="p">,</span> <span class="s2">&quot;123456789&quot;</span><span class="p">,</span> <span class="s2">&quot;AB1234567&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-146" name="__codelineno-1-146" href="#__codelineno-1-146"></a>    <span class="p">)</span>
-<a id="__codelineno-1-147" name="__codelineno-1-147" href="#__codelineno-1-147"></a>
-<a id="__codelineno-1-148" name="__codelineno-1-148" href="#__codelineno-1-148"></a>    <span class="n">issuing_country</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-149" name="__codelineno-1-149" href="#__codelineno-1-149"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-150" name="__codelineno-1-150" href="#__codelineno-1-150"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Country that issued the document&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-151" name="__codelineno-1-151" href="#__codelineno-1-151"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USA&quot;</span><span class="p">,</span> <span class="s2">&quot;France&quot;</span><span class="p">,</span> <span class="s2">&quot;United Kingdom&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-152" name="__codelineno-1-152" href="#__codelineno-1-152"></a>    <span class="p">)</span>
-<a id="__codelineno-1-153" name="__codelineno-1-153" href="#__codelineno-1-153"></a>
-<a id="__codelineno-1-154" name="__codelineno-1-154" href="#__codelineno-1-154"></a>    <span class="n">issue_date</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-155" name="__codelineno-1-155" href="#__codelineno-1-155"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-156" name="__codelineno-1-156" href="#__codelineno-1-156"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date document was issued (YYYY-MM-DD)&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-157" name="__codelineno-1-157" href="#__codelineno-1-157"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2023-10-20&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-05-15&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-158" name="__codelineno-1-158" href="#__codelineno-1-158"></a>    <span class="p">)</span>
-<a id="__codelineno-1-159" name="__codelineno-1-159" href="#__codelineno-1-159"></a>
-<a id="__codelineno-1-160" name="__codelineno-1-160" href="#__codelineno-1-160"></a>    <span class="n">expiry_date</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-1-161" name="__codelineno-1-161" href="#__codelineno-1-161"></a>        <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-162" name="__codelineno-1-162" href="#__codelineno-1-162"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date document expires (YYYY-MM-DD)&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-163" name="__codelineno-1-163" href="#__codelineno-1-163"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2033-10-19&quot;</span><span class="p">,</span> <span class="s2">&quot;2030-05-14&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-164" name="__codelineno-1-164" href="#__codelineno-1-164"></a>    <span class="p">)</span>
-<a id="__codelineno-1-165" name="__codelineno-1-165" href="#__codelineno-1-165"></a>
-<a id="__codelineno-1-166" name="__codelineno-1-166" href="#__codelineno-1-166"></a>    <span class="c1"># Relationship</span>
-<a id="__codelineno-1-167" name="__codelineno-1-167" href="#__codelineno-1-167"></a>    <span class="n">holder</span><span class="p">:</span> <span class="n">Person</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span>
-<a id="__codelineno-1-168" name="__codelineno-1-168" href="#__codelineno-1-168"></a>        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;BELONGS_TO&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-169" name="__codelineno-1-169" href="#__codelineno-1-169"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Person this ID belongs to&quot;</span>
-<a id="__codelineno-1-170" name="__codelineno-1-170" href="#__codelineno-1-170"></a>    <span class="p">)</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>    <span class="c1"># Graph ID: last name + date of birth (given_names stays out —</span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>    <span class="c1"># list-valued ids drift across extraction batches)</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>    <span class="p">)</span>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>    <span class="n">given_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;List of given names (first names)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;John&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Mary&quot;</span><span class="p">,</span> <span class="s2">&quot;Jane&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Pierre&quot;</span><span class="p">,</span> <span class="s2">&quot;Louis&quot;</span><span class="p">]]</span>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>    <span class="p">)</span>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Family name (surname)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Smith&quot;</span><span class="p">,</span> <span class="s2">&quot;Johnson&quot;</span><span class="p">,</span> <span class="s2">&quot;Doe&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>    <span class="p">)</span>
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>    <span class="n">alternate_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Alternate or maiden name&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="s2">&quot;MJ&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>    <span class="p">)</span>
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date of birth in YYYY-MM-DD format&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;1990-05-15&quot;</span><span class="p">,</span> <span class="s2">&quot;1985-12-01&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>    <span class="p">)</span>
+<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a>
+<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>    <span class="n">place_of_birth</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;City and/or country of birth&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;New York, USA&quot;</span><span class="p">,</span> <span class="s2">&quot;Paris, France&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>    <span class="p">)</span>
+<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>
+<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>    <span class="n">gender</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Gender&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;Male&quot;</span><span class="p">,</span> <span class="s2">&quot;Female&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a>    <span class="p">)</span>
+<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a>
+<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a>    <span class="c1"># Relationship</span>
+<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a>    <span class="n">lives_at</span><span class="p">:</span> <span class="n">Address</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span>
+<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a>        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;LIVES_AT&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Home address&quot;</span>
+<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a>    <span class="p">)</span>
+<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a>
+<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a>    <span class="c1"># --- Validators ---</span>
+<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a>
+<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;given_names&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">ensure_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure given_names is a list.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a>            <span class="c1"># Handle comma or space separated</span>
+<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a>            <span class="k">if</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>                <span class="k">return</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>            <span class="k">return</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a>        <span class="k">return</span> <span class="n">v</span>
+<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a>
+<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;lives_at&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_address</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse address string into Address object.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a>        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a>            <span class="k">return</span> <span class="n">v</span>
+<a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a>
+<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-1-126" name="__codelineno-1-126" href="#__codelineno-1-126"></a>            <span class="c1"># Simple parsing</span>
+<a id="__codelineno-1-127" name="__codelineno-1-127" href="#__codelineno-1-127"></a>            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+<a id="__codelineno-1-128" name="__codelineno-1-128" href="#__codelineno-1-128"></a>            <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-129" name="__codelineno-1-129" href="#__codelineno-1-129"></a>                <span class="s2">&quot;street_address&quot;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-130" name="__codelineno-1-130" href="#__codelineno-1-130"></a>                <span class="s2">&quot;city&quot;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-131" name="__codelineno-1-131" href="#__codelineno-1-131"></a>                <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span>
+<a id="__codelineno-1-132" name="__codelineno-1-132" href="#__codelineno-1-132"></a>            <span class="p">}</span>
+<a id="__codelineno-1-133" name="__codelineno-1-133" href="#__codelineno-1-133"></a>        <span class="k">return</span> <span class="n">v</span>
+<a id="__codelineno-1-134" name="__codelineno-1-134" href="#__codelineno-1-134"></a>
+<a id="__codelineno-1-135" name="__codelineno-1-135" href="#__codelineno-1-135"></a><span class="c1"># --- Root Entity: IDCard ---</span>
+<a id="__codelineno-1-136" name="__codelineno-1-136" href="#__codelineno-1-136"></a>
+<a id="__codelineno-1-137" name="__codelineno-1-137" href="#__codelineno-1-137"></a><span class="k">class</span><span class="w"> </span><span class="nc">IDCard</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-1-138" name="__codelineno-1-138" href="#__codelineno-1-138"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Identity document.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-139" name="__codelineno-1-139" href="#__codelineno-1-139"></a>
+<a id="__codelineno-1-140" name="__codelineno-1-140" href="#__codelineno-1-140"></a>    <span class="c1"># Graph ID: Unique by document number</span>
+<a id="__codelineno-1-141" name="__codelineno-1-141" href="#__codelineno-1-141"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;document_number&quot;</span><span class="p">])</span>
+<a id="__codelineno-1-142" name="__codelineno-1-142" href="#__codelineno-1-142"></a>
+<a id="__codelineno-1-143" name="__codelineno-1-143" href="#__codelineno-1-143"></a>    <span class="n">document_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-144" name="__codelineno-1-144" href="#__codelineno-1-144"></a>        <span class="o">...</span><span class="p">,</span>
+<a id="__codelineno-1-145" name="__codelineno-1-145" href="#__codelineno-1-145"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Unique document identifier&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-146" name="__codelineno-1-146" href="#__codelineno-1-146"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;A12345678&quot;</span><span class="p">,</span> <span class="s2">&quot;123456789&quot;</span><span class="p">,</span> <span class="s2">&quot;AB1234567&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-147" name="__codelineno-1-147" href="#__codelineno-1-147"></a>    <span class="p">)</span>
+<a id="__codelineno-1-148" name="__codelineno-1-148" href="#__codelineno-1-148"></a>
+<a id="__codelineno-1-149" name="__codelineno-1-149" href="#__codelineno-1-149"></a>    <span class="n">issuing_country</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-150" name="__codelineno-1-150" href="#__codelineno-1-150"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-151" name="__codelineno-1-151" href="#__codelineno-1-151"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Country that issued the document&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-152" name="__codelineno-1-152" href="#__codelineno-1-152"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USA&quot;</span><span class="p">,</span> <span class="s2">&quot;France&quot;</span><span class="p">,</span> <span class="s2">&quot;United Kingdom&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-153" name="__codelineno-1-153" href="#__codelineno-1-153"></a>    <span class="p">)</span>
+<a id="__codelineno-1-154" name="__codelineno-1-154" href="#__codelineno-1-154"></a>
+<a id="__codelineno-1-155" name="__codelineno-1-155" href="#__codelineno-1-155"></a>    <span class="n">issue_date</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-156" name="__codelineno-1-156" href="#__codelineno-1-156"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-157" name="__codelineno-1-157" href="#__codelineno-1-157"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date document was issued (YYYY-MM-DD)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-158" name="__codelineno-1-158" href="#__codelineno-1-158"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2023-10-20&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-05-15&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-159" name="__codelineno-1-159" href="#__codelineno-1-159"></a>    <span class="p">)</span>
+<a id="__codelineno-1-160" name="__codelineno-1-160" href="#__codelineno-1-160"></a>
+<a id="__codelineno-1-161" name="__codelineno-1-161" href="#__codelineno-1-161"></a>    <span class="n">expiry_date</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-1-162" name="__codelineno-1-162" href="#__codelineno-1-162"></a>        <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-163" name="__codelineno-1-163" href="#__codelineno-1-163"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Date document expires (YYYY-MM-DD)&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-164" name="__codelineno-1-164" href="#__codelineno-1-164"></a>        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2033-10-19&quot;</span><span class="p">,</span> <span class="s2">&quot;2030-05-14&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-165" name="__codelineno-1-165" href="#__codelineno-1-165"></a>    <span class="p">)</span>
+<a id="__codelineno-1-166" name="__codelineno-1-166" href="#__codelineno-1-166"></a>
+<a id="__codelineno-1-167" name="__codelineno-1-167" href="#__codelineno-1-167"></a>    <span class="c1"># Relationship</span>
+<a id="__codelineno-1-168" name="__codelineno-1-168" href="#__codelineno-1-168"></a>    <span class="n">holder</span><span class="p">:</span> <span class="n">Person</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span>
+<a id="__codelineno-1-169" name="__codelineno-1-169" href="#__codelineno-1-169"></a>        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;BELONGS_TO&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-170" name="__codelineno-1-170" href="#__codelineno-1-170"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Person this ID belongs to&quot;</span>
+<a id="__codelineno-1-171" name="__codelineno-1-171" href="#__codelineno-1-171"></a>    <span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="processing">Processing<a class="headerlink" href="#processing" title="Permanent link">&para;</a></h2>
@@ -4801,12 +4802,13 @@
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Converts to: date(1990, 5, 15)</span>
 </code></pre></div>
 <h3 id="2-graph-id-configuration">2. Graph ID Configuration<a class="headerlink" href="#2-graph-id-configuration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Person uniquely identified by name + DOB</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;given_names&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Same person in multiple documents = same node</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Person uniquely identified by last name + DOB</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># (scalar fields only — never list-valued fields as identity)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Same person in multiple documents = same node</span>
 </code></pre></div>
 <h3 id="3-list-handling">3. List Handling<a class="headerlink" href="#3-list-handling" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Validator converts string to list</span>
@@ -4835,10 +4837,12 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Interactive visualization</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/id_card/
 </code></pre></div>
-<p><strong>Features:</strong>
-- View extracted personal information
-- See address relationships
-- Verify dates are parsed correctly</p>
+<p><strong>Features:</strong></p>
+<ul>
+<li>View extracted personal information</li>
+<li>See address relationships</li>
+<li>Verify dates are parsed correctly</li>
+</ul>
 <hr />
 <h2 id="customization">Customization<a class="headerlink" href="#customization" title="Permanent link">&para;</a></h2>
 <h3 id="add-more-fields">Add More Fields<a class="headerlink" href="#add-more-fields" title="Permanent link">&para;</a></h3>

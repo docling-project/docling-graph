@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1721,42 +1693,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../delta-extraction/" class="md-nav__link">
+      <a href="../dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2550,6 +2494,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4192,6 +4164,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4985,12 +4985,14 @@
 <h1 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Batch processing</strong> optimizes extraction by grouping multiple chunks into single LLM calls, reducing API overhead while maximizing context window utilization.</p>
-<p><strong>In this guide:</strong>
-- Why batching matters
-- Adaptive batching algorithm
-- Context window optimization
-- Performance tuning
-- Best practices</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Why batching matters</li>
+<li>Adaptive batching algorithm</li>
+<li>Context window optimization</li>
+<li>Performance tuning</li>
+<li>Best practices</li>
+</ul>
 <hr />
 <h2 id="why-batching-matters">Why Batching Matters<a class="headerlink" href="#why-batching-matters" title="Permanent link">&para;</a></h2>
 <h3 id="the-api-call-problem">The API Call Problem<a class="headerlink" href="#the-api-call-problem" title="Permanent link">&para;</a></h3>
@@ -5173,10 +5175,12 @@ flowchart LR
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">context_limit</span><span class="o">=</span><span class="mi">8000</span>  <span class="c1"># Mistral: 32K, GPT-4: 128K, Llama: 8K</span>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>How to choose:</strong>
-- Use model's actual context limit
-- Be conservative (leave buffer)
-- Account for prompt overhead</p>
+<p><strong>How to choose:</strong></p>
+<ul>
+<li>Use model's actual context limit</li>
+<li>Be conservative (leave buffer)</li>
+<li>Account for prompt overhead</li>
+</ul>
 <hr />
 <h3 id="system-prompt-tokens">System Prompt Tokens<a class="headerlink" href="#system-prompt-tokens" title="Permanent link">&para;</a></h3>
 <p><strong>Definition:</strong> Tokens used by system prompt</p>
@@ -5185,10 +5189,12 @@ flowchart LR
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">system_prompt_tokens</span><span class="o">=</span><span class="mi">500</span>  <span class="c1"># Typical: 300-700</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Includes:</strong>
-- Extraction instructions
-- Schema definition
-- Example format</p>
+<p><strong>Includes:</strong></p>
+<ul>
+<li>Extraction instructions</li>
+<li>Schema definition</li>
+<li>Example format</li>
+</ul>
 <hr />
 <h3 id="response-buffer-tokens">Response Buffer Tokens<a class="headerlink" href="#response-buffer-tokens" title="Permanent link">&para;</a></h3>
 <p><strong>Definition:</strong> Space reserved for LLM response</p>
@@ -5197,10 +5203,12 @@ flowchart LR
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">response_buffer_tokens</span><span class="o">=</span><span class="mi">500</span>  <span class="c1"># Typical: 500-1000</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Depends on:</strong>
-- Schema complexity
-- Expected output size
-- Safety margin</p>
+<p><strong>Depends on:</strong></p>
+<ul>
+<li>Schema complexity</li>
+<li>Expected output size</li>
+<li>Safety margin</li>
+</ul>
 <hr />
 <h3 id="merge-threshold">Merge Threshold<a class="headerlink" href="#merge-threshold" title="Permanent link">&para;</a></h3>
 <p><strong>Definition:</strong> Minimum utilization before merging (default: <strong>95%</strong>)</p>
@@ -5209,9 +5217,11 @@ flowchart LR
 <a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">merge_threshold</span><span class="o">=</span><span class="mf">0.95</span>  <span class="c1"># Merge if &lt;95% utilized (default)</span>
 <a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Effects:</strong>
-- <strong>Higher (0.95-0.98):</strong> More batches, better fit, less merging
-- <strong>Lower (0.80-0.90):</strong> Fewer batches, more aggressive merging</p>
+<p><strong>Effects:</strong></p>
+<ul>
+<li><strong>Higher (0.95-0.98):</strong> More batches, better fit, less merging</li>
+<li><strong>Lower (0.80-0.90):</strong> Fewer batches, more aggressive merging</li>
+</ul>
 <p><strong>Default:</strong> 95% for all providers. This ensures efficient batching while maintaining good chunk boundaries.</p>
 <hr />
 <h2 id="complete-examples">Complete Examples<a class="headerlink" href="#complete-examples" title="Permanent link">&para;</a></h2>

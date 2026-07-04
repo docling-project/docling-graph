@@ -646,6 +646,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#data-grounding-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Grounding &amp; Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#exporters-visualizers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1357,34 +1368,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1901,42 +1884,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2111,6 +2066,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3753,6 +3736,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4029,6 +4040,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#data-grounding-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Grounding &amp; Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#exporters-visualizers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4141,6 +4163,9 @@
 <h3 id="graph-converter">Graph Converter<a class="headerlink" href="#graph-converter" title="Permanent link">&para;</a></h3>
 <p>Transforms Pydantic models to NetworkX graphs with stable node IDs and automatic deduplication.</p>
 <p><strong>Location:</strong> <code>docling_graph/core/converters/graph_converter.py</code></p>
+<h3 id="data-grounding-provenance">Data Grounding &amp; Provenance<a class="headerlink" href="#data-grounding-provenance" title="Permanent link">&para;</a></h3>
+<p>Deterministic sidecar ledger that maps every graph node back to its source chunk(s) and page(s); binds a <code>__provenance__</code> attribute onto nodes after conversion, without changing prompts, schemas, or LLM output.</p>
+<p><strong>Location:</strong> <code>docling_graph/core/provenance/</code></p>
 <h3 id="exporters-visualizers">Exporters &amp; Visualizers<a class="headerlink" href="#exporters-visualizers" title="Permanent link">&para;</a></h3>
 <p>Export graphs in CSV, Cypher, JSON formats and generate interactive HTML visualizations.</p>
 <p><strong>Location:</strong> <code>docling_graph/core/exporters/</code>, <code>docling_graph/core/visualizers/</code></p>
@@ -4272,8 +4297,10 @@ flowchart TB
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">final_model</span> <span class="o">=</span> <span class="n">programmatic_merge</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
 </code></pre></div>
 <h4 id="stage-5-graph-conversion">Stage 5: Graph Conversion<a class="headerlink" href="#stage-5-graph-conversion" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Convert to graph</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">([</span><span class="n">final_model</span><span class="p">])</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Convert to graph (provenance_binder annotates nodes before cleanup)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="p">[</span><span class="n">final_model</span><span class="p">],</span> <span class="n">provenance_binder</span><span class="o">=</span><span class="n">provenance_binder</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
 </code></pre></div>
 <h4 id="stage-6-export">Stage 6: Export<a class="headerlink" href="#stage-6-export" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Export in multiple formats</span>

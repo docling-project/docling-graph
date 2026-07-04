@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3584,10 +3556,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#onetoone" class="md-nav__link">
+  <a href="#onetoonestrategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OneToOne
+        OneToOneStrategy
       
     </span>
   </a>
@@ -3595,10 +3567,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#manytoone" class="md-nav__link">
+  <a href="#manytoonestrategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ManyToOne
+        ManyToOneStrategy
       
     </span>
   </a>
@@ -3626,7 +3598,7 @@
   <a href="#llmbackend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLMBackend
+        LlmBackend
       
     </span>
   </a>
@@ -3637,7 +3609,7 @@
   <a href="#vlmbackend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VLMBackend
+        VlmBackend
       
     </span>
   </a>
@@ -3757,10 +3729,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#real-tokenizer-integration" class="md-nav__link">
+  <a href="#structure-preserving-chunking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Real Tokenizer Integration
+        Structure-Preserving Chunking
       
     </span>
   </a>
@@ -3807,6 +3779,34 @@
     
   
     Exporters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
   
 
     
@@ -4048,10 +4048,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#onetoone" class="md-nav__link">
+  <a href="#onetoonestrategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OneToOne
+        OneToOneStrategy
       
     </span>
   </a>
@@ -4059,10 +4059,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#manytoone" class="md-nav__link">
+  <a href="#manytoonestrategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ManyToOne
+        ManyToOneStrategy
       
     </span>
   </a>
@@ -4090,7 +4090,7 @@
   <a href="#llmbackend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLMBackend
+        LlmBackend
       
     </span>
   </a>
@@ -4101,7 +4101,7 @@
   <a href="#vlmbackend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VLMBackend
+        VlmBackend
       
     </span>
   </a>
@@ -4221,10 +4221,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#real-tokenizer-integration" class="md-nav__link">
+  <a href="#structure-preserving-chunking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Real Tokenizer Integration
+        Structure-Preserving Chunking
       
     </span>
   </a>
@@ -4274,202 +4274,194 @@
 <div class="admonition tip">
 <p class="admonition-title">Recent Improvements</p>
 <ul>
-<li><strong>Model Capability Detection</strong>: Automatic tier detection and adaptive prompting</li>
-<li><strong>Chain of Density</strong>: Multi-turn consolidation for ADVANCED tier models</li>
-<li><strong>Zero Data Loss</strong>: Returns partial models instead of empty results on failures</li>
-<li><strong>Real Tokenizers</strong>: Accurate token counting with 20% safety margins</li>
-<li><strong>Enhanced GPU Cleanup</strong>: Better memory management for VLM backends</li>
+<li><strong>Zero Data Loss</strong>: Many-to-one returns partial models instead of empty results when merge fails</li>
+<li><strong>Enhanced GPU Cleanup</strong>: Model-to-CPU transfer, CUDA cache clearing, and multi-GPU support for VLM backends</li>
 </ul>
 </div>
 <hr />
 <h2 id="extraction-strategies">Extraction Strategies<a class="headerlink" href="#extraction-strategies" title="Permanent link">&para;</a></h2>
-<h3 id="onetoone">OneToOne<a class="headerlink" href="#onetoone" title="Permanent link">&para;</a></h3>
-<p>Per-page extraction strategy.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">OneToOne</span><span class="p">(</span><span class="n">ExtractorProtocol</span><span class="p">):</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract data from each page separately.&quot;&quot;&quot;</span>
+<h3 id="onetoonestrategy">OneToOneStrategy<a class="headerlink" href="#onetoonestrategy" title="Permanent link">&para;</a></h3>
+<p>Per-page extraction strategy. Each page is processed independently.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">OneToOneStrategy</span><span class="p">(</span><span class="n">BaseExtractor</span><span class="p">):</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts one model per page/item using Protocol-based type checking.&quot;&quot;&quot;</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span><span class="p">):</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with backend.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">        Extract from each page.</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="sd">            List of models (one per page)</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span><span class="p">,</span> <span class="n">docling_config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="sd">            backend: VlmBackend or LlmBackend instance.</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="sd">            docling_config: Docling pipeline configuration (&#39;ocr&#39; or &#39;vision&#39;).</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="n">DoclingDocument</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="sd">            Tuple of (models, docling_document):</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="sd">            - models: one Pydantic model per page.</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="sd">            - docling_document: the converted document, or None on failure.</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="sd">        &quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Use Cases:</strong>
-- Multi-page documents with independent content
-- Page-level analysis
-- Parallel processing</p>
+<p><strong>Use Cases:</strong></p>
+<ul>
+<li>Multi-page documents with independent content</li>
+<li>Page-level analysis</li>
+<li>Parallel processing</li>
+</ul>
 <p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">OneToOne</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLMBackend</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LLMBackend</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama-3.1-8b&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">OneToOne</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">results</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> pages&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">OneToOneStrategy</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends.llm_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmBackend</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_effective_model_config</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span> <span class="s2">&quot;llama3.1:8b&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">)(</span><span class="n">model_config</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">OneToOneStrategy</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">results</span><span class="p">,</span> <span class="n">docling_document</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> pages&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
-<h3 id="manytoone">ManyToOne<a class="headerlink" href="#manytoone" title="Permanent link">&para;</a></h3>
-<p>Consolidated extraction strategy with zero data loss.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ManyToOne</span><span class="p">(</span><span class="n">ExtractorProtocol</span><span class="p">):</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract and consolidate data from entire document.&quot;&quot;&quot;</span>
+<h3 id="manytoonestrategy">ManyToOneStrategy<a class="headerlink" href="#manytoonestrategy" title="Permanent link">&para;</a></h3>
+<p>Extracts one consolidated model from an entire document.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ManyToOneStrategy</span><span class="p">(</span><span class="n">BaseExtractor</span><span class="p">):</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts one consolidated model from an entire document.&quot;&quot;&quot;</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span><span class="p">,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="n">use_chunking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="p">):</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with backend and options.&quot;&quot;&quot;</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">use_chunking</span> <span class="o">=</span> <span class="n">use_chunking</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="sd">        Extract and consolidate.</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="n">docling_config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="n">extraction_contract</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="n">use_chunking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">chunk_max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="sd">        Args:</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="sd">            backend: VlmBackend or LlmBackend instance.</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="sd">            docling_config: Docling pipeline configuration (&#39;ocr&#39; or &#39;vision&#39;).</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="sd">            extraction_contract: &#39;direct&#39; or &#39;dense&#39; (LLM backend only).</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="sd">            use_chunking: Enable document chunking (required for &#39;dense&#39;).</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="sd">            chunk_max_tokens: Max tokens per chunk when chunking is used.</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="sd">        &quot;&quot;&quot;</span>
 <a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="sd">            List with single consolidated model (success)</span>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="sd">            or multiple partial models (merge failure - zero data loss)</span>
-<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>        <span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span> <span class="n">DoclingDocument</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="sd">            Tuple of (models, docling_document):</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="sd">            - models: single-element list with the merged model on success;</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="sd">              multiple partial models if consolidation fails (zero data loss);</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="sd">              empty list on total failure.</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="sd">            - docling_document: the converted document, or None on failure.</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="sd">        &quot;&quot;&quot;</span>
 </code></pre></div>
-<p><strong>Use Cases:</strong>
-- Single entity across document
-- Consolidated information
-- Summary extraction</p>
-<p><strong>Features:</strong>
-- <strong>Zero Data Loss</strong>: Returns partial models if consolidation fails
-- <strong>Consolidation</strong>: Programmatic merge of chunk results
-- <strong>Schema-Aware Chunking</strong>: Dynamically adjusts chunk size based on schema</p>
+<p><strong>Use Cases:</strong></p>
+<ul>
+<li>Single entity across document</li>
+<li>Consolidated information</li>
+<li>Summary extraction</li>
+</ul>
+<p><strong>Features:</strong></p>
+<ul>
+<li><strong>Zero Data Loss</strong>: Returns all partial models if consolidation fails, instead of discarding data</li>
+<li><strong>Contract-driven</strong>: <code>extraction_contract="direct"</code> (single call) or <code>"dense"</code> (two-phase skeleton-then-fill; see <a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a>)</li>
+<li><strong>Chunking</strong>: <code>use_chunking=True</code> splits large documents via <code>DocumentChunker</code> before extraction</li>
+</ul>
 <p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManyToOne</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLMBackend</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LLMBackend</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama-3.1-8b&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">ManyToOne</span><span class="p">(</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManyToOneStrategy</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends.llm_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmBackend</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_effective_model_config</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span> <span class="s2">&quot;llama3.1:8b&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">)(</span><span class="n">model_config</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">results</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="c1"># Check if consolidation succeeded</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Consolidated model: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠ Got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> partial models (data preserved)&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">ManyToOneStrategy</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="n">results</span><span class="p">,</span> <span class="n">docling_document</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># Check if consolidation succeeded</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Consolidated model: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠ Got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> partial models (data preserved)&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="backends">Backends<a class="headerlink" href="#backends" title="Permanent link">&para;</a></h2>
-<h3 id="llmbackend">LLMBackend<a class="headerlink" href="#llmbackend" title="Permanent link">&para;</a></h3>
-<p>LLM-based extraction backend with adaptive prompting.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LLMBackend</span><span class="p">(</span><span class="n">TextExtractionBackendProtocol</span><span class="p">):</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;LLM backend for text extraction.&quot;&quot;&quot;</span>
+<h3 id="llmbackend">LlmBackend<a class="headerlink" href="#llmbackend" title="Permanent link">&para;</a></h3>
+<p>LLM-based extraction backend. Performs direct full-document extraction in a single call, or contract-driven skeleton-then-fill extraction when <code>extraction_contract="dense"</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LlmBackend</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Backend for LLM-based extraction.&quot;&quot;&quot;</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">client</span><span class="p">:</span> <span class="n">LLMClientProtocol</span><span class="p">,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="p">):</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize LLM backend.&quot;&quot;&quot;</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model_capability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_capability</span><span class="p">()</span>  <span class="c1"># Auto-detect tier</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">llm_client</span><span class="p">:</span> <span class="n">LLMClientProtocol</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">extraction_contract</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span> <span class="s2">&quot;dense&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="n">dense_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="n">structured_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="n">structured_sparse_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="sd">        Args:</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="sd">            llm_client: LLM client instance implementing LLMClientProtocol.</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="sd">            extraction_contract: &#39;direct&#39; (single call) or &#39;dense&#39; (skeleton-then-fill).</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="sd">            dense_config: Dense-contract tuning (see Dense Extraction docs).</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="sd">            structured_output: Use API schema-enforced output when supported.</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="sd">            structured_sparse_check: Retry with legacy prompt mode if structured output looks sparse.</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="sd">        &quot;&quot;&quot;</span>
 </code></pre></div>
 <p><strong>Methods:</strong></p>
 <ul>
-<li><code>extract_from_markdown(markdown, template, context, is_partial)</code> - Extract from markdown with adaptive prompting</li>
-<li><code>consolidate_from_pydantic_models(raw_models, programmatic_model, template)</code> - Consolidate models (uses Chain of Density for ADVANCED tier)</li>
-<li><code>cleanup()</code> - Clean up resources</li>
+<li><code>extract_from_markdown(markdown, template, context="document", is_partial=False) -&gt; BaseModel | None</code> — direct, single-call extraction</li>
+<li><code>extract_from_chunk_batches(*, chunks, chunk_metadata, template, context="document") -&gt; BaseModel | None</code> — dense contract entry point (skeleton + fill across pre-chunked content)</li>
+<li><code>generate(system_prompt, user_prompt, max_tokens=None)</code> — free-form generation, used internally for gleaning passes</li>
+<li><code>cleanup()</code> — release the underlying LLM client</li>
 </ul>
-<p><strong>Model Capability Tiers:</strong></p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Tier</th>
-<th style="text-align: left;">Model Size</th>
-<th style="text-align: left;">Prompt Style</th>
-<th style="text-align: left;">Consolidation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><strong>SIMPLE</strong></td>
-<td style="text-align: left;">1B-7B</td>
-<td style="text-align: left;">Minimal</td>
-<td style="text-align: left;">Single-turn</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>STANDARD</strong></td>
-<td style="text-align: left;">7B-13B</td>
-<td style="text-align: left;">Balanced</td>
-<td style="text-align: left;">Single-turn</td>
-</tr>
-<tr>
-<td style="text-align: left;"><strong>ADVANCED</strong></td>
-<td style="text-align: left;">13B+</td>
-<td style="text-align: left;">Detailed</td>
-<td style="text-align: left;">Chain of Density (3 turns)</td>
-</tr>
-</tbody>
-</table>
 <p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLMBackend</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends.llm_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmBackend</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.llm_clients.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_effective_model_config</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># STANDARD tier model (7B-13B)</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span> <span class="s2">&quot;llama3.1:8b&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">)(</span><span class="n">model_config</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LLMBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Automatically uses STANDARD tier prompts</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="n">model</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">markdown</span><span class="o">=</span><span class="n">markdown</span><span class="p">,</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">template</span><span class="o">=</span><span class="n">MyTemplate</span><span class="p">,</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">context</span><span class="o">=</span><span class="s2">&quot;full document&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">is_partial</span><span class="o">=</span><span class="kc">False</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">effective</span> <span class="o">=</span> <span class="n">resolve_effective_model_config</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span> <span class="s2">&quot;llama3.1:8b&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">(</span><span class="s2">&quot;ollama&quot;</span><span class="p">)(</span><span class="n">model_config</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">LlmBackend</span><span class="p">(</span><span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">model</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">markdown</span><span class="o">=</span><span class="n">markdown</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">template</span><span class="o">=</span><span class="n">MyTemplate</span><span class="p">,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">context</span><span class="o">=</span><span class="s2">&quot;full document&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">is_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">)</span>
 </code></pre></div>
 <hr />
-<h3 id="vlmbackend">VLMBackend<a class="headerlink" href="#vlmbackend" title="Permanent link">&para;</a></h3>
-<p>Vision-Language Model backend with enhanced GPU cleanup.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">VLMBackend</span><span class="p">(</span><span class="n">ExtractionBackendProtocol</span><span class="p">):</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;VLM backend for document extraction.&quot;&quot;&quot;</span>
+<h3 id="vlmbackend">VlmBackend<a class="headerlink" href="#vlmbackend" title="Permanent link">&para;</a></h3>
+<p>Vision-Language Model backend (local inference only), with enhanced GPU cleanup.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">VlmBackend</span><span class="p">:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Backend for VLM-based extraction (local only).&quot;&quot;&quot;</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize VLM backend.&quot;&quot;&quot;</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Loaded on first use</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="sd">        Args:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="sd">            model_name: HuggingFace model repository ID (e.g. &#39;numind/NuExtract-2.0-8B&#39;).</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="sd">        &quot;&quot;&quot;</span>
 </code></pre></div>
 <p><strong>Methods:</strong></p>
 <ul>
-<li><code>extract_from_document(source, template)</code> - Extract from document</li>
-<li><code>cleanup()</code> - Enhanced GPU memory cleanup</li>
+<li><code>extract_from_document(source, template) -&gt; List[BaseModel]</code> — extract directly from the document image/PDF (one model per page/item)</li>
+<li><code>cleanup()</code> — enhanced GPU memory cleanup</li>
+<li><code>cleanup_all_gpus()</code> — clear CUDA cache across every visible device (multi-GPU setups)</li>
 </ul>
 <p><strong>Enhanced GPU Cleanup:</strong></p>
-<p>The <code>cleanup()</code> method now includes:
+<p>The <code>cleanup()</code> method includes:
 - Model-to-CPU transfer before deletion
-- Explicit CUDA cache clearing
-- Memory usage tracking and logging
-- Multi-GPU device support</p>
+- Explicit CUDA cache clearing and synchronization
+- Memory usage tracking and logging</p>
 <p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">VLMBackend</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.backends.vlm_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">VlmBackend</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">VLMBackend</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;numind/NuExtract-2.0-8B&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">VlmBackend</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;numind/NuExtract-2.0-8B&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">models</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_document</span><span class="p">(</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
@@ -4480,8 +4472,8 @@
 <h2 id="document-processing">Document Processing<a class="headerlink" href="#document-processing" title="Permanent link">&para;</a></h2>
 <h3 id="documentprocessor">DocumentProcessor<a class="headerlink" href="#documentprocessor" title="Permanent link">&para;</a></h3>
 <p>Handles document conversion and markdown extraction.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DocumentProcessor</span><span class="p">(</span><span class="n">DocumentProcessorProtocol</span><span class="p">):</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Process documents with Docling.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DocumentProcessor</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Process documents with Docling. Structurally satisfies DocumentProcessorProtocol.&quot;&quot;&quot;</span>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_docling_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to Docling document.&quot;&quot;&quot;</span>
@@ -4495,87 +4487,62 @@
 <hr />
 <h2 id="chunking">Chunking<a class="headerlink" href="#chunking" title="Permanent link">&para;</a></h2>
 <h3 id="documentchunker">DocumentChunker<a class="headerlink" href="#documentchunker" title="Permanent link">&para;</a></h3>
-<p>Handles document chunking with real tokenizers and schema-aware sizing.</p>
+<p>Structure-preserving document chunker built on Docling's <code>HybridChunker</code>. Keeps tables and lists intact, respects section hierarchy, and guarantees no chunk exceeds <code>chunk_max_tokens</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DocumentChunker</span><span class="p">:</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Chunk documents for processing.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Structure-preserving document chunker using Docling&#39;s HybridChunker.&quot;&quot;&quot;</span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>        <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="n">tokenizer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="n">schema_json</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="p">):</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="sd">        Initialize chunker.</span>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="sd">        Args:</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="sd">            provider: LLM provider (for tokenizer selection)</span>
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="sd">            max_tokens: Maximum tokens per chunk</span>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="sd">            tokenizer_name: Specific tokenizer to use</span>
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="sd">            schema_json: Schema JSON string for dynamic adjustment</span>
-<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chunk_markdown</span><span class="p">(</span>
-<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span>
-<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="sd">        Chunk markdown by tokens using real tokenizer.</span>
-<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>
-<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a><span class="sd">        Args:</span>
-<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a><span class="sd">            markdown: Markdown content</span>
-<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a><span class="sd">            max_tokens: Maximum tokens per chunk</span>
-<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>
-<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a><span class="sd">            List of markdown chunks</span>
-<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>
-<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_schema_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_json</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a><span class="sd">        Update schema configuration dynamically.</span>
-<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>
-<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a><span class="sd">        Args:</span>
-<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a><span class="sd">            schema_json: New schema JSON string</span>
-<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>        <span class="n">tokenizer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="n">chunk_max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="n">merge_peers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="sd">        Args:</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="sd">            tokenizer_name: Tokenizer to use for counting (default:</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="sd">                sentence-transformers/all-MiniLM-L6-v2; pass &quot;tiktoken&quot; for</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="sd">                OpenAI-style counting).</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="sd">            chunk_max_tokens: Maximum tokens per chunk (hard cap).</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="sd">            merge_peers: Merge peer sections during chunking.</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chunk_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">DoclingDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Chunk a DoclingDocument into structure-aware text chunks.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chunk_document_with_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">DoclingDocument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Chunk and return stats: total_chunks, avg_tokens, max_tokens_in_chunk, ...&quot;&quot;&quot;</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">chunk_text_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Sentence-aware fallback splitter for raw text without a DoclingDocument.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the chunker&#39;s current configuration.&quot;&quot;&quot;</span>
 </code></pre></div>
 <p><strong>Features:</strong></p>
 <ul>
-<li><strong>Real Tokenizers</strong>: Uses provider-specific tokenizers for accurate token counting</li>
-<li><strong>Safety Margins</strong>: Reserves a fixed 100-token buffer for protocol overhead</li>
-<li><strong>Schema-Aware</strong>: Dynamically adjusts chunk size based on exact prompt tokens</li>
-<li><strong>Provider-Specific</strong>: Optimized for each LLM provider</li>
+<li><strong>Structure-preserving</strong>: Tables, lists, and section hierarchy are kept intact via Docling's <code>HybridChunker</code></li>
+<li><strong>Hard cap</strong>: Any chunk that would exceed <code>chunk_max_tokens</code> is re-split by <code>chunk_text_fallback</code> (sentence, then word, then character boundaries) — chunks never silently exceed the limit</li>
+<li><strong>Single sizing knob</strong>: <code>chunk_max_tokens</code> — no coupling to model context limits or output budgets</li>
 </ul>
 <p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.document_chunker</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentChunker</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentChunker</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">chunker</span> <span class="o">=</span> <span class="n">DocumentChunker</span><span class="p">(</span><span class="n">chunk_max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">merge_peers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Create chunker with real tokenizer</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">chunker</span> <span class="o">=</span> <span class="n">DocumentChunker</span><span class="p">(</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">schema_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">MyTemplate</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">())</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="p">)</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="c1"># Chunk with accurate token counting</span>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">chunks</span> <span class="o">=</span> <span class="n">chunker</span><span class="o">.</span><span class="n">chunk_markdown</span><span class="p">(</span><span class="n">markdown</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="c1"># Update for different schema</span>
-<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="n">chunker</span><span class="o">.</span><span class="n">update_schema_config</span><span class="p">(</span><span class="n">schema_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">OtherTemplate</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()))</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">chunks</span> <span class="o">=</span> <span class="n">chunker</span><span class="o">.</span><span class="n">chunk_document</span><span class="p">(</span><span class="n">docling_document</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> chunks, config: </span><span class="si">{</span><span class="n">chunker</span><span class="o">.</span><span class="n">get_config_summary</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="factory">Factory<a class="headerlink" href="#factory" title="Permanent link">&para;</a></h2>
 <h3 id="extractorfactorycreate_extractor">ExtractorFactory.create_extractor()<a class="headerlink" href="#extractorfactorycreate_extractor" title="Permanent link">&para;</a></h3>
-<p>Creates an extractor from pipeline configuration. Used internally by the pipeline; for programmatic use, import from <code>docling_graph.core.extractors</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtractorFactory</span>
+<p>Creates an extractor from pipeline configuration. Used internally by the pipeline; for programmatic use, import from <code>docling_graph.core</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtractorFactory</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">ExtractorFactory</span><span class="o">.</span><span class="n">create_extractor</span><span class="p">(</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">backend_name</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;staged&quot; / &quot;delta&quot; (LLM + many-to-one only)</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">staged_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>            <span class="c1"># optional: pass_retries, parallel_workers, nodes_fill_cap, id_shard_size, delta_* for delta</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;dense&quot; (LLM + many-to-one only)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">dense_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>             <span class="c1"># optional: dense_skeleton_batch_tokens, dense_fill_nodes_cap, dense_fill_context, parallel_workers</span>
 <a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
 <a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="p">)</span>
@@ -4602,13 +4569,13 @@
 </tr>
 <tr>
 <td><code>extraction_contract</code></td>
-<td><code>"direct"</code> | <code>"staged"</code> | <code>"delta"</code></td>
-<td>LLM contract; <code>staged</code> and <code>delta</code> only apply to many-to-one</td>
+<td><code>"direct"</code> | <code>"dense"</code></td>
+<td>LLM contract; <code>dense</code> applies to many-to-one</td>
 </tr>
 <tr>
-<td><code>staged_config</code></td>
+<td><code>dense_config</code></td>
 <td><code>dict</code> | <code>None</code></td>
-<td>Optional staged tuning (pass_retries, parallel_workers, etc.)</td>
+<td>Optional dense tuning (skeleton batch tokens, fill cap, parallel workers, etc.)</td>
 </tr>
 <tr>
 <td><code>model_name</code></td>
@@ -4642,19 +4609,18 @@
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
 <a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="n">process_partial</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="real-tokenizer-integration">Real Tokenizer Integration<a class="headerlink" href="#real-tokenizer-integration" title="Permanent link">&para;</a></h3>
-<p>Accurate token counting with safety margins:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">chunker</span> <span class="o">=</span> <span class="n">DocumentChunker</span><span class="p">(</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4096</span>  <span class="c1"># Uses real Mistral tokenizer</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1"># Applies 20% safety margin automatically</span>
+<h3 id="structure-preserving-chunking">Structure-Preserving Chunking<a class="headerlink" href="#structure-preserving-chunking" title="Permanent link">&para;</a></h3>
+<p>Chunks respect table, list, and section boundaries and never exceed the configured token cap:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors.document_chunker</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentChunker</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">chunker</span> <span class="o">=</span> <span class="n">DocumentChunker</span><span class="p">(</span><span class="n">chunk_max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">chunks</span> <span class="o">=</span> <span class="n">chunker</span><span class="o">.</span><span class="n">chunk_document</span><span class="p">(</span><span class="n">docling_document</span><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1"># Every chunk is &lt;= 1024 tokens; oversized structural chunks are re-split, never dropped.</span>
 </code></pre></div>
 <hr />
 <h2 id="related-apis">Related APIs<a class="headerlink" href="#related-apis" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><a href="../../fundamentals/extraction-process/staged-extraction/">Staged Extraction</a></strong> - Multi-pass extraction</li>
-<li><strong><a href="../../fundamentals/extraction-process/delta-extraction/">Delta Extraction</a></strong> - Chunk-based graph extraction</li>
+<li><strong><a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a></strong> - Two-phase skeleton-then-fill extraction</li>
 <li><strong><a href="../../fundamentals/extraction-process/">Extraction Process</a></strong> - Usage guide</li>
 <li><strong><a href="../../fundamentals/extraction-process/model-merging/">Model Merging</a></strong> - Zero data loss</li>
 <li><strong><a href="../protocols/">Protocols</a></strong> - Backend protocols</li>

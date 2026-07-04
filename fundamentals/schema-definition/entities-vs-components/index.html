@@ -1376,45 +1376,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#staged-extraction-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Staged extraction considerations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Staged extraction considerations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pattern-2-measurements-in-research" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pattern 2: Measurements in Research
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pattern-3-line-items" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pattern 3: Line Items
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#common-mistakes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1622,34 +1583,6 @@
     
   
     Advanced Patterns
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
   
 
     
@@ -2192,42 +2125,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2405,6 +2310,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4047,6 +3980,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4534,45 +4495,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#staged-extraction-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Staged extraction considerations
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Staged extraction considerations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pattern-2-measurements-in-research" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pattern 2: Measurements in Research
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pattern-3-line-items" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pattern 3: Line Items
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#common-mistakes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4695,11 +4617,13 @@
 <h1 id="entities-vs-components">Entities vs Components<a class="headerlink" href="#entities-vs-components" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The <strong>most critical decision</strong> when designing a Pydantic template is classifying each model as either an <strong>Entity</strong> or a <strong>Component</strong>. This distinction fundamentally affects how your knowledge graph is constructed and how nodes are deduplicated.</p>
-<p><strong>In this guide:</strong>
-- Understanding the Entity vs Component distinction
-- When to use each classification
-- How to configure <code>graph_id_fields</code> and <code>is_entity</code>
-- Real-world examples and decision trees</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Understanding the Entity vs Component distinction</li>
+<li>When to use each classification</li>
+<li>How to configure <code>graph_id_fields</code> and <code>is_entity</code></li>
+<li>Real-world examples and decision trees</li>
+</ul>
 <hr />
 <h2 id="the-critical-distinction">The Critical Distinction<a class="headerlink" href="#the-critical-distinction" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison">Quick Comparison<a class="headerlink" href="#quick-comparison" title="Permanent link">&para;</a></h3>
@@ -4774,10 +4698,12 @@
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">email</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># Not part of ID</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">phone</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># Not part of ID</span>
 </code></pre></div>
-<p><strong>Key Points:</strong>
-- Use <code>graph_id_fields</code> to specify which fields form the unique identifier
-- Only fields in <code>graph_id_fields</code> are used for deduplication
-- Other fields can vary without creating new nodes</p>
+<p><strong>Key Points:</strong></p>
+<ul>
+<li>Use <code>graph_id_fields</code> to specify which fields form the unique identifier</li>
+<li>Only fields in <code>graph_id_fields</code> are used for deduplication</li>
+<li>Other fields can vary without creating new nodes</li>
+</ul>
 <h3 id="when-to-use-entities">When to Use Entities<a class="headerlink" href="#when-to-use-entities" title="Permanent link">&para;</a></h3>
 <p>Use entities for models that represent:</p>
 <p>✅ <strong>People</strong> - Individuals with unique identities
@@ -4800,32 +4726,32 @@
 1. <strong>Together form a natural unique identifier</strong>
 2. <strong>Are stable</strong> (don't change frequently)
 3. <strong>Are likely to be present</strong> in extracted data</p>
-<p><strong>Staged and delta extraction:</strong> When using <code>extraction_contract="staged"</code> or <code>"delta"</code>, the catalog collects <strong>identity examples</strong> from (1) the parent field's list-of-dict examples and (2) the child model's identity fields' scalar <code>examples</code>. Provide identity examples either on the parent field (e.g. <code>studies = Field(examples=[{"study_id": "3.1", ...}])</code>) or on the entity's ID fields (e.g. <code>study_id = Field(examples=["3.1", "STUDY-BINDER-MW"])</code>) so the LLM sees valid-ID formats. Prefer required, short, document-derived ID fields. See <a href="../staged-extraction-schema/">Schema design for staged extraction</a>.</p>
+<p><strong>Dense extraction:</strong> When using <code>extraction_contract="dense"</code>, the catalog collects identity examples from the parent field's list-of-dict examples and the child model's identity fields' scalar <code>examples</code>. Provide identity examples either on the parent field (e.g. <code>studies = Field(examples=[{"study_id": "3.1", ...}])</code>) or on the entity's ID fields (e.g. <code>study_id = Field(examples=["3.1", "STUDY-BINDER-MW"])</code>) so the LLM sees valid ID formats. Prefer required, short, document-derived ID fields.</p>
 <h4 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Single field ID</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Organization</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Multi-field ID</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Multi-field ID (two fields maximum — see caution below)</span>
 <a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="p">)</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="n">first_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># Complex ID</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="c1"># ANTI-PATTERN: a value object promoted to entity with a sprawling identity.</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># A measurement has no stable identity — make it a component instead:</span>
 <a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="k">class</span><span class="w"> </span><span class="nc">Measurement</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;text_value&quot;</span><span class="p">,</span> <span class="s2">&quot;numeric_value&quot;</span><span class="p">,</span> <span class="s2">&quot;unit&quot;</span><span class="p">]</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="p">)</span>
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>    <span class="n">text_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span class="n">numeric_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>    <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="n">numeric_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>    <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
+<blockquote>
+<p><strong>Caution (dense extraction):</strong> keep identity to <strong>one scalar field, two at most</strong>. Every extra id field is another value the LLM must reproduce exactly when a child references its parent, so wide identities multiply orphaned links. Never use list-valued fields or enums as identity — their surface forms drift between batches.</p>
+</blockquote>
 <h3 id="entity-examples">Entity Examples<a class="headerlink" href="#entity-examples" title="Permanent link">&para;</a></h3>
 <h4 id="person-entity">📍 Person Entity<a class="headerlink" href="#person-entity" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -4905,10 +4831,12 @@
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">postal_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="n">country</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Key Points:</strong>
-- Use <code>is_entity=False</code> to mark as component
-- <strong>All fields</strong> are used for deduplication
-- Identical content = same node</p>
+<p><strong>Key Points:</strong></p>
+<ul>
+<li>Use <code>is_entity=False</code> to mark as component</li>
+<li><strong>All fields</strong> are used for deduplication</li>
+<li>Identical content = same node</li>
+</ul>
 <h3 id="when-to-use-components">When to Use Components<a class="headerlink" href="#when-to-use-components" title="Permanent link">&para;</a></h3>
 <p>Use components for models that represent:</p>
 <p>✅ <strong>Addresses</strong> - Physical locations
@@ -5058,29 +4986,39 @@ flowchart TD
     class H config</code></pre>
 <h3 id="questions-to-ask">Questions to Ask<a class="headerlink" href="#questions-to-ask" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>"Should this be tracked individually?"</strong></li>
-<li>Yes → Likely an Entity</li>
+<li>
+<p><strong>"Should this be tracked individually?"</strong></p>
+</li>
+<li>
+<p>Yes → Likely an Entity</p>
+</li>
 <li>
 <p>No → Likely a Component</p>
 </li>
 <li>
 <p><strong>"If I see this twice with identical values, should it be one thing or two?"</strong></p>
 </li>
-<li>One thing → Component</li>
+<li>
+<p>One thing → Component</p>
+</li>
 <li>
 <p>Two things → Entity</p>
 </li>
 <li>
 <p><strong>"Does this represent a unique object or a shared value?"</strong></p>
 </li>
-<li>Unique object → Entity</li>
+<li>
+<p>Unique object → Entity</p>
+</li>
 <li>
 <p>Shared value → Component</p>
 </li>
 <li>
 <p><strong>"Would I want to query for all instances of this specific thing?"</strong></p>
 </li>
-<li>Yes → Entity</li>
+<li>
+<p>Yes → Entity</p>
+</li>
 <li>No → Component</li>
 </ol>
 <hr />
@@ -5148,20 +5086,22 @@ flowchart TD
 <a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">document_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>
 <a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="c1"># ENTITY: Person (unique individual)</span>
-<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
-<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;given_names&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
-<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="p">)</span>
-<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>    <span class="n">given_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">date</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>
-<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a><span class="c1"># COMPONENT: Address (shared value)</span>
-<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a>    <span class="n">street_address</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>    <span class="n">city</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a>    <span class="c1"># Multiple people can live at the same address</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="c1"># given_names stays OUT of the identity: list-valued ids stringify</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="c1"># inconsistently across extraction batches and break parent linkage.</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>        <span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;date_of_birth&quot;</span><span class="p">]</span>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>    <span class="p">)</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>    <span class="n">given_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">date</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a><span class="c1"># COMPONENT: Address (shared value)</span>
+<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a>    <span class="n">street_address</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a>    <span class="n">city</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a>    <span class="c1"># Multiple people can live at the same address</span>
 </code></pre></div>
 <hr />
 <h2 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">&para;</a></h2>
@@ -5187,99 +5127,53 @@ flowchart TD
 </code></pre></div>
 <p><strong>Result:</strong> Same address node is shared across multiple people/organizations.</p>
 <hr />
-<h2 id="staged-extraction-considerations">Staged extraction considerations<a class="headerlink" href="#staged-extraction-considerations" title="Permanent link">&para;</a></h2>
-<p>When using <strong>staged extraction</strong> (<code>extraction_contract="staged"</code>):</p>
-<ul>
-<li><strong>Entities</strong> that should participate in the ID pass must have <code>graph_id_fields</code>. Components (<code>is_entity=False</code>) do not appear as separate identity paths when <code>staged_id_identity_only=True</code>.</li>
-<li><strong>Components</strong> are included in the staged catalog only when the relationship uses <code>edge()</code> with an <code>edge_label</code>. Components without an edge label are not separate catalog nodes.</li>
-<li><strong>Parent linkage</strong> in the fill/merge phase uses <code>(path, id_tuple)</code> and parent <code>(parent_path, parent_id_tuple)</code>. Ensure parent entities have stable, extractable <code>graph_id_fields</code> so references resolve and the quality gate (e.g. <code>staged_quality_max_parent_lookup_miss</code>) can pass.</li>
-</ul>
-<p>For full guidance (identity choices, depth, troubleshooting), see <a href="../staged-extraction-schema/">Schema design for staged extraction</a>.</p>
-<h3 id="pattern-2-measurements-in-research">Pattern 2: Measurements in Research<a class="headerlink" href="#pattern-2-measurements-in-research" title="Permanent link">&para;</a></h3>
-<p><strong>Scenario:</strong> Multiple experiments report the same measurement value.</p>
-<p><strong>Solution:</strong> Make Measurement a component.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Measurement</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Component - shared measurement value.&quot;&quot;&quot;</span>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">Experiment</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Entity - unique experiment.&quot;&quot;&quot;</span>
-<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;experiment_id&quot;</span><span class="p">])</span>
-<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>    <span class="c1"># ...</span>
-<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>    <span class="n">measurements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Measurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="pattern-3-line-items">Pattern 3: Line Items<a class="headerlink" href="#pattern-3-line-items" title="Permanent link">&para;</a></h3>
-<p><strong>Scenario:</strong> Invoice line items - should each be unique or shared?</p>
-<p><strong>Decision:</strong> Usually <strong>neither</strong> - line items are typically embedded data, not separate nodes.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LineItem</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Line item - embedded in invoice, not a separate node.&quot;&quot;&quot;</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="c1"># No model_config needed - this won&#39;t become a node</span>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="n">quantity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    <span class="n">unit_price</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>
-<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">BillingDocument</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Entity - unique invoice.&quot;&quot;&quot;</span>
-<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;document_no&quot;</span><span class="p">])</span>
-<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a>    <span class="c1"># ...</span>
-<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a>    <span class="c1"># Use regular Field, not edge() - these are embedded</span>
-<a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a>    <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LineItem</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-</code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Line items as nodes</p>
-<p>If you want line items as nodes, use edge() and decide if they're entities or components.</p>
-</div>
-<hr />
 <h2 id="common-mistakes">Common Mistakes<a class="headerlink" href="#common-mistakes" title="Permanent link">&para;</a></h2>
 <h3 id="making-everything-an-entity">❌ Making Everything an Entity<a class="headerlink" href="#making-everything-an-entity" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># WRONG - Address as entity</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;street&quot;</span><span class="p">,</span> <span class="s2">&quot;city&quot;</span><span class="p">])</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="c1"># This creates separate nodes for identical addresses</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># WRONG - Address as entity</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;street&quot;</span><span class="p">,</span> <span class="s2">&quot;city&quot;</span><span class="p">])</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="c1"># This creates separate nodes for identical addresses</span>
 </code></pre></div>
 <p><strong>Problem:</strong> Identical addresses create separate nodes, losing the benefit of shared locations.</p>
 <p><strong>Fix:</strong> Make Address a component.</p>
 <h3 id="making-everything-a-component">❌ Making Everything a Component<a class="headerlink" href="#making-everything-a-component" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># WRONG - Person as component</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="c1"># This merges people with identical names</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># WRONG - Person as component</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="c1"># This merges people with identical names</span>
 </code></pre></div>
 <p><strong>Problem:</strong> Two people with the same name become one node.</p>
 <p><strong>Fix:</strong> Make Person an entity with appropriate <code>graph_id_fields</code>.</p>
 <h3 id="wrong-id-fields">❌ Wrong ID Fields<a class="headerlink" href="#wrong-id-fields" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># WRONG - Using non-stable fields</span>
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">])</span>
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>    <span class="c1"># Email can change, creating duplicate nodes</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># WRONG - Using non-stable fields</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">graph_id_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">])</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="c1"># Email can change, creating duplicate nodes</span>
 </code></pre></div>
 <p><strong>Problem:</strong> When email changes, a new node is created for the same person.</p>
 <p><strong>Fix:</strong> Use stable fields like name + date of birth.</p>
 <hr />
 <h2 id="testing-your-classification">Testing Your Classification<a class="headerlink" href="#testing-your-classification" title="Permanent link">&para;</a></h2>
 <h3 id="test-1-deduplication-behavior">Test 1: Deduplication Behavior<a class="headerlink" href="#test-1-deduplication-behavior" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Test entity deduplication</span>
-<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">person1</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@email.com&quot;</span><span class="p">)</span>
-<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="n">person2</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@work.com&quot;</span><span class="p">)</span>
-<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># Should create 1 node (same ID fields)</span>
-<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
-<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="c1"># Test component deduplication</span>
-<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="n">addr1</span> <span class="o">=</span> <span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;Paris&quot;</span><span class="p">)</span>
-<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="n">addr2</span> <span class="o">=</span> <span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;Paris&quot;</span><span class="p">)</span>
-<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="c1"># Should create 1 node (identical content)</span>
-<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>
-<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="n">addr3</span> <span class="o">=</span> <span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;London&quot;</span><span class="p">)</span>
-<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="c1"># Should create 2nd node (different city)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Test entity deduplication</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">person1</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@email.com&quot;</span><span class="p">)</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="n">person2</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@work.com&quot;</span><span class="p">)</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># Should create 1 node (same ID fields)</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="c1"># Test component deduplication</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="n">addr1</span> <span class="o">=</span> <span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;Paris&quot;</span><span class="p">)</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="n">addr2</span> <span class="o">=</span> <span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;Paris&quot;</span><span class="p">)</span>
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="c1"># Should create 1 node (identical content)</span>
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a><span class="n">addr3</span> <span class="o">=</span> <span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;London&quot;</span><span class="p">)</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="c1"># Should create 2nd node (different city)</span>
 </code></pre></div>
 <h3 id="test-2-graph-structure">Test 2: Graph Structure<a class="headerlink" href="#test-2-graph-structure" title="Permanent link">&para;</a></h3>
 <p>Run extraction and check the graph:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;my_template.MyTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">    </span>--export-format<span class="w"> </span>csv<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">    </span>--output-dir<span class="w"> </span>test_output
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;my_template.MyTemplate&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">    </span>--export-format<span class="w"> </span>csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span>--output-dir<span class="w"> </span>test_output
 </code></pre></div>
 <p>Check <code>test_output/nodes.csv</code>:
 - Entities should have one row per unique ID combination

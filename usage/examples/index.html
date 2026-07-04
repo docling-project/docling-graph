@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -2854,6 +2826,17 @@
     <span class="md-ellipsis">
       
         Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runnable-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runnable Scripts
       
     </span>
   </a>
@@ -3855,6 +3838,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4215,6 +4226,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#runnable-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runnable Scripts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#api-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4314,13 +4336,14 @@
 <h1 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>This section provides <strong>complete, end-to-end examples</strong> organized by both <strong>input format</strong> and <strong>domain/use case</strong>. Each example demonstrates how to process different types of documents through the Docling Graph pipeline.</p>
-<p><strong>What's Covered:</strong>
-- Complete Pydantic templates
-- CLI and Python API usage
-- Expected outputs and graph structures
-- Troubleshooting tips
-- Best practices</p>
-<hr />
+<p><strong>What's Covered:</strong></p>
+<ul>
+<li>Complete Pydantic templates</li>
+<li>CLI and Python API usage</li>
+<li>Expected outputs and graph structures</li>
+<li>Troubleshooting tips</li>
+<li>Best practices</li>
+</ul>
 <hr />
 <h2 id="quick-navigation">Quick Navigation<a class="headerlink" href="#quick-navigation" title="Permanent link">&para;</a></h2>
 <h3 id="by-input-format">By Input Format<a class="headerlink" href="#by-input-format" title="Permanent link">&para;</a></h3>
@@ -4438,15 +4461,19 @@
 <hr />
 <h2 id="choosing-the-right-example">Choosing the Right Example<a class="headerlink" href="#choosing-the-right-example" title="Permanent link">&para;</a></h2>
 <p><strong>New to Docling Graph?</strong> → <a href="../../introduction/quickstart/">Quickstart</a></p>
-<p><strong>By Input Format:</strong>
-- Web documents → <a href="url-input/">URL Input</a>
-- Documentation → <a href="markdown-input/">Markdown Input</a>
-- Reprocessing → <a href="docling-document-input/">DoclingDocument Input</a></p>
-<p><strong>By Domain:</strong>
-- Business → <a href="billing-document/">Billing Document Extraction</a>
-- Identity → <a href="id-card/">ID Card</a>
-- Legal → <a href="insurance-policy/">Insurance Policy</a>
-- Academic → <a href="rheology_research/">Rheology Research</a></p>
+<p><strong>By Input Format:</strong></p>
+<ul>
+<li>Web documents → <a href="url-input/">URL Input</a></li>
+<li>Documentation → <a href="markdown-input/">Markdown Input</a></li>
+<li>Reprocessing → <a href="docling-document-input/">DoclingDocument Input</a></li>
+</ul>
+<p><strong>By Domain:</strong></p>
+<ul>
+<li>Business → <a href="billing-document/">Billing Document Extraction</a></li>
+<li>Identity → <a href="id-card/">ID Card</a></li>
+<li>Legal → <a href="insurance-policy/">Insurance Policy</a></li>
+<li>Academic → <a href="rheology_research/">Rheology Research</a></li>
+</ul>
 <h3 id="workflow-1-url-extract-visualize">Workflow 1: URL → Extract → Visualize<a class="headerlink" href="#workflow-1-url-extract-visualize" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Download and process in one step</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;https://arxiv.org/pdf/2207.02720&quot;</span><span class="w"> </span><span class="se">\</span>
@@ -4499,7 +4526,10 @@
 <li><strong><a href="../../fundamentals/pipeline-configuration/input-formats/">Input Formats Guide</a></strong> - Complete input format reference</li>
 <li><strong><a href="../../fundamentals/pipeline-configuration/backend-selection/">Backend Selection</a></strong> - Choose LLM vs VLM</li>
 <li><strong><a href="../../fundamentals/pipeline-configuration/processing-modes/">Processing Modes</a></strong> - One-to-one vs many-to-one</li>
+<li><strong><a href="../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance</a></strong> - Trace nodes back to source chunks and pages</li>
 </ul>
+<h3 id="runnable-scripts">Runnable Scripts<a class="headerlink" href="#runnable-scripts" title="Permanent link">&para;</a></h3>
+<p>For self-contained, runnable Python scripts (quickstart, chunking, batch processing, provenance, etc.), see <a href="../../examples/"><code>docs/examples/README.md</code></a> and the <a href="../cli/cli-recipes/">CLI Recipes</a> that mirror each one.</p>
 <h3 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><a href="../api/pipeline-config/">PipelineConfig</a></strong> - Configuration options</li>

@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -2498,6 +2470,17 @@
     <span class="md-ellipsis">
       
         📍 Streaming Responses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📍 Data Grounding
       
     </span>
   </a>
@@ -3859,6 +3842,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4189,6 +4200,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#data-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📍 Data Grounding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#common-options" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4398,6 +4420,12 @@
 <td><code>14_streaming_responses.py</code></td>
 <td>LLM (Remote)</td>
 <td>Timeout avoidance</td>
+</tr>
+<tr>
+<td><a href="#data-grounding">12: Data Grounding</a></td>
+<td><code>15_provenance_grounding.py</code></td>
+<td>LLM (Dense)</td>
+<td>Auditing, citation</td>
 </tr>
 </tbody>
 </table>
@@ -4684,7 +4712,7 @@
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;gemini&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;gemini-1.5-pro&quot;</span>
 </code></pre></div></p>
-<p><strong>WatsonX:</strong>
+<p><strong>watsonx:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_10_watsonx&quot;</span><span class="w"> </span><span class="se">\</span>
@@ -4735,65 +4763,95 @@
 <a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="w">    </span>--llm-streaming
 </code></pre></div>
 <hr />
+<h2 id="data-grounding">📍 Data Grounding<a class="headerlink" href="#data-grounding" title="Permanent link">&para;</a></h2>
+<p><strong>Python Script:</strong> <code>15_provenance_grounding.py</code></p>
+<p><strong>Use Case:</strong> Trace every extracted node back to its source chunk and page for auditing or citation</p>
+<p><strong>Prerequisites:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+</code></pre></div></p>
+<p><strong>CLI Command:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_provenance&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="w">    </span>--extraction-contract<span class="w"> </span><span class="s2">&quot;dense&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="w">    </span>--provenance<span class="w"> </span><span class="s2">&quot;detailed&quot;</span>
+</code></pre></div></p>
+<p><strong>When to Use:</strong></p>
+<ul>
+<li>✅ Auditing extracted data against the source document</li>
+<li>✅ Citation / "show your work" for downstream RAG or review UIs</li>
+<li>✅ Debugging why a field has a particular value</li>
+</ul>
+<p><strong>Result:</strong> Every entity node in <code>docling_graph/graph.json</code> carries a <code>__provenance__</code> attribute, and the full grounding ledger — including source chunk text — is written to <code>docling_graph/provenance.json</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>jq<span class="w"> </span><span class="s1">&#39;.nodes[] | {id, provenance: .__provenance__}&#39;</span><span class="w"> </span>outputs/cli_provenance/*/docling_graph/graph.json
+</code></pre></div>
+<p>See <a href="../../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance</a> for the full schema.</p>
+<hr />
 <h2 id="common-options">Common Options<a class="headerlink" href="#common-options" title="Permanent link">&para;</a></h2>
 <h3 id="visualization">Visualization<a class="headerlink" href="#visualization" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># View interactive graph</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/cli_01
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># Open specific HTML file</span>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>open<span class="w"> </span>outputs/cli_01/docling_graph/graph.html
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># View interactive graph</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/cli_01
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Open specific HTML file</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>open<span class="w"> </span>outputs/cli_01/docling_graph/graph.html
 </code></pre></div>
 <h3 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Verbose output</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>docling-graph<span class="w"> </span>--verbose<span class="w"> </span>convert<span class="w"> </span>...
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># Check version</span>
-<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>docling-graph<span class="w"> </span>--version
-<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
-<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="c1"># Get help</span>
-<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>--help
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Verbose output</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>docling-graph<span class="w"> </span>--verbose<span class="w"> </span>convert<span class="w"> </span>...
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># Check version</span>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>docling-graph<span class="w"> </span>--version
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="c1"># Get help</span>
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>--help
 </code></pre></div>
 <h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Initialize config file</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>docling-graph<span class="w"> </span>init
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
-<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># Use custom config</span>
-<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>--config<span class="w"> </span>custom_config.yaml<span class="w"> </span>...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Initialize config file</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>docling-graph<span class="w"> </span>init
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="c1"># Use custom config</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>--config<span class="w"> </span>custom_config.yaml<span class="w"> </span>...
 </code></pre></div>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="api-key-issues">🐛 API Key Issues<a class="headerlink" href="#api-key-issues" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Check if key is set</span>
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$MISTRAL_API_KEY</span>
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Set key for current session</span>
-<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
-<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>
-<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="c1"># Set permanently (add to ~/.bashrc or ~/.zshrc)</span>
-<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export MISTRAL_API_KEY=&quot;your-key&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># Check if key is set</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$MISTRAL_API_KEY</span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="c1"># Set key for current session</span>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="c1"># Set permanently (add to ~/.bashrc or ~/.zshrc)</span>
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export MISTRAL_API_KEY=&quot;your-key&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
 </code></pre></div>
 <h3 id="ollama-issues">🐛 Ollama Issues<a class="headerlink" href="#ollama-issues" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Check if Ollama is running</span>
-<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>curl<span class="w"> </span>http://localhost:11434
-<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
-<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># Start Ollama</span>
-<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>ollama<span class="w"> </span>serve
-<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>
-<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="c1"># List available models</span>
-<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>ollama<span class="w"> </span>list
-<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>
-<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="c1"># Pull a model</span>
-<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a>ollama<span class="w"> </span>pull<span class="w"> </span>llama3:8b
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># Check if Ollama is running</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>curl<span class="w"> </span>http://localhost:11434
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="c1"># Start Ollama</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>ollama<span class="w"> </span>serve
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>
+<a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="c1"># List available models</span>
+<a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a>ollama<span class="w"> </span>list
+<a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a>
+<a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="c1"># Pull a model</span>
+<a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a>ollama<span class="w"> </span>pull<span class="w"> </span>llama3:8b
 </code></pre></div>
 <h3 id="installation-issues">🐛 Installation Issues<a class="headerlink" href="#installation-issues" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Reinstall</span>
-<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>docling-graph
-<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
-<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="c1"># Check Python version</span>
-<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>python<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Should be 3.10+</span>
-<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>
-<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="c1"># Verify installation</span>
-<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import docling_graph; print(docling_graph.__version__)&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># Reinstall</span>
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>docling-graph
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
+<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="c1"># Check Python version</span>
+<a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>python<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Should be 3.10+</span>
+<a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>
+<a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="c1"># Verify installation</span>
+<a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import docling_graph; print(docling_graph.__version__)&quot;</span>
 </code></pre></div>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>

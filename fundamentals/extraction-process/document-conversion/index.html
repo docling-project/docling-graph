@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2498,42 +2470,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../delta-extraction/" class="md-nav__link">
+      <a href="../dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2711,6 +2655,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4353,6 +4325,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -5307,12 +5307,14 @@
 <h1 id="document-conversion">Document Conversion<a class="headerlink" href="#document-conversion" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p><strong>Document Conversion</strong> is the first stage of the extraction pipeline, transforming raw PDFs and images into structured DoclingDocument format. This stage uses the Docling library to perform OCR, layout analysis, and content extraction.</p>
-<p><strong>In this guide:</strong>
-- OCR vs Vision pipelines
-- Layout analysis
-- Table extraction
-- Multi-language support
-- Performance optimization</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>OCR vs Vision pipelines</li>
+<li>Layout analysis</li>
+<li>Table extraction</li>
+<li>Multi-language support</li>
+<li>Performance optimization</li>
+</ul>
 <hr />
 <h2 id="docling-pipelines">Docling Pipelines<a class="headerlink" href="#docling-pipelines" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison">Quick Comparison<a class="headerlink" href="#quick-comparison" title="Permanent link">&para;</a></h3>
@@ -5357,16 +5359,20 @@
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Strengths:</strong>
-- Fast processing
-- High accuracy for text
-- Excellent table extraction
-- Multi-language support
-- No GPU required</p>
-<p>❌ <strong>Limitations:</strong>
-- May struggle with complex layouts
-- Less effective for handwriting
-- Requires clear text</p>
+<p>✅ <strong>Strengths:</strong></p>
+<ul>
+<li>Fast processing</li>
+<li>High accuracy for text</li>
+<li>Excellent table extraction</li>
+<li>Multi-language support</li>
+<li>No GPU required</li>
+</ul>
+<p>❌ <strong>Limitations:</strong></p>
+<ul>
+<li>May struggle with complex layouts</li>
+<li>Less effective for handwriting</li>
+<li>Requires clear text</li>
+</ul>
 <h3 id="when-to-use-ocr">When to Use OCR<a class="headerlink" href="#when-to-use-ocr" title="Permanent link">&para;</a></h3>
 <p>Use OCR pipeline for:
 - Standard business documents
@@ -5388,17 +5394,21 @@
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Strengths:</strong>
-- Excellent for complex layouts
-- Handles handwriting better
-- Understands visual context
-- Better for images
-- Robust to noise</p>
-<p>❌ <strong>Limitations:</strong>
-- Slower processing
-- Requires more memory
-- GPU recommended
-- Higher resource usage</p>
+<p>✅ <strong>Strengths:</strong></p>
+<ul>
+<li>Excellent for complex layouts</li>
+<li>Handles handwriting better</li>
+<li>Understands visual context</li>
+<li>Better for images</li>
+<li>Robust to noise</li>
+</ul>
+<p>❌ <strong>Limitations:</strong></p>
+<ul>
+<li>Slower processing</li>
+<li>Requires more memory</li>
+<li>GPU recommended</li>
+<li>Higher resource usage</li>
+</ul>
 <h3 id="when-to-use-vision">When to Use Vision<a class="headerlink" href="#when-to-use-vision" title="Permanent link">&para;</a></h3>
 <p>Use Vision pipeline for:
 - Complex layouts (magazines, brochures)

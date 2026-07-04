@@ -1160,34 +1160,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1704,42 +1676,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1914,6 +1858,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3536,6 +3508,34 @@
     
   
     Exporters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
   
 
     
@@ -5336,10 +5336,12 @@
 <hr />
 <h2 id="release-types">Release Types<a class="headerlink" href="#release-types" title="Permanent link">&para;</a></h2>
 <h3 id="patch-release-v120-031">Patch Release (v1.2.0 → 0.3.1)<a class="headerlink" href="#patch-release-v120-031" title="Permanent link">&para;</a></h3>
-<p><strong>When:</strong>
-- Bug fixes
-- Documentation updates
-- Performance improvements (no API changes)</p>
+<p><strong>When:</strong></p>
+<ul>
+<li>Bug fixes</li>
+<li>Documentation updates</li>
+<li>Performance improvements (no API changes)</li>
+</ul>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Fix extraction error</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;fix(extractors): handle empty markdown&quot;</span>
@@ -5348,10 +5350,12 @@
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>git<span class="w"> </span>tag<span class="w"> </span>v0.3.1
 </code></pre></div></p>
 <h3 id="minor-release-v120-040">Minor Release (v1.2.0 → 0.4.0)<a class="headerlink" href="#minor-release-v120-040" title="Permanent link">&para;</a></h3>
-<p><strong>When:</strong>
-- New features
-- New backends/exporters
-- Deprecations (with warnings)</p>
+<p><strong>When:</strong></p>
+<ul>
+<li>New features</li>
+<li>New backends/exporters</li>
+<li>Deprecations (with warnings)</li>
+</ul>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Add new feature</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat(exporters): add GraphML exporter&quot;</span>
@@ -5360,11 +5364,13 @@
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>git<span class="w"> </span>tag<span class="w"> </span>v0.4.0
 </code></pre></div></p>
 <h3 id="major-release-1xx-200-manual-only">Major Release (1.x.x → 2.0.0) - Manual Only<a class="headerlink" href="#major-release-1xx-200-manual-only" title="Permanent link">&para;</a></h3>
-<p><strong>When:</strong>
-- Breaking API changes
-- Removed deprecated features
-- Major architectural refactoring
-- Multiple accumulated breaking changes</p>
+<p><strong>When:</strong></p>
+<ul>
+<li>Breaking API changes</li>
+<li>Removed deprecated features</li>
+<li>Major architectural refactoring</li>
+<li>Multiple accumulated breaking changes</li>
+</ul>
 <p><strong>Important:</strong> Major releases require manual Git tags and cannot be triggered by commits.</p>
 <p><strong>Process:</strong></p>
 <ol>
@@ -5420,7 +5426,7 @@
 <h4 id="2-implement-breaking-changes">2. Implement Breaking Changes<a class="headerlink" href="#2-implement-breaking-changes" title="Permanent link">&para;</a></h4>
 <p>Make all necessary breaking changes on this branch:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Make changes</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>vim<span class="w"> </span>docling_graph/pipeline.py
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>vim<span class="w"> </span>docling_graph/pipeline/orchestrator.py
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Commit with clear messages</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat!: change run_pipeline signature</span>

@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3871,6 +3843,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../llm-clients/" class="md-nav__link">
         
   
@@ -4388,9 +4388,11 @@
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 </code></pre></div>
 <p>Extract structured data from a document.</p>
-<p><strong>Parameters:</strong>
-- <code>source</code> (<code>str</code>): Path to source document
-- <code>template</code> (<code>Type[BaseModel]</code>): Pydantic model template</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>source</code> (<code>str</code>): Path to source document</li>
+<li><code>template</code> (<code>Type[BaseModel]</code>): Pydantic model template</li>
+</ul>
 <p><strong>Returns:</strong> List of extracted Pydantic model instances</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyVLMBackend</span><span class="p">(</span><span class="n">ExtractionBackendProtocol</span><span class="p">):</span>
@@ -4434,8 +4436,10 @@
 <a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up backend resources.&quot;&quot;&quot;</span>
 <a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>        <span class="o">...</span>
 </code></pre></div>
-<p><strong>Attributes:</strong>
-- <code>client</code> (<code>Any</code>): LLM client instance</p>
+<p><strong>Attributes:</strong></p>
+<ul>
+<li><code>client</code> (<code>Any</code>): LLM client instance</li>
+</ul>
 <p><strong>Methods:</strong></p>
 <h4 id="extract_from_markdown">extract_from_markdown()<a class="headerlink" href="#extract_from_markdown" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span>
@@ -4446,11 +4450,13 @@
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 <p>Extract structured data from markdown content.</p>
-<p><strong>Parameters:</strong>
-- <code>markdown</code> (<code>str</code>): Markdown content
-- <code>template</code> (<code>Type[BaseModel]</code>): Pydantic model template
-- <code>context</code> (<code>str</code>): Context description (e.g., "page 1")
-- <code>is_partial</code> (<code>bool</code>): Whether this is partial extraction</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>markdown</code> (<code>str</code>): Markdown content</li>
+<li><code>template</code> (<code>Type[BaseModel]</code>): Pydantic model template</li>
+<li><code>context</code> (<code>str</code>): Context description (e.g., "page 1")</li>
+<li><code>is_partial</code> (<code>bool</code>): Whether this is partial extraction</li>
+</ul>
 <p><strong>Returns:</strong> Extracted model instance or None</p>
 <h4 id="consolidate_from_pydantic_models">consolidate_from_pydantic_models()<a class="headerlink" href="#consolidate_from_pydantic_models" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">consolidate_from_pydantic_models</span><span class="p">(</span>
@@ -4460,10 +4466,12 @@
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 <p>Consolidate multiple models using LLM.</p>
-<p><strong>Parameters:</strong>
-- <code>raw_models</code> (<code>List[BaseModel]</code>): List of extracted models
-- <code>programmatic_model</code> (<code>BaseModel</code>): Programmatically merged model
-- <code>template</code> (<code>Type[BaseModel]</code>): Target template</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>raw_models</code> (<code>List[BaseModel]</code>): List of extracted models</li>
+<li><code>programmatic_model</code> (<code>BaseModel</code>): Programmatically merged model</li>
+<li><code>template</code> (<code>Type[BaseModel]</code>): Target template</li>
+</ul>
 <p><strong>Returns:</strong> Consolidated model instance or None</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyLLMBackend</span><span class="p">(</span><span class="n">TextExtractionBackendProtocol</span><span class="p">):</span>
@@ -4518,9 +4526,11 @@
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 </code></pre></div>
 <p>Execute LLM call and return parsed JSON.</p>
-<p><strong>Parameters:</strong>
-- <code>prompt</code> (<code>str</code> or <code>Mapping[str, str]</code>): Prompt (legacy string or dict with 'system' and 'user')
-- <code>schema_json</code> (<code>str</code>): Pydantic schema as JSON string</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>prompt</code> (<code>str</code> or <code>Mapping[str, str]</code>): Prompt (legacy string or dict with 'system' and 'user')</li>
+<li><code>schema_json</code> (<code>str</code>): Pydantic schema as JSON string</li>
+</ul>
 <p><strong>Returns:</strong> Parsed JSON dictionary</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyLLMClient</span><span class="p">(</span><span class="n">LLMClientProtocol</span><span class="p">):</span>
@@ -4559,8 +4569,10 @@
 <a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract structured data from source document.&quot;&quot;&quot;</span>
 <a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>        <span class="o">...</span>
 </code></pre></div>
-<p><strong>Attributes:</strong>
-- <code>backend</code> (<code>Any</code>): Backend instance (VLM or LLM)</p>
+<p><strong>Attributes:</strong></p>
+<ul>
+<li><code>backend</code> (<code>Any</code>): Backend instance (VLM or LLM)</li>
+</ul>
 <p><strong>Methods:</strong></p>
 <h4 id="extract">extract()<a class="headerlink" href="#extract" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span>
@@ -4569,9 +4581,11 @@
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 </code></pre></div>
 <p>Extract structured data from source document.</p>
-<p><strong>Parameters:</strong>
-- <code>source</code> (<code>str</code>): Path to source document
-- <code>template</code> (<code>Type[BaseModel]</code>): Pydantic model template</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>source</code> (<code>str</code>): Path to source document</li>
+<li><code>template</code> (<code>Type[BaseModel]</code>): Pydantic model template</li>
+</ul>
 <p><strong>Returns:</strong> List of extracted Pydantic model instances
 - OneToOne: May contain N models (one per page)
 - ManyToOne: Contains 1 merged model</p>
@@ -4609,22 +4623,28 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">convert_to_docling_doc</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span>
 </code></pre></div>
 <p>Convert document to Docling document object.</p>
-<p><strong>Parameters:</strong>
-- <code>source</code> (<code>str</code>): Path to source document</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>source</code> (<code>str</code>): Path to source document</li>
+</ul>
 <p><strong>Returns:</strong> Docling document object</p>
 <h4 id="extract_full_markdown">extract_full_markdown()<a class="headerlink" href="#extract_full_markdown" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_full_markdown</span><span class="p">(</span><span class="n">document</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </code></pre></div>
 <p>Extract complete markdown from document.</p>
-<p><strong>Parameters:</strong>
-- <code>document</code> (<code>Any</code>): Docling document object</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>document</code> (<code>Any</code>): Docling document object</li>
+</ul>
 <p><strong>Returns:</strong> Full markdown content as string</p>
 <h4 id="extract_page_markdowns">extract_page_markdowns()<a class="headerlink" href="#extract_page_markdowns" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_page_markdowns</span><span class="p">(</span><span class="n">document</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </code></pre></div>
 <p>Extract markdown for each page separately.</p>
-<p><strong>Parameters:</strong>
-- <code>document</code> (<code>Any</code>): Docling document object</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>document</code> (<code>Any</code>): Docling document object</li>
+</ul>
 <p><strong>Returns:</strong> List of markdown strings, one per page</p>
 <hr />
 <h2 id="type-checking-utilities">Type Checking Utilities<a class="headerlink" href="#type-checking-utilities" title="Permanent link">&para;</a></h2>
@@ -4632,8 +4652,10 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_vlm_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeGuard</span><span class="p">[</span><span class="n">ExtractionBackendProtocol</span><span class="p">]</span>
 </code></pre></div>
 <p>Check if backend behaves like a VLM backend.</p>
-<p><strong>Parameters:</strong>
-- <code>backend</code> (<code>Any</code>): Backend instance to check</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>backend</code> (<code>Any</code>): Backend instance to check</li>
+</ul>
 <p><strong>Returns:</strong> True if backend provides document-level extraction</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_vlm_backend</span>
@@ -4646,8 +4668,10 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_llm_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeGuard</span><span class="p">[</span><span class="n">TextExtractionBackendProtocol</span><span class="p">]</span>
 </code></pre></div>
 <p>Check if backend behaves like an LLM backend.</p>
-<p><strong>Parameters:</strong>
-- <code>backend</code> (<code>Any</code>): Backend instance to check</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>backend</code> (<code>Any</code>): Backend instance to check</li>
+</ul>
 <p><strong>Returns:</strong> True if backend provides markdown/text extraction</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_llm_backend</span>
@@ -4660,8 +4684,10 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_backend_type</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </code></pre></div>
 <p>Get the backend type as a string.</p>
-<p><strong>Parameters:</strong>
-- <code>backend</code> (<code>Any</code>): Backend instance</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>backend</code> (<code>Any</code>): Backend instance</li>
+</ul>
 <p><strong>Returns:</strong> "vlm", "llm", or "unknown"</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_backend_type</span>

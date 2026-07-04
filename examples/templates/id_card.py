@@ -19,18 +19,18 @@ def edge(label: str, default: Any = None, **kwargs: Any) -> Any:
     """
     Helper function to create a Pydantic Field with edge metadata.
     The 'edge_label' defines the type of relationship in the graph.
-    Use default=None or default_factory=list for optional/list edges.
+    Edges are optional by default (default=None) so a missing relationship
+    never fails validation of the whole document; use default_factory=list
+    for list edges.
     """
     json_schema_extra = dict(kwargs.pop("json_schema_extra", {}) or {})
     json_schema_extra["edge_label"] = label
     if "default_factory" in kwargs:
         default_factory = kwargs.pop("default_factory")
         return Field(default_factory=default_factory, json_schema_extra=json_schema_extra, **kwargs)
-    if default is not None or "default" in kwargs:
-        return Field(
-            default=kwargs.pop("default", default), json_schema_extra=json_schema_extra, **kwargs
-        )
-    return Field(..., json_schema_extra=json_schema_extra, **kwargs)
+    return Field(
+        default=kwargs.pop("default", default), json_schema_extra=json_schema_extra, **kwargs
+    )
 
 
 # --- Reusable Component: Address ---
@@ -39,7 +39,7 @@ def edge(label: str, default: Any = None, **kwargs: Any) -> Any:
 class Address(BaseModel):
     """
     Represents a physical address (component).
-    In delta extraction, nested address payloads may be flattened.
+    In chunked extraction, nested address payloads may be flattened.
     """
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
@@ -79,11 +79,13 @@ class Address(BaseModel):
 class Person(BaseModel):
     """
     A generic model for a person.
-    Identity uses last_name (required) plus given_names and date_of_birth for stable deduplication.
+    Identity uses last_name (required) plus date_of_birth for stable deduplication.
+    given_names is deliberately NOT an identity field: list-valued ids stringify
+    inconsistently across extraction batches and break parent linkage.
     """
 
     model_config = ConfigDict(
-        graph_id_fields=["last_name", "given_names", "date_of_birth"],
+        graph_id_fields=["last_name", "date_of_birth"],
         extra="ignore",
         populate_by_name=True,
     )
@@ -214,9 +216,9 @@ class IDCard(BaseModel):
     issue_date: date | None = Field(
         None,
         description=(
-            "Date the document was issued.",
-            "Look for text like 'Date of Issue', 'Date de délivrance', or similar.",
-            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format.",
+            "Date the document was issued. "
+            "LOOK FOR: 'Date of Issue', 'Date de délivrance'. "
+            "EXTRACT: Normalize to YYYY-MM-DD."
         ),
         examples=["2023-10-20"],
     )
@@ -224,9 +226,9 @@ class IDCard(BaseModel):
     expiry_date: date | None = Field(
         None,
         description=(
-            "Date the document expires.",
-            "Look for text like 'Expiry Date', 'Date d'expiration', or similar.",
-            "The model should parse dates like 'DD MM YYYY' or 'DDMMYYYY' and normalize them to YYYY-MM-DD format.",
+            "Date the document expires. "
+            "LOOK FOR: 'Expiry Date', 'Date d'expiration'. "
+            "EXTRACT: Normalize to YYYY-MM-DD."
         ),
         examples=["2033-10-19"],
     )

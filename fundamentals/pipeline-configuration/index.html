@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2053,42 +2025,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2266,6 +2210,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3908,6 +3880,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4417,13 +4417,15 @@
 <h1 id="pipeline-configuration">Pipeline Configuration<a class="headerlink" href="#pipeline-configuration" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Pipeline configuration controls how Docling Graph processes documents and extracts knowledge graphs. The <code>PipelineConfig</code> class provides a type-safe, programmatic way to configure all aspects of the extraction pipeline.</p>
-<p><strong>In this section:</strong>
-- Understanding PipelineConfig
-- Backend selection (LLM vs VLM)
-- Model configuration
-- Processing modes
-- Export settings
-- Advanced configuration</p>
+<p><strong>In this section:</strong></p>
+<ul>
+<li>Understanding PipelineConfig</li>
+<li>Backend selection (LLM vs VLM)</li>
+<li>Model configuration</li>
+<li>Processing modes</li>
+<li>Export settings</li>
+<li>Advanced configuration</li>
+</ul>
 <hr />
 <h2 id="what-is-pipeline-configuration">What is Pipeline Configuration?<a class="headerlink" href="#what-is-pipeline-configuration" title="Permanent link">&para;</a></h2>
 <p>Pipeline configuration defines:</p>
@@ -4482,12 +4484,14 @@
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Defaults:</strong>
-- Backend: <code>llm</code>
-- Inference: <code>local</code>
-- Processing mode: <code>many-to-one</code>
-- Export format: <code>csv</code>
-- Output directory: <code>outputs</code></p>
+<p><strong>Defaults:</strong></p>
+<ul>
+<li>Backend: <code>llm</code></li>
+<li>Inference: <code>local</code></li>
+<li>Processing mode: <code>many-to-one</code></li>
+<li>Export format: <code>csv</code></li>
+<li>Output directory: <code>outputs</code></li>
+</ul>
 <h3 id="common-configurations">Common Configurations<a class="headerlink" href="#common-configurations" title="Permanent link">&para;</a></h3>
 <h4 id="remote-api-extraction">Remote API Extraction<a class="headerlink" href="#remote-api-extraction" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -4598,45 +4602,57 @@ flowchart LR
 <a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>│   └── output_dir: Path
 <a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>│
 <a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>└── Advanced Settings
-<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    ├── max_batch_size: int
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    ├── parallel_workers: int
 <a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>    ├── reverse_edges: bool
-<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>    └── chunker_config: dict
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>    └── chunk_max_tokens: int
 </code></pre></div>
 <hr />
 <h2 id="key-configuration-decisions">Key Configuration Decisions<a class="headerlink" href="#key-configuration-decisions" title="Permanent link">&para;</a></h2>
 <h3 id="1-backend-llm-vs-vlm">1. Backend: LLM vs VLM<a class="headerlink" href="#1-backend-llm-vs-vlm" title="Permanent link">&para;</a></h3>
-<p><strong>Choose LLM when:</strong>
-- Processing text-heavy documents
-- Need remote API support
-- Want flexible model selection
-- Cost is a concern (remote APIs)</p>
-<p><strong>Choose VLM when:</strong>
-- Processing image-heavy documents
-- Need vision understanding
-- Have local GPU available
-- Want highest accuracy for complex layouts</p>
+<p><strong>Choose LLM when:</strong></p>
+<ul>
+<li>Processing text-heavy documents</li>
+<li>Need remote API support</li>
+<li>Want flexible model selection</li>
+<li>Cost is a concern (remote APIs)</li>
+</ul>
+<p><strong>Choose VLM when:</strong></p>
+<ul>
+<li>Processing image-heavy documents</li>
+<li>Need vision understanding</li>
+<li>Have local GPU available</li>
+<li>Want highest accuracy for complex layouts</li>
+</ul>
 <p><strong>See:</strong> <a href="backend-selection/">Backend Selection</a></p>
 <h3 id="2-inference-local-vs-remote">2. Inference: Local vs Remote<a class="headerlink" href="#2-inference-local-vs-remote" title="Permanent link">&para;</a></h3>
-<p><strong>Choose Local when:</strong>
-- Have GPU available
-- Processing sensitive data
-- Need offline capability
-- Want to avoid API costs</p>
-<p><strong>Choose Remote when:</strong>
-- No GPU available
-- Need quick setup
-- Want latest models
-- Processing non-sensitive data</p>
+<p><strong>Choose Local when:</strong></p>
+<ul>
+<li>Have GPU available</li>
+<li>Processing sensitive data</li>
+<li>Need offline capability</li>
+<li>Want to avoid API costs</li>
+</ul>
+<p><strong>Choose Remote when:</strong></p>
+<ul>
+<li>No GPU available</li>
+<li>Need quick setup</li>
+<li>Want latest models</li>
+<li>Processing non-sensitive data</li>
+</ul>
 <p><strong>See:</strong> <a href="model-configuration/">Model Configuration</a></p>
 <h3 id="3-processing-mode-one-to-one-vs-many-to-one">3. Processing Mode: One-to-One vs Many-to-One<a class="headerlink" href="#3-processing-mode-one-to-one-vs-many-to-one" title="Permanent link">&para;</a></h3>
-<p><strong>Choose One-to-One when:</strong>
-- Documents have distinct pages
-- Need page-level granularity
-- Pages are independent</p>
-<p><strong>Choose Many-to-One when:</strong>
-- Document is a single entity
-- Need document-level view
-- Want consolidated output</p>
+<p><strong>Choose One-to-One when:</strong></p>
+<ul>
+<li>Documents have distinct pages</li>
+<li>Need page-level granularity</li>
+<li>Pages are independent</li>
+</ul>
+<p><strong>Choose Many-to-One when:</strong></p>
+<ul>
+<li>Document is a single entity</li>
+<li>Need document-level view</li>
+<li>Want consolidated output</li>
+</ul>
 <p><strong>See:</strong> <a href="processing-modes/">Processing Modes</a></p>
 <hr />
 <h2 id="configuration-validation">Configuration Validation<a class="headerlink" href="#configuration-validation" title="Permanent link">&para;</a></h2>
@@ -4710,9 +4726,8 @@ flowchart LR
 <a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    <span class="n">export_markdown</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="n">reverse_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;outputs&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="n">max_batch_size</span><span class="o">=</span><span class="mi">1</span>
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="p">)</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>See:</strong> <a href="configuration-basics/">Configuration Basics</a> for details on each setting.</p>
 <hr />

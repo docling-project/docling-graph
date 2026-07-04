@@ -1342,34 +1342,6 @@
   
   
     <li class="md-nav__item">
-      <a href="fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1886,42 +1858,14 @@
   
   
     <li class="md-nav__item">
-      <a href="fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2096,6 +2040,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3738,6 +3710,34 @@
   
   
     <li class="md-nav__item">
+      <a href="reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="reference/llm-clients/" class="md-nav__link">
         
   
@@ -4102,16 +4102,17 @@
 <h2 id="what-is-docling-graph">What is Docling Graph?<a class="headerlink" href="#what-is-docling-graph" title="Permanent link">&para;</a></h2>
 <p>Docling-Graph turns documents into validated <strong>Pydantic</strong> objects, then builds a <strong>directed knowledge graph</strong> with explicit semantic relationships.</p>
 <p>This transformation enables high-precision use cases in <strong>chemistry, finance, and legal</strong> domains, where AI must capture exact entity connections (compounds and reactions, instruments and dependencies, properties and measurements) <strong>rather than rely on approximate text embeddings</strong>.</p>
-<p>This toolkit supports two extraction paths: <strong>local VLM extraction</strong> via Docling, and <strong>LLM-based extraction</strong> using either local runtimes (vLLM, Ollama, LM Studio) or API providers (Mistral, OpenAI, Gemini, IBM WatsonX), all orchestrated through a flexible, config-driven pipeline.</p>
+<p>This toolkit supports two extraction paths: <strong>local VLM extraction</strong> via Docling, and <strong>LLM-based extraction</strong> using either local runtimes (vLLM, Ollama, LM Studio) or API providers (Mistral, OpenAI, Gemini, IBM watsonx), all orchestrated through a flexible, config-driven pipeline.</p>
 <hr />
 <h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>✍🏻 Multi-Format Input</strong>: Ingest PDFs, images, URLs, raw text, Markdown and more.</li>
-<li><strong>🧠 Flexible Extraction:</strong> VLM or LLM-based (vLLM, Ollama, Mistral, Gemini, WatsonX, etc.)</li>
-<li><strong>🔨 Smart Graphs:</strong> Convert Pydantic models to NetworkX graphs with stable node IDs</li>
-<li><strong>📦 Multiple Export:</strong> CSV (Neo4j-compatible), Cypher scripts, JSON, Markdown</li>
-<li><strong>📊 Rich Visualizations:</strong> Interactive HTML and detailed Markdown reports</li>
-<li><strong>⚙️ Type-Safe Configuration:</strong> Pydantic-based validation</li>
+<li><strong>✍🏻 Multi-Format Input:</strong> PDF, images, Office, HTML, Markdown, URLs, and more.</li>
+<li><strong>🧠 Flexible Extraction:</strong> LLM/VLM backends with configurable pipelines.</li>
+<li><strong>⚙️ Type-Safe IR:</strong> Pydantic-based information retrieval.</li>
+<li><strong>💎 Knowledge Graphs:</strong> Pydantic to NetworkX conversion with stable IDs.</li>
+<li><strong>📍 Provenance:</strong> Deterministic source grounding with no extra LLM calls.</li>
+<li><strong>📦 Multiple Exports:</strong> CSV, Cypher, JSON, Markdown, and Neo4j-ready formats.</li>
+<li><strong>📊 Visual Reports:</strong> Interactive HTML and Markdown.</li>
 </ul>
 <hr />
 <h2 id="quick-navigation">Quick Navigation<a class="headerlink" href="#quick-navigation" title="Permanent link">&para;</a></h2>

@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3972,6 +3944,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4548,10 +4548,12 @@
 <h1 id="cli-reference">CLI Reference<a class="headerlink" href="#cli-reference" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The <strong>docling-graph CLI</strong> provides command-line tools for document-to-graph conversion, configuration management, and graph visualization.</p>
-<p><strong>Available Commands:</strong>
-- <code>init</code> - Create configuration files
-- <code>convert</code> - Convert documents to graphs
-- <code>inspect</code> - Visualize graphs in browser</p>
+<p><strong>Available Commands:</strong></p>
+<ul>
+<li><code>init</code> - Create configuration files</li>
+<li><code>convert</code> - Convert documents to graphs</li>
+<li><code>inspect</code> - Visualize graphs in browser</li>
+</ul>
 <hr />
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
@@ -4618,34 +4620,39 @@
 <p>Create a configuration file with interactive prompts.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docling-graph<span class="w"> </span>init
 </code></pre></div>
-<p><strong>Features:</strong>
-- Interactive configuration builder (processing mode, extraction contract, backend, inference, provider/model, export, output)
-- When you select <strong>delta</strong> as extraction contract, prompts for delta resolvers and quality gate tuning
-- Dependency validation
-- Provider/model identifiers use LiteLLM routing
-- API key guidance</p>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Interactive configuration builder (processing mode, extraction contract, backend, inference, provider/model, export, output)</li>
+<li>Dependency validation</li>
+<li>Provider/model identifiers use LiteLLM routing</li>
+<li>API key guidance</li>
+</ul>
 <p><strong>Learn more:</strong> <a href="init-command/">init Command →</a></p>
 <hr />
 <h3 id="convert">convert<a class="headerlink" href="#convert" title="Permanent link">&para;</a></h3>
 <p>Convert documents to knowledge graphs.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>SOURCE<span class="w"> </span>--template<span class="w"> </span>TEMPLATE<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </code></pre></div>
-<p><strong>Features:</strong>
-- Multiple backend support (LLM/VLM)
-- Flexible processing modes
-- Configurable chunking
-- Multiple export formats</p>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Multiple backend support (LLM/VLM)</li>
+<li>Flexible processing modes</li>
+<li>Configurable chunking</li>
+<li>Multiple export formats</li>
+</ul>
 <p><strong>Learn more:</strong> <a href="convert-command/">convert Command →</a></p>
 <hr />
 <h3 id="inspect">inspect<a class="headerlink" href="#inspect" title="Permanent link">&para;</a></h3>
 <p>Visualize graphs in your browser.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docling-graph<span class="w"> </span>inspect<span class="w"> </span>PATH<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </code></pre></div>
-<p><strong>Features:</strong>
-- Interactive HTML visualization
-- CSV and JSON import
-- Node/edge exploration
-- Self-contained output</p>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Interactive HTML visualization</li>
+<li>CSV and JSON import</li>
+<li>Node/edge exploration</li>
+<li>Self-contained output</li>
+</ul>
 <p><strong>Learn more:</strong> <a href="inspect-command/">inspect Command →</a></p>
 <hr />
 <h2 id="common-workflows">Common Workflows<a class="headerlink" href="#common-workflows" title="Permanent link">&para;</a></h2>

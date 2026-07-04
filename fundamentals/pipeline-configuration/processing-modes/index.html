@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2269,42 +2241,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2482,6 +2426,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4124,6 +4096,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4849,12 +4849,14 @@
 <h1 id="processing-modes">Processing Modes<a class="headerlink" href="#processing-modes" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Processing modes determine how Docling Graph handles multi-page documents. The choice between <strong>one-to-one</strong> and <strong>many-to-one</strong> modes significantly affects extraction results and graph structure.</p>
-<p><strong>In this guide:</strong>
-- One-to-one vs many-to-one comparison
-- When to use each mode
-- Graph structure differences
-- Performance implications
-- Mode-specific configuration</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>One-to-one vs many-to-one comparison</li>
+<li>When to use each mode</li>
+<li>Graph structure differences</li>
+<li>Performance implications</li>
+<li>Mode-specific configuration</li>
+</ul>
 <hr />
 <h2 id="processing-mode-comparison">Processing Mode Comparison<a class="headerlink" href="#processing-mode-comparison" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison">Quick Comparison<a class="headerlink" href="#quick-comparison" title="Permanent link">&para;</a></h3>
@@ -4961,17 +4963,21 @@ flowchart LR
     class E,F,G operator
     class H,I,J output</code></pre>
 <h3 id="when-to-use-one-to-one">When to Use One-to-One<a class="headerlink" href="#when-to-use-one-to-one" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use one-to-one when:</strong>
-- Each page is an independent document (e.g., batch of invoices)
-- Pages have different structures
-- You need page-level granularity
-- Pages represent separate entities
-- You want to track which page data came from</p>
-<p>❌ <strong>Don't use one-to-one when:</strong>
-- Document is a single entity spanning multiple pages
-- Pages are continuation of same content
-- You need document-wide context
-- You want a single consolidated result</p>
+<p>✅ <strong>Use one-to-one when:</strong></p>
+<ul>
+<li>Each page is an independent document (e.g., batch of invoices)</li>
+<li>Pages have different structures</li>
+<li>You need page-level granularity</li>
+<li>Pages represent separate entities</li>
+<li>You want to track which page data came from</li>
+</ul>
+<p>❌ <strong>Don't use one-to-one when:</strong></p>
+<ul>
+<li>Document is a single entity spanning multiple pages</li>
+<li>Pages are continuation of same content</li>
+<li>You need document-wide context</li>
+<li>You want a single consolidated result</li>
+</ul>
 <h3 id="example-use-cases">Example Use Cases<a class="headerlink" href="#example-use-cases" title="Permanent link">&para;</a></h3>
 <h4 id="use-case-1-batch-invoice-processing">Use Case 1: Batch Invoice Processing<a class="headerlink" href="#use-case-1-batch-invoice-processing" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Multiple invoices in one PDF</span>
@@ -5071,17 +5077,21 @@ flowchart LR
     class D,E process
     class F output</code></pre>
 <h3 id="when-to-use-many-to-one">When to Use Many-to-One<a class="headerlink" href="#when-to-use-many-to-one" title="Permanent link">&para;</a></h3>
-<p>✅ <strong>Use many-to-one when:</strong>
-- Document is a single entity (e.g., one invoice spanning multiple pages)
-- Pages are continuation of same content
-- You need document-wide context
-- You want a single consolidated result
-- Document has cross-page relationships</p>
-<p>❌ <strong>Don't use many-to-one when:</strong>
-- Each page is independent
-- Pages have different structures
-- You need page-level tracking
-- Pages represent separate entities</p>
+<p>✅ <strong>Use many-to-one when:</strong></p>
+<ul>
+<li>Document is a single entity (e.g., one invoice spanning multiple pages)</li>
+<li>Pages are continuation of same content</li>
+<li>You need document-wide context</li>
+<li>You want a single consolidated result</li>
+<li>Document has cross-page relationships</li>
+</ul>
+<p>❌ <strong>Don't use many-to-one when:</strong></p>
+<ul>
+<li>Each page is independent</li>
+<li>Pages have different structures</li>
+<li>You need page-level tracking</li>
+<li>Pages represent separate entities</li>
+</ul>
 <h3 id="example-use-cases_1">Example Use Cases<a class="headerlink" href="#example-use-cases_1" title="Permanent link">&para;</a></h3>
 <h4 id="use-case-1-multi-page-invoice">Use Case 1: Multi-Page Invoice<a class="headerlink" href="#use-case-1-multi-page-invoice" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Single invoice spanning 3 pages</span>
@@ -5287,7 +5297,7 @@ flowchart TD
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="c1"># Many-to-one specific settings</span>
 <a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Enable chunking for large docs</span>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">max_batch_size</span><span class="o">=</span><span class="mi">5</span>  <span class="c1"># Process chunks in batches</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">chunk_max_tokens</span><span class="o">=</span><span class="mi">512</span>  <span class="c1"># Max tokens per chunk</span>
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="p">)</span>
 </code></pre></div>
 <hr />

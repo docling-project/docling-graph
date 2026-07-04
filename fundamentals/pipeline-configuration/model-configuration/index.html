@@ -1171,34 +1171,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -2236,42 +2208,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2449,6 +2393,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4091,6 +4063,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4783,12 +4783,14 @@
 <h1 id="model-configuration">Model Configuration<a class="headerlink" href="#model-configuration" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Model configuration determines which AI model processes your documents. Docling Graph supports multiple providers for both local and remote inference, giving you flexibility in choosing the right model for your needs.</p>
-<p><strong>In this guide:</strong>
-- Local vs remote inference
-- Supported providers and models
-- Model selection strategies
-- Provider-specific configuration
-- Performance and cost considerations</p>
+<p><strong>In this guide:</strong></p>
+<ul>
+<li>Local vs remote inference</li>
+<li>Supported providers and models</li>
+<li>Model selection strategies</li>
+<li>Provider-specific configuration</li>
+<li>Performance and cost considerations</li>
+</ul>
 <hr />
 <h2 id="local-vs-remote-inference">Local vs Remote Inference<a class="headerlink" href="#local-vs-remote-inference" title="Permanent link">&para;</a></h2>
 <h3 id="quick-comparison">Quick Comparison<a class="headerlink" href="#quick-comparison" title="Permanent link">&para;</a></h3>
@@ -4874,11 +4876,13 @@
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>--model<span class="w"> </span>ibm-granite/granite-4.0-1b<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span>--port<span class="w"> </span><span class="m">8000</span>
 </code></pre></div></p>
-<p><strong>Supported Models:</strong>
-- <code>ibm-granite/granite-4.0-1b</code> (default, fast)
-- <code>ibm-granite/granite-4.0-3b</code> (balanced)
-- <code>meta-llama/Llama-3.1-8B</code> (high quality)
-- Any HuggingFace model compatible with vLLM</p>
+<p><strong>Supported Models:</strong></p>
+<ul>
+<li><code>ibm-granite/granite-4.0-1b</code> (default, fast)</li>
+<li><code>ibm-granite/granite-4.0-3b</code> (balanced)</li>
+<li><code>meta-llama/Llama-3.1-8B</code> (high quality)</li>
+<li>Any HuggingFace model compatible with vLLM</li>
+</ul>
 <h4 id="2-ollama">2. Ollama<a class="headerlink" href="#2-ollama" title="Permanent link">&para;</a></h4>
 <p><strong>Best for:</strong> Easy local setup, multiple models</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -4896,11 +4900,13 @@
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Ollama runs automatically on localhost:11434</span>
 </code></pre></div></p>
-<p><strong>Supported Models:</strong>
-- <code>llama3.1:8b</code> (recommended)
-- <code>mistral:7b</code>
-- <code>mixtral:8x7b</code>
-- Any model in Ollama library</p>
+<p><strong>Supported Models:</strong></p>
+<ul>
+<li><code>llama3.1:8b</code> (recommended)</li>
+<li><code>mistral:7b</code></li>
+<li><code>mixtral:8x7b</code></li>
+<li>Any model in Ollama library</li>
+</ul>
 <h4 id="3-lm-studio">3. LM Studio<a class="headerlink" href="#3-lm-studio" title="Permanent link">&para;</a></h4>
 <p><strong>Best for:</strong> Local inference via the LM Studio app (OpenAI-compatible server)</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -4934,25 +4940,33 @@
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">provider_override</span><span class="o">=</span><span class="s2">&quot;docling&quot;</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">)</span>
 </code></pre></div>
-<p><strong>Supported Models:</strong>
-- <code>numind/NuExtract-2.0-8B</code> (default, recommended)
-- <code>numind/NuExtract-2.0-2B</code> (faster, less accurate)</p>
+<p><strong>Supported Models:</strong></p>
+<ul>
+<li><code>numind/NuExtract-2.0-8B</code> (default, recommended)</li>
+<li><code>numind/NuExtract-2.0-2B</code> (faster, less accurate)</li>
+</ul>
 <h3 id="local-inference-requirements">Local Inference Requirements<a class="headerlink" href="#local-inference-requirements" title="Permanent link">&para;</a></h3>
 <h4 id="hardware-requirements">Hardware Requirements<a class="headerlink" href="#hardware-requirements" title="Permanent link">&para;</a></h4>
-<p><strong>Minimum (CPU only):</strong>
-- 16GB RAM
-- 50GB disk space
-- Slow processing</p>
-<p><strong>Recommended (GPU):</strong>
-- NVIDIA GPU with 8GB+ VRAM
-- 32GB RAM
-- 100GB disk space
-- CUDA 12.1+</p>
-<p><strong>Optimal (GPU):</strong>
-- NVIDIA GPU with 24GB+ VRAM (RTX 4090, A100)
-- 64GB RAM
-- 200GB SSD
-- CUDA 12.1+</p>
+<p><strong>Minimum (CPU only):</strong></p>
+<ul>
+<li>16GB RAM</li>
+<li>50GB disk space</li>
+<li>Slow processing</li>
+</ul>
+<p><strong>Recommended (GPU):</strong></p>
+<ul>
+<li>NVIDIA GPU with 8GB+ VRAM</li>
+<li>32GB RAM</li>
+<li>100GB disk space</li>
+<li>CUDA 12.1+</li>
+</ul>
+<p><strong>Optimal (GPU):</strong></p>
+<ul>
+<li>NVIDIA GPU with 24GB+ VRAM (RTX 4090, A100)</li>
+<li>64GB RAM</li>
+<li>200GB SSD</li>
+<li>CUDA 12.1+</li>
+</ul>
 <h4 id="software-requirements">Software Requirements<a class="headerlink" href="#software-requirements" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># CUDA drivers (for GPU)</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>nvidia-smi<span class="w">  </span><span class="c1"># Verify CUDA installation</span>
@@ -4996,13 +5010,17 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Set API key</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
 </code></pre></div></p>
-<p><strong>Supported Models:</strong>
-- <code>gpt-4-turbo</code> (recommended, best quality)
-- <code>gpt-4</code> (high quality)
-- <code>gpt-3.5-turbo</code> (fast, economical)</p>
-<p><strong>Pricing (approximate):</strong>
-- GPT-4 Turbo: $0.01/1K input tokens, $0.03/1K output tokens
-- GPT-3.5 Turbo: $0.0005/1K input tokens, $0.0015/1K output tokens</p>
+<p><strong>Supported Models:</strong></p>
+<ul>
+<li><code>gpt-4-turbo</code> (recommended, best quality)</li>
+<li><code>gpt-4</code> (high quality)</li>
+<li><code>gpt-3.5-turbo</code> (fast, economical)</li>
+</ul>
+<p><strong>Pricing (approximate):</strong></p>
+<ul>
+<li>GPT-4 Turbo: $0.01/1K input tokens, $0.03/1K output tokens</li>
+<li>GPT-3.5 Turbo: $0.0005/1K input tokens, $0.0015/1K output tokens</li>
+</ul>
 <h4 id="2-mistral-ai">2. Mistral AI<a class="headerlink" href="#2-mistral-ai" title="Permanent link">&para;</a></h4>
 <p><strong>Best for:</strong> European provider, good balance</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -5017,14 +5035,18 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Set API key</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
 </code></pre></div></p>
-<p><strong>Supported Models:</strong>
-- <code>mistral-small-latest</code> (default, economical)
-- <code>mistral-medium-latest</code> (balanced)
-- <code>mistral-large-latest</code> (highest quality)</p>
-<p><strong>Pricing (approximate):</strong>
-- Small: $0.001/1K tokens
-- Medium: $0.0027/1K tokens
-- Large: $0.008/1K tokens</p>
+<p><strong>Supported Models:</strong></p>
+<ul>
+<li><code>mistral-small-latest</code> (default, economical)</li>
+<li><code>mistral-medium-latest</code> (balanced)</li>
+<li><code>mistral-large-latest</code> (highest quality)</li>
+</ul>
+<p><strong>Pricing (approximate):</strong></p>
+<ul>
+<li>Small: $0.001/1K tokens</li>
+<li>Medium: $0.0027/1K tokens</li>
+<li>Large: $0.008/1K tokens</li>
+</ul>
 <h4 id="3-google-gemini">3. Google Gemini<a class="headerlink" href="#3-google-gemini" title="Permanent link">&para;</a></h4>
 <p><strong>Best for:</strong> Multimodal capabilities, competitive pricing</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
@@ -5039,13 +5061,17 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Set API key</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEMINI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
 </code></pre></div></p>
-<p><strong>Supported Models:</strong>
-- <code>gemini-2.5-flash</code> (default, fast)
-- <code>gemini-2.0-pro</code> (high quality)</p>
-<p><strong>Pricing (approximate):</strong>
-- Flash: $0.00025/1K input tokens, $0.00075/1K output tokens
-- Pro: $0.00125/1K input tokens, $0.005/1K output tokens</p>
-<h4 id="4-ibm-watsonx">4. IBM WatsonX<a class="headerlink" href="#4-ibm-watsonx" title="Permanent link">&para;</a></h4>
+<p><strong>Supported Models:</strong></p>
+<ul>
+<li><code>gemini-2.5-flash</code> (default, fast)</li>
+<li><code>gemini-2.0-pro</code> (high quality)</li>
+</ul>
+<p><strong>Pricing (approximate):</strong></p>
+<ul>
+<li>Flash: $0.00025/1K input tokens, $0.00075/1K output tokens</li>
+<li>Pro: $0.00125/1K input tokens, $0.005/1K output tokens</li>
+</ul>
+<h4 id="4-ibm-watsonx">4. IBM watsonx<a class="headerlink" href="#4-ibm-watsonx" title="Permanent link">&para;</a></h4>
 <p><strong>Best for:</strong> Enterprise deployments, IBM ecosystem</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
@@ -5060,7 +5086,7 @@
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_PROJECT_ID</span><span class="o">=</span><span class="s2">&quot;your-project-id&quot;</span>
 </code></pre></div></p>
-<p><strong>See:</strong> <a href="../../installation/api-keys/">API Keys Setup</a> for WatsonX configuration details.</p>
+<p><strong>See:</strong> <a href="../../installation/api-keys/">API Keys Setup</a> for watsonx configuration details.</p>
 <hr />
 <h2 id="model-selection-strategies">Model Selection Strategies<a class="headerlink" href="#model-selection-strategies" title="Permanent link">&para;</a></h2>
 <h3 id="by-document-complexity">By Document Complexity<a class="headerlink" href="#by-document-complexity" title="Permanent link">&para;</a></h3>
@@ -5366,7 +5392,7 @@
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand model configuration:</p>
 <ol>
-<li><strong><a href="../../extraction-process/staged-extraction/">Staged Extraction →</a></strong> - Multi-pass extraction</li>
+<li><strong><a href="../../extraction-process/dense-extraction/">Dense Extraction →</a></strong> - Skeleton-then-fill extraction</li>
 <li><strong><a href="../processing-modes/">Processing Modes →</a></strong> - Choose processing strategy</li>
 <li><strong><a href="../configuration-examples/">Configuration Examples</a></strong> - See complete scenarios</li>
 <li><strong><a href="../../extraction-process/">Extraction Process</a></strong> - Understand extraction</li>

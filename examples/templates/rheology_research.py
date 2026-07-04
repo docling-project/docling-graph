@@ -82,6 +82,68 @@ def _normalize_enum(enum_cls: Type[Enum], v: Any) -> Any:
 # ============================================================================
 
 
+class SeriesDefinition(BaseModel):
+    """
+    Defines a variable parameter that changes across a series of samples/experiments.
+    Use when one logical node represents multiple values of a varying parameter
+    (e.g. solid loading φ = 0.10 … 0.29) so the fill phase can capture the full series.
+    """
+
+    model_config = ConfigDict(is_entity=False, extra="ignore")
+
+    variable_name: str = Field(
+        ...,
+        description=(
+            "The parameter being varied (e.g. 'Solid Loading', 'Temperature', 'φ'). "
+            "EXTRACT: Use the symbol or name from the document."
+        ),
+        examples=["φ", "Solid Loading", "Temperature"],
+    )
+    variable_values: List[Union[float, str]] = Field(
+        default_factory=list,
+        description=(
+            "The distinct values in the series, in order. "
+            "EXTRACT: List every value mentioned (e.g. 0.10, 0.15, 0.20, …, 0.29). "
+            "Leave empty when the document only gives a range (use range_min/range_max)."
+        ),
+    )
+    range_min: float | None = Field(
+        None,
+        description="Minimum value if document gives a range instead of a list.",
+    )
+    range_max: float | None = Field(
+        None,
+        description="Maximum value if document gives a range instead of a list.",
+    )
+
+
+class ConditionalValue(BaseModel):
+    """
+    A value that applies only under specific conditions.
+    Use when the document gives different values in different contexts
+    (e.g. pre-shear 10 s⁻¹ for low φ, 0.5 s⁻¹ for high φ).
+    """
+
+    model_config = ConfigDict(is_entity=False, extra="ignore")
+
+    value: Union[float, str] = Field(
+        ...,
+        description="The extracted value (number or string).",
+    )
+    unit: str | None = Field(
+        None,
+        description="Unit of measure when applicable (e.g. '1/s', 'Pa·s').",
+    )
+    condition: str | None = Field(
+        None,
+        description=(
+            "The condition requiring this value (e.g. 'High Concentration', "
+            "'phi >= 0.27', 'Default'). EXTRACT: Assign when the document gives "
+            "different values for different samples or conditions."
+        ),
+    )
+
+
 class QuantityWithUnit(BaseModel):
     """
     Flexible measurement supporting single values, ranges, or text.
@@ -311,9 +373,12 @@ class ScholarlyRheologyPaper(BaseModel):
 
     title: str = Field(
         description=(
-            "Full title of the research paper. "
-            "LOOK FOR: Large bold text at the top of the first page. "
+            "Full title of the research paper — the TITLE line only. "
+            "LOOK FOR: Large bold text at the top of the first page, above the "
+            "author list. "
             "EXTRACT: Exactly as written, including subtitles. "
+            "DO NOT use the first sentence of the abstract or any body text — the "
+            "abstract is a separate field. The title is the heading, not prose. "
             "EXAMPLES: 'Rheological Properties of LiFePO4 Cathode Slurries'"
         ),
         examples=["Rheological Properties of LiFePO4 Cathode Slurries"],
@@ -385,8 +450,9 @@ class ScholarlyRheologyPaper(BaseModel):
         label="HAS_STUDY",
         default_factory=list,
         description=(
-            "List of experimental studies in the paper. "
-            "Each study represents a distinct experimental campaign or section."
+            "The specific, original research campaigns conducted and reported by the authors in this document. "
+            "Each study is a distinct experimental campaign or section. "
+            "Do not extract prior literature or cited papers here."
         ),
     )
 
@@ -555,12 +621,15 @@ class SlurryComponent(BaseModel):
     """
     Component in battery slurry formulation.
     Combines role, material identity, and amount.
-    Uniquely identified by role and material name.
+    Uniquely identified by material name alone: a single short verbatim id
+    survives batch merges and parent linkage far better than a multi-field
+    identity that includes an enum with varying surface forms.
     """
 
-    model_config = ConfigDict(graph_id_fields=["component_role", "material_name"])
+    model_config = ConfigDict(graph_id_fields=["material_name"])
 
     component_role: ComponentRole = Field(
+        ComponentRole.OTHER,
         description=(
             "Role of this component. "
             "LOOK FOR: 'active material', 'binder', 'conductive additive'. "
@@ -572,9 +641,16 @@ class SlurryComponent(BaseModel):
 
     material_name: str = Field(
         description=(
-            "Material name or formula. "
-            "LOOK FOR: Chemical formulas, trade names. "
-            "EXTRACT: Full name. "
+            "Canonical material name or formula — this is the entity's identity. "
+            "LOOK FOR: Chemical formulas, trade names, abbreviations. "
+            "EXTRACT: The canonical short name/formula (its abbreviation when the "
+            "paper defines one), NOT a descriptive phrase. Descriptive qualifiers "
+            "such as size or morphology ('nanoscaled', 'micron-scaled', "
+            "'spherical') are PROPERTIES, not identity — keep them out of "
+            "material_name so 'nanoscaled LiFePO4 (LFP)' and 'LiFePO4 (LFP)' "
+            "resolve to the SAME component 'LiFePO4'. Likewise prefer the "
+            "defined abbreviation ('PVDF') over the spelled-out name "
+            "('Polyvinylidene difluoride'). "
             "EXAMPLES: 'LiFePO4', 'PVDF', 'Carbon black Super C65'"
         ),
         examples=["LiFePO4", "PVDF", "Carbon black Super C65"],
@@ -615,11 +691,12 @@ class SlurryComponent(BaseModel):
             "Particle size info (D50, median, mean diameter, etc.). "
             "LOOK FOR: 'D50', 'particle size', 'median of X nm', 'mean particle size of X', "
             "'particle size of X', 'diameter'. "
-            "EXTRACT: As quantity (numeric_value + unit) or text_value. "
-            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}, "
-            "'median of 130 nm' -> numeric_value 0.13, unit 'µm', or text_value 'median 130 nm'"
+            "EXTRACT: Copy the number and unit exactly as written in the document "
+            "(e.g. 'median of 130 nm' -> numeric_value 130, unit 'nm'). "
+            "Never convert units or rescale values. "
+            "EXAMPLES: {'name': 'D50', 'numeric_value': 5.0, 'unit': 'µm'}"
         ),
-        examples=[{"name": "D50", "numeric_value": 0.13, "unit": "µm"}],
+        examples=[{"name": "D50", "numeric_value": 130.0, "unit": "nm"}],
     )
 
     molecular_weight: QuantityWithUnit | None = Field(
@@ -810,6 +887,15 @@ class BatterySlurryBatch(BaseModel):
         description="Storage temperature during aging.",
     )
 
+    series_definition: SeriesDefinition | None = Field(
+        None,
+        description=(
+            "If this batch represents a series of samples with one varying parameter "
+            "(e.g. solid loading φ = 0.10 … 0.29), define it here. EXTRACT: variable name "
+            "and all distinct values from the document."
+        ),
+    )
+
 
 # ============================================================================
 # LAYER 5: RHEOMETRY SETUP
@@ -902,7 +988,8 @@ class SweepParameters(BaseModel):
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    x_axis_quantity: str = Field(
+    x_axis_quantity: str | None = Field(
+        None,
         description=(
             "Quantity varied on x-axis. "
             "LOOK FOR: 'shear rate', 'stress', 'frequency'. "
@@ -970,19 +1057,20 @@ class TestProtocol(BaseModel):
         ),
     )
 
-    pre_shear_rate: QuantityWithUnit | None = Field(
-        None,
+    pre_shear_rates: List[ConditionalValue] = Field(
+        default_factory=list,
         description=(
-            "Conditioning shear rate applied before test. "
-            "Look in Methods for 'pre-shear', 'shear rate'; extract values even if mid-paragraph."
+            "Pre-shear (conditioning) shear rates. If different rates are used for different "
+            "samples or conditions (e.g. 10 s⁻¹ for low φ, 0.5 s⁻¹ for high φ), extract all "
+            "with their conditions. Look in Methods for 'pre-shear', 'shear rate'."
         ),
     )
 
-    pre_shear_duration: QuantityWithUnit | None = Field(
-        None,
+    pre_shear_durations: List[ConditionalValue] = Field(
+        default_factory=list,
         description=(
-            "Duration of pre-shear. "
-            "Look in Methods for 'pre-sheared for', 'duration'; extract values even if mid-paragraph."
+            "Duration of pre-shear per condition. If different durations for different "
+            "samples/conditions, extract all with their conditions. Look for 'pre-sheared for', 'duration'."
         ),
     )
 
@@ -1078,7 +1166,8 @@ class DerivedQuantity(BaseModel):
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    name: str = Field(
+    name: str | None = Field(
+        None,
         description="Name of quantity (e.g., Yield stress).",
         examples=["Yield stress", "Zero-shear viscosity"],
     )
@@ -1107,7 +1196,8 @@ class ModelFit(BaseModel):
 
     model_config = ConfigDict(is_entity=False, extra="ignore")
 
-    model_family: str = Field(
+    model_family: str | None = Field(
+        None,
         description="Name of model (Herschel-Bulkley, Power law).",
         examples=["Herschel-Bulkley", "Power law"],
     )

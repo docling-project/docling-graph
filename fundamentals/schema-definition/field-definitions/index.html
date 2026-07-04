@@ -1280,34 +1280,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../best-practices/" class="md-nav__link">
         
   
@@ -1830,42 +1802,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -2043,6 +1987,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -3685,6 +3657,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -3980,16 +3980,21 @@
 </ul>
 <h2 id="identity-fields">Identity fields<a class="headerlink" href="#identity-fields" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Identity fields in <code>graph_id_fields</code> should be required and concise.</li>
-<li>Avoid long free text as identity (<code>description</code>, <code>resume</code>, paragraph fields).</li>
-<li>Include 2-5 examples for each identity field.</li>
+<li>Identity fields in <code>graph_id_fields</code> must be <strong>required, scalar, and concise</strong> — one field ideal, two maximum.</li>
+<li>Never use list-valued fields or enums as identity: their surface forms drift between extraction batches and break parent linkage.</li>
+<li>Avoid long free text as identity (<code>description</code>, <code>resume</code>, paragraph fields) — long ids inflate skeleton output (truncation pressure) and cannot be reconciled as aliases.</li>
+<li>Ids must be <strong>copyable verbatim</strong> from the document; never instruct fallback generation (<code>'ITEM-1'</code>) — invented ids never match across batches.</li>
+<li>Put distinguishing <strong>digits in the id</strong> (<code>Batch-20vol</code>): ids differing in any digit run are protected from fuzzy merging.</li>
+<li>Name id fields honestly: <code>*_number</code> / <code>*_no</code> / <code>ref_*</code> fields must hold values that contain digits (a pipeline invariant clears prose from them at the root); use <code>name</code> / <code>title</code> when the identity is a name.</li>
+<li>Include 2-5 short, document-derived examples for each identity field — in dense extraction these examples are the only id guidance Phase 1 sees.</li>
 <li>For local identities (for example line indexes), add context fields in schema to disambiguate.</li>
 </ul>
 <h2 id="optionality-guidance">Optionality guidance<a class="headerlink" href="#optionality-guidance" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Required for identity and structural anchor fields.</li>
-<li>Optional for sparse enrichments that may not exist in source documents.</li>
-<li>Avoid optional identity fields in staged and delta extraction (both use catalog identity for merge and linkage).</li>
+<li><strong>Required = identity, nothing else.</strong> The fill phase pads short responses and restores ids from the skeleton, but a required non-identity field makes every partial instance fail validation — an all-or-nothing loss that small models hit constantly.</li>
+<li>Optional (<code>| None</code>, <code>default_factory=list</code>) or defaulted for every property field.</li>
+<li>Never make identity fields optional: children referencing id-less parents lose sibling attribution.</li>
+<li>Don't restate global prompt rules per field ("omit if absent", "never use N/A", "copy digits verbatim") — the extraction prompts enforce these pipeline-wide, and field descriptions are paid for on every fill call.</li>
 </ul>
 <h2 id="description-style">Description style<a class="headerlink" href="#description-style" title="Permanent link">&para;</a></h2>
 <ul>
@@ -4007,15 +4012,23 @@
 <h2 id="where-to-look-hints">Where-to-look hints<a class="headerlink" href="#where-to-look-hints" title="Permanent link">&para;</a></h2>
 <p>For fields that are often missed (e.g. protocol parameters, axis labels), add short “where to look” hints so the LLM searches the right part of the document:</p>
 <ul>
-<li><strong>Methods section:</strong> e.g. <em>“Look in Methods for ‘pre-shear’, ‘equilibration’, ‘gap’; extract values even if they appear mid-paragraph.”</em></li>
-<li><strong>Figure captions / axis labels:</strong> e.g. <em>“Look in figure captions and axis labels for the quantity name.”</em></li>
+<li>
+<p><strong>Methods section:</strong> e.g. <em>“Look in Methods for ‘pre-shear’, ‘equilibration’, ‘gap’; extract values even if they appear mid-paragraph.”</em></p>
+</li>
+<li>
+<p><strong>Figure captions / axis labels:</strong> e.g. <em>“Look in figure captions and axis labels for the quantity name.”</em></p>
+</li>
 </ul>
 <p>These hints improve extraction of explicit numbers and reduce empty shells when the schema has many optional fields.</p>
 <h2 id="enum-synonyms-and-mapping">Enum synonyms and mapping<a class="headerlink" href="#enum-synonyms-and-mapping" title="Permanent link">&para;</a></h2>
 <p>When an enum is used (e.g. geometry type, test mode), document synonyms and discourage overuse of “Other”:</p>
 <ul>
-<li>In the <strong>Field description</strong>, list common document phrases that map to each value, e.g. <em>“Map ‘parallel plate’, ‘parallel disk’, or ‘plate-plate’ to ‘Plate-Plate’. Do not use Other when the text matches a known type.”</em></li>
-<li>Optionally add a <code>mode="before"</code> field validator that maps frequent phrases (e.g. string containing “parallel” and “plate”) to the correct enum member before calling a generic enum normalizer.</li>
+<li>
+<p>In the <strong>Field description</strong>, list common document phrases that map to each value, e.g. <em>“Map ‘parallel plate’, ‘parallel disk’, or ‘plate-plate’ to ‘Plate-Plate’. Do not use Other when the text matches a known type.”</em></p>
+</li>
+<li>
+<p>Optionally add a <code>mode="before"</code> field validator that maps frequent phrases (e.g. string containing “parallel” and “plate”) to the correct enum member before calling a generic enum normalizer.</p>
+</li>
 </ul>
 <p>This reduces “Other” when the document clearly states a known type in different wording.</p>
 <hr />

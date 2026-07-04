@@ -1162,34 +1162,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/schema-definition/staged-extraction-schema/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction Schema
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
         
   
@@ -1706,42 +1678,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/delta-extraction/" class="md-nav__link">
+      <a href="../../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Delta Extraction
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../fundamentals/extraction-process/staged-extraction/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Staged Extraction
+    Dense Extraction
   
 
     
@@ -1916,6 +1860,34 @@
     
   
     Graph Conversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../fundamentals/graph-management/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Grounding & Provenance
   
 
     
@@ -4055,6 +4027,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../reference/provenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
@@ -4714,10 +4714,12 @@
 <h1 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Handle errors gracefully in docling-graph pipelines with structured exception handling, retry logic, and debugging strategies.</p>
-<p><strong>Prerequisites:</strong>
-- Understanding of <a href="../../../introduction/architecture/">Pipeline Architecture</a>
-- Familiarity with <a href="../../api/">Python API</a>
-- Basic Python exception handling</p>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>Understanding of <a href="../../../introduction/architecture/">Pipeline Architecture</a></li>
+<li>Familiarity with <a href="../../api/">Python API</a></li>
+<li>Basic Python exception handling</li>
+</ul>
 <div class="admonition tip">
 <p class="admonition-title">New: Zero Data Loss</p>
 <p>Docling Graph now implements zero data loss - extraction failures return partial models instead of empty results, ensuring you never lose successfully extracted data.</p>
@@ -5156,30 +5158,21 @@
 <a id="__codelineno-10-66" name="__codelineno-10-66" href="#__codelineno-10-66"></a>    <span class="k">if</span> <span class="n">debug_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
 <a id="__codelineno-10-67" name="__codelineno-10-67" href="#__codelineno-10-67"></a>        <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span>
 <a id="__codelineno-10-68" name="__codelineno-10-68" href="#__codelineno-10-68"></a>            <span class="s2">&quot;node_catalog.json&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-69" name="__codelineno-10-69" href="#__codelineno-10-69"></a>            <span class="s2">&quot;id_pass.json&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-70" name="__codelineno-10-70" href="#__codelineno-10-70"></a>            <span class="s2">&quot;fill_pass.json&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-71" name="__codelineno-10-71" href="#__codelineno-10-71"></a>            <span class="s2">&quot;edges_pass.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-69" name="__codelineno-10-69" href="#__codelineno-10-69"></a>            <span class="s2">&quot;dense_catalog.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-70" name="__codelineno-10-70" href="#__codelineno-10-70"></a>            <span class="s2">&quot;dense_skeleton.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-71" name="__codelineno-10-71" href="#__codelineno-10-71"></a>            <span class="s2">&quot;dense_fill.json&quot;</span><span class="p">,</span>
 <a id="__codelineno-10-72" name="__codelineno-10-72" href="#__codelineno-10-72"></a>            <span class="s2">&quot;merged_output.json&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-73" name="__codelineno-10-73" href="#__codelineno-10-73"></a>            <span class="s2">&quot;staged_trace.json&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-74" name="__codelineno-10-74" href="#__codelineno-10-74"></a>            <span class="s2">&quot;trace_data.json&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-75" name="__codelineno-10-75" href="#__codelineno-10-75"></a>        <span class="p">]</span>
-<a id="__codelineno-10-76" name="__codelineno-10-76" href="#__codelineno-10-76"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Debug artifacts:&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-77" name="__codelineno-10-77" href="#__codelineno-10-77"></a>        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">expected</span><span class="p">:</span>
-<a id="__codelineno-10-78" name="__codelineno-10-78" href="#__codelineno-10-78"></a>            <span class="n">p</span> <span class="o">=</span> <span class="n">debug_dir</span> <span class="o">/</span> <span class="n">name</span>
-<a id="__codelineno-10-79" name="__codelineno-10-79" href="#__codelineno-10-79"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="s1">&#39;ok&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;missing&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-80" name="__codelineno-10-80" href="#__codelineno-10-80"></a>
-<a id="__codelineno-10-81" name="__codelineno-10-81" href="#__codelineno-10-81"></a>        <span class="n">staged_trace_path</span> <span class="o">=</span> <span class="n">debug_dir</span> <span class="o">/</span> <span class="s2">&quot;staged_trace.json&quot;</span>
-<a id="__codelineno-10-82" name="__codelineno-10-82" href="#__codelineno-10-82"></a>        <span class="k">if</span> <span class="n">staged_trace_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<a id="__codelineno-10-83" name="__codelineno-10-83" href="#__codelineno-10-83"></a>            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">staged_trace_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-10-84" name="__codelineno-10-84" href="#__codelineno-10-84"></a>                <span class="n">staged_trace</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<a id="__codelineno-10-85" name="__codelineno-10-85" href="#__codelineno-10-85"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Staged timings:&quot;</span><span class="p">,</span> <span class="n">staged_trace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timings_seconds&quot;</span><span class="p">,</span> <span class="p">{}))</span>
-<a id="__codelineno-10-86" name="__codelineno-10-86" href="#__codelineno-10-86"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Per-path counts:&quot;</span><span class="p">,</span> <span class="n">staged_trace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;per_path_counts&quot;</span><span class="p">,</span> <span class="p">{}))</span>
-<a id="__codelineno-10-87" name="__codelineno-10-87" href="#__codelineno-10-87"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Merge stats:&quot;</span><span class="p">,</span> <span class="n">staged_trace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;merge_stats&quot;</span><span class="p">,</span> <span class="p">{}))</span>
-<a id="__codelineno-10-88" name="__codelineno-10-88" href="#__codelineno-10-88"></a>
-<a id="__codelineno-10-89" name="__codelineno-10-89" href="#__codelineno-10-89"></a>    <span class="k">return</span> <span class="n">context</span>
-<a id="__codelineno-10-90" name="__codelineno-10-90" href="#__codelineno-10-90"></a>
-<a id="__codelineno-10-91" name="__codelineno-10-91" href="#__codelineno-10-91"></a><span class="c1"># Usage</span>
-<a id="__codelineno-10-92" name="__codelineno-10-92" href="#__codelineno-10-92"></a><span class="n">context</span> <span class="o">=</span> <span class="n">debug_with_trace</span><span class="p">(</span><span class="s2">&quot;problematic_document.pdf&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-73" name="__codelineno-10-73" href="#__codelineno-10-73"></a>            <span class="s2">&quot;trace_data.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-74" name="__codelineno-10-74" href="#__codelineno-10-74"></a>        <span class="p">]</span>
+<a id="__codelineno-10-75" name="__codelineno-10-75" href="#__codelineno-10-75"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Debug artifacts:&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-76" name="__codelineno-10-76" href="#__codelineno-10-76"></a>        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">expected</span><span class="p">:</span>
+<a id="__codelineno-10-77" name="__codelineno-10-77" href="#__codelineno-10-77"></a>            <span class="n">p</span> <span class="o">=</span> <span class="n">debug_dir</span> <span class="o">/</span> <span class="n">name</span>
+<a id="__codelineno-10-78" name="__codelineno-10-78" href="#__codelineno-10-78"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="s1">&#39;ok&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;missing&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-79" name="__codelineno-10-79" href="#__codelineno-10-79"></a>
+<a id="__codelineno-10-80" name="__codelineno-10-80" href="#__codelineno-10-80"></a>    <span class="k">return</span> <span class="n">context</span>
+<a id="__codelineno-10-81" name="__codelineno-10-81" href="#__codelineno-10-81"></a>
+<a id="__codelineno-10-82" name="__codelineno-10-82" href="#__codelineno-10-82"></a><span class="c1"># Usage</span>
+<a id="__codelineno-10-83" name="__codelineno-10-83" href="#__codelineno-10-83"></a><span class="n">context</span> <span class="o">=</span> <span class="n">debug_with_trace</span><span class="p">(</span><span class="s2">&quot;problematic_document.pdf&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>See Also:</strong> <a href="../trace-data-debugging/">Trace Data Debugging Guide</a> for comprehensive examples.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>### Automatic Cleanup on Failure
