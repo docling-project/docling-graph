@@ -7,6 +7,7 @@ testable, and follows the single responsibility principle.
 """
 
 import importlib
+import json
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -685,8 +686,40 @@ class DoclingExportStage(PipelineStage):
                 },
             )
 
+        self._export_chunks(context, docling_dir)
+
         logger.info(f"[{self.name()}] Exported to {docling_dir}")
         return context
+
+    def _export_chunks(self, context: PipelineContext, docling_dir: Path) -> None:
+        """Write chunks.json next to the Docling export (spec hook H11 sibling).
+
+        The chunker's output is otherwise discarded once extraction finishes,
+        which makes it impossible to compare provenance.json's chunk
+        references back to the text the LLM actually read. This dumps the
+        same ``ChunkRecord`` data captured in the provenance ledger, so it's
+        available even when the ledger isn't produced yet (e.g. inspecting
+        chunking before extraction runs).
+        """
+        ledger = context.provenance
+        if ledger is None or not ledger.chunks:
+            return
+
+        chunks_payload = [
+            record.model_dump(mode="json") for _, record in sorted(ledger.chunks.items())
+        ]
+        chunks_path = docling_dir / "chunks.json"
+        chunks_path.write_text(
+            json.dumps(chunks_payload, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        logger.info(f"[{self.name()}] Saved {len(chunks_payload)} chunk records to {chunks_path}")
+        if context.trace_data is not None:
+            context.trace_data.emit(
+                "export_written",
+                "docling_export",
+                {"target": str(chunks_path), "chunk_count": len(chunks_payload)},
+            )
 
 
 class GraphConversionStage(PipelineStage):

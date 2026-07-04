@@ -49,7 +49,7 @@ from .prompts import (
     get_skeleton_reconciliation_prompt,
     reconciliation_output_schema,
 )
-from .resolvers import resolve_skeleton_nodes
+from .resolvers import merge_contained_skeleton_nodes, resolve_skeleton_nodes
 
 logger = logging.getLogger(__name__)
 
@@ -786,10 +786,40 @@ class DenseOrchestrator:
         self.last_provenance: ProvenanceLedger | None = None
         self._counters: dict[str, int] = {}
         self._counter_lock = threading.Lock()
+        # Chunk ids whose content produced no skeleton node after all recovery
+        # (truncation splits + terminal fallback exhausted). Distinct from a
+        # legitimately empty chunk; surfaced in run stats so a lossy run cannot
+        # hide behind a merge-only retention figure.
+        self._dropped_chunk_ids: list[int] = []
+        self._effective_workers = 1
+        self._phase1_elapsed = 0.0
+        self._phase2_elapsed = 0.0
+        # Lazily-built shallow (root + direct children) skeleton artifacts used
+        # only as the terminal fallback for a single chunk that keeps truncating.
+        self._shallow_built = False
+        self._shallow_artifacts: tuple[str, str | None, set[str], str, list[str]] | None = None
 
     def _bump(self, counter: str) -> None:
         with self._counter_lock:
             self._counters[counter] = self._counters.get(counter, 0) + 1
+
+    def _record_dropped_chunks(self, chunk_ids: list[int]) -> None:
+        """Mark chunk ids as producing no skeleton node (unrecoverable truncation)."""
+        with self._counter_lock:
+            self._counters["failed_batch_count"] = self._counters.get("failed_batch_count", 0) + 1
+            for chunk_id in chunk_ids:
+                if isinstance(chunk_id, int) and chunk_id not in self._dropped_chunk_ids:
+                    self._dropped_chunk_ids.append(chunk_id)
+
+    @staticmethod
+    def _covered_chunk_count(merged_skeleton: list[dict[str, Any]]) -> int:
+        """Distinct chunk ids that contributed at least one skeleton node."""
+        covered: set[int] = set()
+        for node in merged_skeleton:
+            for chunk_id in node.get("_source_chunk_ids") or []:
+                if isinstance(chunk_id, int):
+                    covered.add(chunk_id)
+        return len(covered)
 
     def _write_debug(self, name: str, data: Any) -> None:
         if not self._debug_dir:
@@ -811,11 +841,19 @@ class DenseOrchestrator:
         schema_json: str,
         context: str,
         already_found_str: str | None,
+        *,
+        allow_escalation: bool = True,
+        prompt_paths: list[str] | None = None,
     ) -> tuple[list[dict[str, Any]], bool]:
         """Run the LLM for one skeleton batch.
 
         Returns (normalized_nodes, truncated) where truncated is True if the model
         hit its output limit (so the caller may split the batch and retry).
+
+        ``allow_escalation=False`` tells the backend not to escalate max_tokens
+        in-call, so a multi-chunk batch is split (attacking the real cause) before
+        any escalation is spent. ``prompt_paths`` narrows the paths advertised to
+        the model (the shallow terminal-fallback projection).
         """
         batch_md = format_batch_markdown(batch)
         prompt = get_skeleton_batch_prompt(
@@ -823,7 +861,7 @@ class DenseOrchestrator:
             catalog_block=catalog_block,
             batch_index=batch_idx,
             total_batches=total_batches,
-            allowed_paths=self._catalog.paths(),
+            allowed_paths=prompt_paths if prompt_paths is not None else self._catalog.paths(),
             global_context=global_context,
             already_found=already_found_str,
             semantic_guide=semantic_guide,
@@ -837,6 +875,7 @@ class DenseOrchestrator:
                 context=f"{context}_dense_skeleton_{batch_idx}",
                 response_top_level="object",
                 response_schema_name="dense_skeleton",
+                allow_truncation_retry=allow_escalation,
                 _diagnostics_out=diag,
             )
             if diag.get("truncated"):
@@ -898,7 +937,16 @@ class DenseOrchestrator:
         output budget). Sub-batches keep the same batch_idx so fill-context provenance
         still points at the original batch text. Uses already_found_str=None in
         parallel mode.
+
+        Escalation order (split before escalate): a multi-chunk batch is split
+        *before* max_tokens is escalated — splitting attacks the real cause,
+        while escalating first just spends tokens against a repetition loop.
+        Escalation is only allowed once a single chunk cannot be split further;
+        a single chunk still unrecoverable falls to a shallow ids-only projection,
+        and only if that also fails is the chunk recorded as dropped (never
+        silently lost — surfaced in run stats for V3).
         """
+        allow_escalation = len(batch) == 1
         nodes, truncated = self._call_skeleton_batch(
             batch_idx,
             batch,
@@ -910,6 +958,7 @@ class DenseOrchestrator:
             schema_json,
             context,
             already_found_str,
+            allow_escalation=allow_escalation,
         )
         if truncated and len(batch) > 1 and _depth < _MAX_SKELETON_SPLIT_DEPTH:
             self._bump("split_count")
@@ -939,7 +988,81 @@ class DenseOrchestrator:
                 )
                 merged.extend(sub_nodes)
             return (batch_idx, merged)
+        if truncated and not nodes:
+            # Cannot split further (single chunk, or split depth exhausted) and
+            # the model produced nothing usable. Try a minimal root + direct
+            # children projection before conceding the content.
+            fallback = self._shallow_skeleton_retry(batch_idx, batch, context)
+            if fallback:
+                logger.warning(
+                    "Dense skeleton batch %s: recovered %s node(s) via shallow fallback "
+                    "after truncation",
+                    batch_idx,
+                    len(fallback),
+                )
+                return (batch_idx, fallback)
+            self._record_dropped_chunks([cid for cid, _, _ in batch])
+            logger.warning(
+                "Dense skeleton batch %s: %s chunk(s) unrecoverable after truncation; "
+                "content may be missing from the graph",
+                batch_idx,
+                len(batch),
+            )
+            return (batch_idx, [])
         return (batch_idx, nodes)
+
+    def _shallow_skeleton_artifacts(
+        self,
+    ) -> tuple[str, str | None, set[str], str, list[str]] | None:
+        """Build (and cache) the root + direct-children skeleton projection.
+
+        Returns None when the catalog has no root spec (nothing to fall back to).
+        """
+        if self._shallow_built:
+            return self._shallow_artifacts
+        self._shallow_built = True
+        shallow_specs = [s for s in self._catalog.nodes if s.path == "" or s.parent_path == ""]
+        if not any(s.path == "" for s in shallow_specs):
+            self._shallow_artifacts = None
+            return None
+        shallow_catalog = NodeCatalog(
+            nodes=shallow_specs, field_aliases=dict(self._catalog.field_aliases)
+        )
+        paths = [s.path for s in shallow_specs]
+        self._shallow_artifacts = (
+            build_skeleton_catalog_block(shallow_catalog),
+            build_skeleton_semantic_guide(shallow_catalog),
+            set(paths),
+            json.dumps(skeleton_output_schema(paths)),
+            paths,
+        )
+        return self._shallow_artifacts
+
+    def _shallow_skeleton_retry(
+        self, batch_idx: int, batch: list[tuple[int, str, int]], context: str
+    ) -> list[dict[str, Any]]:
+        """Terminal fallback: re-run a single truncating chunk with only the root
+        and its direct entity children, so a degraded but chunk-grounded node
+        survives instead of the content being silently dropped."""
+        artifacts = self._shallow_skeleton_artifacts()
+        if artifacts is None:
+            return []
+        catalog_block, semantic_guide, allowed_paths, schema_json, prompt_paths = artifacts
+        nodes, _ = self._call_skeleton_batch(
+            batch_idx,
+            batch,
+            1,
+            catalog_block,
+            allowed_paths,
+            None,
+            semantic_guide,
+            schema_json,
+            context,
+            None,
+            allow_escalation=True,
+            prompt_paths=prompt_paths,
+        )
+        return nodes
 
     def _run_skeleton_reconciliation(
         self,
@@ -988,19 +1111,75 @@ class DenseOrchestrator:
             )
         return reconciled, merged_count
 
+    def _dedupe_skeleton(
+        self,
+        merged_skeleton: list[dict[str, Any]],
+        spec_by_path: dict[str, NodeSpec],
+        context: str,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Collapse duplicate skeleton instances (containment -> fuzzy -> LLM).
+
+        Runs in standard+ (never in "off"). Cheap deterministic passes first:
+        containment merge (a superset id like "nanoscaled LiFePO4" is the same
+        entity as its base "LiFePO4", which case/fuzzy dedup misses; the
+        digit-signature guard keeps "20vol"/"30vol" and "Article 5"/"6"
+        distinct), then the aggressive-only fuzzy string merge, then one id-space
+        reconciliation LLM call for granularity aliases.
+        """
+
+        def key_fn(n: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
+            return _skeleton_identity_key(n, spec_by_path)
+
+        if self._config.dedupe_mode != "off" and len(merged_skeleton) > 1:
+            merged_skeleton, containment_stats = merge_contained_skeleton_nodes(
+                merged_skeleton, key_fn
+            )
+            if self._on_trace and containment_stats.get("merged_count", 0) > 0:
+                self._on_trace({"contract": "dense", "phase1_containment": containment_stats})
+        if self._config.dedupe_mode == "aggressive":
+            merged_skeleton, resolver_stats = resolve_skeleton_nodes(merged_skeleton, key_fn)
+            if self._on_trace and resolver_stats.get("merged_count", 0) > 0:
+                self._on_trace({"contract": "dense", "phase1_resolvers": resolver_stats})
+        reconciliation_merged = 0
+        if self._config.dedupe_mode != "off" and len(merged_skeleton) > 1:
+            merged_skeleton, reconciliation_merged = self._run_skeleton_reconciliation(
+                merged_skeleton, spec_by_path, context
+            )
+        return merged_skeleton, reconciliation_merged
+
     def _finalize_run_stats(
         self,
         skeleton_nodes: int,
         reconciliation_merged: int,
         merge_stats: dict[str, int],
+        *,
+        total_chunks: int = 0,
+        covered_chunks: int = 0,
         gate_failure: str | None = None,
     ) -> None:
-        """Publish per-run observability counters as last_run_stats."""
+        """Publish per-run observability counters as last_run_stats.
+
+        ``retention_pct`` is deliberately narrow — it is merge-stage retention
+        (skeleton nodes that survived the fill->graph merge), NOT source
+        coverage. Batches lost to truncation *before* merge never enter
+        ``skeleton_nodes``, so they are reported separately as
+        ``skeleton_batches_failed`` / ``dropped_chunk_ids`` and folded into the
+        honest ``chunk_coverage_pct`` (chunks that produced at least one node).
+        """
         dropped = merge_stats.get("dropped", 0)
+        dropped_chunk_ids = sorted({c for c in self._dropped_chunk_ids if isinstance(c, int)})
         stats: dict[str, Any] = {
             "skeleton_nodes": skeleton_nodes,
+            "parallel_workers": self._effective_workers,
+            "phase1_seconds": round(self._phase1_elapsed, 2),
+            "phase2_seconds": round(self._phase2_elapsed, 2),
             "truncation_count": self._counters.get("truncation_count", 0),
             "split_count": self._counters.get("split_count", 0),
+            "skeleton_batches_failed": self._counters.get("failed_batch_count", 0),
+            "dropped_chunk_ids": dropped_chunk_ids,
+            "chunk_coverage_pct": (
+                round(100.0 * covered_chunks / total_chunks, 1) if total_chunks else 0.0
+            ),
             "reconciliation_merged": reconciliation_merged,
             "merge_orphans_dropped": dropped,
             "merge_recovered": (
@@ -1437,6 +1616,9 @@ class DenseOrchestrator:
         context: str = "document",
     ) -> dict[str, Any] | None:
         self._counters = {}
+        self._dropped_chunk_ids = []
+        self._phase1_elapsed = 0.0
+        self._phase2_elapsed = 0.0
         self.last_run_stats = {}
         self.last_provenance = None
         provenance_enabled = self._config.provenance_mode != "off"
@@ -1460,6 +1642,7 @@ class DenseOrchestrator:
             self._config.skeleton_batch_tokens,
         )
         workers = max(1, self._config.parallel_workers)
+        self._effective_workers = workers
         if workers > 1 and len(batches) == 1:
             logger.warning(
                 "Dense Phase 1: only one batch; parallel workers will not be used. "
@@ -1480,20 +1663,11 @@ class DenseOrchestrator:
             spec_by_path=spec_by_path,
         )
         phase1_elapsed = time.perf_counter() - phase1_start
+        self._phase1_elapsed = phase1_elapsed
         merged_skeleton = merge_skeleton_batches(skeleton_results, self._catalog)
-        if self._config.dedupe_mode == "aggressive":
-
-            def key_fn(n: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
-                return _skeleton_identity_key(n, spec_by_path)
-
-            merged_skeleton, resolver_stats = resolve_skeleton_nodes(merged_skeleton, key_fn)
-            if self._on_trace and resolver_stats.get("merged_count", 0) > 0:
-                self._on_trace({"contract": "dense", "phase1_resolvers": resolver_stats})
-        reconciliation_merged = 0
-        if self._config.dedupe_mode != "off" and len(merged_skeleton) > 1:
-            merged_skeleton, reconciliation_merged = self._run_skeleton_reconciliation(
-                merged_skeleton, spec_by_path, context
-            )
+        merged_skeleton, reconciliation_merged = self._dedupe_skeleton(
+            merged_skeleton, spec_by_path, context
+        )
         # Invariant: drop root ids that contradict their field-name semantics so a
         # sparse-document mis-capture is not locked in by Phase 2 id restoration.
         merged_skeleton = strip_mislabeled_root_ids(merged_skeleton)
@@ -1518,7 +1692,14 @@ class DenseOrchestrator:
         if path_counts.get("", 0) <= 0 or total < 1:
             reason = "missing_root" if total >= 1 else "empty_skeleton"
             logger.warning("Dense Phase 1 quality gate failed: %s", reason)
-            self._finalize_run_stats(total, reconciliation_merged, {}, gate_failure=reason)
+            self._finalize_run_stats(
+                total,
+                reconciliation_merged,
+                {},
+                total_chunks=len(chunks),
+                covered_chunks=self._covered_chunk_count(merged_skeleton),
+                gate_failure=reason,
+            )
             if ledger is not None and self._debug_dir:
                 # Partial ledger for audit; last_provenance stays None because
                 # the strategy falls back to direct extraction, whose result
@@ -1613,6 +1794,7 @@ class DenseOrchestrator:
                     path_filled.setdefault(path, []).extend(sanitized)
 
         phase2_elapsed = time.perf_counter() - phase2_start
+        self._phase2_elapsed = phase2_elapsed
         merge_stats: dict[str, int] = {}
         merge_events: list[dict[str, Any]] | None = [] if ledger is not None else None
         root = merge_filled_into_root(
@@ -1630,7 +1812,13 @@ class DenseOrchestrator:
             self._finalize_provenance(
                 ledger, merge_events, spec_by_path, path_descriptors, path_filled
             )
-        self._finalize_run_stats(len(merged_skeleton), reconciliation_merged, merge_stats)
+        self._finalize_run_stats(
+            len(merged_skeleton),
+            reconciliation_merged,
+            merge_stats,
+            total_chunks=len(chunks),
+            covered_chunks=self._covered_chunk_count(merged_skeleton),
+        )
         if self._debug_dir:
             self._write_debug("dense_merge_stats.json", merge_stats)
             self._write_debug("dense_run_stats.json", self.last_run_stats)

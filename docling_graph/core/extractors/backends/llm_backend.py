@@ -1063,11 +1063,18 @@ class LlmBackend:
         *,
         max_tokens: int | None = None,
         structured_output_override: bool | None = None,
+        allow_truncation_retry: bool = True,
         _diagnostics_out: dict | None = None,
     ) -> dict | list | None:
         """Call LLM with explicit prompt/schema and optional truncation recovery.
         Callers may pass max_tokens, structured_output_override (False = use legacy only),
         and _diagnostics_out (dict to update with last_call_diagnostics).
+
+        ``allow_truncation_retry=False`` suppresses the in-call max_tokens
+        escalation so the caller can respond to truncation itself — the dense
+        skeleton path splits a multi-chunk batch *before* escalating (escalating
+        first just burns tokens against a repetition loop), and only escalates
+        when a single chunk cannot be split further.
         """
         call_max_tokens = max_tokens
         try:
@@ -1188,7 +1195,7 @@ class LlmBackend:
             truncated = bool(details.get("truncated")) if isinstance(details, dict) else False
             if _diagnostics_out is not None and truncated:
                 _diagnostics_out["truncated"] = True
-            if truncated and self._retry_on_truncation:
+            if truncated and self._retry_on_truncation and allow_truncation_retry:
                 context_max = call_max_tokens
                 if (
                     context_max is None

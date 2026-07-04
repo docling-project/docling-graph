@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Optional, Set, cast
 
 from pydantic import BaseModel
 
+from ..utils.entity_name_normalizer import canonicalize_identity_for_dedup
+
 
 def get_model_config_value(model: BaseModel, key: str, default: Any) -> Any:
     """
@@ -71,22 +73,30 @@ class NodeIDRegistry:
         id_fields = cast(List[str], get_model_config_value(model_instance, "graph_id_fields", []))
 
         # Build fingerprint from identity fields
-        fingerprint_data = {}
+        fingerprint_data: Dict[str, Any] = {}
 
         if id_fields:
-            # Entity: Use specified ID fields
+            # Entity: use the declared ID fields, canonicalized with the SAME
+            # function dense dedup and the provenance binder use
+            # (canonicalize_identity_for_dedup). Fingerprinting the raw value
+            # here made "électroménager" and "Électroménager" hash to two
+            # different node ids that never merged; canonicalizing collapses
+            # case/diacritic variants into one node while keeping digits (so
+            # "Article 5"/"Article 6", "LFP_20vol"/"LFP_30vol" stay distinct).
             for field in id_fields:
                 if hasattr(model_instance, field):
                     value = getattr(model_instance, field)
 
-                    # Normalize lists to sorted tuples for consistent hashing
+                    # Normalize lists to deduped, sorted tuples of canonical
+                    # values. canonicalize_identity_for_dedup always returns a
+                    # str, so the result is a homogeneous list and sorting it
+                    # can never raise (unlike sorting the raw, possibly
+                    # mixed-type values).
                     if isinstance(value, list):
-                        try:
-                            value = tuple(sorted(set(value)))
-                        except TypeError:
-                            value = tuple(value)
-
-                    fingerprint_data[field] = value
+                        canon = {canonicalize_identity_for_dedup(field, v) for v in value}
+                        fingerprint_data[field] = tuple(sorted(canon))
+                    else:
+                        fingerprint_data[field] = canonicalize_identity_for_dedup(field, value)
         else:
             # Component (is_entity=False): Use all non-empty fields
             # This enables content-based deduplication
