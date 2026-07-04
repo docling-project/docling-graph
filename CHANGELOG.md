@@ -2,6 +2,407 @@
 
 <!-- version list -->
 
+## v1.6.0 (2026-07-04)
+
+### Bug Fixes
+
+- **core**: Optimize docling graph extraction resilience and token economics
+  ([`e2bd17a`](https://github.com/docling-project/docling-graph/commit/e2bd17a766d018fac3856236786d244434debc62))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docs**: Rename WatsonX to watsonx per official branding, closes #72
+  ([`2a1c375`](https://github.com/docling-project/docling-graph/commit/2a1c375742bec203efaea425c5f17356437bd5aa))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **orchestrator**: Resolve canonical key fallback divergence to prevent edge-attachment collapse
+  ([`eef791a`](https://github.com/docling-project/docling-graph/commit/eef791a0230ce3348dd5e55e166b3597f6fea307))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Resolve sparse root-id drift, enforce specific instance labels, and add direct-mode
+  hints
+  ([`186386e`](https://github.com/docling-project/docling-graph/commit/186386e4c87f9a0172b04df8d63dc44358178565))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Resolve telemetry edge-cases, enhance entity-resolution, and export chunks
+  ([`32e7569`](https://github.com/docling-project/docling-graph/commit/32e75692a204316f0ee5aaa2eee7c415fdbaa61e))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **ruff**: Clean up dead type guards and resolve mypy warnings
+  ([`1ecc28f`](https://github.com/docling-project/docling-graph/commit/1ecc28fd37e95ee0f949a57c884e0a9dc675df73))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **deps**: Bump aiohttp from 3.13.4 to 3.14.1
+  ([`8aff564`](https://github.com/docling-project/docling-graph/commit/8aff5640ea2715a610cdf8ca7845763ed222ea98))
+
+--- updated-dependencies: - dependency-name: aiohttp dependency-version: 3.14.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump bleach from 6.3.0 to 6.4.0
+  ([`b35afeb`](https://github.com/docling-project/docling-graph/commit/b35afebbcc9a43943b19fce956fabc8990baee5b))
+
+Bumps [bleach](https://github.com/mozilla/bleach) from 6.3.0 to 6.4.0. -
+  [Changelog](https://github.com/mozilla/bleach/blob/main/CHANGES) -
+  [Commits](https://github.com/mozilla/bleach/compare/v6.3.0...v6.4.0)
+
+--- updated-dependencies: - dependency-name: bleach dependency-version: 6.4.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump docling from 2.90.0 to 2.94.0
+  ([`285ee42`](https://github.com/docling-project/docling-graph/commit/285ee42a3b0132b20b2b92a182391327c599e9af))
+
+Bumps [docling](https://github.com/docling-project/docling) from 2.90.0 to 2.94.0. - [Release
+  notes](https://github.com/docling-project/docling/releases) -
+  [Changelog](https://github.com/docling-project/docling/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/docling-project/docling/compare/v2.90.0...v2.94.0)
+
+--- updated-dependencies: - dependency-name: docling dependency-version: 2.94.0
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump docling-core from 2.74.0 to 2.74.1
+  ([`7b862fd`](https://github.com/docling-project/docling-graph/commit/7b862fd1d10962780f67fd71c8c076ff6dda48b0))
+
+Bumps [docling-core](https://github.com/docling-project/docling-core) from 2.74.0 to 2.74.1. -
+  [Release notes](https://github.com/docling-project/docling-core/releases) -
+  [Changelog](https://github.com/docling-project/docling-core/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/docling-project/docling-core/compare/v2.74.0...v2.74.1)
+
+--- updated-dependencies: - dependency-name: docling-core dependency-version: 2.74.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.47 to 3.1.50
+  ([`8f5d263`](https://github.com/docling-project/docling-graph/commit/8f5d263752dbb6a788bed699bc8fdd2f58f3e94d))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.47 to 3.1.50. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/CHANGES) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.47...3.1.50)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.1.50
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump idna from 3.11 to 3.15
+  ([`a05fc0a`](https://github.com/docling-project/docling-graph/commit/a05fc0a0b50450d011390e7183c071d7c592ca00))
+
+Bumps [idna](https://github.com/kjd/idna) from 3.11 to 3.15. - [Release
+  notes](https://github.com/kjd/idna/releases) -
+  [Changelog](https://github.com/kjd/idna/blob/master/HISTORY.md) -
+  [Commits](https://github.com/kjd/idna/compare/v3.11...v3.15)
+
+--- updated-dependencies: - dependency-name: idna dependency-version: '3.15'
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump jupyter-server from 2.17.0 to 2.18.0
+  ([`99d416f`](https://github.com/docling-project/docling-graph/commit/99d416f5c348083f2317f5cb3b218057133bf5e7))
+
+Bumps [jupyter-server](https://github.com/jupyter-server/jupyter_server) from 2.17.0 to 2.18.0. -
+  [Release notes](https://github.com/jupyter-server/jupyter_server/releases) -
+  [Changelog](https://github.com/jupyter-server/jupyter_server/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/jupyter-server/jupyter_server/compare/v2.17.0...v2.18.0)
+
+--- updated-dependencies: - dependency-name: jupyter-server dependency-version: 2.18.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump jupyter-server from 2.18.0 to 2.20.0
+  ([`4190502`](https://github.com/docling-project/docling-graph/commit/419050269edc0d3296930aac25b3eebec2e1d04f))
+
+Bumps [jupyter-server](https://github.com/jupyter-server/jupyter_server) from 2.18.0 to 2.20.0. -
+  [Release notes](https://github.com/jupyter-server/jupyter_server/releases) -
+  [Changelog](https://github.com/jupyter-server/jupyter_server/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/jupyter-server/jupyter_server/compare/v2.18.0...v2.20.0)
+
+--- updated-dependencies: - dependency-name: jupyter-server dependency-version: 2.20.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump jupyterlab from 4.5.7 to 4.5.9
+  ([`cffc317`](https://github.com/docling-project/docling-graph/commit/cffc31720d99e1fe602c0d50c368421f53d48a7f))
+
+Bumps [jupyterlab](https://github.com/jupyterlab/jupyterlab) from 4.5.7 to 4.5.9. - [Release
+  notes](https://github.com/jupyterlab/jupyterlab/releases) -
+  [Changelog](https://github.com/jupyterlab/jupyterlab/blob/main/RELEASE.md) -
+  [Commits](https://github.com/jupyterlab/jupyterlab/compare/@jupyterlab/lsp@4.5.7...@jupyterlab/lsp@4.5.9)
+
+--- updated-dependencies: - dependency-name: jupyterlab dependency-version: 4.5.9
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump mistune from 3.2.0 to 3.2.1
+  ([`4be2a6c`](https://github.com/docling-project/docling-graph/commit/4be2a6c2a1f80a3a6844a5aca583b7406d7ee8c4))
+
+Bumps [mistune](https://github.com/lepture/mistune) from 3.2.0 to 3.2.1. - [Release
+  notes](https://github.com/lepture/mistune/releases) -
+  [Changelog](https://github.com/lepture/mistune/blob/main/docs/changes.rst) -
+  [Commits](https://github.com/lepture/mistune/compare/v3.2.0...v3.2.1)
+
+--- updated-dependencies: - dependency-name: mistune dependency-version: 3.2.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump pydantic-settings from 2.14.1 to 2.14.2
+  ([`2eeb6d1`](https://github.com/docling-project/docling-graph/commit/2eeb6d12150ba7451e9df56796d2f58c36c1eb1e))
+
+Bumps [pydantic-settings](https://github.com/pydantic/pydantic-settings) from 2.14.1 to 2.14.2. -
+  [Release notes](https://github.com/pydantic/pydantic-settings/releases) -
+  [Commits](https://github.com/pydantic/pydantic-settings/compare/v2.14.1...v2.14.2)
+
+--- updated-dependencies: - dependency-name: pydantic-settings dependency-version: 2.14.2
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump starlette from 1.0.0 to 1.3.1
+  ([`ece99bc`](https://github.com/docling-project/docling-graph/commit/ece99bc531fa34083ad6f99c2962950d4a5c3588))
+
+Bumps [starlette](https://github.com/Kludex/starlette) from 1.0.0 to 1.3.1. - [Release
+  notes](https://github.com/Kludex/starlette/releases) -
+  [Changelog](https://github.com/Kludex/starlette/blob/main/docs/release-notes.md) -
+  [Commits](https://github.com/Kludex/starlette/compare/1.0.0...1.3.1)
+
+--- updated-dependencies: - dependency-name: starlette dependency-version: 1.3.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump tornado from 6.5.5 to 6.5.7
+  ([`068a8b9`](https://github.com/docling-project/docling-graph/commit/068a8b94007125a45006227915a7635db182b42e))
+
+Bumps [tornado](https://github.com/tornadoweb/tornado) from 6.5.5 to 6.5.7. -
+  [Changelog](https://github.com/tornadoweb/tornado/blob/master/docs/releases.rst) -
+  [Commits](https://github.com/tornadoweb/tornado/compare/v6.5.5...v6.5.7)
+
+--- updated-dependencies: - dependency-name: tornado dependency-version: 6.5.7
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump urllib3 from 2.6.3 to 2.7.0
+  ([`d7ac8d9`](https://github.com/docling-project/docling-graph/commit/d7ac8d98d33b36cd24ed8752fc09ec791e0957a2))
+
+Bumps [urllib3](https://github.com/urllib3/urllib3) from 2.6.3 to 2.7.0. - [Release
+  notes](https://github.com/urllib3/urllib3/releases) -
+  [Changelog](https://github.com/urllib3/urllib3/blob/main/CHANGES.rst) -
+  [Commits](https://github.com/urllib3/urllib3/compare/2.6.3...2.7.0)
+
+--- updated-dependencies: - dependency-name: urllib3 dependency-version: 2.7.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Remove obsolete extraction dependencies
+  ([`2d619e8`](https://github.com/docling-project/docling-graph/commit/2d619e81484151400467d307ccb5816a61f47442))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Upgrade dependencies and fix security vulnerabilities
+  ([`7aa6c8a`](https://github.com/docling-project/docling-graph/commit/7aa6c8aa45a8567cca577c454c9db701cf7971c2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps)(deps**: Bump actions/dependency-review-action
+  ([`13a4eaa`](https://github.com/docling-project/docling-graph/commit/13a4eaacec28c1007c386bf12550346e5c3fe6c2))
+
+Bumps the all-actions group with 1 update:
+  [actions/dependency-review-action](https://github.com/actions/dependency-review-action).
+
+Updates `actions/dependency-review-action` from 4 to 5 - [Release
+  notes](https://github.com/actions/dependency-review-action/releases) -
+  [Commits](https://github.com/actions/dependency-review-action/compare/v4...v5)
+
+--- updated-dependencies: - dependency-name: actions/dependency-review-action dependency-version:
+  '5'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps)(deps**: Bump the all-actions group across 1 directory with 2 updates
+  ([`b97bc92`](https://github.com/docling-project/docling-graph/commit/b97bc92d4340fea198d7226379a697b90c719998))
+
+Bumps the all-actions group with 2 updates in the / directory:
+  [actions/checkout](https://github.com/actions/checkout) and
+  [codecov/codecov-action](https://github.com/codecov/codecov-action).
+
+Updates `actions/checkout` from 6 to 7 - [Release
+  notes](https://github.com/actions/checkout/releases) -
+  [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/checkout/compare/v6...v7)
+
+Updates `codecov/codecov-action` from 6 to 7 - [Release
+  notes](https://github.com/codecov/codecov-action/releases) -
+  [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/codecov/codecov-action/compare/v6...v7)
+
+--- updated-dependencies: - dependency-name: actions/checkout dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions
+
+- dependency-name: codecov/codecov-action dependency-version: '7'
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump pymdown-extensions from 10.21.2 to 10.21.3
+  ([`4b3d9f9`](https://github.com/docling-project/docling-graph/commit/4b3d9f91e5ffd3b67740bd014a2f34f7888f0f6e))
+
+Bumps [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) from 10.21.2 to
+  10.21.3. - [Release notes](https://github.com/facelessuser/pymdown-extensions/releases) -
+  [Commits](https://github.com/facelessuser/pymdown-extensions/compare/10.21.2...10.21.3)
+
+--- updated-dependencies: - dependency-name: pymdown-extensions dependency-version: 10.21.3
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **docs**: Migrate relative file paths to official documentation URLs
+  ([`c16194a`](https://github.com/docling-project/docling-graph/commit/c16194a5fb446da84c8bf3fa8448dfb372f34d3f))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Documentation
+
+- **pipeline**: Document chunk schemas, advanced reporting, and extraction templates
+  ([`fa907d7`](https://github.com/docling-project/docling-graph/commit/fa907d7daff1f6e7dd5348692935b463d68528e2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **provenance**: Document data grounding architecture and provenance schema contracts
+  ([`ef69c6b`](https://github.com/docling-project/docling-graph/commit/ef69c6bd65195d397d807aeb58caa42bf743aa7c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **readme**: Refresh mentioned capabilities, document provenance, and prune dead links
+  ([`8207139`](https://github.com/docling-project/docling-graph/commit/8207139b190660e16a87cb837c32b2120f35fa03))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **readme**: Refresh roadmap and documented capabilities
+  ([`190c1bd`](https://github.com/docling-project/docling-graph/commit/190c1bd98bcfeb100cfcb873bdca1b647d159dab))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **schemas**: Optimize pydantic templates for pipeline mechanisms and overhaul best practices
+  ([`4c734ea`](https://github.com/docling-project/docling-graph/commit/4c734ea9110e4858774160ca0964a1c76104c438))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Features
+
+- **dense**: Add autonomous skeleton-then-flesh contract and wire dense into backend, CLI & Python
+  API
+  ([`2475a85`](https://github.com/docling-project/docling-graph/commit/2475a85ad8a818b2efaf437463d178efa68d8d97))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Add opt in barren-branch pruning
+  ([`9d0669f`](https://github.com/docling-project/docling-graph/commit/9d0669fdfe32ff9293a4e329fcd44cd362d72d61))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Add series & conditional schema primitives and refine skeleton prompt for granularity
+  and global & singleton entities
+  ([`cc476d5`](https://github.com/docling-project/docling-graph/commit/cc476d5a55d68162feb7e48685bad9b9b0acea2b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **provenance**: Implement deterministic data grounding and document lineage tracking
+  ([`c21efc0`](https://github.com/docling-project/docling-graph/commit/c21efc02a09225098ae24599d0a091e8d1d38523))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Refactoring
+
+- **config**: Collapse dense extraction surface to intent primitives and fix core telemetry leaks
+  ([`bb18f0c`](https://github.com/docling-project/docling-graph/commit/bb18f0cc4c9e49c72a449f8881f7c9e14a6da6a5))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **contracts**: Remove delta and staged extraction code base and refrences
+  ([`25b7e3c`](https://github.com/docling-project/docling-graph/commit/25b7e3c56f74efe3eabd33919561854b9ef6fa4c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Remove dead code, fix dense config propagation and improve performance
+  ([`7e85841`](https://github.com/docling-project/docling-graph/commit/7e85841520d9cae1f3d2c54e9aa8aacacc99e45a))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Testing
+
+- **coverage**: Expand test suite to boost coverage for dense extraction codebase
+  ([`46184ca`](https://github.com/docling-project/docling-graph/commit/46184ca5fbfad2a8ba778c55fdada9aa6a622938))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **input**: Improve SSRF test coverage and fix formatting
+  ([`e071867`](https://github.com/docling-project/docling-graph/commit/e071867c0ab66a2d4a8b4e1abee9389cca0bc8e4))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Fix non-deterministic glob order in exporter integration test
+  ([`cc9200d`](https://github.com/docling-project/docling-graph/commit/cc9200d570a33575571a18c51b13681d819ae004))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Validate chunk exports, metric telemetry, and fuzzy resolution ladders
+  ([`13ebbd9`](https://github.com/docling-project/docling-graph/commit/13ebbd9bffcf6c1b0fd08d8a7cf9db37ddca3ac2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **provenance**: Add end-to-end and unit test suite for data grounding validation
+  ([`cf7f9f6`](https://github.com/docling-project/docling-graph/commit/cf7f9f600591e0fa99ecbb3d46150f4252bd86dc))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.5.1 (2026-05-01)
 
 ### Security

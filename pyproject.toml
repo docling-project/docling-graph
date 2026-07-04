@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docling_graph"
-version = "1.5.1"
+version = "1.6.0"
 description = "A tool to convert documents into knowledge graphs using Docling."
 
 license = { text = "MIT License" }
@@ -61,6 +61,7 @@ vlm = [
 semantic = [
     "rapidfuzz",
 ]
+
 
 [dependency-groups]
 # Development tools (linters, type-checkers) and utilities
