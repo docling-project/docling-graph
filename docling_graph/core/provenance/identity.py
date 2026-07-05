@@ -17,10 +17,11 @@ from typing import Any, Mapping, Sequence
 from ..utils.entity_name_normalizer import canonicalize_identity_for_dedup
 from .models import KIND_STRENGTH, NodeProvenance, ProvenanceLedger
 
-# Cap on chunk ids / spans serialized into the compact node-attribute view.
-# Full anchor detail always lives in provenance.json.
+# Cap on chunk ids / spans / element refs serialized into the compact
+# node-attribute view. Full anchor detail always lives in provenance.json.
 DEFAULT_MAX_ANCHORS = 8
 _MAX_SPANS = 4
+_MAX_REFS = 8
 
 PROVENANCE_NODE_ATTR = "__provenance__"
 
@@ -75,6 +76,28 @@ def _pages_for_chunks(ledger: ProvenanceLedger, chunk_ids: Sequence[int]) -> lis
     return sorted(pages)
 
 
+def _refs_for_chunks(ledger: ProvenanceLedger, chunk_ids: Sequence[int]) -> list[str]:
+    """Docling element refs (self_refs like '#/texts/1') backing the given chunks.
+
+    Deduplicated in first-seen order and capped at ``_MAX_REFS`` — the compact
+    view links a node back to its source document elements; the exhaustive list
+    lives in provenance.json's chunk records.
+    """
+    seen: set[str] = set()
+    refs: list[str] = []
+    for chunk_id in chunk_ids:
+        record = ledger.chunks.get(chunk_id)
+        if record is None:
+            continue
+        for ref in record.doc_item_refs:
+            if ref and ref not in seen:
+                seen.add(ref)
+                refs.append(ref)
+                if len(refs) >= _MAX_REFS:
+                    return refs
+    return refs
+
+
 def compact_view(
     entry: NodeProvenance,
     ledger: ProvenanceLedger,
@@ -109,6 +132,9 @@ def compact_view(
             "chunks": shown,
             "pages": _pages_for_chunks(ledger, shown),
         }
+        refs = _refs_for_chunks(ledger, shown)
+        if refs:
+            view["refs"] = refs
         if len(chunk_ids) > len(shown):
             view["chunks_omitted"] = len(chunk_ids) - len(shown)
         if include_spans:
@@ -133,6 +159,9 @@ def compact_view(
         "pages": _pages_for_chunks(ledger, shown),
         "approximate": True,
     }
+    refs = _refs_for_chunks(ledger, shown)
+    if refs:
+        view["refs"] = refs
     if len(chunk_ids) > len(shown):
         view["chunks_omitted"] = len(chunk_ids) - len(shown)
     if entry.synthetic:
@@ -173,6 +202,16 @@ def merge_compact_views(
     # Approximate only when neither side carried a precise (verbatim) location.
     if a.get("approximate") and b.get("approximate"):
         merged["approximate"] = True
+    refs_union: list[str] = []
+    refs_seen: set[str] = set()
+    for ref in [*(a.get("refs") or []), *(b.get("refs") or [])]:
+        if ref not in refs_seen:
+            refs_seen.add(ref)
+            refs_union.append(ref)
+            if len(refs_union) >= _MAX_REFS:
+                break
+    if refs_union:
+        merged["refs"] = refs_union
     spans = [*(a.get("spans") or []), *(b.get("spans") or [])]
     if spans:
         seen: set[tuple[Any, ...]] = set()

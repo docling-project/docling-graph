@@ -27,6 +27,7 @@ from .identity import (
     DEFAULT_MAX_ANCHORS,
     PROVENANCE_NODE_ATTR,
     _pages_for_chunks,
+    _refs_for_chunks,
     canonical_id_text,
     compact_view,
     identity_key,
@@ -99,6 +100,9 @@ def _located_view(
         "chunks": shown,
         "pages": _pages_for_chunks(ledger, shown),
     }
+    refs = _refs_for_chunks(ledger, shown)
+    if refs:
+        view["refs"] = refs
     if len(chunk_ids) > len(shown):
         view["chunks_omitted"] = len(chunk_ids) - len(shown)
     if include_spans:

@@ -54,6 +54,63 @@ class DocumentOrigin(BaseModel):
     )
 
 
+DOCLANG_RESOLUTION = 512
+
+
+def dclg_location_from_bbox(
+    left: float, top: float, right: float, bottom: float, page_width: float, page_height: float
+) -> tuple[int, int, int, int]:
+    """Quantize a top-left-origin page bbox to DocLang's ``<location>`` grid.
+
+    Replicates docling-core's DocLang serializer exactly on the default 512-grid
+    (``clamp(round(512 * coord / page_dim), 0, 511)`` with corner normalization),
+    so the result equals the values written in ``document.dclg``. Computed from
+    the *original float* coordinates — quantizing after rounding the bbox to whole
+    pixels could shift a value by one grid step.
+    """
+
+    def _quant(value: float, dim: float) -> int:
+        return max(0, min(round(DOCLANG_RESOLUTION * value / dim), DOCLANG_RESOLUTION - 1))
+
+    x0, x1 = min(left, right), max(left, right)
+    y0, y1 = min(top, bottom), max(top, bottom)
+    return (
+        _quant(x0, page_width),
+        _quant(y0, page_height),
+        _quant(x1, page_width),
+        _quant(y1, page_height),
+    )
+
+
+class ItemGeometry(BaseModel):
+    """Page + bounding box of one Docling item backing a chunk.
+
+    Derived deterministically from the ``DoclingDocument`` item's provenance
+    (``prov[].page_no`` + ``bbox``), keyed by its ``self_ref`` so a chunk anchor
+    can be located visually on the source page.
+
+    ``bbox`` is ``(l, t, r, b)`` in whole page pixels, always **top-left origin**
+    (BOTTOMLEFT sources are converted at capture; boxes that can't be normalized
+    are dropped). ``dclg_location`` is the same box quantized to DocLang's 512
+    grid — the exact ``<location>`` values in ``document.dclg`` — and is computed
+    from the pre-rounding coordinates so it stays exact.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    ref: str = Field(..., description="Docling item self_ref, e.g. '#/texts/42'")
+    page_no: int
+    bbox: tuple[int, int, int, int] = Field(
+        ..., description="(l, t, r, b) in whole page pixels, top-left origin"
+    )
+    page_width: int | None = Field(default=None, description="Page width in pixels")
+    page_height: int | None = Field(default=None, description="Page height in pixels")
+    dclg_location: tuple[int, int, int, int] | None = Field(
+        default=None,
+        description="bbox on DocLang's 512 grid — the <location> values in document.dclg",
+    )
+
+
 class ChunkRecord(BaseModel):
     """One chunker output unit; the atomic grounding unit.
 
@@ -68,6 +125,10 @@ class ChunkRecord(BaseModel):
     page_numbers: tuple[int, ...] = ()
     doc_item_refs: tuple[str, ...] = Field(
         default=(), description="Docling item self_refs, e.g. '#/texts/42'"
+    )
+    item_geometry: tuple[ItemGeometry, ...] = Field(
+        default=(),
+        description="Page + bbox for each backing Docling item (empty when the format has no geometry)",
     )
     headings: tuple[str, ...] = Field(
         default=(), description="Heading trail from chunk meta (context, not location)"
@@ -129,7 +190,7 @@ class ProvenanceLedger(BaseModel):
     internals know chunks, not source identity), so it is optional until then.
     """
 
-    version: int = 1
+    version: int = 2
     document: DocumentOrigin | None = None
     resolution: ResolutionLevel = "chunk"
     node_level: bool = Field(
@@ -150,6 +211,24 @@ class ProvenanceLedger(BaseModel):
             if record is not None:
                 pages.update(record.page_numbers)
         return tuple(sorted(pages))
+
+    def geometry_for_entry(self, entry: NodeProvenance) -> tuple[ItemGeometry, ...]:
+        """Collect the item geometry of every chunk a node is anchored to.
+
+        Empty when the source format exposes no geometry (e.g. markdown input).
+        Deduplicated by ``self_ref`` while preserving first-seen order.
+        """
+        seen: set[str] = set()
+        out: list[ItemGeometry] = []
+        for anchor in entry.anchors:
+            record = self.chunks.get(anchor.chunk_id)
+            if record is None:
+                continue
+            for geom in record.item_geometry:
+                if geom.ref not in seen:
+                    seen.add(geom.ref)
+                    out.append(geom)
+        return tuple(out)
 
 
 def document_level_ledger(text: str, page_count: int | None = None) -> ProvenanceLedger:
@@ -196,6 +275,7 @@ def chunk_index_ledger(
             batch_index=0,
             page_numbers=tuple(p for p in (meta.get("page_numbers") or []) if isinstance(p, int)),
             doc_item_refs=tuple(str(r) for r in (meta.get("doc_item_refs") or [])),
+            item_geometry=geometry_from_meta(meta),
             headings=tuple(str(h) for h in (meta.get("headings") or [])),
             token_count=int(meta.get("token_count") or 0),
             text_hash=meta.get("text_hash") or text_hash(text),
@@ -203,3 +283,37 @@ def chunk_index_ledger(
             text=text,
         )
     return ProvenanceLedger(resolution=resolution, node_level=False, chunks=records, nodes={})
+
+
+def geometry_from_meta(meta: dict) -> tuple[ItemGeometry, ...]:
+    """Build ItemGeometry tuple from a chunk metadata dict's ``item_geometry`` key.
+
+    Each entry is ``{"ref", "page_no", "bbox": [l,t,r,b], "page_width",
+    "page_height", "dclg_location"}`` (all coordinates whole pixels, top-left
+    origin). Malformed entries are skipped so a geometry glitch never breaks the
+    ledger.
+    """
+    out: list[ItemGeometry] = []
+    for raw in meta.get("item_geometry") or []:
+        try:
+            bbox = raw["bbox"]
+            page_width = raw.get("page_width")
+            page_height = raw.get("page_height")
+            dclg = raw.get("dclg_location")
+            out.append(
+                ItemGeometry(
+                    ref=str(raw["ref"]),
+                    page_no=int(raw["page_no"]),
+                    bbox=(int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])),
+                    page_width=int(page_width) if page_width is not None else None,
+                    page_height=int(page_height) if page_height is not None else None,
+                    dclg_location=(
+                        (int(dclg[0]), int(dclg[1]), int(dclg[2]), int(dclg[3]))
+                        if dclg is not None
+                        else None
+                    ),
+                )
+            )
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+    return tuple(out)
