@@ -140,9 +140,7 @@ class TestDoclingExporterExportDoclang:
     def test_export_document_without_doclang(self, tmp_path):
         """include_doclang=False suppresses the .dclg artifact."""
         exporter = DoclingExporter(output_dir=tmp_path)
-        result = exporter.export_document(
-            _real_document(), "document", include_doclang=False
-        )
+        result = exporter.export_document(_real_document(), "document", include_doclang=False)
         assert "doclang" not in result
         assert not (tmp_path / "document.dclg").exists()
 
@@ -158,9 +156,7 @@ class TestDoclingExporterExportDoclang:
     def test_doclang_export_failure_is_non_fatal(self, tmp_path):
         """A serializer failure must not abort export; other artifacts survive."""
         exporter = DoclingExporter(output_dir=tmp_path)
-        with patch.object(
-            DoclingDocument, "export_to_doclang", side_effect=ValueError("boom")
-        ):
+        with patch.object(DoclingDocument, "export_to_doclang", side_effect=ValueError("boom")):
             result = exporter.export_document(_real_document(), "document")
         assert "doclang" not in result
         assert "document_json" in result
@@ -172,9 +168,7 @@ class TestDoclingExporterExportDoclang:
         doc = _real_document()
         exporter = DoclingExporter(output_dir=tmp_path)
         # Simulate an older docling-core by hiding the attribute.
-        with patch(
-            "docling_graph.core.exporters.docling_exporter.hasattr", return_value=False
-        ):
+        with patch("docling_graph.core.exporters.docling_exporter.hasattr", return_value=False):
             dclg_path = exporter._export_doclang(doc, tmp_path / "document.dclg")
         assert dclg_path is None
 

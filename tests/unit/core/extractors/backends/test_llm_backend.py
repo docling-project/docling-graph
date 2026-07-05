@@ -1516,9 +1516,19 @@ class TestCoerceStringTypeErrorsSkips:
         changed = llm_backend._coerce_string_type_errors(data, errors)
         assert changed is False
 
-    def test_skips_when_value_is_none(self, llm_backend):
+    def test_coerces_none_to_empty_string_for_string_type(self, llm_backend):
+        # A null for a field that rejects None is recovered like a missing
+        # field (2026-07-05 IBM report regression: null identity strings).
         data = {"name": None}
         errors = [{"type": "string_type", "loc": ("name",)}]
+        changed = llm_backend._coerce_string_type_errors(data, errors)
+        assert changed is True
+        assert data["name"] == ""
+
+    def test_skips_none_for_non_string_scalar_types(self, llm_backend):
+        # None cannot become a valid int/float/bool by coercion.
+        data = {"count": None}
+        errors = [{"type": "int_type", "loc": ("count",)}]
         changed = llm_backend._coerce_string_type_errors(data, errors)
         assert changed is False
 
@@ -2104,3 +2114,139 @@ class TestCallPromptRetryRaisesException:
         )
         assert out is None
         assert backend._escalation_futile is True
+
+
+# --- 2026-07-05 IBM annual-report failure regressions ---
+
+
+class _AutoSegment(BaseModel):
+    name: str
+
+
+class _AutoAcquisition(BaseModel):
+    target_name: str
+    assigned_segment: _AutoSegment | None = None
+
+
+class _AutoOfficer(BaseModel):
+    full_name: str
+
+
+class _AutoReport(BaseModel):
+    acquisitions: list[_AutoAcquisition] = Field(default_factory=list)
+    executive_officers: list[_AutoOfficer] = Field(default_factory=list)
+
+
+def _ibm_error_shape_data() -> dict:
+    """The exact error shape that discarded a completed 26-minute dense run:
+    two null required strings plus two missing required fields."""
+    return {
+        "acquisitions": [
+            {"target_name": "A", "assigned_segment": {"name": "Software"}},
+            {"target_name": "B", "assigned_segment": {"name": None}},
+            {"assigned_segment": {}},
+        ],
+        "executive_officers": [
+            {"full_name": "Jane Doe"},
+            {"full_name": None},
+        ],
+    }
+
+
+class TestSalvageLoopRegression:
+    """fill -> stuck -> prune -> fill used to consume every salvage pass and
+    exit without re-validating data that had just become valid."""
+
+    def test_ibm_error_shape_recovers(self, llm_backend):
+        model = llm_backend._validate_extraction(_ibm_error_shape_data(), _AutoReport, "test")
+        assert model is not None
+        assert len(model.acquisitions) == 3
+        assert model.acquisitions[1].assigned_segment.name == ""
+        assert model.acquisitions[2].target_name == ""
+        assert model.executive_officers[1].full_name == ""
+        assert llm_backend.last_validation_errors == []
+
+    def test_final_validation_attempt_after_last_mutation_pass(self, llm_backend, monkeypatch):
+        # Disable None->"" coercion to force the pre-fix fill -> stuck ->
+        # prune -> fill sequence; only the final validation attempt (added
+        # after the last mutation round) makes this recoverable.
+        monkeypatch.setattr(llm_backend, "_coerce_string_type_errors", lambda data, errors: False)
+        model = llm_backend._validate_extraction(_ibm_error_shape_data(), _AutoReport, "test")
+        assert model is not None
+        assert model.executive_officers[1].full_name == ""
+
+    def test_terminal_errors_recorded_on_failure(self, llm_backend):
+        class Strict(BaseModel):
+            model_config = ConfigDict(extra="forbid")
+            count: int
+
+        model = llm_backend._validate_extraction({"count": {"no": "way"}}, Strict, "test")
+        assert model is None
+        assert llm_backend.last_validation_errors
+        assert llm_backend.last_validation_errors[0]["loc"] == ["count"]
+
+
+class TestPreflightContextGuard:
+    """Full-document calls that cannot fit the context window are refused
+    before any provider round-trip."""
+
+    def _backend_with_limits(
+        self, mock_llm_client, context_limit: int, max_tokens: int
+    ) -> LlmBackend:
+        mock_llm_client.context_limit = context_limit
+        generation = MagicMock()
+        generation.max_tokens = max_tokens
+        mock_llm_client._generation = generation
+        return LlmBackend(llm_client=mock_llm_client)
+
+    def test_oversized_document_is_refused_without_llm_call(self, mock_llm_client):
+        backend = self._backend_with_limits(mock_llm_client, context_limit=1000, max_tokens=200)
+        result = backend.extract_from_markdown(markdown="x" * 10_000, template=MockTemplate)
+        assert result is None
+        mock_llm_client.get_json_response.assert_not_called()
+
+    def test_fitting_document_proceeds(self, mock_llm_client):
+        backend = self._backend_with_limits(mock_llm_client, context_limit=1000, max_tokens=200)
+        mock_llm_client.get_json_response.return_value = {"name": "n", "age": 3}
+        result = backend.extract_from_markdown(markdown="x" * 400, template=MockTemplate)
+        assert result is not None
+
+    def test_partial_calls_are_not_guarded(self, mock_llm_client):
+        # Chunk-level calls are sized by the chunker; the guard is only for
+        # full-document calls.
+        backend = self._backend_with_limits(mock_llm_client, context_limit=1000, max_tokens=200)
+        mock_llm_client.get_json_response.return_value = {"name": "n", "age": 3}
+        result = backend.extract_from_markdown(
+            markdown="x" * 10_000, template=MockTemplate, is_partial=True
+        )
+        assert result is not None
+
+    def test_unknown_context_limit_is_not_guarded(self, mock_llm_client):
+        del mock_llm_client.context_limit
+        mock_llm_client.get_json_response.return_value = {"name": "n", "age": 3}
+        backend = LlmBackend(llm_client=mock_llm_client)
+        result = backend.extract_from_markdown(markdown="x" * 100_000, template=MockTemplate)
+        assert result is not None
+
+
+class TestAllowDenseFlag:
+    """allow_dense=False must keep a dense-contract backend on the direct
+    single-call path (no dense re-entry after a chunked dense run failed)."""
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_allow_dense_false_skips_dense_reentry(self, mock_orchestrator, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_llm_client.get_json_response.return_value = {"name": "n", "age": 3}
+        result = backend.extract_from_markdown(
+            markdown="Some content", template=MockTemplate, allow_dense=False
+        )
+        assert result is not None
+        mock_orchestrator.assert_not_called()
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.run_dense_orchestrator")
+    def test_allow_dense_default_still_routes_dense(self, mock_orchestrator, mock_llm_client):
+        backend = LlmBackend(llm_client=mock_llm_client, extraction_contract="dense")
+        mock_orchestrator.return_value = ({"name": "n", "age": 3}, {}, None)
+        result = backend.extract_from_markdown(markdown="Some content", template=MockTemplate)
+        assert result is not None
+        mock_orchestrator.assert_called_once()
