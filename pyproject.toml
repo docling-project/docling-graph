@@ -31,8 +31,9 @@ authors = [
 ]
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "docling>=2.70.0,<3.0.0",
-    "docling-core[chunking, chunking-openai]>=2.50.0,<3.0.0",
+    # DocLang input/export + serializer surface requires docling>=2.100 / docling-core>=2.86.
+    "docling>=2.100.0,<3.0.0",
+    "docling-core[chunking, chunking-openai]>=2.86.0,<3.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "networkx>=3.0.0,<4.0.0",
     "rich>=13,<16",
@@ -55,7 +56,7 @@ docling-graph = "docling_graph.cli.main:main"
 
 [project.optional-dependencies]
 vlm = [
-    "docling[vlm]>=2.70.0,<3.0.0",
+    "docling[vlm]>=2.100.0,<3.0.0",
 ]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
 semantic = [

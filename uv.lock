@@ -1165,7 +1165,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "1.5.1"
+version = "1.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -1242,9 +1242,9 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "aiofiles", specifier = ">=24.0.0,<26.0.0" },
-    { name = "docling", specifier = ">=2.70.0,<3.0.0" },
-    { name = "docling", extras = ["vlm"], marker = "extra == 'vlm'", specifier = ">=2.70.0,<3.0.0" },
-    { name = "docling-core", extras = ["chunking", "chunking-openai"], specifier = ">=2.50.0,<3.0.0" },
+    { name = "docling", specifier = ">=2.100.0,<3.0.0" },
+    { name = "docling", extras = ["vlm"], marker = "extra == 'vlm'", specifier = ">=2.100.0,<3.0.0" },
+    { name = "docling-core", extras = ["chunking", "chunking-openai"], specifier = ">=2.86.0,<3.0.0" },
     { name = "litellm", specifier = ">=1.0.0,<2.0.0" },
     { name = "networkx", specifier = ">=3.0.0,<4.0.0" },
     { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
