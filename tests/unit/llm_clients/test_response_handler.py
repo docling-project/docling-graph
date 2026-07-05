@@ -247,17 +247,18 @@ class TestFastPath:
 class TestListEnvelopeShapes:
     """Empty list envelopes are valid 'found nothing' answers, not warnings."""
 
-    def test_empty_envelopes_pass_without_warning(self):
-        from unittest.mock import patch
+    def test_empty_envelopes_pass_without_warning(self, caplog):
+        import logging
 
         for payload in ('{"nodes": []}', '{"items": []}', '{"merges": []}'):
-            with patch("docling_graph.llm_clients.response_handler.rich_print") as mock_print:
+            caplog.clear()
+            with caplog.at_level(logging.WARNING, logger="docling_graph"):
                 ResponseHandler.parse_json_response(payload, "TestClient")
-            assert mock_print.call_count == 0, payload
+            assert len(caplog.records) == 0, payload
 
-    def test_all_null_scalar_values_still_warn(self):
-        from unittest.mock import patch
+    def test_all_null_scalar_values_still_warn(self, caplog):
+        import logging
 
-        with patch("docling_graph.llm_clients.response_handler.rich_print") as mock_print:
+        with caplog.at_level(logging.WARNING, logger="docling_graph"):
             ResponseHandler.parse_json_response('{"a": null, "b": null}', "TestClient")
-        assert mock_print.call_count == 1
+        assert len(caplog.records) == 1

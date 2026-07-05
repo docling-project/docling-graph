@@ -165,22 +165,24 @@ class TestExtractFromMarkdown:
 
         assert result is None
 
-    @patch("docling_graph.core.extractors.backends.llm_backend.rich_print")
-    def test_validation_error(self, mock_rich_print, llm_backend, mock_llm_client):
+    def test_validation_error(self, llm_backend, mock_llm_client, caplog):
         """Test when LLM returns JSON that fails Pydantic validation."""
+        import logging
+
         # Missing required field 'age'
         invalid_json = {"name": "Test Only"}
         mock_llm_client.get_json_response.return_value = invalid_json
 
-        result = llm_backend.extract_from_markdown(markdown="Some content", template=MockTemplate)
+        with caplog.at_level(logging.WARNING, logger="docling_graph"):
+            result = llm_backend.extract_from_markdown(
+                markdown="Some content", template=MockTemplate
+            )
 
         # Should fail validation and return None
         assert result is None
 
-        # Check that validation error was printed
-        mock_rich_print.assert_any_call(
-            "[blue][LlmBackend][/blue] [yellow]Validation Error for document:[/yellow]"
-        )
+        # Check that validation error was logged
+        assert any("Validation error for document" in r.getMessage() for r in caplog.records)
 
     @patch("docling_graph.core.extractors.contracts.direct.get_extraction_prompt")
     def test_partial_extraction(self, mock_get_prompt, llm_backend, mock_llm_client):
@@ -1155,21 +1157,24 @@ class TestDirectContractProvenance:
 
 
 class TestLogInfoFormatting:
-    """_log_info formats kwargs into the rich-printed message (lines 156-160)."""
+    """_log_info formats kwargs into the logged message."""
 
-    @patch("docling_graph.core.extractors.backends.llm_backend.rich_print")
-    def test_log_info_with_kwargs_appends_formatted_pairs(self, mock_rich_print, llm_backend):
-        llm_backend._log_info("Processing", chunks=3, tokens=42)
-        printed = mock_rich_print.call_args[0][0]
+    def test_log_info_with_kwargs_appends_formatted_pairs(self, llm_backend, caplog):
+        import logging
+
+        with caplog.at_level(logging.INFO, logger="docling_graph"):
+            llm_backend._log_info("Processing", chunks=3, tokens=42)
+        printed = caplog.records[-1].getMessage()
         assert "Processing" in printed
         assert "3" in printed and "chunks" in printed
         assert "42" in printed and "tokens" in printed
 
-    @patch("docling_graph.core.extractors.backends.llm_backend.rich_print")
-    def test_log_info_without_kwargs(self, mock_rich_print, llm_backend):
-        llm_backend._log_info("Simple message")
-        printed = mock_rich_print.call_args[0][0]
-        assert printed == "[blue][LlmBackend][/blue] Simple message"
+    def test_log_info_without_kwargs(self, llm_backend, caplog):
+        import logging
+
+        with caplog.at_level(logging.INFO, logger="docling_graph"):
+            llm_backend._log_info("Simple message")
+        assert caplog.records[-1].getMessage() == "Simple message"
 
 
 class TestValidationErrorTraceEmit:
