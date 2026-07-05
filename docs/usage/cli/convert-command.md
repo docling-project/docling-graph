@@ -894,6 +894,6 @@ uv run docling-graph convert research.pdf \
 
 ## Next Steps
 
-1. **[inspect Command →](inspect-command.md)** - Visualize results
-2. **[CLI Recipes →](cli-recipes.md)** - Common patterns
-3. **[Examples →](../examples/index.md)** - Real-world examples
+1. **[inspect Command](inspect-command.md)** - Visualize results
+2. **[CLI Recipes](cli-recipes.md)** - Common patterns
+3. **[Examples](../examples/index.md)** - Real-world examples

@@ -477,6 +477,6 @@ config = PipelineConfig(
 
 ## Next Steps
 
-- **[DoclingDocument Input →](docling-document-input.md)** - Use pre-processed documents
+- **[DoclingDocument Input](docling-document-input.md)** - Use pre-processed documents
 - **[Input Formats Guide](../../fundamentals/pipeline-configuration/input-formats.md)** - Complete input format reference
 - **[LLM Backend Configuration](../../fundamentals/pipeline-configuration/backend-selection.md)** - Configure LLM settings

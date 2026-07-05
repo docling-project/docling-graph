@@ -519,6 +519,6 @@ config = PipelineConfig(
 
 Now that you understand processing modes:
 
-1. **[Docling Settings →](docling-settings.md)** - Configure document conversion
+1. **[Docling Settings](docling-settings.md)** - Configure document conversion
 2. **[Export Configuration](export-configuration.md)** - Set output formats
 3. **[Configuration Examples](configuration-examples.md)** - See complete scenarios

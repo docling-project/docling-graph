@@ -777,6 +777,6 @@ class Invoice(BaseModel):
 
 Now that you understand advanced patterns:
 
-1. **[Best Practices →](best-practices.md)** - Complete template checklist
+1. **[Best Practices](best-practices.md)** - Complete template checklist
 2. **[Examples](../../usage/examples/index.md)** - See patterns in production templates
 3. **[Pipeline Configuration](../pipeline-configuration/index.md)** - Configure extraction

@@ -85,7 +85,7 @@ docling-graph init
 - Provider/model identifiers use LiteLLM routing
 - API key guidance
 
-**Learn more:** [init Command →](init-command.md)
+**Learn more:** [init Command](init-command.md)
 
 ---
 
@@ -104,7 +104,7 @@ docling-graph convert SOURCE --template TEMPLATE [OPTIONS]
 - Configurable chunking
 - Multiple export formats
 
-**Learn more:** [convert Command →](convert-command.md)
+**Learn more:** [convert Command](convert-command.md)
 
 ---
 
@@ -123,7 +123,7 @@ docling-graph inspect PATH [OPTIONS]
 - Node/edge exploration
 - Self-contained output
 
-**Learn more:** [inspect Command →](inspect-command.md)
+**Learn more:** [inspect Command](inspect-command.md)
 
 ---
 
@@ -338,11 +338,11 @@ docling-graph convert document.pdf \
 
 Explore each command in detail:
 
-1. **[init Command →](init-command.md)** - Configuration setup
-2. **[convert Command →](convert-command.md)** - Document conversion
-3. **[inspect Command →](inspect-command.md)** - Graph visualization
-4. **[CLI Recipes →](cli-recipes.md)** - Common patterns
+1. **[init Command](init-command.md)** - Configuration setup
+2. **[convert Command](convert-command.md)** - Document conversion
+3. **[inspect Command](inspect-command.md)** - Graph visualization
+4. **[CLI Recipes](cli-recipes.md)** - Common patterns
 
 Or continue to:
-- **[Python API →](../api/index.md)** - Programmatic usage
-- **[Examples →](../examples/index.md)** - Real-world examples
+- **[Python API](../api/index.md)** - Programmatic usage
+- **[Examples](../examples/index.md)** - Real-world examples

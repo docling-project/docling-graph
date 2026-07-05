@@ -384,9 +384,9 @@ def extract(self, markdown, template):
 
 Choose a topic based on your needs:
 
-1. **[Custom Backends →](custom-backends.md)** - Extend extraction capabilities
-2. **[Custom Exporters →](custom-exporters.md)** - Create custom output formats
-3. **[Custom Stages →](custom-stages.md)** - Add pipeline stages
-4. **[Performance Tuning →](performance-tuning.md)** - Optimize performance
-5. **[Error Handling →](error-handling.md)** - Handle errors gracefully
-6. **[Testing →](testing.md)** - Test your extensions
+1. **[Custom Backends](custom-backends.md)** - Extend extraction capabilities
+2. **[Custom Exporters](custom-exporters.md)** - Create custom output formats
+3. **[Custom Stages](custom-stages.md)** - Add pipeline stages
+4. **[Performance Tuning](performance-tuning.md)** - Optimize performance
+5. **[Error Handling](error-handling.md)** - Handle errors gracefully
+6. **[Testing](testing.md)** - Test your extensions

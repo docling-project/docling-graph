@@ -371,15 +371,15 @@ except ExtractionError as e:
 
 ## API Documentation Sections
 
-1. **[Pipeline API →](pipeline.md)** - Main entry point
-2. **[Configuration API →](config.md)** - Configuration classes
-3. **[Protocols →](protocols.md)** - Protocol definitions
-4. **[Exceptions →](exceptions.md)** - Exception hierarchy
-5. **[Converters →](converters.md)** - Graph conversion
-6. **[Extractors →](extractors.md)** - Extraction strategies
-7. **[Exporters →](exporters.md)** - Export formats
-8. **[Provenance →](provenance.md)** - Data grounding
-9. **[LLM Clients →](llm-clients.md)** - LLM integrations
+1. **[Pipeline API](pipeline.md)** - Main entry point
+2. **[Configuration API](config.md)** - Configuration classes
+3. **[Protocols](protocols.md)** - Protocol definitions
+4. **[Exceptions](exceptions.md)** - Exception hierarchy
+5. **[Converters](converters.md)** - Graph conversion
+6. **[Extractors](extractors.md)** - Extraction strategies
+7. **[Exporters](exporters.md)** - Export formats
+8. **[Provenance](provenance.md)** - Data grounding
+9. **[LLM Clients](llm-clients.md)** - LLM integrations
 
 ---
 

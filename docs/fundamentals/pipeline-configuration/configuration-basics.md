@@ -687,6 +687,6 @@ config = PipelineConfig(
 
 Now that you understand configuration basics:
 
-1. **[Backend Selection →](backend-selection.md)** - Choose between LLM and VLM
+1. **[Backend Selection](backend-selection.md)** - Choose between LLM and VLM
 2. **[Model Configuration](model-configuration.md)** - Configure models
 3. **[Configuration Examples](configuration-examples.md)** - See complete scenarios

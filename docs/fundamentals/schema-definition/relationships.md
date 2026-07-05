@@ -678,6 +678,6 @@ items: List[Item] = edge(label="CONTAINS_LINE")
 
 Now that you understand relationships:
 
-1. **[Validation →](validation.md)** - Add validators for data quality
+1. **[Validation](validation.md)** - Add validators for data quality
 2. **[Advanced Patterns](advanced-patterns.md)** - Complex relationship patterns
 3. **[Best Practices](best-practices.md)** - Complete template checklist

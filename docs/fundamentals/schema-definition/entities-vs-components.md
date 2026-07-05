@@ -628,6 +628,6 @@ Check `test_output/nodes.csv`:
 
 Now that you understand entities vs components:
 
-1. **[Field Definitions →](field-definitions.md)** - Learn to write effective field descriptions
+1. **[Field Definitions](field-definitions.md)** - Learn to write effective field descriptions
 2. **[Relationships](relationships.md)** - Connect entities and components with edges
 3. **[Advanced Patterns](advanced-patterns.md)** - Complex entity/component patterns

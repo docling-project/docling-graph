@@ -628,6 +628,6 @@ config = PipelineConfig(
 
 Now that you understand document conversion:
 
-1. **[Chunking Strategies →](chunking-strategies.md)** - Learn intelligent document splitting
-2. **[Extraction Backends →](extraction-backends.md)** - Choose LLM or VLM backend
-3. **[Model Merging →](model-merging.md)** - Consolidate extractions
+1. **[Chunking Strategies](chunking-strategies.md)** - Learn intelligent document splitting
+2. **[Extraction Backends](extraction-backends.md)** - Choose LLM or VLM backend
+3. **[Model Merging](model-merging.md)** - Consolidate extractions

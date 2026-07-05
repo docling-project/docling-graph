@@ -724,6 +724,6 @@ def _call_api_with_retry(self, *args, **kwargs):
 
 ## Next Steps
 
-1. **[Custom Exporters →](custom-exporters.md)** - Create custom output formats
-2. **[Testing →](testing.md)** - Test your backend
-3. **[Error Handling →](error-handling.md)** - Handle errors gracefully
+1. **[Custom Exporters](custom-exporters.md)** - Create custom output formats
+2. **[Testing](testing.md)** - Test your backend
+3. **[Error Handling](error-handling.md)** - Handle errors gracefully

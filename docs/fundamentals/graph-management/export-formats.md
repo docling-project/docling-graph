@@ -647,7 +647,7 @@ except json.JSONDecodeError as e:
 
 Now that you understand export formats:
 
-1. **[Data Grounding & Provenance →](provenance.md)** - Trace nodes back to source chunks and pages
-2. **[Visualization →](visualization.md)** - Visualize your graphs
-3. **[Neo4j Integration →](neo4j-integration.md)** - Deep dive into Neo4j
-4. **[Graph Analysis →](graph-analysis.md)** - Analyze graph structure
+1. **[Data Grounding & Provenance](provenance.md)** - Trace nodes back to source chunks and pages
+2. **[Visualization](visualization.md)** - Visualize your graphs
+3. **[Neo4j Integration](neo4j-integration.md)** - Deep dive into Neo4j
+4. **[Graph Analysis](graph-analysis.md)** - Analyze graph structure

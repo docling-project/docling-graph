@@ -699,6 +699,6 @@ run_pipeline({
 
 ## Next Steps
 
-1. **[PipelineConfig →](pipeline-config.md)** - Configuration class
-2. **[Programmatic Examples →](programmatic-examples.md)** - More examples
-3. **[Batch Processing →](batch-processing.md)** - Batch patterns
+1. **[PipelineConfig](pipeline-config.md)** - Configuration class
+2. **[Programmatic Examples](programmatic-examples.md)** - More examples
+3. **[Batch Processing](batch-processing.md)** - Batch patterns

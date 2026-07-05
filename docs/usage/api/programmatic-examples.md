@@ -678,6 +678,6 @@ except:
 
 ## Next Steps
 
-1. **[Batch Processing →](batch-processing.md)** - Advanced batch patterns
-2. **[Examples →](../examples/index.md)** - Real-world examples
-3. **[Advanced Topics →](../advanced/index.md)** - Custom backends
+1. **[Batch Processing](batch-processing.md)** - Advanced batch patterns
+2. **[Examples](../examples/index.md)** - Real-world examples
+3. **[Advanced Topics](../advanced/index.md)** - Custom backends

@@ -682,8 +682,8 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 
 ## Next Steps
 
-1. **[Dense Extraction →](../../fundamentals/extraction-process/dense-extraction.md)** - skeleton-then-flesh extraction tuning
-2. **[Error Handling →](error-handling.md)** - Handle errors gracefully
-3. **[Batch Processing →](../api/batch-processing.md)** - Scale extraction across multiple documents
-4. **[Testing →](testing.md)** - Test performance optimizations
-5. **[GPU Setup →](../../fundamentals/installation/gpu-setup.md)** - Configure GPU
+1. **[Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md)** - skeleton-then-flesh extraction tuning
+2. **[Error Handling](error-handling.md)** - Handle errors gracefully
+3. **[Batch Processing](../api/batch-processing.md)** - Scale extraction across multiple documents
+4. **[Testing](testing.md)** - Test performance optimizations
+5. **[GPU Setup](../../fundamentals/installation/gpu-setup.md)** - Configure GPU

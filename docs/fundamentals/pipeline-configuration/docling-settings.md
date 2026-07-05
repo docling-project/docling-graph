@@ -588,6 +588,6 @@ config = PipelineConfig(
 
 Now that you understand Docling settings:
 
-1. **[Export Configuration →](export-configuration.md)** - Configure output formats
+1. **[Export Configuration](export-configuration.md)** - Configure output formats
 2. **[Configuration Examples](configuration-examples.md)** - Complete scenarios
 3. **[Model Configuration](model-configuration.md)** - Model settings

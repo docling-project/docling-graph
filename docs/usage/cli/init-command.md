@@ -572,6 +572,6 @@ docling-graph convert document.pdf -t "templates.BillingDocument"
 
 Now that you have a configuration:
 
-1. **[convert Command →](convert-command.md)** - Convert documents
-2. **[CLI Recipes →](cli-recipes.md)** - Common patterns
-3. **[Configuration Guide →](../../fundamentals/pipeline-configuration/index.md)** - Advanced config
+1. **[convert Command](convert-command.md)** - Convert documents
+2. **[CLI Recipes](cli-recipes.md)** - Common patterns
+3. **[Configuration Guide](../../fundamentals/pipeline-configuration/index.md)** - Advanced config

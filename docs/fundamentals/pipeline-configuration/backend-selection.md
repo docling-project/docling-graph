@@ -444,6 +444,6 @@ config = PipelineConfig(
 
 Now that you understand backend selection:
 
-1. **[Model Configuration →](model-configuration.md)** - Configure models for your chosen backend
+1. **[Model Configuration](model-configuration.md)** - Configure models for your chosen backend
 2. **[Processing Modes](processing-modes.md)** - Choose processing strategy
 3. **[Configuration Examples](configuration-examples.md)** - See complete scenarios

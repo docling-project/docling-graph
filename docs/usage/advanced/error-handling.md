@@ -1036,7 +1036,7 @@ else:
 
 ## Next Steps
 
-1. **[Model Merging →](../../fundamentals/extraction-process/model-merging.md)** - Learn about zero data loss
-2. **[Testing →](testing.md)** - Test error handling
-3. **[Exceptions Reference →](../../reference/exceptions.md)** - Full exception API
-4. **[Extraction Process →](../../fundamentals/extraction-process/index.md)** - Extraction guide
+1. **[Model Merging](../../fundamentals/extraction-process/model-merging.md)** - Learn about zero data loss
+2. **[Testing](testing.md)** - Test error handling
+3. **[Exceptions Reference](../../reference/exceptions.md)** - Full exception API
+4. **[Extraction Process](../../fundamentals/extraction-process/index.md)** - Extraction guide

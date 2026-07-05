@@ -466,6 +466,6 @@ git push origin feature/my-feature --force
 
 ## Next Steps
 
-1. **[Release Process →](release-process.md)** - Learn about releases
+1. **[Release Process](release-process.md)** - Learn about releases
 2. **[Development Guide](index.md)** - Back to overview
 3. **[Testing Guide](../usage/advanced/testing.md)** - Testing practices

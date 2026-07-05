@@ -619,5 +619,5 @@ for policy_file in policies_dir.glob("*.pdf"):
 ## Next Steps
 
 1. **[Examples Index](index.md)** - See all examples
-2. **[Graph Analysis →](../../fundamentals/graph-management/graph-analysis.md)** - Analyze extracted data
-3. **[Neo4j Integration →](../../fundamentals/graph-management/neo4j-integration.md)** - Load into database
+2. **[Graph Analysis](../../fundamentals/graph-management/graph-analysis.md)** - Analyze extracted data
+3. **[Neo4j Integration](../../fundamentals/graph-management/neo4j-integration.md)** - Load into database

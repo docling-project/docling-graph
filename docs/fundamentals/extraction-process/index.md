@@ -32,7 +32,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 
 **Output:** DoclingDocument with structure
 
-**Learn more:** [Document Conversion →](document-conversion.md)
+**Learn more:** [Document Conversion](document-conversion.md)
 
 ---
 
@@ -49,7 +49,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 
 **Output:** List of contextualized chunks
 
-**Learn more:** [Chunking Strategies →](chunking-strategies.md)
+**Learn more:** [Chunking Strategies](chunking-strategies.md)
 
 ---
 
@@ -66,7 +66,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 
 **Output:** List of Pydantic models
 
-**Learn more:** [Extraction Backends →](extraction-backends.md)
+**Learn more:** [Extraction Backends](extraction-backends.md)
 
 ---
 
@@ -83,7 +83,7 @@ The **Extraction Process** is the core of Docling Graph, transforming raw docume
 
 **Output:** Single consolidated model
 
-**Learn more:** [Model Merging →](model-merging.md)
+**Learn more:** [Model Merging](model-merging.md)
 
 ---
 
@@ -207,7 +207,7 @@ processor = DocumentProcessor(docling_config="ocr")
 document = processor.convert_to_docling_doc("document.pdf")
 ```
 
-**Learn more:** [Document Conversion →](document-conversion.md)
+**Learn more:** [Document Conversion](document-conversion.md)
 
 ---
 
@@ -225,7 +225,7 @@ chunker = DocumentChunker(
 chunks = chunker.chunk_document(document)
 ```
 
-**Learn more:** [Chunking Strategies →](chunking-strategies.md)
+**Learn more:** [Chunking Strategies](chunking-strategies.md)
 
 ---
 
@@ -245,7 +245,7 @@ extractor = ExtractorFactory.create_extractor(
 models, doc = extractor.extract(source, template)
 ```
 
-**Learn more:** [Extraction Backends →](extraction-backends.md)
+**Learn more:** [Extraction Backends](extraction-backends.md)
 
 ---
 
@@ -259,7 +259,7 @@ from docling_graph.core.utils import merge_pydantic_models
 merged = merge_pydantic_models(models, template)
 ```
 
-**Learn more:** [Model Merging →](model-merging.md)
+**Learn more:** [Model Merging](model-merging.md)
 
 ---
 
@@ -501,6 +501,6 @@ config = PipelineConfig(
 
 Ready to dive deeper? Start with:
 
-1. **[Document Conversion →](document-conversion.md)** - Learn about Docling pipelines
-2. **[Chunking Strategies →](chunking-strategies.md)** - Optimize document splitting
-3. **[Extraction Backends →](extraction-backends.md)** - Choose the right backend
+1. **[Document Conversion](document-conversion.md)** - Learn about Docling pipelines
+2. **[Chunking Strategies](chunking-strategies.md)** - Optimize document splitting
+3. **[Extraction Backends](extraction-backends.md)** - Choose the right backend

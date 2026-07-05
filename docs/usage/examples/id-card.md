@@ -490,6 +490,6 @@ date_of_birth: date | None = Field(
 
 ## Next Steps
 
-1. **[Insurance Policy →](insurance-policy.md)** - Financial documents
-2. **[Validation Guide →](../../fundamentals/schema-definition/validation.md)** - Advanced validators
-3. **[VLM Backend →](../../fundamentals/extraction-process/extraction-backends.md)** - Vision models
+1. **[Insurance Policy](insurance-policy.md)** - Financial documents
+2. **[Validation Guide](../../fundamentals/schema-definition/validation.md)** - Advanced validators
+3. **[VLM Backend](../../fundamentals/extraction-process/extraction-backends.md)** - Vision models

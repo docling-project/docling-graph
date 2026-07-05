@@ -556,6 +556,6 @@ else:
 
 Now that you understand visualization:
 
-1. **[Neo4j Integration →](neo4j-integration.md)** - Import into Neo4j
-2. **[Graph Analysis →](graph-analysis.md)** - Analyze graph structure
-3. **[CLI Guide →](../../usage/cli/index.md)** - Use command-line tools
+1. **[Neo4j Integration](neo4j-integration.md)** - Import into Neo4j
+2. **[Graph Analysis](graph-analysis.md)** - Analyze graph structure
+3. **[CLI Guide](../../usage/cli/index.md)** - Use command-line tools

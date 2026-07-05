@@ -66,7 +66,7 @@ config = PipelineConfig(
 )
 ```
 
-**Learn more:** [PipelineConfig →](pipeline-config.md)
+**Learn more:** [PipelineConfig](pipeline-config.md)
 
 ---
 
@@ -83,7 +83,7 @@ run_pipeline({
 })
 ```
 
-**Learn more:** [run_pipeline() →](run-pipeline.md)
+**Learn more:** [run_pipeline()](run-pipeline.md)
 
 ---
 
@@ -97,7 +97,7 @@ from docling_graph.core.exporters import CSVExporter
 from docling_graph.core.visualizers import InteractiveVisualizer
 ```
 
-**Learn more:** [API Reference →](../../reference/index.md)
+**Learn more:** [API Reference](../../reference/index.md)
 
 ---
 
@@ -428,11 +428,11 @@ except Exception:
 
 Explore the Python API in detail:
 
-1. **[run_pipeline() →](run-pipeline.md)** - Pipeline function
-2. **[PipelineConfig →](pipeline-config.md)** - Configuration class
-3. **[Programmatic Examples →](programmatic-examples.md)** - Code examples
-4. **[Batch Processing →](batch-processing.md)** - Batch patterns
+1. **[run_pipeline()](run-pipeline.md)** - Pipeline function
+2. **[PipelineConfig](pipeline-config.md)** - Configuration class
+3. **[Programmatic Examples](programmatic-examples.md)** - Code examples
+4. **[Batch Processing](batch-processing.md)** - Batch patterns
 
 Or continue to:
-- **[Examples →](../examples/index.md)** - Real-world examples
-- **[API Reference →](../../reference/index.md)** - Complete API docs
+- **[Examples](../examples/index.md)** - Real-world examples
+- **[API Reference](../../reference/index.md)** - Complete API docs

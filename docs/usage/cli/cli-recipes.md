@@ -577,6 +577,6 @@ python -c "import docling_graph; print(docling_graph.__version__)"
 
 ## Next Steps
 
-1. **[Python API →](../api/index.md)** - Programmatic usage
-2. **[Examples →](../examples/index.md)** - Real-world examples
-3. **[Advanced Topics →](../advanced/index.md)** - Custom backends
+1. **[Python API](../api/index.md)** - Programmatic usage
+2. **[Examples](../examples/index.md)** - Real-world examples
+3. **[Advanced Topics](../advanced/index.md)** - Custom backends
