@@ -13,12 +13,13 @@ Set `extraction_contract="dense"` in your config or use `--extraction-contract d
 - You want both **fine-grained structure** (many distinct entities, e.g. every figure/experiment/curve) and **dense attribute data** (protocols, derived quantities, model fits) in one run.
 - You need chunk-aware many-to-one extraction that first discovers entity instances and then fills them with complete per-node data.
 
-**When to use direct or dense:**
+**When to use direct, dense, or auto:**
 
 - **Direct**: Flat or simple templates; single-pass extraction.
 - **Dense**: Complex or long documents where you need strong structure discovery plus rich per-entity data.
+- **Auto**: Let the pipeline decide per document. After conversion, when the real document size is known, `extraction_contract="auto"` resolves to direct only when a single full-document call fits both the model's context window and its output-token budget, and to dense otherwise. The decision and the numbers behind it are logged (`[AutoContract] Resolved contract=...`). Recommended when document sizes vary or when running local models with modest context windows.
 
-> **Large documents:** a direct extraction returns the whole result in one LLM response, so a document much larger than the model's output budget will truncate no matter how the prompt is tuned. When this is detected on a direct run, the backend prints a one-time hint suggesting `extraction_contract="dense"`, which splits the work across many calls.
+> **Large documents:** a direct extraction returns the whole result in one LLM response, so a document much larger than the model's output budget will truncate no matter how the prompt is tuned. When this is detected on a direct run, the backend prints a one-time hint suggesting `extraction_contract="dense"` (or `"auto"`), which splits the work across many calls. Full-document calls whose input arithmetically cannot fit the model's context window are refused up front with an actionable error instead of failing after doomed round-trips to the provider.
 
 ---
 
