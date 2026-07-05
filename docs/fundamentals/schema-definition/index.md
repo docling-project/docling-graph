@@ -8,6 +8,7 @@ Pydantic templates are the schema contract for the supported extraction modes (`
 - Identity fields: **required, scalar, short, copied verbatim** from the document — never invented, list-valued, or enum-typed. Give 2-5 document-derived examples per id field.
 - Non-identity fields: **optional or defaulted**, so partial output from smaller models degrades gracefully instead of failing validation.
 - Prefer 2-4 nesting levels; never nest the same rich entity model at several paths — give it one root-level home and reference it by name elsewhere.
+- Keep entities referenced from several paths identity-minimal; context-specific data (a role, a title) belongs on per-context entities linking to them — duplicate-instance merge fills missing values only, first non-empty wins.
 - Use `edge(label=...)` consistently for relationship-bearing fields; edges optional by default.
 - Keep field descriptions to a locator plus one normalization rule; never instruct computation or unit conversion (the pipeline grounds numbers digit-for-digit).
 - Use validators to normalize what models actually emit (scalars, strings, stringified lists) and to deduplicate identity-less root lists — never to reject whole payloads.

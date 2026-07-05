@@ -522,6 +522,27 @@ class Organization(BaseModel):
 
 **Result:** Same address node is shared across multiple people/organizations.
 
+### Pattern 2: Entity Nested Inside a Component
+
+**Scenario:** A component (value object) carries a reference to an entity — e.g. a role record wrapping a person.
+
+```python
+class BoardSeat(BaseModel):
+    """Component: role data, deduplicated by content."""
+    model_config = ConfigDict(is_entity=False)
+    title: str | None = Field(None)
+    person: Person | None = edge(label="IS_PERSON")
+
+class Report(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["title"])
+    title: str = Field(...)
+    board: List[BoardSeat] = edge(label="HAS_BOARD_MEMBER", default_factory=list)
+```
+
+**Behavior:** the component itself never becomes a node — its scalar fields embed in the nearest enclosing entity — but the nested `Person` **does** become a node, linked by an edge from that nearest entity ancestor (`Report --IS_PERSON--> Person`). The embedded `board` dicts null the `person` field so the data lives on the node, not duplicated inline.
+
+**Prefer nesting entities under entities anyway:** the wrapper component adds indirection without adding a graph node, and promoting the role record to its own entity (identified by the person's name) gives dense extraction a discoverable instance per role. See [Graph assembly mechanics](best-practices.md#graph-assembly-mechanics).
+
 ---
 
 ## Common Mistakes
