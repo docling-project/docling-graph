@@ -43,6 +43,7 @@ def _resolve_cli_settings(
     inference: str | None,
     export_format: str | None,
     docling_pipeline: str | None,
+    llm_input_format: str | None,
     chunk_max_tokens: int | None,
     parallel_workers: int | None,
     dense_skeleton_batch_tokens: int | None,
@@ -55,6 +56,7 @@ def _resolve_cli_settings(
     gleaning_enabled: bool | None,
     export_docling_json: bool,
     export_markdown: bool,
+    export_doclang: bool,
     export_per_page: bool,
 ) -> dict[str, Any]:
     """Resolve CLI and config-file settings into effective values."""
@@ -64,6 +66,14 @@ def _resolve_cli_settings(
     inference_val = inference or defaults.get("inference", "local")
     export_format_val = export_format or defaults.get("export_format", "csv")
     docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
+
+    final_llm_input_format = str(
+        llm_input_format
+        if llm_input_format is not None
+        else defaults.get("llm_input_format", "markdown")
+    ).lower()
+    if final_llm_input_format not in ("markdown", "doclang", "doclang-geo"):
+        final_llm_input_format = "markdown"
 
     final_dense_dedupe = str(
         dense_dedupe if dense_dedupe is not None else defaults.get("dense_dedupe", "standard")
@@ -94,6 +104,7 @@ def _resolve_cli_settings(
         "inference": inference_val,
         "export_format": export_format_val,
         "docling_pipeline": docling_pipeline_val,
+        "llm_input_format": final_llm_input_format,
         "chunk_max_tokens": (
             chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
         ),
@@ -138,6 +149,11 @@ def _resolve_cli_settings(
             if export_markdown is not None
             else docling_export_settings.get("markdown", True)
         ),
+        "export_doclang": (
+            export_doclang
+            if export_doclang is not None
+            else docling_export_settings.get("doclang", True)
+        ),
         "export_per_page": (
             export_per_page
             if export_per_page is not None
@@ -162,7 +178,7 @@ def convert_command(
     source: Annotated[
         str,
         typer.Argument(
-            help="Path to source document (any Docling-supported format), URL, or DoclingDocument JSON file. DoclingDocument skips conversion.",
+            help="Path to source document (any Docling-supported format), URL, DoclingDocument JSON, or DocLang file (.dclg/.dclx). DoclingDocument and DocLang skip conversion.",
         ),
     ],
     template: Annotated[
@@ -195,6 +211,16 @@ def convert_command(
     docling_pipeline: Annotated[
         str | None,
         typer.Option("--docling-pipeline", "-d", help="Docling pipeline: 'ocr' or 'vision'."),
+    ] = None,
+    llm_input_format: Annotated[
+        str | None,
+        typer.Option(
+            "--llm-format",
+            help=(
+                "Serialization sent to the LLM: markdown (default) | doclang | doclang-geo. "
+                "DocLang preserves structure/geometry at a higher token cost."
+            ),
+        ),
     ] = None,
     # Extraction options
     debug: Annotated[
@@ -279,6 +305,13 @@ def convert_command(
     ] = True,
     export_markdown: Annotated[
         bool, typer.Option("--export-markdown/--no-markdown", help="Export full document markdown.")
+    ] = True,
+    export_doclang: Annotated[
+        bool,
+        typer.Option(
+            "--export-doclang/--no-doclang",
+            help="Export the Docling document as DocLang (.dclg, content+geometry).",
+        ),
     ] = True,
     export_per_page: Annotated[
         bool,
@@ -382,6 +415,7 @@ def convert_command(
             inference=inference,
             export_format=export_format,
             docling_pipeline=docling_pipeline,
+            llm_input_format=llm_input_format,
             chunk_max_tokens=chunk_max_tokens,
             parallel_workers=parallel_workers,
             dense_skeleton_batch_tokens=dense_skeleton_batch_tokens,
@@ -394,6 +428,7 @@ def convert_command(
             gleaning_enabled=gleaning_enabled,
             export_docling_json=export_docling_json,
             export_markdown=export_markdown,
+            export_doclang=export_doclang,
             export_per_page=export_per_page,
         )
     )
@@ -404,12 +439,14 @@ def convert_command(
     inference_val = settings["inference"]
     export_format_val = settings["export_format"]
     docling_pipeline_val = settings["docling_pipeline"]
+    final_llm_input_format = settings["llm_input_format"]
     final_chunk_max_tokens = settings["chunk_max_tokens"]
     final_structured_output = settings["structured_output"]
     final_structured_sparse_check = settings["structured_sparse_check"]
     final_gleaning_enabled = settings["gleaning_enabled"]
     final_export_docling_json = settings["export_docling_json"]
     final_export_markdown = settings["export_markdown"]
+    final_export_doclang = settings["export_doclang"]
     final_export_per_page = settings["export_per_page"]
 
     logger.debug(f"Validated configuration - Backend: {backend_val}, Inference: {inference_val}")
@@ -439,12 +476,14 @@ def convert_command(
     rich_print("[yellow][DoclingExport][/yellow]")
     rich_print(f"  • Document JSON: [cyan]{final_export_docling_json}[/cyan]")
     rich_print(f"  • Markdown: [cyan]{final_export_markdown}[/cyan]")
+    rich_print(f"  • DocLang: [cyan]{final_export_doclang}[/cyan]")
     rich_print(f"  • Per-page MD: [cyan]{final_export_per_page}[/cyan]")
 
     # Display Extraction settings
     rich_print("[yellow][ExtractionSettings][/yellow]")
     rich_print(f"  • Backend: [cyan]{backend_val}[/cyan]")
     rich_print(f"  • Contract: [cyan]{extraction_contract_val}[/cyan]")
+    rich_print(f"  • LLM Input Format: [cyan]{final_llm_input_format}[/cyan]")
     rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Provenance: [cyan]{settings['provenance']}[/cyan]")
@@ -497,6 +536,7 @@ def convert_command(
         llm_overrides=llm_overrides,
         structured_output=final_structured_output,
         structured_sparse_check=final_structured_sparse_check,
+        llm_input_format=final_llm_input_format,
         debug=debug,
         chunk_max_tokens=final_chunk_max_tokens,
         parallel_workers=settings["parallel_workers"],
@@ -510,6 +550,7 @@ def convert_command(
         export_docling=True,
         export_docling_json=final_export_docling_json,
         export_markdown=final_export_markdown,
+        export_doclang=final_export_doclang,
         export_per_page_markdown=final_export_per_page,
         reverse_edges=reverse_edges,
         output_dir=str(output_dir),

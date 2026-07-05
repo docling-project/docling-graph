@@ -122,7 +122,7 @@ class ConfigurationBuilder:
                 step_num=self.step_counter,
                 option_help={
                     "direct": "Single-pass best-effort extraction (fastest)",
-                    "dense": "Two-phase skeleton-then-fill extraction (autonomous)",
+                    "dense": "Two-phase skeleton-then-flesh extraction (autonomous)",
                 },
             )
         )
@@ -206,6 +206,7 @@ class ConfigurationBuilder:
 
         docling_json = typer.confirm("Export Docling document structure (JSON)?", default=True)
         markdown = typer.confirm("Export full document markdown?", default=True)
+        doclang = typer.confirm("Export DocLang (.dclg, content + geometry)?", default=True)
         per_page = typer.confirm("Export per-page markdown files?", default=False)
 
         return {
@@ -213,6 +214,7 @@ class ConfigurationBuilder:
             "export": {
                 "docling_json": docling_json,
                 "markdown": markdown,
+                "doclang": doclang,
                 "per_page_markdown": per_page,
             },
         }

@@ -2,10 +2,11 @@
 
 import json
 from pathlib import Path
-from typing import Optional
 
 from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
+
+from ..utils.doclang_sanitizer import sanitize_for_doclang
 
 
 class DoclingExporter:
@@ -25,15 +26,17 @@ class DoclingExporter:
         base_name: str,
         include_json: bool = True,
         include_markdown: bool = True,
+        include_doclang: bool = True,
         per_page: bool = False,
     ) -> dict[str, str | list[str]]:
-        """Export Docling document and markdown.
+        """Export Docling document, markdown, and DocLang.
 
         Args:
             document: Docling Document object.
             base_name: Base name for output files (without extension).
-            include_json: Whether to export document as JSON.
-            include_markdown: Whether to export markdown.
+            include_json: Whether to export document as JSON (canonical, lossless).
+            include_markdown: Whether to export markdown (human-readable view).
+            include_doclang: Whether to export DocLang (.dclg, content+geometry interchange).
             per_page: Whether to export per-page markdown files.
 
         Returns:
@@ -56,6 +59,12 @@ class DoclingExporter:
             self._save_text(full_markdown, md_path)
             exported_files["markdown"] = str(md_path)
 
+        # Export DocLang (best-effort: never fail the pipeline on a serializer issue)
+        if include_doclang:
+            dclg_path = self._export_doclang(document, self.output_dir / f"{base_name}.dclg")
+            if dclg_path is not None:
+                exported_files["doclang"] = str(dclg_path)
+
         # Export per-page markdown
         if per_page:
             page_dir = self.output_dir / f"{base_name}_pages"
@@ -74,6 +83,27 @@ class DoclingExporter:
             )
 
         return exported_files
+
+    def _export_doclang(self, document: DoclingDocument, output_path: Path) -> Path | None:
+        """Serialize the document to DocLang, sanitizing control chars first.
+
+        Returns the written path, or ``None`` if DocLang export is unavailable or
+        fails — the export is best-effort and must never abort the pipeline (the
+        JSON and markdown artifacts are unaffected).
+        """
+        if not hasattr(document, "export_to_doclang"):
+            rich_print(
+                "[yellow]→ DocLang export skipped:[/yellow] installed docling-core "
+                "has no export_to_doclang()"
+            )
+            return None
+        try:
+            clean = sanitize_for_doclang(document)
+            self._save_text(clean.export_to_doclang(), output_path)
+            return output_path
+        except Exception as e:
+            rich_print(f"[yellow]→ DocLang export skipped:[/yellow] {e}")
+            return None
 
     def _export_document_json(self, document: DoclingDocument, output_path: Path) -> None:
         """Export Docling document to JSON format.
