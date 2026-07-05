@@ -200,6 +200,7 @@ config = PipelineConfig(
     export_docling=True,  # Export Docling document (default)
     export_docling_json=True,  # Export as JSON (default)
     export_markdown=True,  # Export as markdown (default)
+    export_doclang=True,  # Export as DocLang .dclg (default)
     export_per_page_markdown=False  # Export per-page markdown
 )
 ```
@@ -251,7 +252,24 @@ export_markdown=True  # Default
 - Text analysis
 - Debugging
 
-#### 4. export_per_page_markdown
+#### 4. export_doclang
+
+Exports the document as [DocLang](https://github.com/doclang-project/doclang) (`.dclg`) — an XML markup carrying content, structure, and geometry in one file.
+
+```python
+export_doclang=True  # Default
+```
+
+**Output:** `outputs/docling/document.dclg`
+
+**Best for:**
+
+- Feeding the document to DocLang-aware tools or LLMs
+- Re-ingesting to skip conversion (`docling-graph convert document.dclg ...`)
+
+Skipped automatically when the input itself was DocLang. Keep `export_docling_json` as the lossless archive; DocLang is a (lossy) interchange format. See [Export Configuration](export-configuration.md#docling-conversion-artifacts).
+
+#### 5. export_per_page_markdown
 
 Exports markdown for each page separately.
 

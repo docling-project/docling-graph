@@ -682,7 +682,7 @@ estimate_cost(num_pages=100, model="mistral-small-latest")
 
 ## Next Steps
 
-1. **[Dense Extraction →](../../fundamentals/extraction-process/dense-extraction.md)** - Skeleton-then-fill extraction tuning
+1. **[Dense Extraction →](../../fundamentals/extraction-process/dense-extraction.md)** - skeleton-then-flesh extraction tuning
 2. **[Error Handling →](error-handling.md)** - Handle errors gracefully
 3. **[Batch Processing →](../api/batch-processing.md)** - Scale extraction across multiple documents
 4. **[Testing →](testing.md)** - Test performance optimizations

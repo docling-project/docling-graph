@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Dense extraction** is an LLM extraction contract for **many-to-one** processing that combines granular document structure with rich per-node data via a **two-phase "Skeleton-then-Fill"** flow. It is fully autonomous and designed for chunked, structure-aware extraction.
+**Dense extraction** is an LLM extraction contract for **many-to-one** processing that combines granular document structure with rich per-node data via a **two-phase "skeleton-then-flesh"** flow. It is fully autonomous and designed for chunked, structure-aware extraction.
 
 Set `extraction_contract="dense"` in your config or use `--extraction-contract dense` on the CLI. Chunking must be enabled (`use_chunking=True`, which is the default for many-to-one).
 

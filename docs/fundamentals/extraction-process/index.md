@@ -149,7 +149,7 @@ config = PipelineConfig(
 For LLM many-to-one extraction you can choose:
 
 - **direct** (default): Single-pass extraction then programmatic merge.
-- **dense**: Two-phase skeleton-then-fill (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
+- **dense**: Two-phase skeleton-then-flesh (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
 
 ---
 
@@ -236,7 +236,7 @@ from docling_graph.core.extractors import ExtractorFactory
 extractor = ExtractorFactory.create_extractor(
     processing_mode="many-to-one",
     backend_name="llm",
-    extraction_contract="direct",  # or "dense" for chunked skeleton-then-fill extraction
+    extraction_contract="direct",  # or "dense" for chunked skeleton-then-flesh extraction
     llm_client=client,
 )
 models, doc = extractor.extract(source, template)

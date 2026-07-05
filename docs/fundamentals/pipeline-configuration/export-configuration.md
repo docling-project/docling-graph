@@ -241,6 +241,39 @@ outputs/
 
 ---
 
+## Docling Conversion Artifacts
+
+Alongside the graph exports, the pipeline writes the converted document itself to a `docling/` subdirectory in three complementary views. Each is independently toggled; all default to on.
+
+| Artifact | Flag | Role |
+|:---------|:-----|:-----|
+| `document.json` | `export_docling_json` | **Canonical, lossless** DoclingDocument. The best re-input for another run. |
+| `document.md` | `export_markdown` | Human-readable markdown view; what direct extraction reads by default. |
+| `document.dclg` | `export_doclang` | [DocLang](https://github.com/doclang-project/doclang) — content + structure + geometry in one XML file. A self-describing interchange artifact you can feed to any DocLang-aware tool or LLM, or re-ingest to skip conversion. |
+| `chunks.json` | (automatic) | The structure-aware chunks with page/bbox provenance, when provenance is enabled. |
+
+```python
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.BillingDocument",
+    export_docling_json=True,   # document.json (lossless archive)
+    export_markdown=True,       # document.md
+    export_doclang=True,        # document.dclg (DocLang interchange)
+)
+```
+
+```bash
+docling-graph convert document.pdf -t templates.BillingDocument --no-doclang   # skip document.dclg
+```
+
+!!! note "DocLang is lossy vs. JSON"
+    Keep `document.json` as the archival copy: DocLang re-normalizes coordinates to a 512-grid and its 0.x format may change across minor versions, so it is an interchange format, not a lossless replacement for the JSON. When the input itself was DocLang, `document.dclg` is not re-emitted (the source file already is the artifact).
+
+!!! warning "Control characters"
+    Some OCR output contains NUL/control characters that the DocLang serializer rejects. Docling Graph strips them from a copy before serializing, and treats DocLang export as best-effort: if it still fails, a warning is logged and the JSON/markdown artifacts are unaffected.
+
+---
+
 ## Output Directory Structure
 
 ### Default Structure
@@ -255,12 +288,11 @@ outputs/
 ├── graph.cypher             # Cypher (Cypher format)
 ├── visualization.html       # Interactive viz
 ├── report.md                # Markdown report
-├── docling_document.json    # Docling output
-├── document.md              # Markdown export
-└── pages/                   # Per-page exports
-    ├── page_001.md
-    ├── page_002.md
-    └── ...
+└── docling/                 # Docling conversion artifacts
+    ├── document.json        # Canonical, lossless DoclingDocument
+    ├── document.md          # Markdown view
+    ├── document.dclg        # DocLang (content + geometry)
+    └── chunks.json          # Structure-aware chunks + provenance
 ```
 
 ### Custom Output Directory

@@ -32,6 +32,7 @@ config = PipelineConfig(
     model_override: str | None = None,
     provider_override: str | None = None,
     models: ModelsConfig = ModelsConfig(),
+    llm_input_format: Literal["markdown", "doclang", "doclang-geo"] = "markdown",
     use_chunking: bool = True,
     chunk_max_tokens: int | None = None,
     debug: bool = False,
@@ -40,6 +41,7 @@ config = PipelineConfig(
     export_docling: bool = True,
     export_docling_json: bool = True,
     export_markdown: bool = True,
+    export_doclang: bool = True,
     export_per_page_markdown: bool = False,
     reverse_edges: bool = False,
     output_dir: Union[str, Path] = "outputs"
@@ -70,14 +72,15 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `"direct"` or `"dense"` | `"direct"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-fill) |
+| `extraction_contract` | `"direct"` or `"dense"` | `"direct"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-flesh) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
+| `llm_input_format` | `"markdown"`, `"doclang"`, or `"doclang-geo"` | `"markdown"` | Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost) |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
-| `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking) |
+| `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking; raise it when using a DocLang `llm_input_format`) |
 | `debug` | `bool` | `False` | Enable debug artifacts |
 | `parallel_workers` | `int` or `None` | `None` | Parallel workers for extraction |
 
-#### Dense extraction (skeleton-then-fill)
+#### Dense extraction (skeleton-then-flesh)
 
 Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extraction_contract="dense"` and `use_chunking=True`.
 
@@ -109,8 +112,9 @@ Mandatory cleanup — root singleton collapse, barren-branch pruning, and the ro
 | `dump_to_disk` | `bool` or `None` | `None` | Control file exports. `None`=auto-detect (CLI=True, API=False), `True`=always export, `False`=never export |
 | `export_format` | `"csv"` or `"cypher"` | `"csv"` | Graph export format |
 | `export_docling` | `bool` | `True` | Export Docling outputs |
-| `export_docling_json` | `bool` | `True` | Export Docling JSON |
+| `export_docling_json` | `bool` | `True` | Export Docling JSON (canonical, lossless) |
 | `export_markdown` | `bool` | `True` | Export markdown |
+| `export_doclang` | `bool` | `True` | Export DocLang `.dclg` (content + geometry interchange) |
 | `export_per_page_markdown` | `bool` | `False` | Export per-page markdown |
 
 #### Graph Configuration

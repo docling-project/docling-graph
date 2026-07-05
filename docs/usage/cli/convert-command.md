@@ -265,7 +265,7 @@ uv run docling-graph convert small_doc.pdf \
 
 ### Dense extraction
 
-Use `--extraction-contract dense` for two-phase **skeleton-then-fill** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
+Use `--extraction-contract dense` for two-phase **skeleton-then-flesh** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).
 
 Dense options map 1:1 to CLI flags:
 
@@ -484,8 +484,11 @@ uv run docling-graph convert document.pdf \
 ```bash
 --export-docling-json / --no-docling-json
 --export-markdown / --no-markdown
+--export-doclang / --no-doclang
 --export-per-page / --no-per-page
 ```
+
+`--export-doclang` writes `docling/document.dclg` — the document as [DocLang](https://github.com/doclang-project/doclang) (content + geometry). See [Export Configuration](../../fundamentals/pipeline-configuration/export-configuration.md#docling-conversion-artifacts).
 
 **Example:**
 ```bash
@@ -494,6 +497,7 @@ uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --export-docling-json \
     --export-markdown \
+    --export-doclang \
     --export-per-page
 
 # Minimal exports
@@ -501,7 +505,27 @@ uv run docling-graph convert document.pdf \
     --template "templates.BillingDocument" \
     --no-docling-json \
     --no-markdown \
+    --no-doclang \
     --no-per-page
+```
+
+---
+
+### LLM Input Format
+
+```bash
+--llm-format {markdown|doclang|doclang-geo}
+```
+
+Controls how the document text is serialized **for the LLM** during extraction (default `markdown`). DocLang formats preserve structure and (with `doclang-geo`) page geometry, at a higher token cost — see [Document Conversion](../../fundamentals/extraction-process/document-conversion.md#llm-input-serialization).
+
+**Example:**
+```bash
+# Send DocLang (structure only) to the LLM; raise the chunk budget to compensate
+uv run docling-graph convert invoice.pdf \
+    --template "templates.BillingDocument" \
+    --llm-format doclang \
+    --chunk-max-tokens 768
 ```
 
 ---
