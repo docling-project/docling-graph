@@ -21,7 +21,7 @@ class ExtractorFactory:
     def create_extractor(
         processing_mode: Literal["one-to-one", "many-to-one"],
         backend_name: Literal["vlm", "llm"],
-        extraction_contract: Literal["direct", "dense"] = "direct",
+        extraction_contract: Literal["direct", "dense", "auto"] = "direct",
         structured_output: bool = True,
         structured_sparse_check: bool = True,
         model_name: str | None = None,
@@ -38,7 +38,8 @@ class ExtractorFactory:
         Args:
             processing_mode (str): 'one-to-one' or 'many-to-one'
             backend_name (str): 'vlm' or 'llm'
-            extraction_contract (str): 'direct' or 'dense' (LLM only)
+            extraction_contract (str): 'direct', 'dense', or 'auto' (LLM only);
+                'auto' picks direct vs dense per document once its size is known
             model_name (str): Model name for VLM (optional)
             llm_client (LLMClientProtocol): LLM client instance (optional)
             docling_config (str): Docling pipeline configuration ('ocr' or 'vision')
@@ -59,10 +60,11 @@ class ExtractorFactory:
             if not llm_client:
                 raise ValueError("LLM requires llm_client parameter")
             effective_contract = extraction_contract
-            if processing_mode != "many-to-one" and extraction_contract == "dense":
+            if processing_mode != "many-to-one" and extraction_contract in ("dense", "auto"):
                 rich_print(
                     "[yellow][ExtractorFactory][/yellow] "
-                    "Dense contract currently applies only to many-to-one; using direct."
+                    f"The '{extraction_contract}' contract applies only to many-to-one "
+                    "(one-to-one already extracts page by page); using direct."
                 )
                 effective_contract = "direct"
             backend_obj = cast(

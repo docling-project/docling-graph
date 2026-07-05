@@ -61,7 +61,7 @@ class TextExtractionBackendProtocol(Protocol):
     """
 
     client: Any  # LLM client instance
-    extraction_contract: str  # "direct" | "dense"; optional on some backends
+    extraction_contract: str  # "direct" | "dense" | "auto"; optional on some backends
 
     def extract_from_markdown(
         self,
@@ -69,6 +69,7 @@ class TextExtractionBackendProtocol(Protocol):
         template: Type[BaseModel],
         context: str = "document",
         is_partial: bool = False,
+        allow_dense: bool = True,
     ) -> BaseModel | None:
         """Extract structured data from markdown content.
 
@@ -77,6 +78,8 @@ class TextExtractionBackendProtocol(Protocol):
             template: Pydantic model template.
             context: Context description (e.g., "page 1", "full document").
             is_partial: If True, use partial/chunk-based prompt.
+            allow_dense: If False, never route into the dense single-chunk
+                path (used after a chunked dense run already failed).
 
         Returns:
             Extracted and validated model instance, or None if extraction failed.

@@ -123,6 +123,7 @@ class ConfigurationBuilder:
                 option_help={
                     "direct": "Single-pass best-effort extraction (fastest)",
                     "dense": "Two-phase skeleton-then-flesh extraction (autonomous)",
+                    "auto": "Picks direct or dense per document based on size vs model limits",
                 },
             )
         )
