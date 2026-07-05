@@ -69,7 +69,7 @@ def merge_pydantic_models(
         return template_class(**merged)
     except Exception as e:
         # If merge fails, return first model
-        print(f"Warning: Failed to merge models: {e}")
+        logger.warning("Failed to merge models: %s", e)
         return models[0]
 
 

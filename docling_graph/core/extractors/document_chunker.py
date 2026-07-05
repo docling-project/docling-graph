@@ -11,7 +11,6 @@ Preserves:
 - Semantic boundaries
 """
 
-import logging
 import re
 from typing import List, Union
 
@@ -19,10 +18,11 @@ from docling.chunking import HybridChunker
 from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
 from docling_core.transforms.chunker.tokenizer.openai import OpenAITokenizer
 from docling_core.types.doc import DoclingDocument
-from rich import print as rich_print
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
-logger = logging.getLogger(__name__)
+from ...logging_utils import get_component_logger
+
+logger = get_component_logger("DocumentChunker", __name__)
 
 # Large tokenizer max length used only for counting/splitting operations.
 # This avoids HF warnings when we inspect oversized text before re-splitting it.
@@ -92,10 +92,7 @@ class DocumentChunker:
                     max_tokens=chunk_max_tokens,
                 )
             except ImportError:
-                rich_print(
-                    "[yellow][DocumentChunker][/yellow] tiktoken not installed, "
-                    "falling back to HuggingFace tokenizer"
-                )
+                logger.warning("tiktoken not installed, falling back to HuggingFace tokenizer")
                 hf_tokenizer = AutoTokenizer.from_pretrained(
                     "sentence-transformers/all-MiniLM-L6-v2"
                 )
@@ -122,12 +119,12 @@ class DocumentChunker:
             chunker_kwargs["serializer_provider"] = serializer_provider
         self.chunker = HybridChunker(**chunker_kwargs)
 
-        rich_print(
-            f"[blue][DocumentChunker][/blue] Initialized with:\n"
-            f"  • Tokenizer: [cyan]{tokenizer_name}[/cyan]\n"
-            f"  • Chunk Max Tokens: [yellow]{chunk_max_tokens}[/yellow]\n"
-            f"  • Merge Peers: {merge_peers}\n"
-            f"  • Serializer: [cyan]{'doclang' if serializer_provider is not None else 'markdown'}[/cyan]"
+        logger.info(
+            "Initialized (tokenizer=%s, chunk_max_tokens=%s, merge_peers=%s, serializer=%s)",
+            tokenizer_name,
+            chunk_max_tokens,
+            merge_peers,
+            "doclang" if serializer_provider is not None else "markdown",
         )
 
     def chunk_document(self, document: DoclingDocument) -> List[str]:

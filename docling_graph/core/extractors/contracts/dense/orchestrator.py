@@ -7,7 +7,6 @@ Fully autonomous: no imports from other contracts.
 from __future__ import annotations
 
 import json
-import logging
 import os
 import re
 import threading
@@ -30,6 +29,7 @@ from docling_graph.core.provenance import (
     text_hash as _chunk_text_hash,
 )
 from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
+from docling_graph.logging_utils import ProgressTracker, batch_tag, get_component_logger
 
 from .catalog import (
     NodeCatalog,
@@ -52,7 +52,7 @@ from .prompts import (
 )
 from .resolvers import merge_contained_skeleton_nodes, resolve_skeleton_nodes
 
-logger = logging.getLogger(__name__)
+logger = get_component_logger("DenseExtraction", __name__)
 
 # Max times a truncated skeleton batch may be halved before keeping the partial result.
 # Batches are already small (a few chunks), so a depth of 4 fully isolates pathological chunks.
@@ -263,7 +263,7 @@ def merge_skeleton_batches(
                 if idx not in primary["_source_batch_indexes"]:
                     primary["_source_batch_indexes"].append(idx)
         logger.info(
-            "Dense skeleton: collapsed %s duplicate root instances into one", len(roots) - 1
+            "Phase 1 (skeleton): collapsed %s duplicate root instances into one", len(roots) - 1
         )
         merged_nodes = [n for n in merged_nodes if (n.get("path") or "") != ""]
         merged_nodes.insert(0, primary)
@@ -566,7 +566,7 @@ def merge_filled_into_root(
                         {"event": "dropped", "path": path, "ids": dict(desc.get("ids") or {})}
                     )
                 logger.warning(
-                    "Dense merge: dropped %s instance ids=%s (unresolvable parent %s ids=%s)",
+                    "Merge: dropped %s instance ids=%s (unresolvable parent %s ids=%s)",
                     path,
                     json.dumps(desc.get("ids") or {}, ensure_ascii=False, default=str)[:120],
                     parent_path,
@@ -578,7 +578,7 @@ def merge_filled_into_root(
     )
     if recovered or stats["dropped"]:
         logger.warning(
-            "Dense merge: %s drifted parent link(s) recovered "
+            "Merge: %s drifted parent link(s) recovered "
             "(%s unique-parent, %s fuzzy, %s placeholder), %s instance(s) dropped",
             recovered,
             stats["recovered_single_parent"],
@@ -909,8 +909,8 @@ class DenseOrchestrator:
                         invalid += 1
                 if invalid:
                     logger.warning(
-                        "Dense skeleton batch %s: skipped %s invalid node entr%s, kept %s",
-                        batch_idx,
+                        "%s Skipped %s invalid node entr%s, kept %s",
+                        batch_tag(batch_idx, total_batches),
                         invalid,
                         "y" if invalid == 1 else "ies",
                         len(validated_nodes),
@@ -978,8 +978,8 @@ class DenseOrchestrator:
             self._bump("split_count")
             mid = len(batch) // 2
             logger.warning(
-                "Dense skeleton batch %s truncated (%s chunks); splitting into %s + %s and retrying",
-                batch_idx,
+                "%s Truncated (%s chunks) -> retrying with split (%s + %s chunks)",
+                batch_tag(batch_idx, total_batches),
                 len(batch),
                 mid,
                 len(batch) - mid,
@@ -1009,17 +1009,16 @@ class DenseOrchestrator:
             fallback = self._shallow_skeleton_retry(batch_idx, batch, context)
             if fallback:
                 logger.warning(
-                    "Dense skeleton batch %s: recovered %s node(s) via shallow fallback "
-                    "after truncation",
-                    batch_idx,
+                    "%s Recovered %s node(s) via shallow fallback after truncation",
+                    batch_tag(batch_idx, total_batches),
                     len(fallback),
                 )
                 return (batch_idx, fallback)
             self._record_dropped_chunks([cid for cid, _, _ in batch])
             logger.warning(
-                "Dense skeleton batch %s: %s chunk(s) unrecoverable after truncation; "
+                "%s %s chunk(s) unrecoverable after truncation; "
                 "content may be missing from the graph",
-                batch_idx,
+                batch_tag(batch_idx, total_batches),
                 len(batch),
             )
             return (batch_idx, [])
@@ -1120,7 +1119,7 @@ class DenseOrchestrator:
         )
         if merged_count:
             logger.info(
-                "Dense reconciliation: merged %s alias instance(s) into more specific ones",
+                "Reconciliation: merged %s alias instance(s) into more specific ones",
                 merged_count,
             )
         return reconciled, merged_count
@@ -1562,6 +1561,9 @@ class DenseOrchestrator:
     ) -> list[list[dict[str, Any]]]:
         """Execute all Phase 1 skeleton batches, sequentially or in parallel."""
         total_batches = len(batches)
+        progress = ProgressTracker(
+            logger, total=total_batches, label="Phase 1 (skeleton)", unit="batch"
+        )
         skeleton_results: list[list[dict[str, Any]]]
         if workers <= 1 or total_batches <= 1:
             # Sequential: preserve already_found for cross-batch consistency
@@ -1586,11 +1588,13 @@ class DenseOrchestrator:
                     key = _skeleton_identity_key(node, spec_by_path)
                     already_found.append(json.dumps({"path": key[0], "ids": dict(key[1])}))
                 skeleton_results.append(normalized_batch)
+                progress.advance(note=f"+{len(normalized_batch)} node(s)")
+            progress.finish()
             return skeleton_results
 
         # Parallel: no already_found; merge_skeleton_batches and resolvers dedupe
         logger.info(
-            "Dense Phase 1: running %s skeleton batches with %s workers",
+            "Phase 1 (skeleton): running %s batches with %s workers",
             total_batches,
             workers,
         )
@@ -1618,9 +1622,12 @@ class DenseOrchestrator:
                 try:
                     idx, normalized_batch = future.result()
                     skeleton_results[idx] = normalized_batch
+                    progress.advance(note=f"+{len(normalized_batch)} node(s)")
                 except Exception as e:
-                    logger.warning("Dense skeleton batch %s failed: %s", batch_idx, e)
+                    logger.warning("%s Failed: %s", batch_tag(batch_idx, total_batches), e)
                     skeleton_results[batch_idx] = []
+                    progress.advance(note="failed")
+        progress.finish()
         return [lst if lst is not None else [] for lst in skeleton_results]
 
     def run(
@@ -1653,7 +1660,8 @@ class DenseOrchestrator:
             chunks, token_counts, max_batch_tokens=self._config.skeleton_batch_tokens
         )
         logger.info(
-            "Dense Phase 1: %s batches (skeleton_batch_tokens=%s)",
+            "Phase 1 (skeleton): %s chunks in %s batches (batch budget %s tokens)",
+            len(chunks),
             len(batches),
             self._config.skeleton_batch_tokens,
         )
@@ -1661,7 +1669,7 @@ class DenseOrchestrator:
         self._effective_workers = workers
         if workers > 1 and len(batches) == 1:
             logger.warning(
-                "Dense Phase 1: only one batch; parallel workers will not be used. "
+                "Phase 1 (skeleton): only one batch; parallel workers will not be used. "
                 "Ensure chunk_max_tokens (per chunk) and dense_skeleton_batch_tokens are set "
                 "so long documents split into multiple chunks and batches."
             )
@@ -1707,7 +1715,7 @@ class DenseOrchestrator:
         # fallback in the strategy is the better path.
         if path_counts.get("", 0) <= 0 or total < 1:
             reason = "missing_root" if total >= 1 else "empty_skeleton"
-            logger.warning("Dense Phase 1 quality gate failed: %s", reason)
+            logger.warning("Phase 1 (skeleton) quality gate failed: %s", reason)
             self._finalize_run_stats(
                 total,
                 reconciliation_merged,
@@ -1760,6 +1768,15 @@ class DenseOrchestrator:
                         if entry is not None and batch_index not in entry.fill_batches:
                             entry.fill_batches.append(batch_index)
 
+        logger.info(
+            "Phase 2 (fill): %s jobs across %s paths (%s workers)",
+            len(fill_jobs),
+            len(fill_paths),
+            workers if len(fill_jobs) > 1 else 1,
+        )
+        fill_progress = ProgressTracker(
+            logger, total=len(fill_jobs), label="Phase 2 (fill)", unit="job"
+        )
         if workers <= 1 or len(fill_jobs) <= 1:
             for path, spec, batch_descriptors, _bi, sub_schema, fill_markdown in fill_jobs:
                 _p, _bi, sanitized = self._run_one_fill_batch(
@@ -1772,12 +1789,8 @@ class DenseOrchestrator:
                     context=context,
                 )
                 path_filled.setdefault(path, []).extend(sanitized)
+                fill_progress.advance(note=f"path: {path or '<root>'}")
         else:
-            logger.info(
-                "Dense Phase 2: running %s fill jobs with %s workers",
-                len(fill_jobs),
-                workers,
-            )
             results_by_path: dict[str, list[tuple[int, list[dict[str, Any]]]]] = {}
             with ThreadPoolExecutor(max_workers=workers) as ex:
                 fill_futures: dict[
@@ -1800,14 +1813,20 @@ class DenseOrchestrator:
                     try:
                         p, bi, sanitized = future.result()
                         results_by_path.setdefault(p, []).append((bi, sanitized))
+                        fill_progress.advance(note=f"path: {p or '<root>'}")
                     except Exception as e:
                         logger.warning(
-                            "Dense fill job %s batch %s failed: %s", path, batch_index, e
+                            "Fill job for path '%s' (batch %s) failed: %s",
+                            path,
+                            batch_index,
+                            e,
                         )
+                        fill_progress.advance(note="failed")
             for path, pairs in results_by_path.items():
                 pairs.sort(key=lambda x: x[0])
                 for _bi, sanitized in pairs:
                     path_filled.setdefault(path, []).extend(sanitized)
+        fill_progress.finish()
 
         phase2_elapsed = time.perf_counter() - phase2_start
         self._phase2_elapsed = phase2_elapsed

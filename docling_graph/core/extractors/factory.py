@@ -4,14 +4,15 @@ Factory for creating extractors based on configuration.
 
 from typing import Any, Literal, cast
 
-from rich import print as rich_print
-
+from ...logging_utils import get_component_logger
 from ...protocols import Backend, LLMClientProtocol
 from .backends.llm_backend import LlmBackend
 from .backends.vlm_backend import VlmBackend
 from .extractor_base import BaseExtractor
 from .strategies.many_to_one import ManyToOneStrategy
 from .strategies.one_to_one import OneToOneStrategy
+
+logger = get_component_logger("ExtractorFactory", __name__)
 
 
 class ExtractorFactory:
@@ -61,10 +62,10 @@ class ExtractorFactory:
                 raise ValueError("LLM requires llm_client parameter")
             effective_contract = extraction_contract
             if processing_mode != "many-to-one" and extraction_contract in ("dense", "auto"):
-                rich_print(
-                    "[yellow][ExtractorFactory][/yellow] "
-                    f"The '{extraction_contract}' contract applies only to many-to-one "
-                    "(one-to-one already extracts page by page); using direct."
+                logger.warning(
+                    "The '%s' contract applies only to many-to-one "
+                    "(one-to-one already extracts page by page); using direct.",
+                    extraction_contract,
                 )
                 effective_contract = "direct"
             backend_obj = cast(
@@ -101,7 +102,5 @@ class ExtractorFactory:
         else:
             raise ValueError(f"Unknown processing_mode: {processing_mode}")
 
-        rich_print(
-            f"[blue][ExtractorFactory][/blue] Created [green]{extractor.__class__.__name__}[/green]"
-        )
+        logger.info("Created %s", extractor.__class__.__name__)
         return extractor

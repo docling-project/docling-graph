@@ -15,9 +15,9 @@ from docling.datamodel.pipeline_options import (
 from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
 from docling.pipeline.vlm_pipeline import VlmPipeline
 from docling_core.types.doc import DoclingDocument
-from rich import print as rich_print
 
 from ...exceptions import ExtractionError
+from ...logging_utils import get_component_logger
 from ..provenance.models import dclg_location_from_bbox, text_hash as _chunk_text_hash
 from ..utils.doclang_format import (
     DocLangSerializerProvider,
@@ -26,6 +26,8 @@ from ..utils.doclang_format import (
     wants_location,
 )
 from .document_chunker import DocumentChunker
+
+logger = get_component_logger("DocumentProcessor", __name__)
 
 
 def _chunk_doc_item_refs(chunk_obj: Any) -> list[str]:
@@ -186,9 +188,7 @@ class DocumentProcessor:
                     ),
                 }
             )
-            rich_print(
-                "[blue][DocumentProcessor][/blue] Initialized with [magenta]Vision pipeline[/magenta]"
-            )
+            logger.info("Initialized with Vision pipeline")
         else:
             # Default Pipeline - Most accurate with OCR for standard documents
             pipeline_options = PdfPipelineOptions()
@@ -207,9 +207,7 @@ class DocumentProcessor:
                     InputFormat.IMAGE: ImageFormatOption(),
                 }
             )
-            rich_print(
-                "[blue][DocumentProcessor][/blue] Initialized with [green]Classic OCR pipeline[/green] (English, French)"
-            )
+            logger.info("Initialized with Classic OCR pipeline (English, French)")
 
     def convert_to_docling_doc(self, source: str) -> DoclingDocument:
         """
@@ -239,9 +237,7 @@ class DocumentProcessor:
             except Exception:
                 pass
 
-        rich_print(
-            f"[blue][DocumentProcessor][/blue] Converting document: [yellow]{source}[/yellow]"
-        )
+        logger.info("Converting document: %s", source)
         try:
             result = self.converter.convert(source)
         except Exception as e:
@@ -269,14 +265,9 @@ class DocumentProcessor:
                 page_count = 0
 
         if page_count > 0:
-            rich_print(
-                f"[blue][DocumentProcessor][/blue] Converted [cyan]{page_count}[/cyan] pages"
-            )
+            logger.info("Converted %s pages", page_count)
         else:
-            rich_print(
-                "[blue][DocumentProcessor][/blue] Converted document "
-                "(page metadata not available for this input format)"
-            )
+            logger.info("Converted document (page metadata not available for this input format)")
         return result.document
 
     @overload
@@ -313,17 +304,16 @@ class DocumentProcessor:
 
         if with_stats:
             chunks, stats = self.chunker.chunk_document_with_stats(document)
-            rich_print(
-                f"[blue][DocumentProcessor][/blue] Created [cyan]{stats['total_chunks']}[/cyan] chunks "
-                f"(avg: {stats['avg_tokens']:.0f} tokens, max: {stats['max_tokens_in_chunk']} tokens)"
+            logger.info(
+                "Created %s chunks (avg: %.0f tokens, max: %s tokens)",
+                stats["total_chunks"],
+                stats["avg_tokens"],
+                stats["max_tokens_in_chunk"],
             )
             return chunks, stats
         else:
             chunks = self.chunker.chunk_document(document)
-            rich_print(
-                f"[blue][DocumentProcessor][/blue] Created [cyan]{len(chunks)}[/cyan] "
-                "structure-aware chunks"
-            )
+            logger.info("Created %s structure-aware chunks", len(chunks))
             return chunks
 
     def extract_chunks_with_metadata(
@@ -408,9 +398,7 @@ class DocumentProcessor:
                     )
                     chunk_id += 1
 
-        rich_print(
-            f"[blue][DocumentProcessor][/blue] Extracted [cyan]{len(chunks)}[/cyan] chunks with metadata"
-        )
+        logger.info("Extracted %s chunks with metadata", len(chunks))
         return chunks, metadata_list
 
     def serialize_document(self, document: DoclingDocument, page_no: int | None = None) -> str:
@@ -429,10 +417,7 @@ class DocumentProcessor:
                     page_no=page_no,
                 )
             except Exception as e:
-                rich_print(
-                    f"[yellow][DocumentProcessor][/yellow] DocLang serialization failed "
-                    f"({e}); falling back to markdown"
-                )
+                logger.warning("DocLang serialization failed (%s); falling back to markdown", e)
         if page_no is None:
             return document.export_to_markdown()
         return document.export_to_markdown(page_no=page_no)
@@ -454,10 +439,7 @@ class DocumentProcessor:
         for page_no in sorted(document.pages.keys()):
             page_texts.append(self.serialize_document(document, page_no=page_no))
 
-        rich_print(
-            f"[blue][DocumentProcessor][/blue] Extracted [cyan]{self.llm_input_format}[/cyan] "
-            f"for [cyan]{len(page_texts)}[/cyan] pages"
-        )
+        logger.info("Extracted %s for %s pages", self.llm_input_format, len(page_texts))
         return page_texts
 
     def process_document(self, source: str) -> List[str]:
@@ -472,7 +454,7 @@ class DocumentProcessor:
         Returns:
             List of Markdown strings, one per page.
         """
-        rich_print("[blue][DocumentProcessor][/blue] Processing document into per-page markdowns")
+        logger.info("Processing document into per-page markdowns")
         document = self.convert_to_docling_doc(source)
         return self.extract_page_markdowns(document)
 
@@ -491,9 +473,7 @@ class DocumentProcessor:
         Returns:
             List of structure-aware text chunks
         """
-        rich_print(
-            "[blue][DocumentProcessor][/blue] Processing document with structure-aware chunking"
-        )
+        logger.info("Processing document with structure-aware chunking")
         document = self.convert_to_docling_doc(source)
         return self.extract_chunks(document)
 
@@ -511,10 +491,7 @@ class DocumentProcessor:
             str: Complete document serialized for the LLM.
         """
         text = self.serialize_document(document)
-        rich_print(
-            f"[blue][DocumentProcessor][/blue] Extracted full document "
-            f"[cyan]{self.llm_input_format}[/cyan] ([cyan]{len(text)}[/cyan] chars)"
-        )
+        logger.info("Extracted full document %s (%s chars)", self.llm_input_format, len(text))
         return text
 
     def chunk_text(self, text: str) -> tuple[List[str], List[dict]]:
@@ -567,9 +544,11 @@ class DocumentProcessor:
             )
 
         total_tokens = sum(cast(int, m["token_count"]) for m in metadata_list)
-        rich_print(
-            f"[blue][DocumentProcessor][/blue] Chunked text into [cyan]{len(chunks)}[/cyan] chunks "
-            f"([cyan]{total_tokens}[/cyan] total tokens, max [cyan]{self.chunker.chunk_max_tokens}[/cyan] per chunk)"
+        logger.info(
+            "Chunked text into %s chunks (%s total tokens, max %s per chunk)",
+            len(chunks),
+            total_tokens,
+            self.chunker.chunk_max_tokens,
         )
 
         return chunks, metadata_list
@@ -580,8 +559,6 @@ class DocumentProcessor:
             if hasattr(self, "converter"):
                 del self.converter
             gc.collect()
-            rich_print("[blue][DocumentProcessor][/blue] [green]Cleaned up resources[/green]")
+            logger.info("Cleaned up resources")
         except Exception as e:
-            rich_print(
-                f"[blue][DocumentProcessor][/blue] [yellow]Warning during cleanup:[/yellow] {e}"
-            )
+            logger.warning("Warning during cleanup: %s", e)

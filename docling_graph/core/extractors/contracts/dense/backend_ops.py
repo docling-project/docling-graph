@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from pydantic import BaseModel
 
 from docling_graph.core.provenance import ProvenanceLedger
+from docling_graph.logging_utils import get_component_logger
 
 from .orchestrator import DenseOrchestrator, DenseOrchestratorConfig
 
-logger = logging.getLogger(__name__)
+logger = get_component_logger("DenseExtraction", __name__)
 
 
 def run_dense_orchestrator(
@@ -54,7 +54,7 @@ def run_dense_orchestrator(
         debug_suffix=debug_suffix,
         on_trace=_on_trace if trace_data is not None else None,
     )
-    logger.info("[DenseExtraction] Starting dense extraction (skeleton + fill)")
+    logger.info("Starting dense extraction (skeleton + fill)")
     root = orchestrator.run(
         chunks=chunks,
         chunk_metadata=chunk_metadata,

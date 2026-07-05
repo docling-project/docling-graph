@@ -7,11 +7,12 @@ from pathlib import Path
 
 import typer
 
+from ..logging_utils import configure_logging
 from .commands.convert import convert_command
 from .commands.init import init_command
 from .commands.inspect import inspect_command
 
-logging.basicConfig(level=logging.WARNING)
+configure_logging()
 
 # Suppress noisy INFO logs from RapidOCR (used by docling OCR pipeline)
 for _logger_name in ("RapidOCR", "rapidocr"):
@@ -29,18 +30,7 @@ def version_callback(value: bool) -> None:
 
 def verbose_callback(ctx: typer.Context, value: bool) -> bool:
     """Configure logging based on verbose flag."""
-    if value:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-        logging.getLogger("docling_graph").setLevel(logging.DEBUG)
-    else:
-        logging.basicConfig(
-            level=logging.WARNING,
-            format="%(levelname)s: %(message)s",
-        )
+    configure_logging(verbose=value)
     return value
 
 

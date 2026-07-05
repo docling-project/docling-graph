@@ -398,8 +398,6 @@ def convert_command(
         f"CLI args - Backend: {backend}, Inference: {inference}, Processing: {processing_mode}"
     )
 
-    rich_print("[green]--- Starting Docling-Graph Conversion ---[/green]")
-
     # Load YAML configuration (flat)
     logger.debug("Loading configuration from config.yaml")
     config_data = load_config()
@@ -465,45 +463,49 @@ def convert_command(
     except Exception:
         input_type_display = "Unknown"
 
-    # Display configuration
-    rich_print("[yellow][PipelineConfiguration][/yellow]")
-    rich_print(f"  • Source: [cyan]{source}[/cyan]")
-    rich_print(f"  • Template: [cyan]{template}[/cyan]")
-    rich_print(f"  • Input Type: [cyan]{input_type_display}[/cyan]")
-    rich_print(f"  • Docling: [cyan]{docling_pipeline_val}[/cyan]")
-    rich_print(f"  • Processing: [cyan]{processing_mode_val}[/cyan]")
-    rich_print(f"  • Inference: [cyan]{inference_val}[/cyan]")
-    rich_print(f"  • Export: [cyan]{export_format_val}[/cyan]")
-    rich_print(f"  • Reverse edges: [cyan]{reverse_edges}[/cyan]")
-
-    # Display Docling export settings
-    rich_print("[yellow][DoclingExport][/yellow]")
-    rich_print(f"  • Document JSON: [cyan]{final_export_docling_json}[/cyan]")
-    rich_print(f"  • Markdown: [cyan]{final_export_markdown}[/cyan]")
-    rich_print(f"  • DocLang: [cyan]{final_export_doclang}[/cyan]")
-    rich_print(f"  • Per-page MD: [cyan]{final_export_per_page}[/cyan]")
-
-    # Display Extraction settings
-    rich_print("[yellow][ExtractionSettings][/yellow]")
-    rich_print(f"  • Backend: [cyan]{backend_val}[/cyan]")
-    rich_print(f"  • Contract: [cyan]{extraction_contract_val}[/cyan]")
-    rich_print(f"  • LLM Input Format: [cyan]{final_llm_input_format}[/cyan]")
-    rich_print(f"  • Structured Output: [cyan]{final_structured_output}[/cyan]")
-    rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
-    rich_print(f"  • Provenance: [cyan]{settings['provenance']}[/cyan]")
-    rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
+    # Display the resolved configuration, one compact line per section.
+    logger.info(
+        "source=%s, template=%s, input_type=%s, docling=%s, processing=%s, "
+        "inference=%s, export=%s, reverse_edges=%s",
+        source,
+        template,
+        input_type_display,
+        docling_pipeline_val,
+        processing_mode_val,
+        inference_val,
+        export_format_val,
+        reverse_edges,
+        extra={"component": "PipelineConfiguration"},
+    )
+    logger.info(
+        "document_json=%s, markdown=%s, doclang=%s, per_page_md=%s",
+        final_export_docling_json,
+        final_export_markdown,
+        final_export_doclang,
+        final_export_per_page,
+        extra={"component": "DoclingExport"},
+    )
+    extraction_summary = (
+        f"backend={backend_val}, contract={extraction_contract_val}, "
+        f"llm_input_format={final_llm_input_format}, "
+        f"structured_output={final_structured_output}, "
+        f"structured_sparse_check={final_structured_sparse_check}, "
+        f"provenance={settings['provenance']}, debug={debug}"
+    )
     if extraction_contract_val in ("direct", "auto"):
-        rich_print(f"  • Gleaning: [cyan]{final_gleaning_enabled}[/cyan]")
+        extraction_summary += f", gleaning={final_gleaning_enabled}"
     if final_chunk_max_tokens is not None:
-        rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
+        extraction_summary += f", chunk_max_tokens={final_chunk_max_tokens}"
+    logger.info(extraction_summary, extra={"component": "ExtractionSettings"})
     if extraction_contract_val in ("dense", "auto"):
-        rich_print("[yellow][DenseTuning][/yellow]")
-        rich_print(
-            f"  • Skeleton batch tokens: [cyan]{settings['dense_skeleton_batch_tokens']}[/cyan], "
-            f"fill nodes cap: [cyan]{settings['dense_fill_nodes_cap']}[/cyan], "
-            f"fill context: [cyan]{settings['dense_fill_context']}[/cyan]"
+        logger.info(
+            "skeleton_batch_tokens=%s, fill_nodes_cap=%s, fill_context=%s, dedupe=%s",
+            settings["dense_skeleton_batch_tokens"],
+            settings["dense_fill_nodes_cap"],
+            settings["dense_fill_context"],
+            settings["dense_dedupe"],
+            extra={"component": "DenseTuning"},
         )
-        rich_print(f"  • Dedupe: [cyan]{settings['dense_dedupe']}[/cyan]")
 
     # Build typed config
     logger.debug("Building PipelineConfig object")
@@ -574,17 +576,18 @@ def convert_command(
             resolved_model,
             overrides=cfg.llm_overrides,
         )
-        rich_print("[yellow][ResolvedLLMConfig (no capability/registry)][/yellow]")
-        rich_print(effective.model_dump())
+        logger.info(
+            "(no capability/registry) %s",
+            effective.model_dump(),
+            extra={"component": "ResolvedLLMConfig"},
+        )
         raise typer.Exit(code=0)
 
-    # Run pipeline with normalized/validated config
-    logger.info("Starting pipeline execution")
+    # Run pipeline with normalized/validated config; the pipeline logs its own
+    # start and completion banners, so none are duplicated here.
     try:
         logger.debug("Calling run_pipeline() in CLI mode")
         run_pipeline(cfg, mode="cli")
-        logger.info("--- Pipeline execution Completed Successfully ---")
-        rich_print("[green]--- Docling-Graph Conversion Successfull ---[/green]")
     except ConfigurationError as e:
         logger.error(f"Configuration error: {e.message}", exc_info=True)
         rich_print(f"\n[red]Configuration Error:[/red] {e.message}")

@@ -12,9 +12,10 @@ import json
 import re
 from typing import Any, Dict
 
-from rich import print as rich_print
-
 from ..exceptions import ClientError
+from ..logging_utils import get_component_logger
+
+logger = get_component_logger("LLMClient", __name__)
 
 
 class ResponseHandler:
@@ -99,7 +100,7 @@ class ResponseHandler:
                 ResponseHandler._warn_truncation(client_name, max_tokens, recovered=False)
 
             # Provide detailed error information
-            rich_print(f"[red]Error:[/red] {client_name} JSON parse failed: {e}")
+            logger.error("%s JSON parse failed: %s", client_name, e)
 
             raise ClientError(
                 f"{client_name}: Invalid JSON response",
@@ -413,20 +414,18 @@ class ResponseHandler:
 
         # Handle other non-dict responses by wrapping
         if not isinstance(parsed, dict):
-            rich_print(f"[yellow]Warning:[/yellow] {client_name} returned non-dict JSON, wrapping")
+            logger.warning("%s returned non-dict JSON, wrapping", client_name)
             return {"result": parsed}
 
         # Warn about empty responses, but never for list-envelope shapes
         # ({"nodes": []}, {"items": []}, {"merges": []}): an empty list there
         # is a legitimate "found nothing" answer, not a malformed response.
         if not parsed:
-            rich_print(f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON")
+            logger.warning("%s returned empty or all-null JSON", client_name)
         else:
             is_list_envelope = all(isinstance(v, list) for v in parsed.values())
             if not is_list_envelope and not any(parsed.values()):
-                rich_print(
-                    f"[yellow]Warning:[/yellow] {client_name} returned empty or all-null JSON"
-                )
+                logger.warning("%s returned empty or all-null JSON", client_name)
 
         return parsed
 
@@ -870,8 +869,16 @@ class ResponseHandler:
         max_tokens_str = str(max_tokens) if max_tokens else "unknown"
 
         if recovered:
-            rich_print(f"[yellow]Response Truncated[/yellow] (hit max_tokens={max_tokens_str})")
-            rich_print("[yellow]Partial data recovered - results may be incomplete[/yellow]")
+            logger.warning(
+                "%s response truncated (hit max_tokens=%s); partial data recovered - "
+                "results may be incomplete",
+                client_name,
+                max_tokens_str,
+            )
         else:
-            rich_print(f"[red]Response Truncated[/red] (hit max_tokens={max_tokens_str})")
-            rich_print("[red]Unable to recover partial data - JSON too incomplete[/red]")
+            logger.error(
+                "%s response truncated (hit max_tokens=%s); unable to recover partial "
+                "data - JSON too incomplete",
+                client_name,
+                max_tokens_str,
+            )
