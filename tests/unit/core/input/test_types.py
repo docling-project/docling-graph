@@ -23,6 +23,7 @@ class TestInputType:
             "MARKDOWN",
             "URL",
             "DOCLING_DOCUMENT",
+            "DOCLANG",
             "DOCUMENT",
         }
         actual_types = {t.name for t in InputType}

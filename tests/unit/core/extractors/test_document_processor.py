@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from docling_core.types.doc import DoclingDocument
 
 from docling_graph.core.extractors.document_processor import DocumentProcessor
 
@@ -94,6 +95,85 @@ def test_extract_full_markdown(mock_docling_doc):
     mock_docling_doc.export_to_markdown.assert_called_with()
 
 
+def _real_doc(text: str = "Invoice #12345") -> DoclingDocument:
+    from docling_core.types.doc.base import BoundingBox, CoordOrigin
+    from docling_core.types.doc.document import ProvenanceItem
+    from docling_core.types.doc.labels import DocItemLabel
+
+    doc = DoclingDocument(name="s")
+    doc.add_page(page_no=1, size={"width": 612, "height": 792})
+    prov = ProvenanceItem(
+        page_no=1,
+        bbox=BoundingBox(l=10, t=10, r=100, b=30, coord_origin=CoordOrigin.TOPLEFT),
+        charspan=(0, len(text)),
+    )
+    doc.add_heading(text=text, prov=prov)
+    return doc
+
+
+def test_serialize_document_markdown_default():
+    processor = DocumentProcessor()  # llm_input_format defaults to markdown
+    out = processor.serialize_document(_real_doc())
+    assert "<heading" not in out
+    assert "Invoice #12345" in out
+
+
+def test_serialize_document_doclang():
+    processor = DocumentProcessor(llm_input_format="doclang")
+    out = processor.serialize_document(_real_doc())
+    assert "<heading" in out
+    assert "<location" not in out
+
+
+def test_serialize_document_doclang_geo_includes_location():
+    processor = DocumentProcessor(llm_input_format="doclang-geo")
+    out = processor.serialize_document(_real_doc())
+    assert "<heading" in out
+    assert "<location" in out
+
+
+def test_extract_full_markdown_honors_doclang_format():
+    processor = DocumentProcessor(llm_input_format="doclang")
+    out = processor.extract_full_markdown(_real_doc())
+    assert "<heading" in out
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_doclang_mode_passes_serializer_provider_to_chunker(mock_chunker_class):
+    """DocLang mode hands the chunker a serializer_provider; markdown does not."""
+    from docling_graph.core.utils.doclang_format import DocLangSerializerProvider
+
+    DocumentProcessor(chunker_config={"chunk_max_tokens": 512}, llm_input_format="doclang")
+    kwargs = mock_chunker_class.call_args.kwargs
+    assert isinstance(kwargs.get("serializer_provider"), DocLangSerializerProvider)
+
+    mock_chunker_class.reset_mock()
+    DocumentProcessor(chunker_config={"chunk_max_tokens": 512}, llm_input_format="markdown")
+    assert "serializer_provider" not in mock_chunker_class.call_args.kwargs
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_doclang_mode_defaults_to_bpe_tokenizer(mock_chunker_class):
+    """DocLang chunking counts tokens with a BPE tokenizer (tiktoken) by default:
+    the DocLang syntax vocabulary maps onto LLM BPE tokens, while wordpiece
+    tokenizers fragment the XML and overcount it."""
+    DocumentProcessor(chunker_config={"chunk_max_tokens": 512}, llm_input_format="doclang")
+    assert mock_chunker_class.call_args.kwargs.get("tokenizer_name") == "tiktoken"
+
+    # An explicit tokenizer choice is always respected.
+    mock_chunker_class.reset_mock()
+    DocumentProcessor(
+        chunker_config={"chunk_max_tokens": 512, "tokenizer_name": "bert-base-uncased"},
+        llm_input_format="doclang",
+    )
+    assert mock_chunker_class.call_args.kwargs.get("tokenizer_name") == "bert-base-uncased"
+
+    # Markdown mode keeps the chunker's own default (no injection).
+    mock_chunker_class.reset_mock()
+    DocumentProcessor(chunker_config={"chunk_max_tokens": 512}, llm_input_format="markdown")
+    assert "tokenizer_name" not in mock_chunker_class.call_args.kwargs
+
+
 @patch("docling_graph.core.extractors.document_processor.DocumentConverter")
 def test_extract_chunks_no_chunker_raises_error(mock_converter_class):
     """Test that extract_chunks fails if chunker is not configured."""
@@ -160,14 +240,23 @@ def test_process_document(mock_chunker_class, mock_converter_class, mock_docling
     assert markdowns == ["Page 1 MD", "Page 2 MD"]
 
 
-def _make_chunk_obj(page_no: int, refs: list[str], headings: list[str]) -> MagicMock:
+def _make_chunk_obj(
+    page_no: int, refs: list[str], headings: list[str], with_bbox: bool = True
+) -> MagicMock:
     """Build a mock docling chunk with doc_items provenance and headings."""
     chunk = MagicMock()
     items = []
-    for ref in refs:
+    for i, ref in enumerate(refs):
         item = MagicMock()
         prov = MagicMock()
         prov.page_no = page_no
+        if with_bbox:
+            bbox = MagicMock()
+            bbox.l, bbox.t, bbox.r, bbox.b = 10.0 + i, 20.0, 100.0, 40.0
+            bbox.coord_origin.value = "TOPLEFT"
+            prov.bbox = bbox
+        else:
+            prov.bbox = None
         item.prov = [prov]
         item.self_ref = ref
         items.append(item)
@@ -201,6 +290,86 @@ def test_extract_chunks_with_metadata_provenance_fields(mock_chunker_class, mock
     assert m["char_length"] == len("Results small chunk text")
     assert isinstance(m["text_hash"], str) and len(m["text_hash"]) == 16
     assert m["resplit_of"] is None
+    # Geometry: one entry per (item, prov); bbox rounded to whole pixels. No page
+    # size in this mock, so page dims / dclg_location are absent, and coord_origin
+    # is no longer emitted (boxes are always top-left).
+    assert len(m["item_geometry"]) == 2
+    g0 = m["item_geometry"][0]
+    assert g0["ref"] == "#/texts/7"
+    assert g0["page_no"] == 3
+    assert g0["bbox"] == [10, 20, 100, 40]
+    assert all(isinstance(x, int) for x in g0["bbox"])
+    assert "coord_origin" not in g0
+    assert g0["page_width"] is None
+    assert g0["dclg_location"] is None
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_extract_chunks_geometry_converts_bottomleft_to_topleft(
+    mock_chunker_class, mock_converter_class
+):
+    """BOTTOMLEFT boxes (PDF/OCR output) are normalized to TOPLEFT origin, rounded
+    to whole pixels, with page dims and the exact DocLang 512-grid location."""
+    from docling_core.types.doc.base import BoundingBox, CoordOrigin
+
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 100})
+    chunker = mock_chunker_class.return_value
+    chunker.chunk_max_tokens = 100
+    chunker.tokenizer.count_tokens.side_effect = lambda t: len(t.split())
+
+    # Real invoice numbers: 1021x1423 page, BOTTOMLEFT box for texts/0
+    chunk = MagicMock()
+    item = MagicMock()
+    prov = MagicMock()
+    prov.page_no = 1
+    prov.bbox = BoundingBox(
+        l=117.7, t=1316.85, r=238.23, b=1234.37, coord_origin=CoordOrigin.BOTTOMLEFT
+    )
+    item.prov = [prov]
+    item.self_ref = "#/texts/0"
+    chunk.meta.doc_items = [item]
+    chunk.meta.headings = []
+    chunker.chunker.chunk.return_value = [chunk]
+    chunker.chunker.contextualize.return_value = "small text"
+
+    document = MagicMock()
+    page = MagicMock()
+    page.size.width, page.size.height = 1021.0, 1423.0
+    document.pages = {1: page}
+
+    _chunks, meta = processor.extract_chunks_with_metadata(document)
+    g = meta[0]["item_geometry"][0]
+    assert "coord_origin" not in g
+    assert g["page_width"] == 1021
+    assert g["page_height"] == 1423
+    # bbox is rounded, whole-pixel, top-left (top-left y = page_height - bottomleft y)
+    assert all(isinstance(x, int) for x in g["bbox"])
+    assert g["bbox"][0] == round(117.7)
+    assert g["bbox"][1] == round(1423.0 - 1316.85)
+    assert g["bbox"][3] == round(1423.0 - 1234.37)
+    # dclg_location reproduces document.dclg values exactly (computed from floats).
+    assert g["dclg_location"] == [59, 38, 119, 68]
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_extract_chunks_with_metadata_no_geometry_when_bbox_missing(
+    mock_chunker_class, mock_converter_class
+):
+    """Formats without geometry (no bbox) yield an empty item_geometry list."""
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 100})
+    chunker = mock_chunker_class.return_value
+    chunker.chunk_max_tokens = 100
+    chunker.tokenizer.count_tokens.side_effect = lambda t: len(t.split())
+
+    chunk_obj = _make_chunk_obj(1, ["#/texts/1"], ["Intro"], with_bbox=False)
+    chunker.chunker.chunk.return_value = [chunk_obj]
+    chunker.chunker.contextualize.return_value = "small text"
+
+    _chunks, meta = processor.extract_chunks_with_metadata(MagicMock())
+    assert meta[0]["item_geometry"] == []
+    assert meta[0]["doc_item_refs"] == ["#/texts/1"]
 
 
 @patch("docling_graph.core.extractors.document_processor.DocumentConverter")
@@ -228,6 +397,9 @@ def test_extract_chunks_with_metadata_resplit_inherits_location(
         assert m["doc_item_refs"] == ["#/texts/9"]
         assert m["headings"] == ["Methods"]
         assert m["resplit_of"] == 0
+        # Re-split sub-chunks inherit the parent item's geometry.
+        assert len(m["item_geometry"]) == 1
+        assert m["item_geometry"][0]["ref"] == "#/texts/9"
     assert meta[0]["text_hash"] != meta[1]["text_hash"]
 
 
@@ -247,6 +419,7 @@ def test_chunk_text_metadata_provenance_fields(mock_chunker_class, mock_converte
     for m in meta:
         assert m["page_numbers"] == [0]
         assert m["doc_item_refs"] == []
+        assert m["item_geometry"] == []
         assert m["headings"] == []
         assert m["resplit_of"] is None
         assert isinstance(m["text_hash"], str) and len(m["text_hash"]) == 16

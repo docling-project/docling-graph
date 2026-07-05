@@ -152,6 +152,60 @@ class TestCompactView:
         )
         assert compact_view(entry, ledger)["chunks"] == [0]
 
+    def test_refs_absent_when_chunks_carry_none(self):
+        ledger, entry = _ledger_with_entry(anchors=[SourceAnchor(chunk_id=0)])
+        assert "refs" not in compact_view(entry, ledger)
+
+    def test_refs_surface_docling_element_paths(self):
+        """Anchored chunks' doc_item_refs land in the node view (dedup, ordered)."""
+        entry = NodeProvenance(
+            identity_key="items[]|name=x",
+            catalog_path="items[]",
+            anchors=[SourceAnchor(chunk_id=0), SourceAnchor(chunk_id=1)],
+        )
+        ledger = ProvenanceLedger(
+            document=DocumentOrigin(document_id="doc1", source="a.pdf"),
+            chunks={
+                0: ChunkRecord(
+                    chunk_id=0,
+                    batch_index=0,
+                    page_numbers=(1,),
+                    doc_item_refs=("#/texts/1", "#/tables/0"),
+                ),
+                1: ChunkRecord(
+                    chunk_id=1,
+                    batch_index=0,
+                    page_numbers=(2,),
+                    doc_item_refs=("#/texts/1", "#/texts/2"),  # dup #/texts/1
+                ),
+            },
+            nodes={entry.identity_key: entry},
+        )
+        view = compact_view(entry, ledger)
+        assert view["refs"] == ["#/texts/1", "#/tables/0", "#/texts/2"]
+
+    def test_refs_present_on_verbatim_view_and_capped(self):
+        entry = NodeProvenance(
+            identity_key="items[]|name=x",
+            catalog_path="items[]",
+            anchors=[SourceAnchor(chunk_id=0, kind="verbatim", span=(0, 3))],
+        )
+        ledger = ProvenanceLedger(
+            document=DocumentOrigin(document_id="doc1", source="a.pdf"),
+            chunks={
+                0: ChunkRecord(
+                    chunk_id=0,
+                    batch_index=0,
+                    doc_item_refs=tuple(f"#/texts/{i}" for i in range(20)),
+                ),
+            },
+            nodes={entry.identity_key: entry},
+        )
+        view = compact_view(entry, ledger)
+        assert view["match"] == "verbatim"
+        assert len(view["refs"]) == 8  # capped at _MAX_REFS
+        assert view["refs"][0] == "#/texts/0"
+
     def test_document_scope_note_synthetic_flag(self):
         ledger, entry = _ledger_with_entry(
             anchors=[SourceAnchor(chunk_id=0)], notes=["scope:document"], synthetic=True
@@ -221,6 +275,29 @@ class TestMergeCompactViews:
         assert merged["chunks"] == [1, 2]
         assert merged["pages"] == [1, 2]
         assert merged["match"] == "verbatim"
+
+    def test_union_refs_dedup_and_cap(self):
+        a = {
+            "document_id": "d",
+            "match": "observed",
+            "chunks": [1],
+            "pages": [],
+            "refs": ["#/texts/1", "#/texts/2"],
+        }
+        b = {
+            "document_id": "d",
+            "match": "observed",
+            "chunks": [2],
+            "pages": [],
+            "refs": ["#/texts/2", "#/tables/0"],
+        }
+        merged = merge_compact_views(a, b)
+        assert merged["refs"] == ["#/texts/1", "#/texts/2", "#/tables/0"]
+
+    def test_refs_absent_when_neither_side_has_them(self):
+        a = {"document_id": "d", "match": "observed", "chunks": [1], "pages": []}
+        b = {"document_id": "d", "match": "observed", "chunks": [2], "pages": []}
+        assert "refs" not in merge_compact_views(a, b)
 
     def test_document_scope_absorbs(self):
         a = {"document_id": "d", "scope": "document"}

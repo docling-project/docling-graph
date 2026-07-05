@@ -459,7 +459,9 @@ class TestCoerceListTypeErrors:
 class TestRheologyQuantityWithUnitRelaxedInput:
     """Test template-level coercion: rheology QuantityWithUnit accepts scalars and strings."""
 
-    @pytest.fixture(scope="class")
+    # Function-scoped: class-scoped fixtures as instance methods are deprecated
+    # (PytestRemovedIn10Warning) and the loader is import-cached anyway.
+    @pytest.fixture
     def rheology_quantity_with_unit(self) -> type[BaseModel] | None:
         """Load QuantityWithUnit from rheology_research template if available."""
         return _load_rheology_quantity_with_unit()

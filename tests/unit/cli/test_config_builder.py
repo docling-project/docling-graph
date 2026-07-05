@@ -138,7 +138,7 @@ class TestConfigurationBuilder:
     def test_build_docling_returns_config(self, mock_prompt, mock_confirm):
         """Should return docling configuration."""
         mock_prompt.return_value = "ocr"
-        mock_confirm.side_effect = [True, True, False]  # json, markdown, per-page
+        mock_confirm.side_effect = [True, True, True, False]  # json, markdown, doclang, per-page
 
         builder = ConfigurationBuilder()
         result = builder._build_docling()
@@ -146,6 +146,7 @@ class TestConfigurationBuilder:
         assert isinstance(result, dict)
         assert "pipeline" in result
         assert "export" in result
+        assert result["export"]["doclang"] is True
 
     @patch("docling_graph.cli.config_builder.ConfigurationBuilder._build_vlm_config")
     def test_build_models_vlm_backend(self, mock_vlm):

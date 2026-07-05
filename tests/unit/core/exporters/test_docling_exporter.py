@@ -7,6 +7,10 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
+from docling_core.types.doc import DoclingDocument
+from docling_core.types.doc.base import BoundingBox, CoordOrigin
+from docling_core.types.doc.document import ProvenanceItem
+from docling_core.types.doc.labels import DocItemLabel
 
 from docling_graph.core.exporters.docling_exporter import DoclingExporter
 
@@ -18,6 +22,19 @@ def mock_docling_document():
     doc.pages = {1: MagicMock(), 2: MagicMock()}
     doc.export_to_markdown.return_value = "# Document\n\nContent here"
     doc.export_to_dict.return_value = {"pages": [{"page_number": 1}], "metadata": {}}
+    return doc
+
+
+def _real_document(text: str = "Invoice #12345") -> DoclingDocument:
+    """A minimal real DoclingDocument that can serialize to DocLang."""
+    doc = DoclingDocument(name="sample")
+    doc.add_page(page_no=1, size={"width": 612, "height": 792})
+    prov = ProvenanceItem(
+        page_no=1,
+        bbox=BoundingBox(l=10, t=10, r=100, b=30, coord_origin=CoordOrigin.TOPLEFT),
+        charspan=(0, len(text)),
+    )
+    doc.add_heading(text=text, prov=prov)
     return doc
 
 
@@ -104,6 +121,62 @@ class TestDoclingExporterExportDocument:
         files = list(tmp_path.glob("*"))
         filenames = [f.name for f in files]
         assert any("test_doc" in name for name in filenames)
+
+
+class TestDoclingExporterExportDoclang:
+    """Test DocLang (.dclg) export."""
+
+    def test_export_document_writes_dclg_by_default(self, tmp_path):
+        """A real document should produce a .dclg artifact by default."""
+        exporter = DoclingExporter(output_dir=tmp_path)
+        result = exporter.export_document(_real_document(), "document")
+        assert "doclang" in result
+        dclg = tmp_path / "document.dclg"
+        assert dclg.exists()
+        content = dclg.read_text(encoding="utf-8")
+        assert "<doclang" in content
+        assert "Invoice #12345" in content
+
+    def test_export_document_without_doclang(self, tmp_path):
+        """include_doclang=False suppresses the .dclg artifact."""
+        exporter = DoclingExporter(output_dir=tmp_path)
+        result = exporter.export_document(
+            _real_document(), "document", include_doclang=False
+        )
+        assert "doclang" not in result
+        assert not (tmp_path / "document.dclg").exists()
+
+    def test_export_sanitizes_control_chars(self, tmp_path):
+        """A document with NUL still exports; the NUL is stripped."""
+        exporter = DoclingExporter(output_dir=tmp_path)
+        result = exporter.export_document(_real_document("Invoice\x00 #99"), "document")
+        assert "doclang" in result
+        content = (tmp_path / "document.dclg").read_text(encoding="utf-8")
+        assert "\x00" not in content
+        assert "Invoice #99" in content
+
+    def test_doclang_export_failure_is_non_fatal(self, tmp_path):
+        """A serializer failure must not abort export; other artifacts survive."""
+        exporter = DoclingExporter(output_dir=tmp_path)
+        with patch.object(
+            DoclingDocument, "export_to_doclang", side_effect=ValueError("boom")
+        ):
+            result = exporter.export_document(_real_document(), "document")
+        assert "doclang" not in result
+        assert "document_json" in result
+        assert "markdown" in result
+        assert not (tmp_path / "document.dclg").exists()
+
+    def test_doclang_skipped_when_unavailable(self, tmp_path):
+        """If docling-core lacks export_to_doclang, skip gracefully."""
+        doc = _real_document()
+        exporter = DoclingExporter(output_dir=tmp_path)
+        # Simulate an older docling-core by hiding the attribute.
+        with patch(
+            "docling_graph.core.exporters.docling_exporter.hasattr", return_value=False
+        ):
+            dclg_path = exporter._export_doclang(doc, tmp_path / "document.dclg")
+        assert dclg_path is None
 
 
 class TestDoclingExporterExportDocumentJSON:

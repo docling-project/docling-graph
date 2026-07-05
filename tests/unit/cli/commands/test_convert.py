@@ -225,7 +225,9 @@ def test_cli_overrides_passed_to_config(mock_load_config, mock_run_pipeline):
                 chunk_max_tokens=256,
                 export_docling_json=False,
                 export_markdown=False,
+                export_doclang=False,
                 export_per_page=True,
+                llm_input_format="doclang-geo",
             )
         except typer.Exit:
             pass
@@ -235,7 +237,9 @@ def test_cli_overrides_passed_to_config(mock_load_config, mock_run_pipeline):
     assert cfg.dense_dedupe == "standard"
     assert cfg.export_docling_json is False
     assert cfg.export_markdown is False
+    assert cfg.export_doclang is False
     assert cfg.export_per_page_markdown is True
+    assert cfg.llm_input_format == "doclang-geo"
 
 
 @patch("docling_graph.cli.commands.convert.run_pipeline")
