@@ -11,6 +11,7 @@ How to design Pydantic templates that work *with* the extraction pipeline instea
 - Field descriptions: 1–3 sentences (where to look + normalization rule); don't restate pipeline-level rules.
 - Validators normalize; they never reject the whole payload.
 - 2–4 nesting levels; never nest the same rich entity model at several paths.
+- An entity referenced from several paths stays **identity-minimal**; context-specific data (a role, a title) lives on per-context entities linking to it — duplicate-instance merge is fill-missing-only, first non-empty value wins.
 
 ---
 
@@ -57,6 +58,44 @@ Identity fields feed three deterministic mechanisms: cross-batch deduplication, 
 
 **How reconciliation consumes ids.** One id-space LLM pass merges instances that are the *same entity at different granularity* — a generic alias (`"LFP slurry batch"`) into its specific form (`"LFP_20vol_5wtPVDF"`). It is forbidden from merging instances that differ by any parameter, quantity, date, or index. This recovers generic/specific duplication automatically — but only when ids are label-like. Sentence-long ids look like distinct descriptions and stay unmerged.
 
+## Graph assembly mechanics
+
+Three converter behaviors the schema should be designed around:
+
+1. **Duplicate instances merge fill-missing-only.** When the same entity is discovered at several paths (e.g. one person in both the board list and the executive list), all instances collapse into one node: later instances fill attributes the first left empty, but **conflicting non-empty values keep the first-seen value**. So when one real-world thing plays several roles with role-specific data, keep the shared entity **identity-minimal** (its id field and nothing else) and model each role as its own entity — identified by the same name, holding that role's fields, linking to the shared node via an edge:
+
+    ```python
+    class Person(BaseModel):
+        """Identity-only shared node — safe to reference from anywhere."""
+        model_config = ConfigDict(graph_id_fields=["full_name"])
+        full_name: str = Field(...)
+
+    class BoardMember(BaseModel):
+        """Per-role record: role data lives here, never on the shared Person."""
+        model_config = ConfigDict(graph_id_fields=["full_name"])
+        full_name: str = Field(...)
+        title: str | None = Field(None)
+        person: Person | None = edge(label="IS_PERSON")
+    ```
+
+    Role fields on the shared node would resolve arbitrarily (whichever list was processed first wins); per-role entities never conflict, and dense extraction discovers each role as its own catalog instance.
+
+2. **Entities nested inside components attach to the nearest entity ancestor.** Component subtrees are traversed: an entity below a component still becomes a node, and its edge comes from the closest enclosing *entity* (the component itself never gets a node — its scalar fields embed in that ancestor, with nested-entity fields nulled). This mirrors how the dense catalog parents such entities. It works, but prefer nesting entities directly under entities: the wrapper component adds a level of indirection without adding a graph node.
+
+3. **Verify the graph shape, not just validation.** `Model(**sample)` proves the schema validates; it says nothing about what the graph looks like. Convert a hand-built instance and inspect nodes and edges before running extraction:
+
+    ```python
+    from docling_graph.core.converters.graph_converter import GraphConverter
+
+    graph, _ = GraphConverter().pydantic_list_to_graph([sample_instance])
+    for node_id, data in graph.nodes(data=True):
+        print(data["label"], node_id)
+    for u, v, data in graph.edges(data=True):
+        print(u, f"--{data['label']}-->", v)
+    ```
+
+    This catches misclassified entities/components, missing edges, and one-node-instead-of-two identity collisions in seconds, using exactly the code path the pipeline runs.
+
 ## Deterministic grounding readiness
 
 The pipeline grounds values in the source deterministically; the schema must not fight it.
@@ -89,3 +128,4 @@ The same template must degrade gracefully on a small local model and scale on a 
 - Positional labels (`"Offer 1"`) where the document gives proper names.
 - Number-named fields (`*_number`, `ref_*`) holding prose values.
 - Boilerplate rules repeated per field that the prompts already enforce globally.
+- Role/context data on an entity referenced from several paths (conflicting duplicate values resolve first-seen-wins; see [Graph assembly mechanics](#graph-assembly-mechanics)).
