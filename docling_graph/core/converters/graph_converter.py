@@ -8,6 +8,10 @@ IDs, edge metadata, bidirectional edges, and automatic cleanup.
 Key Concepts:
 - Entities (is_entity=True or default): Become separate nodes with edges
 - Components (is_entity=False): Embedded as dictionaries in parent nodes
+- Entities nested inside components still become nodes, linked by an edge
+  from the nearest entity ancestor (consistent with the dense catalog walk)
+- Duplicate instances of the same entity enrich the first node's missing
+  attributes instead of being silently dropped
 """
 
 from typing import Any, List, Mapping, Optional, Set
@@ -45,6 +49,18 @@ def get_model_config_value(model: BaseModel, key: str, default: Any) -> Any:
     if hasattr(config, "get"):
         return config.get(key, default)
     return getattr(config, key, default)
+
+
+def _is_empty_value(value: Any) -> bool:
+    """True for values that carry no data (None or empty str/list/dict).
+
+    Numeric zero and False are meaningful and count as non-empty.
+    """
+    if value is None:
+        return True
+    if isinstance(value, str | list | dict):
+        return len(value) == 0
+    return False
 
 
 class GraphConverter:
@@ -202,24 +218,50 @@ class GraphConverter:
         model: BaseModel,
         graph: nx.DiGraph,
         visited_ids: Set[str],
+        processed_instances: Set[int] | None = None,
     ) -> None:
         """
         Recursively create nodes from model and nested entities.
 
         Entities (is_entity=True): Create separate nodes with edges
-        Components (is_entity=False): Embed as dictionaries in parent nodes
+        Components (is_entity=False): Embed as dictionaries in parent nodes,
+        but their subtrees are still traversed — an entity nested inside a
+        component becomes its own node (mirroring the dense catalog, which
+        walks through components and parents nested entities to the nearest
+        entity ancestor).
+
+        Duplicate instances of the same entity (same node ID reached via
+        different paths) enrich the existing node: missing attributes are
+        filled from the new instance (first non-empty value wins), and the
+        duplicate's children are still traversed so children present only on
+        the later instance are not lost.
         """
+        # Guard recursion by object identity so re-encountering the same
+        # instance (shared object, cyclic reference) terminates. Distinct
+        # duplicate instances have distinct ids and are each processed.
+        if processed_instances is None:
+            processed_instances = set()
+        if id(model) in processed_instances:
+            return
+        processed_instances.add(id(model))
+
         # Check if this model should be an entity (respect is_entity=False)
         is_entity = get_model_config_value(model, "is_entity", True)
 
         if not is_entity:
-            # Skip node creation for components (they will be embedded in parent nodes)
+            # No node for the component itself (it embeds in its parent), but
+            # entities nested below it still need nodes.
+            self._walk_nested_models(model, graph, visited_ids, processed_instances)
             return
 
         # Get node ID from registry
         node_id = self._get_node_id(model)
 
         if node_id in visited_ids:
+            # Same entity reached again via another path: fill attributes the
+            # first instance left empty, then keep walking the children.
+            self._enrich_existing_node(model, graph, node_id)
+            self._walk_nested_models(model, graph, visited_ids, processed_instances)
             return
 
         visited_ids.add(node_id)
@@ -241,10 +283,13 @@ class GraphConverter:
                 if is_nested_entity:
                     # Entity: set to None (will be linked via edge)
                     node_attrs[field_name] = None
-                    self._create_nodes_pass(field_value, graph, visited_ids)
+                    self._create_nodes_pass(field_value, graph, visited_ids, processed_instances)
                 else:
-                    # Component: embed as dictionary to preserve data
-                    node_attrs[field_name] = field_value.model_dump()
+                    # Component: embed as dictionary (entity fields inside it
+                    # nulled — they become nodes + edges), then traverse its
+                    # subtree for nested entities.
+                    node_attrs[field_name] = self._component_to_attrs(field_value)
+                    self._create_nodes_pass(field_value, graph, visited_ids, processed_instances)
 
             elif isinstance(field_value, list):
                 # Handle empty lists and lists with content
@@ -257,10 +302,20 @@ class GraphConverter:
                         # List of entities: set to None (will be linked via edges)
                         node_attrs[field_name] = None
                         for item in field_value:
-                            self._create_nodes_pass(item, graph, visited_ids)
+                            self._create_nodes_pass(item, graph, visited_ids, processed_instances)
                     else:
-                        # List of components: embed as list of dictionaries
-                        node_attrs[field_name] = [item.model_dump() for item in field_value]
+                        # List of components: embed as list of dictionaries and
+                        # traverse each subtree for nested entities.
+                        node_attrs[field_name] = [
+                            self._component_to_attrs(item)
+                            for item in field_value
+                            if isinstance(item, BaseModel)
+                        ]
+                        for item in field_value:
+                            if isinstance(item, BaseModel):
+                                self._create_nodes_pass(
+                                    item, graph, visited_ids, processed_instances
+                                )
                 else:
                     # Empty list or list of primitives - preserve as-is
                     node_attrs[field_name] = field_value
@@ -268,6 +323,90 @@ class GraphConverter:
                 node_attrs[field_name] = field_value
 
         graph.add_node(node_id, **node_attrs)
+
+    def _walk_nested_models(
+        self,
+        model: BaseModel,
+        graph: nx.DiGraph,
+        visited_ids: Set[str],
+        processed_instances: Set[int],
+    ) -> None:
+        """Recurse into every nested BaseModel field so entities below this
+        model (whether it is a component or a duplicate entity instance) still
+        get their nodes created."""
+        for _field_name, field_value in model:
+            if isinstance(field_value, BaseModel):
+                self._create_nodes_pass(field_value, graph, visited_ids, processed_instances)
+            elif isinstance(field_value, list):
+                for item in field_value:
+                    if isinstance(item, BaseModel):
+                        self._create_nodes_pass(item, graph, visited_ids, processed_instances)
+
+    def _component_to_attrs(self, component: BaseModel) -> dict[str, Any]:
+        """
+        Serialize a component for embedding in its parent entity's node.
+
+        Like model_dump(), except entity-typed values are nulled: those become
+        separate nodes linked by an edge from the nearest entity ancestor, so
+        embedding their data too would duplicate it.
+        """
+        out: dict[str, Any] = {}
+        for field_name, field_value in component:
+            if isinstance(field_value, BaseModel):
+                if get_model_config_value(field_value, "is_entity", True):
+                    out[field_name] = None
+                else:
+                    out[field_name] = self._component_to_attrs(field_value)
+            elif isinstance(field_value, list) and any(
+                isinstance(item, BaseModel) for item in field_value
+            ):
+                first_model = next(item for item in field_value if isinstance(item, BaseModel))
+                if get_model_config_value(first_model, "is_entity", True):
+                    out[field_name] = None
+                else:
+                    out[field_name] = [
+                        self._component_to_attrs(item)
+                        for item in field_value
+                        if isinstance(item, BaseModel)
+                    ]
+            else:
+                out[field_name] = field_value
+        return out
+
+    def _enrich_existing_node(self, model: BaseModel, graph: nx.DiGraph, node_id: str) -> None:
+        """
+        Fill missing attributes on an already-created node from a duplicate
+        instance of the same entity. First non-empty value wins — existing
+        non-empty attributes are never overwritten, so conflicting duplicates
+        keep the first-seen value while empty slots recover data that would
+        otherwise be silently dropped.
+        """
+        if node_id not in graph:
+            return
+        existing = graph.nodes[node_id]
+        for field_name, field_value in model:
+            if isinstance(field_value, BaseModel):
+                if get_model_config_value(field_value, "is_entity", True):
+                    continue  # entity fields stay None (linked via edges)
+                new_value: Any = self._component_to_attrs(field_value)
+            elif isinstance(field_value, list) and field_value:
+                if isinstance(field_value[0], BaseModel):
+                    if get_model_config_value(field_value[0], "is_entity", True):
+                        continue
+                    new_value = [
+                        self._component_to_attrs(item)
+                        for item in field_value
+                        if isinstance(item, BaseModel)
+                    ]
+                else:
+                    new_value = field_value
+            else:
+                new_value = field_value
+
+            if _is_empty_value(new_value):
+                continue
+            if _is_empty_value(existing.get(field_name)):
+                existing[field_name] = new_value
 
     def _create_edges_pass(
         self,
@@ -277,15 +416,19 @@ class GraphConverter:
         """
         Recursively create edges from model relationships.
 
-        Only creates edges for entities (is_entity=True).
-        Components (is_entity=False) are embedded and don't get edges.
+        Only entities are edge sources (components don't have node IDs), but
+        component subtrees are traversed: an entity nested inside a component
+        gets an edge from the nearest entity ancestor, matching how the dense
+        catalog parents such entities.
         """
         edges: List[Edge] = []
 
         # Check if this model is an entity (components don't have node IDs)
         is_entity = get_model_config_value(model, "is_entity", True)
         if not is_entity:
-            # Components don't participate in edge creation
+            # A component with no entity ancestor (top-level component) has no
+            # edge source; nested components are handled via the ancestor's
+            # _edges_through_component walk.
             return edges
 
         source_id = self._get_node_id(model)
@@ -296,7 +439,6 @@ class GraphConverter:
             edge_label = self._get_edge_label(model, field_name)
 
             if isinstance(field_value, BaseModel):
-                # Only create edges for entities, not components
                 is_nested_entity = get_model_config_value(field_value, "is_entity", True)
 
                 if is_nested_entity:
@@ -311,7 +453,10 @@ class GraphConverter:
                     )
                     # Recursively process nested entity
                     edges.extend(self._create_edges_pass(field_value, visited_ids))
-                # Components are embedded, no edge needed
+                else:
+                    # Component: no edge to it, but entities below it link
+                    # from this entity (the nearest entity ancestor).
+                    edges.extend(self._edges_through_component(source_id, field_value, visited_ids))
 
             elif isinstance(field_value, list) and field_value:
                 if isinstance(field_value[0], BaseModel):
@@ -331,7 +476,62 @@ class GraphConverter:
                             )
                             # Recursively process nested entity
                             edges.extend(self._create_edges_pass(item, visited_ids))
-                    # Lists of components are embedded, no edges needed
+                    else:
+                        for item in field_value:
+                            if isinstance(item, BaseModel):
+                                edges.extend(
+                                    self._edges_through_component(source_id, item, visited_ids)
+                                )
+
+        return edges
+
+    def _edges_through_component(
+        self,
+        source_id: str,
+        component: BaseModel,
+        visited_ids: Set[str],
+    ) -> List[Edge]:
+        """
+        Walk a component subtree creating edges from the nearest entity
+        ancestor (source_id) to any entities nested below the component.
+        Nested components are walked through with the same source.
+        """
+        edges: List[Edge] = []
+        for field_name, field_value in component:
+            edge_label = self._get_edge_label(component, field_name)
+
+            if isinstance(field_value, BaseModel):
+                if get_model_config_value(field_value, "is_entity", True):
+                    target_id = self._get_node_id(field_value)
+                    edges.append(
+                        Edge(
+                            source=source_id,
+                            target=target_id,
+                            label=edge_label or field_name,
+                            properties={},
+                        )
+                    )
+                    edges.extend(self._create_edges_pass(field_value, visited_ids))
+                else:
+                    edges.extend(self._edges_through_component(source_id, field_value, visited_ids))
+
+            elif isinstance(field_value, list) and field_value:
+                for item in field_value:
+                    if not isinstance(item, BaseModel):
+                        continue
+                    if get_model_config_value(item, "is_entity", True):
+                        target_id = self._get_node_id(item)
+                        edges.append(
+                            Edge(
+                                source=source_id,
+                                target=target_id,
+                                label=edge_label or field_name,
+                                properties={},
+                            )
+                        )
+                        edges.extend(self._create_edges_pass(item, visited_ids))
+                    else:
+                        edges.extend(self._edges_through_component(source_id, item, visited_ids))
 
         return edges
 
