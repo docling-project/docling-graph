@@ -428,5 +428,164 @@ class TestRegressionScenarios:
         assert person_data["address"]["city"] == "Lyon"
 
 
+class Badge(BaseModel):
+    """Entity nested inside a component (see RoleAssignment)."""
+
+    model_config = ConfigDict(graph_id_fields=["badge_number"])
+
+    badge_number: str = Field(...)
+    color: str | None = Field(None)
+
+
+class RoleAssignment(BaseModel):
+    """Component wrapping an entity — the entity must still become a node."""
+
+    model_config = ConfigDict(is_entity=False)
+
+    role_title: str | None = Field(None)
+    badge: Badge | None = Field(None, json_schema_extra={"edge_label": "HAS_BADGE"})
+
+
+class Employee(BaseModel):
+    """Entity holding a component that wraps an entity."""
+
+    model_config = ConfigDict(graph_id_fields=["employee_id"])
+
+    employee_id: str = Field(...)
+    nickname: str | None = Field(None)
+    assignment: RoleAssignment | None = Field(None)
+    assignments: List[RoleAssignment] = Field(default_factory=list)
+    reports: List["Employee"] = Field(
+        default_factory=list, json_schema_extra={"edge_label": "MANAGES"}
+    )
+
+
+class TestEntitiesNestedInComponents:
+    """Entities reached only through a component subtree must not be dropped.
+
+    The dense catalog walks through components (nearest entity ancestor
+    becomes the parent); the converter must mirror that so filled data
+    survives into the graph.
+    """
+
+    def test_entity_inside_component_becomes_node_with_ancestor_edge(self):
+        emp = Employee(
+            employee_id="E-1",
+            assignment=RoleAssignment(
+                role_title="Security Lead",
+                badge=Badge(badge_number="B-42", color="red"),
+            ),
+        )
+
+        registry = NodeIDRegistry()
+        converter = GraphConverter(registry=registry, validate_graph=False, auto_cleanup=False)
+        graph, _ = converter.pydantic_list_to_graph([emp])
+
+        badge_nodes = [n for n in graph.nodes() if n.startswith("Badge_")]
+        assert len(badge_nodes) == 1, "Entity nested inside a component must become a node"
+        assert graph.nodes[badge_nodes[0]]["badge_number"] == "B-42"
+
+        # Edge comes from the nearest entity ancestor (Employee), carrying the
+        # nested field's edge label.
+        emp_node = next(n for n in graph.nodes() if n.startswith("Employee_"))
+        edge_data = graph.get_edge_data(emp_node, badge_nodes[0])
+        assert edge_data is not None, "Nearest entity ancestor must link the nested entity"
+        assert edge_data["label"] == "HAS_BADGE"
+
+        # The embedded component dict nulls the entity field (data lives on
+        # the Badge node, not duplicated inline).
+        emp_data = graph.nodes[emp_node]
+        assert isinstance(emp_data["assignment"], dict)
+        assert emp_data["assignment"]["role_title"] == "Security Lead"
+        assert emp_data["assignment"]["badge"] is None
+
+    def test_entity_inside_component_list_becomes_node(self):
+        emp = Employee(
+            employee_id="E-2",
+            assignments=[
+                RoleAssignment(role_title="Auditor", badge=Badge(badge_number="B-7")),
+                RoleAssignment(role_title="Trainer"),
+            ],
+        )
+
+        registry = NodeIDRegistry()
+        converter = GraphConverter(registry=registry, validate_graph=False, auto_cleanup=False)
+        graph, _ = converter.pydantic_list_to_graph([emp])
+
+        badge_nodes = [n for n in graph.nodes() if n.startswith("Badge_")]
+        assert len(badge_nodes) == 1
+
+        emp_node = next(n for n in graph.nodes() if n.startswith("Employee_"))
+        edge_data = graph.get_edge_data(emp_node, badge_nodes[0])
+        assert edge_data is not None
+        assert edge_data["label"] == "HAS_BADGE"
+
+        # Embedded list of component dicts keeps scalar data, nulls entities.
+        emp_data = graph.nodes[emp_node]
+        assert [a["role_title"] for a in emp_data["assignments"]] == ["Auditor", "Trainer"]
+        assert all(a["badge"] is None for a in emp_data["assignments"])
+
+
+class TestDuplicateEntityEnrichment:
+    """A second instance of the same entity must enrich, not vanish."""
+
+    def test_duplicate_fills_missing_attributes_first_nonempty_wins(self):
+        # Same identity, complementary data: first has nickname, second has
+        # an assignment. Both must survive on the single node.
+        first = Employee(employee_id="E-9", nickname="Ace")
+        second = Employee(
+            employee_id="E-9",
+            assignment=RoleAssignment(role_title="Lead"),
+        )
+
+        registry = NodeIDRegistry()
+        converter = GraphConverter(registry=registry, validate_graph=False, auto_cleanup=False)
+        graph, _ = converter.pydantic_list_to_graph([first, second])
+
+        emp_nodes = [n for n in graph.nodes() if n.startswith("Employee_")]
+        assert len(emp_nodes) == 1, "Same identity must resolve to one node"
+        data = graph.nodes[emp_nodes[0]]
+        assert data["nickname"] == "Ace", "First instance's data kept"
+        assert data["assignment"]["role_title"] == "Lead", (
+            "Second instance's data must enrich the node, not be dropped"
+        )
+
+    def test_duplicate_does_not_overwrite_existing_attributes(self):
+        first = Employee(employee_id="E-9", nickname="Ace")
+        second = Employee(employee_id="E-9", nickname="Blitz")
+
+        registry = NodeIDRegistry()
+        converter = GraphConverter(registry=registry, validate_graph=False, auto_cleanup=False)
+        graph, _ = converter.pydantic_list_to_graph([first, second])
+
+        emp_nodes = [n for n in graph.nodes() if n.startswith("Employee_")]
+        assert len(emp_nodes) == 1
+        assert graph.nodes[emp_nodes[0]]["nickname"] == "Ace", "First non-empty value wins"
+
+    def test_children_only_on_duplicate_instance_survive(self):
+        # The child entity appears only on the SECOND instance of E-9.
+        # Before the fix the duplicate's subtree was never walked: the edge
+        # was emitted but the node never created, and the cleaner then removed
+        # the phantom — silently losing the child.
+        first = Employee(employee_id="E-9")
+        second = Employee(
+            employee_id="E-9",
+            reports=[Employee(employee_id="E-10", nickname="Rookie")],
+        )
+
+        registry = NodeIDRegistry()
+        converter = GraphConverter(registry=registry, validate_graph=False)
+        graph, _ = converter.pydantic_list_to_graph([first, second])
+
+        emp_ids = {graph.nodes[n]["employee_id"] for n in graph.nodes()}
+        assert "E-10" in emp_ids, "Child present only on the duplicate must survive"
+
+        parent = next(n for n in graph.nodes() if graph.nodes[n]["employee_id"] == "E-9")
+        child = next(n for n in graph.nodes() if graph.nodes[n]["employee_id"] == "E-10")
+        edge_data = graph.get_edge_data(parent, child)
+        assert edge_data is not None
+        assert edge_data["label"] == "MANAGES"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
