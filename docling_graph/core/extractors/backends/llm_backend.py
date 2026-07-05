@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 # Rough chars-per-token for gauging whether a direct single-call extraction can
 # fit its output. A structured response cannot represent a document much larger
 # than its own output budget; when the input dwarfs that budget the call will
-# truncate, and dense (skeleton-then-fill) is the right contract instead.
+# truncate, and dense (skeleton-then-flesh) is the right contract instead.
 _CHARS_PER_TOKEN = 4
 # Warn once the input exceeds this multiple of the output character capacity.
 _DIRECT_OVERFLOW_RATIO = 2.0
@@ -62,6 +62,9 @@ class LlmBackend:
         self._dense_config_raw = dense_config or {}
         self.structured_output = structured_output
         self.structured_sparse_check = structured_sparse_check
+        # Serialization the LLM sees (markdown | doclang | doclang-geo). Sourced
+        # from the shared config dict so direct and dense prompts can be framed.
+        self.llm_input_format = str(self._dense_config_raw.get("llm_input_format", "markdown"))
         self.trace_data: Any = None  # Set by strategy when config.debug is True
         self.last_call_diagnostics: dict[str, Any] = {}
         # Per-run dense observability (skeleton_nodes, truncation/split counts,
@@ -746,6 +749,7 @@ class LlmBackend:
                 model_config=None,  # No capability-based branching
                 structured_output=self.structured_output,
                 schema_dict=schema_dict,
+                input_format=self.llm_input_format,
             )
             self.last_call_diagnostics = {
                 "structured_attempted": bool(self.structured_output),
@@ -817,6 +821,7 @@ class LlmBackend:
                     structured_output=True,
                     schema_dict=schema_dict,
                     force_legacy_prompt_schema=True,
+                    input_format=self.llm_input_format,
                 )
                 parsed_json = self._get_json_response(
                     prompt=legacy_prompt,
@@ -864,6 +869,7 @@ class LlmBackend:
                     structured_output=True,
                     schema_dict=schema_dict,
                     force_legacy_prompt_schema=True,
+                    input_format=self.llm_input_format,
                 )
                 legacy_json = self._get_json_response(
                     prompt=legacy_prompt,
@@ -984,7 +990,7 @@ class LlmBackend:
                 f"Document is {len(markdown)} chars but the model's output budget is only "
                 f"~{budget_tokens} tokens (~{output_char_capacity} chars); a single-call direct "
                 "extraction is likely to truncate and lose data. Consider extraction_contract="
-                '"dense" (skeleton-then-fill) for large documents.'
+                '"dense" (skeleton-then-flesh) for large documents.'
             )
 
     def _retry_max_tokens_for_truncation(self, context_max: int | None = None) -> int | None:

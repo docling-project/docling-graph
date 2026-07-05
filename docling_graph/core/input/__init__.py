@@ -7,6 +7,7 @@ pre-processed DoclingDocument JSON files.
 """
 
 from .handlers import (
+    DoclangInputHandler,
     DoclingDocumentHandler,
     DocumentInputHandler,
     InputHandler,
@@ -15,6 +16,7 @@ from .handlers import (
 )
 from .types import InputType, InputTypeDetector
 from .validators import (
+    DoclangValidator,
     DoclingDocumentValidator,
     InputValidator,
     TextValidator,
@@ -22,6 +24,8 @@ from .validators import (
 )
 
 __all__ = [
+    "DoclangInputHandler",
+    "DoclangValidator",
     "DoclingDocumentHandler",
     "DoclingDocumentValidator",
     "DocumentInputHandler",

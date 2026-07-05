@@ -24,6 +24,7 @@ from docling_graph.core.provenance import (
     ProvenanceLedger,
     SourceAnchor,
     canonical_id_text as _canonical_id_text,
+    geometry_from_meta,
     identity_key as _provenance_identity_key,
     identity_pairs,
     text_hash as _chunk_text_hash,
@@ -736,6 +737,9 @@ class DenseOrchestratorConfig:
     # "off": no provenance ledger. "standard": chunk-level ledger.
     # "detailed": + deterministic verbatim anchor scan (char spans).
     provenance_mode: str = "standard"
+    # Serialization the LLM sees: "markdown" (default), "doclang", "doclang-geo".
+    # DocLang formats add a one-line orientation to skeleton/fill prompts.
+    input_format: str = "markdown"
 
     @classmethod
     def from_dict(cls, config: dict[str, Any] | None) -> DenseOrchestratorConfig:
@@ -753,6 +757,9 @@ class DenseOrchestratorConfig:
         provenance_mode = str(c.get("provenance", "standard") or "standard").lower()
         if provenance_mode not in ("off", "standard", "detailed"):
             provenance_mode = "standard"
+        input_format = str(c.get("llm_input_format", "markdown") or "markdown").lower()
+        if input_format not in ("markdown", "doclang", "doclang-geo"):
+            input_format = "markdown"
         return cls(
             skeleton_batch_tokens=skeleton_batch_tokens,
             fill_nodes_cap=int(c.get("dense_fill_nodes_cap", 5) or 5),
@@ -760,6 +767,7 @@ class DenseOrchestratorConfig:
             fill_context_mode=fill_context_mode,
             dedupe_mode=dedupe_mode,
             provenance_mode=provenance_mode,
+            input_format=input_format,
         )
 
 
@@ -865,6 +873,7 @@ class DenseOrchestrator:
             global_context=global_context,
             already_found=already_found_str,
             semantic_guide=semantic_guide,
+            input_format=self._config.input_format,
         )
         truncated = False
         for attempt in range(self._config.max_pass_retries + 1):
@@ -1219,6 +1228,7 @@ class DenseOrchestrator:
                         p for p in (meta.get("page_numbers") or []) if isinstance(p, int)
                     ),
                     doc_item_refs=tuple(str(r) for r in (meta.get("doc_item_refs") or [])),
+                    item_geometry=geometry_from_meta(meta),
                     headings=tuple(str(h) for h in (meta.get("headings") or [])),
                     token_count=token_count,
                     text_hash=_chunk_text_hash(chunk_text),
@@ -1489,6 +1499,7 @@ class DenseOrchestrator:
             spec=spec,
             descriptors=batch_descriptors,
             projected_schema_json=sub_schema,
+            input_format=self._config.input_format,
         )
         # Hoist $defs to the wrapper root: the sub-schema's $ref pointers are
         # root-relative (#/$defs/...), so nesting it unchanged would leave them

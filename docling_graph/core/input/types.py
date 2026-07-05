@@ -23,6 +23,7 @@ class InputType(Enum):
     MARKDOWN = "markdown"
     URL = "url"
     DOCLING_DOCUMENT = "docling_document"
+    DOCLANG = "doclang"  # .dclg / .dclg.xml / .dclx — parsed by Docling, conversion skipped
     # Catch-all: any file or raw text sent to Docling for conversion (validated by Docling)
     DOCUMENT = "document"
 
@@ -36,6 +37,9 @@ class InputTypeDetector:
     TEXT_EXTENSIONS = {".txt"}
     MARKDOWN_EXTENSIONS = {".md", ".markdown"}
     JSON_EXTENSIONS = {".json"}
+    # DocLang: matched by full-name suffix (".dclg.xml" is a double extension),
+    # not Path.suffix. ".dclx" is the OPC archive form.
+    DOCLANG_SUFFIXES = (".dclg", ".dclg.xml", ".dclx")
 
     @classmethod
     def detect(cls, source: Union[str, Path], mode: Literal["cli", "api"] = "api") -> InputType:
@@ -122,18 +126,37 @@ class InputTypeDetector:
         """
         Detect input type from file extension and content.
 
-        Only DoclingDocument JSON is special (skip conversion). All other files
-        are DOCUMENT and are sent to Docling for conversion; Docling validates
-        supported formats.
+        DoclingDocument JSON and DocLang files are special (conversion skipped).
+        All other files are DOCUMENT and are sent to Docling for conversion;
+        Docling validates supported formats.
         """
+        name = file_path.name.lower()
         extension = file_path.suffix.lower()
+
+        # DocLang: matched on full-name suffix so ".dclg.xml" is caught too.
+        if name.endswith(cls.DOCLANG_SUFFIXES):
+            return InputType.DOCLANG
 
         # JSON: peek inside to see if it's a DoclingDocument (skip conversion)
         if extension in cls.JSON_EXTENSIONS:
             return cls._detect_json_type(file_path)
 
+        # Bare .xml whose root element is <doclang ...> is a DocLang document.
+        if extension == ".xml" and cls._is_doclang_xml(file_path):
+            return InputType.DOCLANG
+
         # Everything else (PDF, images, .txt, .md, Office, HTML, etc.) -> Docling
         return InputType.DOCUMENT
+
+    @classmethod
+    def _is_doclang_xml(cls, file_path: Path) -> bool:
+        """Cheap sniff: does the first chunk of an XML file open a <doclang> root?"""
+        try:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
+                head = f.read(1024)
+        except OSError:
+            return False
+        return "<doclang" in head
 
     @classmethod
     def _detect_json_type(cls, file_path: Path) -> InputType:

@@ -18,7 +18,13 @@ from docling_core.types.doc import DoclingDocument
 from rich import print as rich_print
 
 from ...exceptions import ExtractionError
-from ..provenance.models import text_hash as _chunk_text_hash
+from ..provenance.models import dclg_location_from_bbox, text_hash as _chunk_text_hash
+from ..utils.doclang_format import (
+    DocLangSerializerProvider,
+    is_doclang_format,
+    serialize_doclang,
+    wants_location,
+)
 from .document_chunker import DocumentChunker
 
 
@@ -30,6 +36,83 @@ def _chunk_doc_item_refs(chunk_obj: Any) -> list[str]:
         if ref:
             refs.append(str(ref))
     return refs
+
+
+def _page_sizes(document: Any) -> dict[int, tuple[float, float]]:
+    """Page number -> (width, height) map; defensive against docling API drift."""
+    sizes: dict[int, tuple[float, float]] = {}
+    for page_no, page in (getattr(document, "pages", None) or {}).items():
+        size = getattr(page, "size", None)
+        width = getattr(size, "width", None)
+        height = getattr(size, "height", None)
+        try:
+            if width is not None and height is not None:
+                sizes[int(page_no)] = (float(width), float(height))
+        except (TypeError, ValueError):
+            continue
+    return sizes
+
+
+def _chunk_item_geometry(
+    chunk_obj: Any, page_sizes: dict[int, tuple[float, float]] | None = None
+) -> list[dict[str, Any]]:
+    """Page + bbox per backing Docling item; defensive against docling API drift.
+
+    Returns one dict per (item, provenance) as ``{"ref", "page_no",
+    "bbox": [l, t, r, b], "page_width", "page_height", "dclg_location"}``.
+
+    Boxes are always normalized to a **top-left** origin: BOTTOMLEFT sources
+    (typical PDF/OCR output) are converted using the page height, and a
+    BOTTOMLEFT box that can't be normalized (page height unknown) is dropped
+    rather than emitted ambiguously. ``bbox`` is rounded to whole pixels for
+    readability, while ``dclg_location`` (the exact ``document.dclg`` grid
+    values) is quantized from the pre-rounding coordinates. Empty when the source
+    format exposes no geometry (e.g. markdown/text input).
+    """
+    page_sizes = page_sizes or {}
+    geometry: list[dict[str, Any]] = []
+    for item in getattr(getattr(chunk_obj, "meta", None), "doc_items", None) or []:
+        ref = getattr(item, "self_ref", None)
+        for prov in getattr(item, "prov", None) or []:
+            bbox = getattr(prov, "bbox", None)
+            page_no = getattr(prov, "page_no", None)
+            if bbox is None or page_no is None:
+                continue
+            try:
+                page_no = int(page_no)
+                size = page_sizes.get(page_no)
+                coord_origin = getattr(getattr(bbox, "coord_origin", None), "value", "TOPLEFT")
+                if coord_origin == "BOTTOMLEFT":
+                    # Can only normalize with a known page height; otherwise the
+                    # box orientation is ambiguous, so skip it.
+                    converter = getattr(bbox, "to_top_left_origin", None)
+                    if size is None or not callable(converter):
+                        continue
+                    bbox = converter(page_height=size[1])
+                left, top, right, bottom = (
+                    float(bbox.l),
+                    float(bbox.t),
+                    float(bbox.r),
+                    float(bbox.b),
+                )
+                entry: dict[str, Any] = {
+                    "ref": str(ref) if ref else "",
+                    "page_no": page_no,
+                    "bbox": [round(left), round(top), round(right), round(bottom)],
+                    "page_width": None,
+                    "page_height": None,
+                    "dclg_location": None,
+                }
+                if size is not None:
+                    entry["page_width"] = round(size[0])
+                    entry["page_height"] = round(size[1])
+                    entry["dclg_location"] = list(
+                        dclg_location_from_bbox(left, top, right, bottom, size[0], size[1])
+                    )
+                geometry.append(entry)
+            except (AttributeError, TypeError, ValueError):
+                continue
+    return geometry
 
 
 def _chunk_headings(chunk_obj: Any) -> list[str]:
@@ -45,6 +128,7 @@ class DocumentProcessor:
         self,
         docling_config: str = "ocr",
         chunker_config: dict | None = None,
+        llm_input_format: str = "markdown",
     ) -> None:
         """
         Initialize document processor with specified pipeline.
@@ -64,12 +148,30 @@ class DocumentProcessor:
                     "provider": "mistral",
                     "merge_peers": True
                 }
+            llm_input_format (str): Serialization sent to the LLM — 'markdown'
+                (default), 'doclang', or 'doclang-geo'. DocLang formats also drive
+                the chunker's serializer so chunk text matches. Note: DocLang text
+                is ~25-45% larger than markdown, so raising chunk_max_tokens is
+                recommended when using it (see .claude/specs/doclang).
         """
         self.docling_config = docling_config
+        self.llm_input_format = llm_input_format
 
-        # Initialize chunker if config provided
+        # Initialize chunker if config provided. In DocLang mode, hand the chunker
+        # a serializer provider so chunk text is DocLang instead of markdown, and
+        # default token counting to a modern BPE tokenizer (tiktoken): DocLang's
+        # syntax vocabulary is designed to map efficiently onto LLM BPE tokens,
+        # while wordpiece tokenizers (the MiniLM default) fragment the XML markup
+        # and overcount it, skewing chunk budgets.
         self.chunker = None
         if chunker_config:
+            chunker_config = dict(chunker_config)
+            if is_doclang_format(llm_input_format):
+                chunker_config.setdefault(
+                    "serializer_provider",
+                    DocLangSerializerProvider(add_location=wants_location(llm_input_format)),
+                )
+                chunker_config.setdefault("tokenizer_name", "tiktoken")
             self.chunker = DocumentChunker(**chunker_config)
 
         if docling_config == "vision":
@@ -254,6 +356,7 @@ class DocumentProcessor:
         chunks = []
         metadata_list = []
         chunk_id = 0
+        page_sizes = _page_sizes(document)
         for raw_idx, chunk_obj in enumerate(raw_chunker.chunk(document)):
             enriched_text = raw_chunker.contextualize(chunk=chunk_obj)
             enriched_tokens = self.chunker.tokenizer.count_tokens(enriched_text)
@@ -265,6 +368,7 @@ class DocumentProcessor:
                 }
             )
             doc_item_refs = _chunk_doc_item_refs(chunk_obj)
+            item_geometry = _chunk_item_geometry(chunk_obj, page_sizes)
             headings = _chunk_headings(chunk_obj)
             if enriched_tokens <= self.chunker.chunk_max_tokens:
                 chunks.append(enriched_text)
@@ -274,6 +378,7 @@ class DocumentProcessor:
                         "page_numbers": page_numbers,
                         "token_count": enriched_tokens,
                         "doc_item_refs": doc_item_refs,
+                        "item_geometry": item_geometry,
                         "headings": headings,
                         "text_hash": _chunk_text_hash(enriched_text),
                         "char_length": len(enriched_text),
@@ -286,13 +391,15 @@ class DocumentProcessor:
                 chunks.extend(sub_chunks)
                 for sub in sub_chunks:
                     # Sub-chunks inherit the parent's location metadata (pages,
-                    # item refs, headings) — the split is textual, not structural.
+                    # item refs, geometry, headings) — the split is textual, not
+                    # structural.
                     metadata_list.append(
                         {
                             "chunk_id": chunk_id,
                             "page_numbers": page_numbers,
                             "token_count": self.chunker.tokenizer.count_tokens(sub),
                             "doc_item_refs": doc_item_refs,
+                            "item_geometry": item_geometry,
                             "headings": headings,
                             "text_hash": _chunk_text_hash(sub),
                             "char_length": len(sub),
@@ -306,25 +413,52 @@ class DocumentProcessor:
         )
         return chunks, metadata_list
 
+    def serialize_document(self, document: DoclingDocument, page_no: int | None = None) -> str:
+        """Serialize a document (or one page) in the configured LLM input format.
+
+        Markdown is the default; DocLang formats render structure (and geometry
+        for 'doclang-geo'). If DocLang serialization fails for any reason the
+        method falls back to markdown so extraction is never blocked by a
+        serialization glitch.
+        """
+        if is_doclang_format(self.llm_input_format):
+            try:
+                return serialize_doclang(
+                    document,
+                    add_location=wants_location(self.llm_input_format),
+                    page_no=page_no,
+                )
+            except Exception as e:
+                rich_print(
+                    f"[yellow][DocumentProcessor][/yellow] DocLang serialization failed "
+                    f"({e}); falling back to markdown"
+                )
+        if page_no is None:
+            return document.export_to_markdown()
+        return document.export_to_markdown(page_no=page_no)
+
     def extract_page_markdowns(self, document: DoclingDocument) -> List[str]:
         """
-        Extracts Markdown content for each page.
+        Extract per-page document text in the configured LLM input format.
+
+        Named for backward compatibility; the content honors ``llm_input_format``
+        (markdown by default, DocLang when configured).
 
         Args:
             document (Document): Docling document object.
 
         Returns:
-            List[str]: List of Markdown strings, one per page.
+            List[str]: List of serialized strings, one per page.
         """
-        page_markdowns = []
+        page_texts = []
         for page_no in sorted(document.pages.keys()):
-            md = document.export_to_markdown(page_no=page_no)
-            page_markdowns.append(md)
+            page_texts.append(self.serialize_document(document, page_no=page_no))
 
         rich_print(
-            f"[blue][DocumentProcessor][/blue] Extracted Markdown for [cyan]{len(page_markdowns)}[/cyan] pages"
+            f"[blue][DocumentProcessor][/blue] Extracted [cyan]{self.llm_input_format}[/cyan] "
+            f"for [cyan]{len(page_texts)}[/cyan] pages"
         )
-        return page_markdowns
+        return page_texts
 
     def process_document(self, source: str) -> List[str]:
         """High-level helper to get per-page markdowns from a source file.
@@ -365,19 +499,23 @@ class DocumentProcessor:
 
     def extract_full_markdown(self, document: DoclingDocument) -> str:
         """
-        Extracts the full document as a single Markdown string.
+        Extract the full document as a single string in the configured LLM format.
+
+        Named for backward compatibility; the content honors ``llm_input_format``
+        (markdown by default, DocLang when configured).
 
         Args:
             document (Document): Docling document object.
 
         Returns:
-            str: Complete document in Markdown format.
+            str: Complete document serialized for the LLM.
         """
-        md = document.export_to_markdown()
+        text = self.serialize_document(document)
         rich_print(
-            f"[blue][DocumentProcessor][/blue] Extracted full document Markdown ([cyan]{len(md)}[/cyan] chars)"
+            f"[blue][DocumentProcessor][/blue] Extracted full document "
+            f"[cyan]{self.llm_input_format}[/cyan] ([cyan]{len(text)}[/cyan] chars)"
         )
-        return md
+        return text
 
     def chunk_text(self, text: str) -> tuple[List[str], List[dict]]:
         """
@@ -420,6 +558,7 @@ class DocumentProcessor:
                     "page_numbers": [0],  # Text inputs don't have pages
                     "token_count": token_count,
                     "doc_item_refs": [],
+                    "item_geometry": [],  # No geometry for raw text input
                     "headings": [],
                     "text_hash": _chunk_text_hash(chunk_text),
                     "char_length": len(chunk_text),

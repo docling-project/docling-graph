@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from ....utils.doclang_format import prompt_framing
 from .catalog import NodeCatalog, NodeSpec
 
 
@@ -36,9 +37,13 @@ def get_skeleton_batch_prompt(
     global_context: str | None = None,
     already_found: str | None = None,
     semantic_guide: str | None = None,
+    input_format: str = "markdown",
 ) -> dict[str, str]:
     """Build system and user prompts for one skeleton (Phase 1) batch."""
+    framing = prompt_framing(input_format)
+    framing_block = f"{framing}\n\n" if framing else ""
     system_prompt = (
+        f"{framing_block}"
         "You are an expert extraction engine for document structure. "
         "Your task is to identify every distinct entity instance per catalog path. "
         "Do NOT extract any data fields, measurements, or property values. "
@@ -51,7 +56,7 @@ def get_skeleton_batch_prompt(
         "Rules:\n"
         '1. Use ONLY the catalog paths listed. Each node has exactly: "i" (its handle: a sequential integer starting at 1, unique in this response), "path", "ids" (identifier values from the document), and "p" (the handle of its parent node in this response; omit or null for the root).\n'
         '2. Emit the root (path "", no parent) exactly once, first. Every other node\'s "p" must reference the handle of a node in this same response whose path is its parent path in the catalog. If a parent entity appears in ALREADY EXTRACTED but not in this response, re-emit that parent here with the same ids so its children can reference it; duplicates are merged automatically.\n'
-        "3. ids values are short labels copied verbatim from the document — a code, number, or name of at most a few words, never a sentence or description. Use figure labels, table rows, section titles that name entities (e.g. FIG-4, Sample A, Protocol 1). Do not use generic section/chapter titles as identities for localized entities. For global/singleton entities (e.g. one protocol or one setup for the whole document), use a short descriptive id from the text or section (e.g. General Protocol) or ids={} if the schema allows; ensure at least one root and such singletons are still emitted.\n"
+        '3. ids values are short labels copied verbatim from the document — a code, number, or name of at most a few words, never a sentence or description. Every ids entry MUST be a complete "field": "value" pair (e.g. {"name": "Gardenwork"}); NEVER emit a bare value without its field name. Use figure labels, table rows, section titles that name entities (e.g. FIG-4, Sample A, Protocol 1). Do not use generic section/chapter titles as identities for localized entities. For global/singleton entities (e.g. one protocol or one setup for the whole document), use a short descriptive id from the text or section (e.g. General Protocol) or ids={} if the schema allows; ensure at least one root and such singletons are still emitted.\n'
         '4. Always prefer the most specific proper name that the document gives an entity over a generic category word or a positional label. If a set of items each carry their own name, use those names as ids. For example, when a document lists offers named ESSENTIELLE, CONFORT and CONFORT PLUS, the ids must be "ESSENTIELLE", "CONFORT", "CONFORT PLUS" — NOT the generic word "Offer"/"Offre" nor positional labels like "Offer 1", "Offer 2". Only fall back to a generic or positional label when the document truly gives the entity no name of its own.\n'
         "5. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance.\n"
         '6. Output valid JSON only: {"nodes": [{"i": 1, "path": "", "ids": {}}, {"i": 2, "path": "...", "ids": {"...": "..."}, "p": 1}]}. No other fields.\n'
@@ -150,13 +155,17 @@ def get_fill_batch_prompt(
     spec: NodeSpec,
     descriptors: list[dict[str, Any]],
     projected_schema_json: str,
+    input_format: str = "markdown",
 ) -> dict[str, str]:
     """Build system and user prompts for one fill (Phase 2) batch."""
     n = len(descriptors)
     # Every instance id must be listed: the response is matched back to
     # descriptors by position, so the LLM needs the complete ordered list.
     instances_preview = json.dumps([d.get("ids") or {} for d in descriptors], indent=2, default=str)
+    framing = prompt_framing(input_format)
+    framing_block = f"{framing}\n\n" if framing else ""
     system_prompt = (
+        f"{framing_block}"
         "You are a precise extraction assistant. For each of the given node instances, "
         "fill all fields from the document according to the JSON schema. "
         'Return a single JSON object with key "items" containing an array of filled objects, one per instance in the same order. '

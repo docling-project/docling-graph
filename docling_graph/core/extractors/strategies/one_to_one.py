@@ -26,17 +26,27 @@ class OneToOneStrategy(BaseExtractor):
     Extracts one model per page/item using Protocol-based type checking.
     """
 
-    def __init__(self, backend: Backend, docling_config: str = "default") -> None:
+    def __init__(
+        self,
+        backend: Backend,
+        docling_config: str = "default",
+        llm_input_format: str = "markdown",
+    ) -> None:
         """Initialize with a backend (VlmBackend or LlmBackend).
 
         Args:
             backend: Extraction backend instance implementing either
                 ExtractionBackendProtocol or TextExtractionBackendProtocol.
             docling_config: Docling pipeline configuration ('ocr' or 'vision').
+            llm_input_format: Document serialization for the LLM ('markdown',
+                'doclang', or 'doclang-geo').
         """
         super().__init__()  # Initialize base extractor with trace_data attribute
         self.backend = backend
-        self.doc_processor = DocumentProcessor(docling_config=docling_config)
+        self.doc_processor = DocumentProcessor(
+            docling_config=docling_config,
+            llm_input_format=llm_input_format,
+        )
 
         backend_type = get_backend_type(self.backend)
         rich_print(
