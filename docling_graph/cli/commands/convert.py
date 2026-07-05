@@ -199,7 +199,11 @@ def convert_command(
         str | None,
         typer.Option(
             "--extraction-contract",
-            help="Extraction contract: 'direct' or 'dense'.",
+            help=(
+                "Extraction contract: 'direct' (single full-document call), 'dense' "
+                "(skeleton-then-fill over chunks), or 'auto' (picks direct or dense per "
+                "document based on its size vs. the model's context window and output budget)."
+            ),
         ),
     ] = None,
     backend: Annotated[
@@ -488,11 +492,11 @@ def convert_command(
     rich_print(f"  • Structured Sparse Check: [cyan]{final_structured_sparse_check}[/cyan]")
     rich_print(f"  • Provenance: [cyan]{settings['provenance']}[/cyan]")
     rich_print(f"  • Debug: [cyan]{debug}[/cyan]")
-    if extraction_contract_val == "direct":
+    if extraction_contract_val in ("direct", "auto"):
         rich_print(f"  • Gleaning: [cyan]{final_gleaning_enabled}[/cyan]")
     if final_chunk_max_tokens is not None:
         rich_print(f"  • Chunk Max Tokens: [cyan]{final_chunk_max_tokens}[/cyan]")
-    if extraction_contract_val == "dense":
+    if extraction_contract_val in ("dense", "auto"):
         rich_print("[yellow][DenseTuning][/yellow]")
         rich_print(
             f"  • Skeleton batch tokens: [cyan]{settings['dense_skeleton_batch_tokens']}[/cyan], "

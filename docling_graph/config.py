@@ -27,7 +27,7 @@ class ExtractorConfig(BaseModel):
     """Configuration for the extraction strategy."""
 
     strategy: Literal["many-to-one", "one-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "dense"] = Field(default="direct")
+    extraction_contract: Literal["direct", "dense", "auto"] = Field(default="direct")
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
     use_chunking: bool = Field(default=True)
     chunker_config: Dict[str, Any] | None = Field(default=None)
@@ -94,7 +94,15 @@ class PipelineConfig(BaseModel):
     backend: Literal["llm", "vlm"] = Field(default="llm")
     inference: Literal["local", "remote"] = Field(default="local")
     processing_mode: Literal["one-to-one", "many-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "dense"] = Field(default="direct")
+    extraction_contract: Literal["direct", "dense", "auto"] = Field(
+        default="direct",
+        description=(
+            "Extraction contract: 'direct' (single full-document call), 'dense' "
+            "(skeleton-then-fill over chunks), or 'auto' (per document, picks direct "
+            "when a single call fits the model's context window and output budget, "
+            "dense otherwise)."
+        ),
+    )
 
     # Docling settings (with defaults)
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")

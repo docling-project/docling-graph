@@ -13,8 +13,9 @@ CONFIG_FILE_NAME: Final[str] = "config.yaml"
 # Processing modes (enum for validation)
 PROCESSING_MODES: Final[list[str]] = ["one-to-one", "many-to-one"]
 
-# Extraction contracts (prompt/execution behavior for LLM backend)
-EXTRACTION_CONTRACTS: Final[list[str]] = ["direct", "dense"]
+# Extraction contracts (prompt/execution behavior for LLM backend).
+# "auto" resolves to direct or dense per document once its size is known.
+EXTRACTION_CONTRACTS: Final[list[str]] = ["direct", "dense", "auto"]
 
 # Backend types (enum for validation)
 BACKENDS: Final[list[str]] = ["llm", "vlm"]
