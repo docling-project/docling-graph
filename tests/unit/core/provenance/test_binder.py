@@ -149,6 +149,33 @@ class TestBindProvenance:
         assert any(a.kind == "verbatim" for a in emp_entry.anchors)
         assert ledger.resolution == "span"
 
+    def test_verbatim_binding_carries_element_refs(self):
+        # Chunks backed by docling items: the verbatim-located node's view
+        # links straight to the source elements via refs (#/texts/N).
+        ledger = _company_ledger(chunk_text={0: "intro about Acme", 1: "reach jane@acme.com now"})
+        ledger.chunks[1] = ledger.chunks[1].model_copy(
+            update={"doc_item_refs": ("#/texts/7", "#/tables/0")}
+        )
+        company = _company()
+        graph, registry, _stats = _convert_with_binding(company, ledger)
+
+        emp_id = registry.get_node_id(company.employees[0])
+        view = graph.nodes[emp_id][PROVENANCE_NODE_ATTR]
+        assert view["match"] == "verbatim"
+        assert view["refs"] == ["#/texts/7", "#/tables/0"]
+
+    def test_observed_binding_carries_element_refs(self):
+        # The approximate (observed) path also surfaces refs from its chunks.
+        ledger = _company_ledger()
+        ledger.chunks[1] = ledger.chunks[1].model_copy(update={"doc_item_refs": ("#/texts/3",)})
+        company = _company()
+        graph, registry, _stats = _convert_with_binding(company, ledger)
+
+        emp_id = registry.get_node_id(company.employees[0])
+        view = graph.nodes[emp_id][PROVENANCE_NODE_ATTR]
+        assert view["match"] == "observed"
+        assert view["refs"] == ["#/texts/3"]
+
     def test_unresolved_marks_dense_node_without_guessing(self):
         # Dense ledger (node_level=True): an unmatched, unlocatable node is
         # unresolved, never a wrong attribution.

@@ -495,6 +495,202 @@ class TestDoclingDocumentInput:
 
 
 @pytest.mark.integration
+class TestDoclangInput:
+    """Test first-class DocLang (.dclg) input through the pipeline."""
+
+    @pytest.fixture
+    def temp_dir(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield Path(tmpdir)
+
+    @pytest.fixture
+    def dclg_file(self, temp_dir):
+        from docling_core.types.doc import DoclingDocument
+        from docling_core.types.doc.base import BoundingBox, CoordOrigin
+        from docling_core.types.doc.document import ProvenanceItem
+        from docling_core.types.doc.labels import DocItemLabel
+
+        doc = DoclingDocument(name="sample")
+        doc.add_page(page_no=1, size={"width": 612, "height": 792})
+        prov = ProvenanceItem(
+            page_no=1,
+            bbox=BoundingBox(l=10, t=10, r=200, b=30, coord_origin=CoordOrigin.TOPLEFT),
+            charspan=(0, 14),
+        )
+        doc.add_heading(text="Invoice #12345", prov=prov)
+        prov2 = ProvenanceItem(
+            page_no=1,
+            bbox=BoundingBox(l=10, t=40, r=200, b=60, coord_origin=CoordOrigin.TOPLEFT),
+            charspan=(0, 20),
+        )
+        doc.add_text(label=DocItemLabel.TEXT, text="Total due: $1,250.00", prov=prov2)
+        path = temp_dir / "sample.dclg"
+        doc.save_as_doclang(path)
+        return path
+
+    def test_doclang_normalization_skips_conversion(self, dclg_file, temp_dir):
+        """DocLang input parses into a DoclingDocument and skips conversion."""
+        from docling_graph.config import PipelineConfig
+        from docling_graph.pipeline.context import PipelineContext
+        from docling_graph.pipeline.stages import InputNormalizationStage
+
+        config = PipelineConfig(
+            source=str(dclg_file),
+            template="some.template.Class",
+            processing_mode="many-to-one",
+            backend="llm",
+            inference="local",
+            docling_config="ocr",
+            output_dir=str(temp_dir / "output"),
+            export_format="csv",
+        )
+        context = PipelineContext(config=config)
+        context = InputNormalizationStage(mode="cli").execute(context)
+
+        assert context.input_metadata.get("input_type") == "doclang"
+        assert context.input_metadata.get("skip_document_conversion") is True
+        assert context.docling_document is not None
+        assert context.normalized_source is None
+        assert [t.text for t in context.docling_document.texts] == [
+            "Invoice #12345",
+            "Total due: $1,250.00",
+        ]
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.LlmBackend.extract_from_markdown")
+    def test_doclang_extraction_pipeline_records_input_type(
+        self, mock_extract, dclg_file, temp_dir
+    ):
+        """Full pipeline over DocLang input runs and records input_type=doclang."""
+        from pydantic import BaseModel, Field
+
+        from docling_graph.config import PipelineConfig
+
+        class Invoice(BaseModel):
+            invoice_number: str = Field(description="Invoice number")
+            total: float = Field(description="Total amount")
+
+        mock_extract.return_value = Invoice(invoice_number="12345", total=1250.0)
+
+        out_dir = temp_dir / "output"
+        config = PipelineConfig(
+            source=str(dclg_file),
+            template=Invoice,
+            processing_mode="many-to-one",
+            extraction_contract="direct",
+            backend="llm",
+            inference="local",
+            docling_config="ocr",
+            output_dir=str(out_dir),
+            export_format="csv",
+            use_chunking=False,
+            provenance="standard",
+            dump_to_disk=True,  # force exports in API mode
+        )
+
+        run_pipeline(config, mode="api")
+        assert mock_extract.called
+
+        # DocLang input: the source file already is the artifact, so the export
+        # stage must not re-serialize a document.dclg (lossy round trip). The
+        # canonical JSON and markdown views are still written.
+        docling_dirs = list(out_dir.glob("*/docling"))
+        assert docling_dirs, "expected a docling export directory"
+        docling_dir = docling_dirs[0]
+        assert (docling_dir / "document.json").exists()
+        assert not (docling_dir / "document.dclg").exists()
+
+
+@pytest.mark.integration
+class TestLlmInputFormat:
+    """Test the opt-in DocLang LLM serialization end-to-end."""
+
+    @pytest.fixture
+    def temp_dir(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield Path(tmpdir)
+
+    @pytest.fixture
+    def dclg_file(self, temp_dir):
+        from docling_core.types.doc import DoclingDocument
+        from docling_core.types.doc.base import BoundingBox, CoordOrigin
+        from docling_core.types.doc.document import ProvenanceItem
+
+        doc = DoclingDocument(name="sample")
+        doc.add_page(page_no=1, size={"width": 612, "height": 792})
+        prov = ProvenanceItem(
+            page_no=1,
+            bbox=BoundingBox(l=10, t=10, r=200, b=30, coord_origin=CoordOrigin.TOPLEFT),
+            charspan=(0, 14),
+        )
+        doc.add_heading(text="Invoice #12345", prov=prov)
+        path = temp_dir / "sample.dclg"
+        doc.save_as_doclang(path)
+        return path
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.LlmBackend.extract_from_markdown")
+    def test_doclang_format_sends_xml_text_to_llm(self, mock_extract, dclg_file, temp_dir):
+        """With llm_input_format=doclang, the LLM receives DocLang XML, not markdown."""
+        from pydantic import BaseModel, Field
+
+        from docling_graph.config import PipelineConfig
+
+        class Invoice(BaseModel):
+            invoice_number: str = Field(description="Invoice number")
+
+        mock_extract.return_value = Invoice(invoice_number="12345")
+
+        config = PipelineConfig(
+            source=str(dclg_file),
+            template=Invoice,
+            processing_mode="many-to-one",
+            extraction_contract="direct",
+            backend="llm",
+            inference="local",
+            output_dir=str(temp_dir / "output"),
+            export_format="csv",
+            use_chunking=False,
+            llm_input_format="doclang",
+            provenance="off",
+        )
+        run_pipeline(config, mode="api")
+
+        assert mock_extract.called
+        sent = mock_extract.call_args.kwargs.get("markdown", "")
+        assert "<heading" in sent or "<text>" in sent
+
+    @patch("docling_graph.core.extractors.backends.llm_backend.LlmBackend.extract_from_markdown")
+    def test_markdown_format_default_sends_plain_text(self, mock_extract, dclg_file, temp_dir):
+        """Default (markdown) sends plain markdown, no XML tags."""
+        from pydantic import BaseModel, Field
+
+        from docling_graph.config import PipelineConfig
+
+        class Invoice(BaseModel):
+            invoice_number: str = Field(description="Invoice number")
+
+        mock_extract.return_value = Invoice(invoice_number="12345")
+
+        config = PipelineConfig(
+            source=str(dclg_file),
+            template=Invoice,
+            processing_mode="many-to-one",
+            extraction_contract="direct",
+            backend="llm",
+            inference="local",
+            output_dir=str(temp_dir / "output"),
+            export_format="csv",
+            use_chunking=False,
+            provenance="off",
+        )
+        run_pipeline(config, mode="api")
+
+        assert mock_extract.called
+        sent = mock_extract.call_args.kwargs.get("markdown", "")
+        assert "<heading" not in sent and "<text>" not in sent
+        assert "Invoice #12345" in sent
+
+
+@pytest.mark.integration
 class TestPipelineWithNewInputs:
     """Test complete pipeline execution with new input formats."""
 

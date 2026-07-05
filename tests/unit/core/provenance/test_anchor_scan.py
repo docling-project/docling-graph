@@ -6,7 +6,10 @@ from docling_graph.core.provenance import (
     ProvenanceLedger,
     SourceAnchor,
 )
-from docling_graph.core.provenance.anchor_scan import refine_ledger_spans
+from docling_graph.core.provenance.anchor_scan import (
+    locate_identifier,
+    refine_ledger_spans,
+)
 
 
 def _ledger(
@@ -82,3 +85,26 @@ class TestRefineLedgerSpans:
         # chunk 7 is not part of the ledger's chunk index -> never scanned
         texts = {0: "nothing here", 7: "widget pro lives here"}
         assert refine_ledger_spans(ledger, texts) == 0
+
+
+class TestEscapeAwareLocate:
+    """DocLang chunk text entity-escapes & < >; the scan retries the escaped form."""
+
+    def test_finds_ampersand_value_in_escaped_text(self):
+        # DocLang serializes "R&D Corp" as "R&amp;D Corp".
+        hits = locate_identifier("R&D Corp", {0: "<text>R&amp;D Corp report</text>"})
+        assert len(hits) == 1
+        chunk_id, (start, end) = hits[0]
+        assert chunk_id == 0
+        assert "R&amp;D Corp" in "<text>R&amp;D Corp report</text>"[start:end]
+
+    def test_finds_angle_bracket_value_in_escaped_text(self):
+        hits = locate_identifier("A<B threshold", {0: "note A&lt;B threshold here"})
+        assert len(hits) == 1
+
+    def test_plain_value_still_found_without_escaping(self):
+        hits = locate_identifier("Widget Pro", {0: "the Widget Pro sheet"})
+        assert len(hits) == 1
+
+    def test_absent_value_returns_empty(self):
+        assert locate_identifier("R&D Corp", {0: "unrelated text"}) == []

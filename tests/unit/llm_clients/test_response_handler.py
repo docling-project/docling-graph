@@ -182,6 +182,50 @@ class TestResponseHandler:
         assert response == {"nom": "text\t\t"}
 
 
+class TestLongestValidPrefixSalvage:
+    """Truncated/stalled generations: recover every complete element emitted."""
+
+    def test_recovers_nodes_before_broken_element_and_whitespace_runaway(self):
+        """The exact failure shape from a guided-decoding stall: a bare value
+        emitted as an object key ('{"Gardenwork"') followed by a whitespace
+        runaway until max_tokens. All five complete nodes must be recovered."""
+        raw = (
+            '{"nodes": [{"i": 1, "path": "", "ids": {"document_number": "3139"}}, '
+            '{"i": 2, "path": "seller", "ids": {"name": "Robert Schneider"}}, '
+            '{"i": 3, "path": "buyer", "ids": {"name": "Pia Rutschmann"}}, '
+            '{"i": 4, "path": "line_items[]", "ids": {"1": "Gardenwork"}}, '
+            '{"i": 5, "path": "line_items[]", "ids": {"2": "Disposal of cuttings"}}, '
+            '{"i": 6, "path": "line_items[].item", "ids": {"Gardenwork"' + ("\n    " * 100)
+        )
+        parsed = ResponseHandler.parse_json_response(
+            raw, "TestClient", truncated=True, max_tokens=4092
+        )
+        assert isinstance(parsed, dict)
+        assert len(parsed["nodes"]) == 5
+        assert parsed["nodes"][4]["ids"] == {"2": "Disposal of cuttings"}
+
+    def test_recovers_prefix_cut_mid_string_value(self):
+        """Truncation mid string-value: complete prior elements survive."""
+        raw = '{"items": [{"a": 1}, {"b": 2}, {"c": "unterminat'
+        parsed = ResponseHandler.parse_json_response(
+            raw, "TestClient", truncated=True, max_tokens=100
+        )
+        assert isinstance(parsed, dict)
+        assert parsed["items"][:2] == [{"a": 1}, {"b": 2}]
+
+    def test_totally_unrecoverable_still_raises(self):
+        with pytest.raises(ClientError):
+            ResponseHandler.parse_json_response(
+                '{"nodes": [{"i"', "TestClient", truncated=True, max_tokens=10
+            )
+
+    def test_valid_json_untouched(self):
+        parsed = ResponseHandler.parse_json_response(
+            '{"nodes": [{"i": 1}]}', "TestClient", truncated=False
+        )
+        assert parsed == {"nodes": [{"i": 1}]}
+
+
 class TestFastPath:
     """Well-formed JSON must bypass the character-level cleaning passes."""
 
