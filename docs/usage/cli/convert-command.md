@@ -263,6 +263,14 @@ uv run docling-graph convert small_doc.pdf \
 
 ---
 
+### Extraction contract
+
+`--extraction-contract` accepts `direct` (default), `dense`, or `auto`:
+
+- `direct` — single full-document call, fastest for documents that fit the model.
+- `dense` — two-phase skeleton-then-flesh over chunks; scales to documents far beyond the model's context window.
+- `auto` — resolves to `direct` or `dense` per document once its converted size is known: `direct` only when a single call fits both the model's context window and its output-token budget. The decision is logged as `[AutoContract] Resolved contract=... (...)` with the token estimates that drove it. Use this to avoid running `direct` on documents that are too large for it.
+
 ### Dense extraction
 
 Use `--extraction-contract dense` for two-phase **skeleton-then-flesh** extraction (many-to-one, chunking required). Phase 1 discovers all entity instances per catalog path; Phase 2 fills each instance with full schema data from the document. See [Dense Extraction](../../fundamentals/extraction-process/dense-extraction.md) and [Configuration reference](../../reference/config.md).

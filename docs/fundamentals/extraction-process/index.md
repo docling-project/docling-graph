@@ -150,6 +150,9 @@ For LLM many-to-one extraction you can choose:
 
 - **direct** (default): Single-pass extraction then programmatic merge.
 - **dense**: Two-phase skeleton-then-flesh (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
+- **auto**: Decides between the two per document, after conversion, once the actual document size is known. Direct is picked only when a single full-document call fits both the model's context window and its output-token budget (so a 100-page PDF never gets sent into a doomed single call); dense is picked otherwise. The decision and the numbers behind it are logged as `[AutoContract] Resolved contract=... (...)`.
+
+`auto` is the recommended setting when you process documents of varying sizes with local models, whose context windows and output budgets are often much smaller than the documents you feed them.
 
 ---
 

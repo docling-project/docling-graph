@@ -27,7 +27,7 @@ config = PipelineConfig(
     backend: Literal["llm", "vlm"] = "llm",
     inference: Literal["local", "remote"] = "local",
     processing_mode: Literal["one-to-one", "many-to-one"] = "many-to-one",
-    extraction_contract: Literal["direct", "dense"] = "direct",
+    extraction_contract: Literal["direct", "dense", "auto"] = "direct",
     docling_config: Literal["ocr", "vision"] = "ocr",
     model_override: str | None = None,
     provider_override: str | None = None,
@@ -72,7 +72,7 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `"direct"` or `"dense"` | `"direct"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-flesh) |
+| `extraction_contract` | `"direct"`, `"dense"`, or `"auto"` | `"direct"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-flesh; `auto` resolves per document — direct only when a single call fits the model's context window and output budget, dense otherwise; the decision is logged as `[AutoContract]`) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
 | `llm_input_format` | `"markdown"`, `"doclang"`, or `"doclang-geo"` | `"markdown"` | Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost) |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
