@@ -20,12 +20,14 @@ from .identity import (
 from .models import (
     ChunkRecord,
     DocumentOrigin,
+    ItemGeometry,
     NodeProvenance,
     ProvenanceLedger,
     SourceAnchor,
     chunk_index_ledger,
     content_hash,
     document_level_ledger,
+    geometry_from_meta,
     text_hash,
 )
 
@@ -33,6 +35,7 @@ __all__ = [
     "PROVENANCE_NODE_ATTR",
     "ChunkRecord",
     "DocumentOrigin",
+    "ItemGeometry",
     "NodeProvenance",
     "ProvenanceLedger",
     "SourceAnchor",
@@ -41,6 +44,7 @@ __all__ = [
     "compact_view",
     "content_hash",
     "document_level_ledger",
+    "geometry_from_meta",
     "identity_key",
     "identity_pairs",
     "merge_compact_views",

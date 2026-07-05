@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from typing import Mapping
+from xml.sax.saxutils import escape as _xml_escape
 
 from .models import ProvenanceLedger, SourceAnchor
 
@@ -58,18 +59,35 @@ def locate_identifier(
 
     Empty when the value is non-distinctive (too short/numeric), absent, or so
     common it exceeds the chunk cap.
+
+    When chunk text is DocLang, XML special characters are entity-escaped
+    (``R&D`` -> ``R&amp;D``), so a value containing ``& < > " '`` is retried in
+    its escaped form. Any returned span points at the occurrence in the stored
+    chunk text, keeping the ledger's spans consistent with its ``text``.
     """
     value = (value or "").strip()
     if len(value) < _MIN_TEXT_LEN:
         return []
     if value.isdigit() and len(value) < _MIN_DIGIT_ONLY_LEN:
         return []
+    matches = _scan(value, chunk_texts)
+    if matches:
+        return matches
+    # Retry escaped form only when the value actually has escapable characters.
+    escaped = _xml_escape(value)
+    if escaped != value and len(escaped) >= _MIN_TEXT_LEN:
+        return _scan(escaped, chunk_texts)
+    return matches
+
+
+def _scan(needle: str, chunk_texts: Mapping[int, str]) -> list[tuple[int, tuple[int, int]]]:
+    """Locate one needle across chunks with the distinctiveness cap applied."""
     matches: list[tuple[int, tuple[int, int]]] = []
     for chunk_id, chunk_text in chunk_texts.items():
         if not chunk_text:
             continue
-        if value.casefold() in chunk_text.casefold():
-            span = _first_occurrence(value, chunk_text)
+        if needle.casefold() in chunk_text.casefold():
+            span = _first_occurrence(needle, chunk_text)
             if span is None:
                 continue
             matches.append((chunk_id, span))
