@@ -69,6 +69,7 @@ venv.bak/
 .idea/
 .vscode/
 .bob/
+.claude/
 .cursor/
 
 # Jupyter Notebook
