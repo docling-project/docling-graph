@@ -325,6 +325,79 @@ class URLValidator(InputValidator):
             ) from e
 
 
+class DoclangValidator(InputValidator):
+    """Validates DocLang inputs (.dclg / .dclg.xml / .dclx).
+
+    Only cheap structural checks are done here (existence, non-empty, root tag /
+    ZIP magic); the Docling DocLang backend performs full schema validation when
+    the file is parsed.
+    """
+
+    _ZIP_MAGIC = b"PK\x03\x04"
+
+    def validate(self, source: Union[str, Path]) -> None:
+        if source is None:
+            raise ValidationError(
+                "DocLang source cannot be None",
+                details={"hint": "Provide a path to a .dclg, .dclg.xml or .dclx file"},
+            )
+
+        path = Path(source)
+        if not path.exists():
+            raise ConfigurationError(
+                f"DocLang file not found: {path}",
+                details={"file": str(path)},
+            )
+        if not path.is_file():
+            raise ConfigurationError(
+                f"Not a file: {path}",
+                details={"file": str(path)},
+            )
+        if path.stat().st_size == 0:
+            raise ValidationError(
+                f"DocLang file is empty: {path}",
+                details={"file": str(path)},
+            )
+
+        name = path.name.lower()
+        if name.endswith(".dclx"):
+            self._validate_archive(path)
+        else:
+            self._validate_xml(path)
+
+    def _validate_archive(self, path: Path) -> None:
+        """A .dclx archive must be a ZIP (OPC container)."""
+        try:
+            with open(path, "rb") as f:
+                magic = f.read(4)
+        except OSError as e:
+            raise ValidationError(
+                f"Error reading DocLang archive: {path}",
+                details={"file": str(path), "error": str(e)},
+            ) from e
+        if magic != self._ZIP_MAGIC:
+            raise ValidationError(
+                f"DocLang archive is not a valid ZIP container: {path}",
+                details={"file": str(path), "hint": ".dclx must be an OPC ZIP archive"},
+            )
+
+    def _validate_xml(self, path: Path) -> None:
+        """A .dclg / .dclg.xml document must open a <doclang> root element."""
+        try:
+            with open(path, encoding="utf-8", errors="ignore") as f:
+                head = f.read(2048)
+        except OSError as e:
+            raise ValidationError(
+                f"Error reading DocLang file: {path}",
+                details={"file": str(path), "error": str(e)},
+            ) from e
+        if "<doclang" not in head:
+            raise ValidationError(
+                f"File does not appear to be DocLang (no <doclang> root): {path}",
+                details={"file": str(path)},
+            )
+
+
 class DoclingDocumentValidator(InputValidator):
     """Validates DoclingDocument JSON files."""
 

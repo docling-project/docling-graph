@@ -61,6 +61,7 @@ class DocumentChunker:
         tokenizer_name: str | None = None,
         chunk_max_tokens: int = 512,
         merge_peers: bool = True,
+        serializer_provider: object | None = None,
     ) -> None:
         """
         Initialize the chunker with explicit parameters.
@@ -69,6 +70,8 @@ class DocumentChunker:
             tokenizer_name: Name of the tokenizer to use (default: sentence-transformers/all-MiniLM-L6-v2)
             chunk_max_tokens: Maximum tokens per chunk (default: 512)
             merge_peers: Whether to merge peer sections in chunking (default: True)
+            serializer_provider: Optional ChunkingSerializerProvider controlling how
+                chunk text is serialized (e.g. DocLang instead of the markdown default).
         """
         if tokenizer_name is None:
             tokenizer_name = "sentence-transformers/all-MiniLM-L6-v2"
@@ -76,6 +79,7 @@ class DocumentChunker:
         self.tokenizer_name = tokenizer_name
         self.chunk_max_tokens = chunk_max_tokens
         self.merge_peers = merge_peers
+        self.serializer_provider = serializer_provider
 
         # Initialize tokenizer (library API uses max_tokens)
         if tokenizer_name == "tiktoken":
@@ -109,17 +113,21 @@ class DocumentChunker:
                 max_tokens=chunk_max_tokens,
             )
 
-        # Initialize HybridChunker
-        self.chunker = HybridChunker(
-            tokenizer=self.tokenizer,
-            merge_peers=merge_peers,
-        )
+        # Initialize HybridChunker (serializer_provider controls chunk text format)
+        chunker_kwargs: dict[str, object] = {
+            "tokenizer": self.tokenizer,
+            "merge_peers": merge_peers,
+        }
+        if serializer_provider is not None:
+            chunker_kwargs["serializer_provider"] = serializer_provider
+        self.chunker = HybridChunker(**chunker_kwargs)
 
         rich_print(
             f"[blue][DocumentChunker][/blue] Initialized with:\n"
             f"  • Tokenizer: [cyan]{tokenizer_name}[/cyan]\n"
             f"  • Chunk Max Tokens: [yellow]{chunk_max_tokens}[/yellow]\n"
-            f"  • Merge Peers: {merge_peers}"
+            f"  • Merge Peers: {merge_peers}\n"
+            f"  • Serializer: [cyan]{'doclang' if serializer_provider is not None else 'markdown'}[/cyan]"
         )
 
     def chunk_document(self, document: DoclingDocument) -> List[str]:

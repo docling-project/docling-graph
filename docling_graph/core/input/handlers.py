@@ -598,6 +598,53 @@ class URLInputHandler(InputHandler):
         return ".bin"
 
 
+class DoclangInputHandler(InputHandler):
+    """Handles DocLang inputs (.dclg / .dclg.xml / .dclx).
+
+    DocLang carries content + structure + geometry, so it is parsed directly into
+    a ``DoclingDocument`` and the expensive Docling conversion (OCR/layout/VLM
+    model stack) is skipped. ``.dclx`` archives load via the native archive
+    loader; bare ``.dclg`` documents parse through a plain ``DocumentConverter``
+    (its declarative DocLang backend needs no conversion models).
+    """
+
+    def load(self, source: Union[str, Path]) -> DoclingDocument:
+        """Parse a DocLang file into a DoclingDocument.
+
+        Raises:
+            ValidationError: If the file is missing or cannot be parsed as DocLang.
+        """
+        path = Path(source)
+
+        if not path.exists():
+            raise ValidationError(
+                f"DocLang file not found: {path}",
+                details={"file": str(path)},
+            )
+        if not path.is_file():
+            raise ValidationError(
+                f"Not a file: {path}",
+                details={"file": str(path)},
+            )
+
+        try:
+            if path.name.lower().endswith(".dclx"):
+                return DoclingDocument.load_from_doclang_archive(path)
+
+            # Local import: DocumentConverter pulls in heavy optional deps.
+            from docling.document_converter import DocumentConverter
+
+            result = DocumentConverter().convert(str(path))
+            return result.document
+        except ValidationError:
+            raise
+        except Exception as e:
+            raise ValidationError(
+                "Failed to parse DocLang file",
+                details={"file": str(path), "error": str(e), "type": type(e).__name__},
+            ) from e
+
+
 class DoclingDocumentHandler(InputHandler):
     """Handles serialized DoclingDocument JSON files."""
 

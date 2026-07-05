@@ -17,6 +17,7 @@ from typing import Any, TypedDict
 from pydantic import BaseModel
 
 from .....llm_clients.schema_utils import build_compact_semantic_guide
+from ....utils.doclang_format import prompt_framing
 
 
 class PromptDict(TypedDict):
@@ -90,6 +91,7 @@ def get_extraction_prompt(
     structured_output: bool = True,
     schema_dict: dict[str, Any] | None = None,
     force_legacy_prompt_schema: bool = False,
+    input_format: str = "markdown",
 ) -> dict[str, str]:
     """
     Generate system and user prompts for LLM extraction.
@@ -98,20 +100,25 @@ def get_extraction_prompt(
     The model_config parameter is kept for backward compatibility but not used.
 
     Args:
-        markdown_content: Document text in markdown format
+        markdown_content: Document text (markdown or DocLang, per input_format)
         schema_json: JSON schema for extraction target
         is_partial: Whether this is a partial document (page) or complete
         model_config: Deprecated, kept for backward compatibility
+        input_format: Serialization of markdown_content ('markdown', 'doclang',
+            'doclang-geo'); DocLang formats add a one-line orientation to the prompt.
 
     Returns:
         Dictionary with 'system' and 'user' prompt strings
     """
     instructions = _EXTRACTION_INSTRUCTIONS
+    framing = prompt_framing(input_format)
+    framing_block = f"{framing}\n\n" if framing else ""
 
     if is_partial:
         system_prompt = (
             "You are an expert data extraction assistant. "
             "Extract structured information from document pages.\n\n"
+            f"{framing_block}"
             f"Instructions:\n{instructions}\n"
             "Note: This is a partial page; incomplete data is expected.\n\n"
             "Important: Your response MUST be valid JSON."
@@ -120,6 +127,7 @@ def get_extraction_prompt(
         system_prompt = (
             "You are an expert data extraction assistant. "
             "Extract structured information from complete documents.\n\n"
+            f"{framing_block}"
             f"Instructions:\n{instructions}\n"
             "Be thorough: Extract all available information.\n\n"
             "Important: Your response MUST be valid JSON."

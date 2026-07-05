@@ -88,7 +88,7 @@ class ResponseHandler:
 
         except json.JSONDecodeError as e:
             # Try to repair common JSON syntax errors (missing commas, etc.)
-            repaired = ResponseHandler._attempt_json_repair(content)
+            repaired = ResponseHandler._attempt_json_repair(content, truncated=truncated)
             if repaired is not None:
                 if truncated:
                     ResponseHandler._warn_truncation(client_name, max_tokens, recovered=True)
@@ -431,7 +431,9 @@ class ResponseHandler:
         return parsed
 
     @staticmethod
-    def _attempt_json_repair(content: str) -> Dict[str, Any] | list[Any] | None:
+    def _attempt_json_repair(
+        content: str, truncated: bool = False
+    ) -> Dict[str, Any] | list[Any] | None:
         """
         Attempt to repair truncated JSON.
 
@@ -442,9 +444,12 @@ class ResponseHandler:
         4. Find the last complete object/array before truncation
         5. Close unclosed brackets intelligently
         6. Remove incomplete trailing data
+        6b. (truncated only) Longest valid prefix — cut back to the last
+            completed element and close open brackets
 
         Args:
             content: Potentially truncated JSON string
+            truncated: Whether the response hit max_tokens (enables prefix salvage)
 
         Returns:
             Repaired JSON object/array, or None if unrepairable
@@ -562,6 +567,19 @@ class ResponseHandler:
             return result if isinstance(result, dict | list) else None
         except json.JSONDecodeError:
             pass
+
+        # Strategy 6b: Longest valid prefix — only for genuinely truncated
+        # responses (hit max_tokens), where the tail is known-broken by
+        # construction. Stalled generations often end mid-element (e.g.
+        # '"ids": {"Gardenwork' followed by a whitespace runaway); cut back to
+        # the last completed value and close what is still open, recovering
+        # every complete element emitted before the failure point. Not applied
+        # to non-truncated responses so malformed-but-complete output (e.g.
+        # trailing commentary) keeps failing loudly.
+        if truncated:
+            recovered = ResponseHandler._longest_valid_prefix(content)
+            if recovered is not None:
+                return recovered
 
         # Strategy 7: Find last complete array/object element
         # For arrays: find last complete element before truncation
@@ -693,6 +711,49 @@ class ResponseHandler:
 
         # Close remaining open structures
         return content + "".join(reversed(stack))
+
+    # Cap on prefix-cut attempts so pathological inputs stay O(k * n) cheap.
+    _MAX_PREFIX_CUTS = 40
+
+    @staticmethod
+    def _longest_valid_prefix(content: str) -> Dict[str, Any] | list[Any] | None:
+        """Recover the longest parseable prefix of a truncated JSON payload.
+
+        Walks the content once recording every position just after a completed
+        container (``}`` or ``]`` outside strings) — the only safe cut points —
+        then tries them from the end: drop everything after the cut (the broken
+        trailing element), strip a dangling comma, close the still-open
+        brackets, and parse. First success wins, so all complete elements
+        emitted before the truncation/stall point are preserved.
+        """
+        cut_points: list[int] = []
+        in_string = False
+        escape_next = False
+        for i, char in enumerate(content):
+            if escape_next:
+                escape_next = False
+                continue
+            if char == "\\" and in_string:
+                escape_next = True
+                continue
+            if char == '"':
+                in_string = not in_string
+                continue
+            if not in_string and char in "}]":
+                cut_points.append(i + 1)
+
+        for cut in reversed(cut_points[-ResponseHandler._MAX_PREFIX_CUTS :]):
+            candidate = content[:cut].rstrip()
+            if candidate.endswith(","):
+                candidate = candidate[:-1]
+            repaired = ResponseHandler._close_brackets(candidate)
+            try:
+                result = json.loads(repaired)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(result, dict | list):
+                return result
+        return None
 
     @staticmethod
     def _find_last_complete_array_element(content: str) -> str | None:

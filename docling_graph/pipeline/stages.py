@@ -27,6 +27,8 @@ from ..core import (
     ReportGenerator,
 )
 from ..core.input import (
+    DoclangInputHandler,
+    DoclangValidator,
     DoclingDocumentHandler,
     DoclingDocumentValidator,
     DocumentInputHandler,
@@ -128,17 +130,18 @@ class InputNormalizationStage(PipelineStage):
         metadata = self._build_metadata(input_type, context.config.source, normalized_content)
 
         # Update context
-        # Special handling for DoclingDocument: store in docling_document field
-        if input_type == InputType.DOCLING_DOCUMENT:
+        # DoclingDocument and DocLang both yield a pre-parsed document: store it
+        # in docling_document and skip the conversion path.
+        if input_type in (InputType.DOCLING_DOCUMENT, InputType.DOCLANG):
             from docling_core.types import DoclingDocument
 
             if isinstance(normalized_content, DoclingDocument):
                 context.docling_document = normalized_content
-                context.normalized_source = None  # Not needed for DoclingDocument
-                logger.info(f"[{self.name()}] Loaded DoclingDocument into context")
+                context.normalized_source = None  # Not needed for a pre-parsed document
+                logger.info(f"[{self.name()}] Loaded {input_type.value} into context")
             else:
                 raise ConfigurationError(
-                    "DoclingDocument handler did not return a DoclingDocument object",
+                    f"{input_type.value} handler did not return a DoclingDocument object",
                     details={"returned_type": type(normalized_content).__name__},
                 )
         else:
@@ -182,6 +185,15 @@ class InputNormalizationStage(PipelineStage):
                 "original_source": str(source),
                 "is_file": True,
             }
+        elif input_type == InputType.DOCLANG:
+            metadata = {
+                "input_type": "doclang",
+                "skip_ocr": True,
+                "skip_segmentation": True,
+                "skip_document_conversion": True,
+                "original_source": str(source),
+                "is_file": True,
+            }
         else:
             # DOCUMENT (all inputs sent to Docling for conversion)
             metadata = {
@@ -199,6 +211,8 @@ class InputNormalizationStage(PipelineStage):
             return URLValidator()
         if input_type == InputType.DOCLING_DOCUMENT:
             return DoclingDocumentValidator()
+        if input_type == InputType.DOCLANG:
+            return DoclangValidator()
         if input_type == InputType.DOCUMENT:
             return _NoOpValidator()
         raise ConfigurationError(
@@ -212,6 +226,8 @@ class InputNormalizationStage(PipelineStage):
             return URLInputHandler()
         if input_type == InputType.DOCLING_DOCUMENT:
             return DoclingDocumentHandler()
+        if input_type == InputType.DOCLANG:
+            return DoclangInputHandler()
         if input_type == InputType.DOCUMENT:
             return DocumentInputHandler()
         raise ConfigurationError(
@@ -328,9 +344,9 @@ class ExtractionStage(PipelineStage):
         if context.input_metadata:
             input_type = context.input_metadata.get("input_type")
 
-            # Handle DoclingDocument input (skip conversion)
-            if input_type == "docling_document":
-                logger.info(f"[{self.name()}] Using pre-loaded DoclingDocument")
+            # Pre-parsed document input (DoclingDocument JSON or DocLang): skip conversion
+            if input_type in ("docling_document", "doclang"):
+                logger.info(f"[{self.name()}] Using pre-loaded document ({input_type})")
                 context.extracted_models = self._extract_from_docling_document(context)
                 logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
                 self._capture_provenance(context)
@@ -478,6 +494,7 @@ class ExtractionStage(PipelineStage):
             "dense_fill_context": conf.get("dense_fill_context", "scoped"),
             "dense_dedupe": conf.get("dense_dedupe", "standard"),
             "provenance": conf.get("provenance", "standard"),
+            "llm_input_format": conf.get("llm_input_format", "markdown"),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -499,6 +516,8 @@ class ExtractionStage(PipelineStage):
 
         logger.info(f"Using model: {model_config['model']} (provider: {model_config['provider']})")
 
+        llm_input_format = cast(str, conf.get("llm_input_format", "markdown"))
+
         if backend == "vlm":
             return ExtractorFactory.create_extractor(
                 processing_mode=processing_mode,
@@ -510,6 +529,7 @@ class ExtractionStage(PipelineStage):
                 structured_sparse_check=bool(conf.get("structured_sparse_check", True)),
                 use_chunking=bool(conf.get("use_chunking", True)),
                 chunk_max_tokens=conf.get("chunk_max_tokens"),
+                llm_input_format=llm_input_format,
             )
         else:
             if context.config.llm_client is not None:
@@ -531,6 +551,7 @@ class ExtractionStage(PipelineStage):
                 use_chunking=bool(conf.get("use_chunking", True)),
                 chunk_max_tokens=conf.get("chunk_max_tokens"),
                 dense_config=dense_config,
+                llm_input_format=llm_input_format,
             )
 
     @staticmethod
@@ -650,6 +671,7 @@ class DoclingExportStage(PipelineStage):
             conf.get("export_docling", True)
             or conf.get("export_docling_json", True)
             or conf.get("export_markdown", True)
+            or conf.get("export_doclang", True)
         ):
             logger.info(f"[{self.name()}] Skipped (not configured)")
             return context
@@ -666,12 +688,22 @@ class DoclingExportStage(PipelineStage):
 
         docling_dir = context.output_manager.get_docling_dir()
 
+        # When the input itself was DocLang, the source file already is the
+        # artifact — don't re-serialize (a lossy round trip).
+        input_was_doclang = bool(
+            context.input_metadata and context.input_metadata.get("input_type") == "doclang"
+        )
+        include_doclang = conf.get("export_doclang", True) and not input_was_doclang
+        if input_was_doclang and conf.get("export_doclang", True):
+            logger.info(f"[{self.name()}] DocLang export skipped (input was DocLang)")
+
         exporter = DoclingExporter(output_dir=docling_dir)
         exporter.export_document(
             context.docling_document,
             base_name="document",  # Use fixed name
             include_json=conf.get("export_docling_json", True),
             include_markdown=conf.get("export_markdown", True),
+            include_doclang=include_doclang,
             per_page=conf.get("export_per_page_markdown", False),
         )
         if context.trace_data is not None:
@@ -682,6 +714,7 @@ class DoclingExportStage(PipelineStage):
                     "target": str(docling_dir),
                     "export_docling_json": conf.get("export_docling_json", True),
                     "export_markdown": conf.get("export_markdown", True),
+                    "export_doclang": include_doclang,
                     "export_per_page_markdown": conf.get("export_per_page_markdown", False),
                 },
             )

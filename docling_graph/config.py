@@ -128,6 +128,18 @@ class PipelineConfig(BaseModel):
         description="Enable sparse structured-output quality check with automatic legacy fallback.",
     )
 
+    # LLM input serialization: how the document text is rendered for the LLM.
+    # 'markdown' (default) is the well-trodden path; 'doclang'/'doclang-geo' render
+    # DocLang XML (structure + optional geometry) at a higher token cost — opt-in.
+    llm_input_format: Literal["markdown", "doclang", "doclang-geo"] = Field(
+        default="markdown",
+        description=(
+            "Serialization of document text sent to the LLM: 'markdown' (default), "
+            "'doclang' (DocLang XML, structure only), or 'doclang-geo' (DocLang XML with "
+            "page-coordinate geometry). DocLang costs more tokens; benchmark before switching."
+        ),
+    )
+
     # Extract settings (with defaults)
     use_chunking: bool = Field(default=True, description="Enable chunking for document processing")
     chunk_max_tokens: int | None = Field(
@@ -197,6 +209,10 @@ class PipelineConfig(BaseModel):
     export_docling: bool = Field(default=True)
     export_docling_json: bool = Field(default=True)
     export_markdown: bool = Field(default=True)
+    export_doclang: bool = Field(
+        default=True,
+        description="Export the Docling document as DocLang (.dclg) — content+geometry interchange.",
+    )
     export_per_page_markdown: bool = Field(default=False)
 
     # Graph settings (with defaults)
@@ -263,6 +279,7 @@ class PipelineConfig(BaseModel):
             "docling_config": self.docling_config,
             "structured_output": self.structured_output,
             "structured_sparse_check": self.structured_sparse_check,
+            "llm_input_format": self.llm_input_format,
             "use_chunking": self.use_chunking,
             "chunk_max_tokens": self.chunk_max_tokens,
             "debug": self.debug,
@@ -279,6 +296,7 @@ class PipelineConfig(BaseModel):
             "export_docling": self.export_docling,
             "export_docling_json": self.export_docling_json,
             "export_markdown": self.export_markdown,
+            "export_doclang": self.export_doclang,
             "export_per_page_markdown": self.export_per_page_markdown,
             "reverse_edges": self.reverse_edges,
             "output_dir": self.output_dir,
@@ -309,6 +327,7 @@ class PipelineConfig(BaseModel):
                 "processing_mode": default_config.processing_mode,
                 "extraction_contract": default_config.extraction_contract,
                 "export_format": default_config.export_format,
+                "llm_input_format": default_config.llm_input_format,
                 "chunk_max_tokens": default_config.chunk_max_tokens,
                 "structured_output": default_config.structured_output,
                 "structured_sparse_check": default_config.structured_sparse_check,
@@ -325,6 +344,7 @@ class PipelineConfig(BaseModel):
                 "export": {
                     "docling_json": default_config.export_docling_json,
                     "markdown": default_config.export_markdown,
+                    "doclang": default_config.export_doclang,
                     "per_page_markdown": default_config.export_per_page_markdown,
                 },
             },

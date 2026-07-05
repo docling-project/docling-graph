@@ -30,6 +30,7 @@ class ExtractorFactory:
         use_chunking: bool = True,
         chunk_max_tokens: int | None = None,
         dense_config: dict[str, Any] | None = None,
+        llm_input_format: str = "markdown",
     ) -> BaseExtractor:
         """
         Create an extractor based on configuration.
@@ -84,6 +85,7 @@ class ExtractorFactory:
             extractor = OneToOneStrategy(
                 backend=backend_obj,
                 docling_config=docling_config,
+                llm_input_format=llm_input_format,
             )
         elif processing_mode == "many-to-one":
             extractor = ManyToOneStrategy(
@@ -92,6 +94,7 @@ class ExtractorFactory:
                 extraction_contract=effective_contract if backend_name == "llm" else "direct",
                 use_chunking=use_chunking,
                 chunk_max_tokens=chunk_max_tokens,
+                llm_input_format=llm_input_format,
             )
         else:
             raise ValueError(f"Unknown processing_mode: {processing_mode}")
