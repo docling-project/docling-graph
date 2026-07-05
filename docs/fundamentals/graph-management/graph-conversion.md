@@ -540,7 +540,7 @@ converter = GraphConverter(validate_graph=False)
 
 Now that you understand graph conversion:
 
-1. **[Data Grounding & Provenance →](provenance.md)** - Trace nodes back to source chunks and pages
-2. **[Export Formats →](export-formats.md)** - Export graphs to CSV, Cypher, JSON
-3. **[Visualization →](visualization.md)** - Visualize your graphs
-4. **[Neo4j Integration →](neo4j-integration.md)** - Import into Neo4j
+1. **[Data Grounding & Provenance](provenance.md)** - Trace nodes back to source chunks and pages
+2. **[Export Formats](export-formats.md)** - Export graphs to CSV, Cypher, JSON
+3. **[Visualization](visualization.md)** - Visualize your graphs
+4. **[Neo4j Integration](neo4j-integration.md)** - Import into Neo4j

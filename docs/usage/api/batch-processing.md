@@ -790,6 +790,6 @@ for doc in documents:
 
 ## Next Steps
 
-1. **[Examples →](../examples/index.md)** - Real-world examples
-2. **[Advanced Topics →](../advanced/index.md)** - Custom backends
-3. **[API Reference →](../../reference/index.md)** - Complete API docs
+1. **[Examples](../examples/index.md)** - Real-world examples
+2. **[Advanced Topics](../advanced/index.md)** - Custom backends
+3. **[API Reference](../../reference/index.md)** - Complete API docs

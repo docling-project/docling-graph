@@ -32,19 +32,19 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 <div class="grid cards" markdown>
 
-- **[Installation →](fundamentals/installation/index.md)**
+- **[Installation](fundamentals/installation/index.md)**
 
     Set up your environment with uv package manager
 
-- **[Quick Start →](introduction/quickstart.md)**
+- **[Quick Start](introduction/quickstart.md)**
 
     Run your first extraction in 5 minutes
 
-- **[Architecture →](introduction/architecture.md)**
+- **[Architecture](introduction/architecture.md)**
 
     Understand the pipeline stages and components
 
-- **[Key Concepts →](introduction/key-concepts.md)**
+- **[Key Concepts](introduction/key-concepts.md)**
 
     Learn how documents flow through the system
 
@@ -98,10 +98,10 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ## Next Steps
 
-1. **[Install Docling Graph →](fundamentals/installation/index.md)**
-2. **[Follow the Quick Start →](introduction/quickstart.md)**
-3. **[Create Your First Template →](fundamentals/schema-definition/index.md)**
-4. **[Explore Examples →](usage/examples/index.md)**
+1. **[Install Docling Graph](fundamentals/installation/index.md)**
+2. **[Follow the Quick Start](introduction/quickstart.md)**
+3. **[Create Your First Template](fundamentals/schema-definition/index.md)**
+4. **[Explore Examples](usage/examples/index.md)**
 
 ---
 

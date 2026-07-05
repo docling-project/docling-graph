@@ -38,7 +38,7 @@ print(f"Nodes: {metadata.node_count}")
 print(f"Edges: {metadata.edge_count}")
 ```
 
-**Learn more:** [Graph Conversion →](graph-conversion.md)
+**Learn more:** [Graph Conversion](graph-conversion.md)
 
 ---
 
@@ -56,7 +56,7 @@ print(node_data["__provenance__"])
 
 Enabled by default (`provenance="standard"`); a full ledger with chunk text is also written to `provenance.json`.
 
-**Learn more:** [Data Grounding & Provenance →](provenance.md)
+**Learn more:** [Data Grounding & Provenance](provenance.md)
 
 ---
 
@@ -74,7 +74,7 @@ CSVExporter().export(graph, output_dir)
 CypherExporter().export(graph, output_file)
 ```
 
-**Learn more:** [Export Formats →](export-formats.md)
+**Learn more:** [Export Formats](export-formats.md)
 
 ---
 
@@ -89,7 +89,7 @@ visualizer = InteractiveVisualizer()
 visualizer.save_cytoscape_graph(graph, "graph.html")
 ```
 
-**Learn more:** [Visualization →](visualization.md)
+**Learn more:** [Visualization](visualization.md)
 
 ---
 
@@ -102,7 +102,7 @@ Import graphs into Neo4j:
 cat graph.cypher | cypher-shell -u neo4j -p password
 ```
 
-**Learn more:** [Neo4j Integration →](neo4j-integration.md)
+**Learn more:** [Neo4j Integration](neo4j-integration.md)
 
 ---
 
@@ -487,6 +487,6 @@ if graph.number_of_nodes() == 0:
 
 Ready to dive deeper? Start with:
 
-1. **[Graph Conversion →](graph-conversion.md)** - Learn graph conversion
-2. **[Export Formats →](export-formats.md)** - Choose export format
-3. **[Visualization →](visualization.md)** - Visualize your graphs
+1. **[Graph Conversion](graph-conversion.md)** - Learn graph conversion
+2. **[Export Formats](export-formats.md)** - Choose export format
+3. **[Visualization](visualization.md)** - Visualize your graphs

@@ -632,6 +632,6 @@ class MyStage:
 
 ## Next Steps
 
-1. **[Performance Tuning →](performance-tuning.md)** - Optimize pipeline
-2. **[Error Handling →](error-handling.md)** - Handle errors
-3. **[Testing →](testing.md)** - Test your stages
+1. **[Performance Tuning](performance-tuning.md)** - Optimize pipeline
+2. **[Error Handling](error-handling.md)** - Handle errors
+3. **[Testing](testing.md)** - Test your stages

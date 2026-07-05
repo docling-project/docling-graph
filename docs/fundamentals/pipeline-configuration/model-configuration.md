@@ -732,8 +732,8 @@ config = PipelineConfig(
 
 Now that you understand model configuration:
 
-1. **[Dense Extraction →](../extraction-process/dense-extraction.md)** - skeleton-then-flesh extraction
-2. **[Processing Modes →](processing-modes.md)** - Choose processing strategy
+1. **[Dense Extraction](../extraction-process/dense-extraction.md)** - skeleton-then-flesh extraction
+2. **[Processing Modes](processing-modes.md)** - Choose processing strategy
 3. **[Configuration Examples](configuration-examples.md)** - See complete scenarios
 4. **[Extraction Process](../extraction-process/index.md)** - Understand extraction
-5. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Optimize performance
+5. **[Performance Tuning](../../usage/advanced/performance-tuning.md)** - Optimize performance

@@ -711,6 +711,6 @@ cat outputs/graph.cypher | cypher-shell -u neo4j -p password 2>&1 | tee import.l
 
 Now that you understand export configuration:
 
-1. **[Configuration Examples →](configuration-examples.md)** - Complete scenarios
+1. **[Configuration Examples](configuration-examples.md)** - Complete scenarios
 2. **[Model Configuration](model-configuration.md)** - Model settings
 3. **[Graph Management](../graph-management/index.md)** - Working with graphs

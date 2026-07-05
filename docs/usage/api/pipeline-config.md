@@ -697,6 +697,6 @@ config = PipelineConfig(
 
 ## Next Steps
 
-1. **[Programmatic Examples →](programmatic-examples.md)** - More code examples
-2. **[Batch Processing →](batch-processing.md)** - Batch patterns
-3. **[API Reference →](../../reference/config.md)** - Complete API docs
+1. **[Programmatic Examples](programmatic-examples.md)** - More code examples
+2. **[Batch Processing](batch-processing.md)** - Batch patterns
+3. **[API Reference](../../reference/config.md)** - Complete API docs

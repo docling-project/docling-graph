@@ -369,6 +369,6 @@ docling-graph/
 
 ## Next Steps
 
-1. **[GitHub Workflow →](github-workflow.md)** - Understand the workflow
-2. **[Release Process →](release-process.md)** - Learn about releases
-3. **[GitHub Workflow →](github-workflow.md)** - Development workflow
+1. **[GitHub Workflow](github-workflow.md)** - Understand the workflow
+2. **[Release Process](release-process.md)** - Learn about releases
+3. **[GitHub Workflow](github-workflow.md)** - Development workflow

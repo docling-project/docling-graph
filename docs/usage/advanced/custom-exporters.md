@@ -607,6 +607,6 @@ def export_dot(self) -> None:
 
 ## Next Steps
 
-1. **[Custom Stages →](custom-stages.md)** - Add pipeline stages
-2. **[Testing →](testing.md)** - Test your exporter
-3. **[Graph Management →](../../fundamentals/graph-management/index.md)** - Learn about graphs
+1. **[Custom Stages](custom-stages.md)** - Add pipeline stages
+2. **[Testing](testing.md)** - Test your exporter
+3. **[Graph Management](../../fundamentals/graph-management/index.md)** - Learn about graphs

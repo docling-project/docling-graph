@@ -708,5 +708,5 @@ def test_api_call():
 ## Next Steps
 
 1. **[Advanced Topics Index](index.md)** - Back to overview
-2. **[Custom Backends →](custom-backends.md)** - Test custom backends
-3. **[Error Handling →](error-handling.md)** - Test error scenarios
+2. **[Custom Backends](custom-backends.md)** - Test custom backends
+3. **[Error Handling](error-handling.md)** - Test error scenarios

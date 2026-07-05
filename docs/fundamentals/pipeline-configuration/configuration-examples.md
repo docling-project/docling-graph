@@ -876,6 +876,6 @@ config = PipelineConfig(
 
 Now that you understand complete configurations:
 
-1. **[Extraction Process →](../extraction-process/index.md)** - Learn how extraction works
+1. **[Extraction Process](../extraction-process/index.md)** - Learn how extraction works
 2. **[Graph Management](../graph-management/index.md)** - Work with extracted graphs
 3. **[CLI Guide](../../usage/cli/index.md)** - Use command-line interface

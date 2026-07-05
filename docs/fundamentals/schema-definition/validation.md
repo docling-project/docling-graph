@@ -1080,6 +1080,6 @@ uv run pytest test_validators.py -v
 
 Now that you understand validation:
 
-1. **[Advanced Patterns →](advanced-patterns.md)** - Complex validation patterns
+1. **[Advanced Patterns](advanced-patterns.md)** - Complex validation patterns
 2. **[Best Practices](best-practices.md)** - Complete template checklist
 3. **[Examples](../../usage/examples/index.md)** - See validators in action

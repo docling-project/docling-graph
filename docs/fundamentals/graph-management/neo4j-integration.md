@@ -597,6 +597,6 @@ RETURN node.name, score
 
 Now that you understand Neo4j integration:
 
-1. **[Graph Analysis →](graph-analysis.md)** - Analyze graph structure
-2. **[CLI Guide →](../../usage/cli/index.md)** - Use command-line tools
-3. **[API Reference →](../../usage/api/index.md)** - Programmatic access
+1. **[Graph Analysis](graph-analysis.md)** - Analyze graph structure
+2. **[CLI Guide](../../usage/cli/index.md)** - Use command-line tools
+3. **[API Reference](../../usage/api/index.md)** - Programmatic access

@@ -381,6 +381,6 @@ viscosity: Measurement = Field(
 
 ## Next Steps
 
-1. **[ID Card →](id-card.md)** - Vision-based extraction
-2. **[Advanced Patterns →](../../fundamentals/schema-definition/advanced-patterns.md)** - Complex templates
-3. **[Performance Tuning →](../advanced/performance-tuning.md)** - Optimization
+1. **[ID Card](id-card.md)** - Vision-based extraction
+2. **[Advanced Patterns](../../fundamentals/schema-definition/advanced-patterns.md)** - Complex templates
+3. **[Performance Tuning](../advanced/performance-tuning.md)** - Optimization

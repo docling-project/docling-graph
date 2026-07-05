@@ -735,8 +735,8 @@ config = PipelineConfig(
 
 Now that you understand extraction backends:
 
-1. **[Dense Extraction →](dense-extraction.md)** - skeleton-then-flesh for granular structure and rich data
-2. **[Error Handling →](../../usage/advanced/error-handling.md)** - Diagnose extraction failures
-3. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
-4. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
-5. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Advanced optimization
+1. **[Dense Extraction](dense-extraction.md)** - skeleton-then-flesh for granular structure and rich data
+2. **[Error Handling](../../usage/advanced/error-handling.md)** - Diagnose extraction failures
+3. **[Model Merging](model-merging.md)** - Learn how to consolidate extractions
+4. **[Batch Processing](batch-processing.md)** - Optimize chunk processing
+5. **[Performance Tuning](../../usage/advanced/performance-tuning.md)** - Advanced optimization

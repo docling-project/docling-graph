@@ -619,6 +619,6 @@ def process_with_retry(batches, backend, template):
 
 Now that you understand batch processing:
 
-1. **[Graph Management →](../graph-management/index.md)** - Work with knowledge graphs
-2. **[Export Formats →](../graph-management/export-formats.md)** - Export graphs
-3. **[Visualization →](../graph-management/visualization.md)** - Visualize graphs
+1. **[Graph Management](../graph-management/index.md)** - Work with knowledge graphs
+2. **[Export Formats](../graph-management/export-formats.md)** - Export graphs
+3. **[Visualization](../graph-management/visualization.md)** - Visualize graphs

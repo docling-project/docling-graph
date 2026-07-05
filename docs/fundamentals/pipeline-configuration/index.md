@@ -386,6 +386,6 @@ run_pipeline(config)
 
 Ready to configure your pipeline?
 
-1. **[Configuration Basics →](configuration-basics.md)** - Learn PipelineConfig fundamentals
+1. **[Configuration Basics](configuration-basics.md)** - Learn PipelineConfig fundamentals
 2. **[Backend Selection](backend-selection.md)** - Choose the right backend
 3. **[Configuration Examples](configuration-examples.md)** - See complete scenarios

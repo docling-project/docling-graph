@@ -734,8 +734,8 @@ merged = custom_merge(models, Invoice)
 
 Now that you understand model merging:
 
-1. **[Dense Extraction →](dense-extraction.md)** - skeleton-then-flesh extraction for complex templates
-2. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
-3. **[Extraction Backends →](extraction-backends.md)** - Understand backends
-4. **[Performance Tuning →](../../usage/advanced/performance-tuning.md)** - Optimize consolidation
-5. **[Graph Management →](../graph-management/index.md)** - Work with knowledge graphs
+1. **[Dense Extraction](dense-extraction.md)** - skeleton-then-flesh extraction for complex templates
+2. **[Batch Processing](batch-processing.md)** - Optimize chunk processing
+3. **[Extraction Backends](extraction-backends.md)** - Understand backends
+4. **[Performance Tuning](../../usage/advanced/performance-tuning.md)** - Optimize consolidation
+5. **[Graph Management](../graph-management/index.md)** - Work with knowledge graphs

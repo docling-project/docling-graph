@@ -515,6 +515,6 @@ print(f"Largest component: {len(subgraph.nodes())} nodes")
 
 Now that you understand graph analysis:
 
-1. **[CLI Guide →](../../usage/cli/index.md)** - Use command-line tools
-2. **[API Reference →](../../usage/api/index.md)** - Programmatic access
-3. **[Examples →](../../usage/examples/index.md)** - Real-world examples
+1. **[CLI Guide](../../usage/cli/index.md)** - Use command-line tools
+2. **[API Reference](../../usage/api/index.md)** - Programmatic access
+3. **[Examples](../../usage/examples/index.md)** - Real-world examples

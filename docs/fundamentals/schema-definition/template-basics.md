@@ -485,6 +485,6 @@ class Document(BaseModel):
 
 Now that you understand template basics:
 
-1. **[Entities vs Components →](entities-vs-components.md)** - Learn the critical distinction
+1. **[Entities vs Components](entities-vs-components.md)** - Learn the critical distinction
 2. **[Field Definitions](field-definitions.md)** - Master field descriptions and examples
 3. **[Example Templates](../../usage/examples/index.md)** - See complete working examples

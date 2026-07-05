@@ -532,6 +532,6 @@ uv run docling-graph inspect test/
 
 ## Next Steps
 
-1. **[CLI Recipes →](cli-recipes.md)** - Common CLI patterns
-2. **[Visualization Guide →](../../fundamentals/graph-management/visualization.md)** - Advanced visualization
-3. **[Neo4j Integration →](../../fundamentals/graph-management/neo4j-integration.md)** - Database visualization
+1. **[CLI Recipes](cli-recipes.md)** - Common CLI patterns
+2. **[Visualization Guide](../../fundamentals/graph-management/visualization.md)** - Advanced visualization
+3. **[Neo4j Integration](../../fundamentals/graph-management/neo4j-integration.md)** - Database visualization
