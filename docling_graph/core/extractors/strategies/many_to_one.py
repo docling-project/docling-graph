@@ -13,6 +13,7 @@ from typing import Any, Tuple, Type, cast
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
+from rich import print as rich_print
 
 from ....exceptions import ExtractionError
 from ....protocols import (
@@ -24,6 +25,7 @@ from ....protocols import (
     is_vlm_backend,
 )
 from ...utils.dict_merger import merge_pydantic_models
+from ..contracts.auto import resolve_auto_contract
 from ..contracts.dense.strategy_ops import extract_dense_from_document, extract_dense_from_text
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
@@ -221,6 +223,34 @@ class ManyToOneStrategy(BaseExtractor):
             logger.debug(f"Traceback:\n{traceback.format_exc()}")
             return [], None
 
+    def _resolve_contract(self, backend: TextExtractionBackendProtocol, markdown: str) -> str:
+        """Resolve the effective contract for this document.
+
+        Explicit contracts pass through. "auto" picks direct when a single
+        full-document call fits both the model's context window and its
+        output budget, dense otherwise; the decision and the numbers behind
+        it are logged so a run is never opaque about which path it took.
+        """
+        if self._extraction_contract != "auto":
+            return self._extraction_contract
+
+        budget_fn = getattr(backend, "_estimated_output_token_budget", None)
+        output_budget = int(budget_fn()) if callable(budget_fn) else 4092
+        context_limit = getattr(getattr(backend, "client", None), "context_limit", None)
+        chunking_available = getattr(self.doc_processor, "chunker", None) is not None and hasattr(
+            backend, "extract_from_chunk_batches"
+        )
+
+        decision = resolve_auto_contract(
+            markdown_chars=len(markdown),
+            output_budget_tokens=output_budget,
+            context_limit_tokens=context_limit if isinstance(context_limit, int) else None,
+            chunking_available=chunking_available,
+        )
+        rich_print(f"[blue][AutoContract][/blue] Resolved {decision.describe()}")
+        logger.info("[AutoContract] Resolved %s", decision.describe())
+        return decision.contract
+
     def _extract_direct_mode_from_text(
         self,
         backend: TextExtractionBackendProtocol,
@@ -254,9 +284,8 @@ class ManyToOneStrategy(BaseExtractor):
             ):
                 backend.trace_data = self.trace_data
 
-            if self._extraction_contract == "dense" and hasattr(
-                backend, "extract_from_chunk_batches"
-            ):
+            effective_contract = self._resolve_contract(backend, text)
+            if effective_contract == "dense" and hasattr(backend, "extract_from_chunk_batches"):
                 model, extraction_time = extract_dense_from_text(
                     backend=backend,
                     doc_processor=self.doc_processor,
@@ -289,11 +318,15 @@ class ManyToOneStrategy(BaseExtractor):
                 )
                 # Fall through to the direct single-call path below.
             start_time = time.time()
+            # Always a direct single call: the dense path (when applicable)
+            # already ran above with proper chunking, so the backend must not
+            # re-enter dense with the whole text as one chunk.
             model = backend.extract_from_markdown(
                 markdown=text,
                 template=template,
                 context="text input",
                 is_partial=False,
+                allow_dense=False,
             )
             extraction_time = time.time() - start_time
 
@@ -390,9 +423,8 @@ class ManyToOneStrategy(BaseExtractor):
             ):
                 backend.trace_data = self.trace_data
 
-            if self._extraction_contract == "dense" and hasattr(
-                backend, "extract_from_chunk_batches"
-            ):
+            effective_contract = self._resolve_contract(backend, full_markdown)
+            if effective_contract == "dense" and hasattr(backend, "extract_from_chunk_batches"):
                 model, extraction_time = extract_dense_from_document(
                     backend=backend,
                     doc_processor=self.doc_processor,
@@ -427,11 +459,15 @@ class ManyToOneStrategy(BaseExtractor):
                 # Fall through to the direct single-call path below.
 
             start_time = time.time()
+            # Always a direct single call: the dense path (when applicable)
+            # already ran above with proper chunking, so the backend must not
+            # re-enter dense with the whole document as one chunk.
             model = backend.extract_from_markdown(
                 markdown=full_markdown,
                 template=template,
                 context="full document",
                 is_partial=False,
+                allow_dense=False,
             )
             extraction_time = time.time() - start_time
 

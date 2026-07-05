@@ -24,13 +24,15 @@ def run_dense_orchestrator(
     context: str,
     template: type[BaseModel] | None,
     trace_data: Any,
+    debug_suffix: str = "",
 ) -> tuple[dict | list | None, dict[str, Any], ProvenanceLedger | None]:
     """Run Dense orchestrator (Phase 1 skeleton + Phase 2 fill).
 
     Returns (root, run_stats, provenance_ledger). run_stats carries the per-run
     observability counters (skeleton_nodes, truncation_count, split_count,
     merge stats, ...); the ledger is None when provenance is disabled or the
-    run produced no usable skeleton.
+    run produced no usable skeleton. debug_suffix namespaces this run's debug
+    artifacts (e.g. "_attempt2") so retries never overwrite earlier files.
     """
     if template is None:
         logger.warning("Dense extraction requires a template; skipping.")
@@ -49,6 +51,7 @@ def run_dense_orchestrator(
         template=template,
         config=config,
         debug_dir=debug_dir or None,
+        debug_suffix=debug_suffix,
         on_trace=_on_trace if trace_data is not None else None,
     )
     logger.info("[DenseExtraction] Starting dense extraction (skeleton + fill)")

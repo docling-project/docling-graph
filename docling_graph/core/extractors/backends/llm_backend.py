@@ -11,6 +11,7 @@ import gc
 import hashlib
 import json
 import logging
+import os
 import re
 from functools import lru_cache
 from typing import Any, Literal, Mapping, Type, cast
@@ -22,18 +23,14 @@ from ....exceptions import ClientError
 from ....llm_clients.config import _DEFAULT_MAX_OUTPUT_TOKENS
 from ....protocols import LLMClientProtocol
 from ..contracts import direct
+from ..contracts.auto import (
+    CHARS_PER_TOKEN as _CHARS_PER_TOKEN,
+    DIRECT_OVERFLOW_RATIO as _DIRECT_OVERFLOW_RATIO,
+)
 from ..contracts.dense.backend_ops import run_dense_orchestrator
 from ..gleaning import merge_gleaned_direct, run_gleaning_pass_direct
 
 logger = logging.getLogger(__name__)
-
-# Rough chars-per-token for gauging whether a direct single-call extraction can
-# fit its output. A structured response cannot represent a document much larger
-# than its own output budget; when the input dwarfs that budget the call will
-# truncate, and dense (skeleton-then-flesh) is the right contract instead.
-_CHARS_PER_TOKEN = 4
-# Warn once the input exceeds this multiple of the output character capacity.
-_DIRECT_OVERFLOW_RATIO = 2.0
 
 
 class LlmBackend:
@@ -46,7 +43,7 @@ class LlmBackend:
     def __init__(
         self,
         llm_client: LLMClientProtocol,
-        extraction_contract: Literal["direct", "dense"] = "direct",
+        extraction_contract: Literal["direct", "dense", "auto"] = "direct",
         dense_config: dict[str, Any] | None = None,
         structured_output: bool = True,
         structured_sparse_check: bool = True,
@@ -58,7 +55,7 @@ class LlmBackend:
             llm_client: LLM client instance implementing LLMClientProtocol
         """
         self.client = llm_client
-        self.extraction_contract: Literal["direct", "dense"] = extraction_contract
+        self.extraction_contract: Literal["direct", "dense", "auto"] = extraction_contract
         self._dense_config_raw = dense_config or {}
         self.structured_output = structured_output
         self.structured_sparse_check = structured_sparse_check
@@ -67,6 +64,10 @@ class LlmBackend:
         self.llm_input_format = str(self._dense_config_raw.get("llm_input_format", "markdown"))
         self.trace_data: Any = None  # Set by strategy when config.debug is True
         self.last_call_diagnostics: dict[str, Any] = {}
+        # Terminal Pydantic error set from the most recent failed validation
+        # (empty after a successful one); persisted to debug artifacts so a
+        # discarded extraction is never opaque.
+        self.last_validation_errors: list[dict[str, Any]] = []
         # Per-run dense observability (skeleton_nodes, truncation/split counts,
         # merge/orphan stats); surfaced in metadata.json and the report.
         self.last_dense_stats: dict[str, Any] = {}
@@ -86,6 +87,11 @@ class LlmBackend:
         self._escalation_futile = False
         # Emit the "document too large for direct extraction" hint at most once.
         self._dense_hint_emitted = False
+        # Dense runs within one backend lifetime get numbered debug artifacts
+        # (first run keeps plain names) so a retry can never overwrite a
+        # previous attempt's dense_*.json files.
+        self._dense_attempt_count = 0
+        self._dense_debug_suffix = ""
 
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
@@ -153,6 +159,25 @@ class LlmBackend:
         """Get cached schema dict for a Pydantic template."""
         schema = template.model_json_schema()
         return schema if isinstance(schema, dict) else {}
+
+    def _write_dense_debug(self, name: str, payload: Any) -> None:
+        """Write a JSON debug artifact next to the orchestrator's dense files.
+
+        No-op unless a debug_dir is configured (--debug). Uses the same
+        per-attempt suffix as the orchestrator so a dense retry never
+        overwrites a previous attempt's artifacts.
+        """
+        debug_dir = str(self._dense_config_raw.get("debug_dir") or "")
+        if not debug_dir:
+            return
+        try:
+            os.makedirs(debug_dir, exist_ok=True)
+            stem, ext = os.path.splitext(name)
+            path = os.path.join(debug_dir, f"{stem}{self._dense_debug_suffix}{ext}")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2, default=str)
+        except OSError as e:
+            logger.debug("Failed to write dense debug artifact %s: %s", name, e)
 
     def _log_info(self, message: str, **kwargs: Any) -> None:
         """Log info message with consistent formatting."""
@@ -506,10 +531,13 @@ class LlmBackend:
                 value = self._get_at_path(data, loc)
             except (KeyError, IndexError, TypeError):
                 continue
-            if value is None:
-                continue
             coerced: str | None = None
-            if isinstance(value, int | float | bool):
+            if value is None:
+                # A null for a field that rejects None (else Pydantic would not
+                # have raised string_type) — same recovery as a missing field.
+                if err_type == "string_type":
+                    coerced = ""
+            elif isinstance(value, int | float | bool):
                 coerced = str(value)
             elif isinstance(value, list | dict):
                 coerced = self._extract_string_from_list_or_dict(value)
@@ -602,8 +630,13 @@ class LlmBackend:
         """
         data: dict | list = copy.deepcopy(parsed_json)
         max_salvage_passes = 3
+        self.last_validation_errors = []
 
-        for pass_num in range(max_salvage_passes):
+        # max_salvage_passes mutation rounds, but one more validation attempt
+        # than that: fixes applied on the last round must still be validated
+        # (a fill->prune->fill sequence consumes every round and used to exit
+        # the loop with data that had just become valid).
+        for pass_num in range(max_salvage_passes + 1):
             try:
                 validated_model = template.model_validate(data)
                 if pass_num > 0:
@@ -617,6 +650,17 @@ class LlmBackend:
                     self._log_validation_error(context, e, parsed_json)
 
                 errors = e.errors()
+                if pass_num == max_salvage_passes:
+                    # Exhausted: keep the terminal error set for debug artifacts.
+                    self.last_validation_errors = [
+                        {
+                            "loc": list(err.get("loc", ())),
+                            "type": err.get("type"),
+                            "msg": err.get("msg"),
+                        }
+                        for err in errors
+                    ]
+                    break
                 any_fixed = False
 
                 # First pass: try QuantityWithUnit coercion
@@ -715,6 +759,7 @@ class LlmBackend:
         is_partial: bool,
         context: str,
         template: Type[BaseModel] | None = None,
+        allow_dense: bool = True,
     ) -> dict | list | None:
         """
         Call LLM and return parsed JSON or None on failure.
@@ -724,12 +769,14 @@ class LlmBackend:
             schema_json: JSON schema string
             is_partial: Whether this is partial extraction
             context: Context description for logging
+            allow_dense: If False, skip the dense single-chunk path (used when
+                a chunked dense run already failed for this document)
 
         Returns:
             Parsed JSON (dict or list) or None if call failed
         """
         try:
-            if self.extraction_contract == "dense" and not is_partial:
+            if allow_dense and self.extraction_contract == "dense" and not is_partial:
                 dense_result = self._extract_with_dense_contract(
                     markdown=markdown,
                     context=context,
@@ -990,8 +1037,39 @@ class LlmBackend:
                 f"Document is {len(markdown)} chars but the model's output budget is only "
                 f"~{budget_tokens} tokens (~{output_char_capacity} chars); a single-call direct "
                 "extraction is likely to truncate and lose data. Consider extraction_contract="
-                '"dense" (skeleton-then-flesh) for large documents.'
+                '"dense" (skeleton-then-flesh) or "auto" for large documents.'
             )
+
+    def _preflight_fits_context(self, markdown: str, context: str) -> bool:
+        """Refuse a full-document call whose input arithmetically cannot fit.
+
+        Compares a conservative chars-per-token input estimate plus the output
+        budget against the client's resolved context window (probed from local
+        OpenAI-compatible servers when available). Returns True when the
+        context size is unknown or the call can fit — this is a guard against
+        certain failure, not a quality heuristic.
+        """
+        context_limit = getattr(self.client, "context_limit", None)
+        if not isinstance(context_limit, int) or context_limit <= 0:
+            return True
+        est_input_tokens = len(markdown) // _CHARS_PER_TOKEN
+        output_budget = self._estimated_output_token_budget()
+        if est_input_tokens + output_budget <= context_limit:
+            return True
+        self._log_error(
+            f"Skipping LLM call for {context}: ~{est_input_tokens} estimated input tokens "
+            f"+ {output_budget} output tokens cannot fit the model's context window "
+            f"({context_limit} tokens). Use extraction_contract='dense' (or 'auto') for "
+            "documents this large."
+        )
+        logger.warning(
+            "Full-document call for %s skipped: est_input=%d + max_output=%d > context_limit=%d",
+            context,
+            est_input_tokens,
+            output_budget,
+            context_limit,
+        )
+        return False
 
     def _retry_max_tokens_for_truncation(self, context_max: int | None = None) -> int | None:
         """Compute max_tokens for one retry after truncation, or None to skip escalation.
@@ -1267,7 +1345,9 @@ class LlmBackend:
         context: str = "document",
     ) -> BaseModel | None:
         """Run dense extraction from pre-chunked content and validate final model."""
-        if self.extraction_contract == "dense":
+        # "auto" reaches here only after the strategy resolved it to dense for
+        # this document, so it is accepted alongside an explicit "dense".
+        if self.extraction_contract in ("dense", "auto"):
             self._log_extraction(
                 f"Running dense extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
                 "DenseExtraction",
@@ -1287,12 +1367,26 @@ class LlmBackend:
             return None
         if not parsed_json:
             return None
+        # Persist the assembled result BEFORE validation: a long dense run must
+        # stay manually recoverable even if the final validation discards it.
+        self._write_dense_debug("dense_assembled_root.json", parsed_json)
         # No sparse veto here: dense has its own Phase 1 quality gate, and a
         # sparse-but-valid dense result is always better than discarding it.
         # (The schema-leaf sparsity heuristic penalizes large templates with
         # many optional fields and was designed for direct structured output.)
         model = self._validate_extraction(parsed_json, template, context)
         if model is None:
+            self._write_dense_debug(
+                "dense_validation_errors.json",
+                {"context": context, "errors": self.last_validation_errors},
+            )
+            self._log_warning(
+                "Dense result failed validation; assembled JSON and error details "
+                "were saved to the debug directory (dense_assembled_root.json)."
+                if str(self._dense_config_raw.get("debug_dir") or "")
+                else "Dense result failed validation; re-run with --debug to persist "
+                "the assembled JSON for manual recovery."
+            )
             # A ledger must never describe a result that failed validation.
             self.last_provenance = None
         return model
@@ -1351,6 +1445,13 @@ class LlmBackend:
                 **kwargs,
             )
 
+        # Number this attempt's debug artifacts (first attempt keeps plain
+        # names) so a dense retry cannot overwrite the previous attempt's files.
+        self._dense_attempt_count += 1
+        self._dense_debug_suffix = (
+            "" if self._dense_attempt_count == 1 else f"_attempt{self._dense_attempt_count}"
+        )
+
         root, run_stats, ledger = run_dense_orchestrator(
             llm_call_fn=_dense_llm,
             dense_config_raw=self._dense_config_raw,
@@ -1360,6 +1461,7 @@ class LlmBackend:
             context=context,
             template=template,
             trace_data=trace_data,
+            debug_suffix=self._dense_debug_suffix,
         )
         self.last_dense_stats = run_stats
         # Only a successful dense run's ledger describes the final result; on
@@ -1373,6 +1475,7 @@ class LlmBackend:
         template: Type[BaseModel],
         context: str = "document",
         is_partial: bool = False,
+        allow_dense: bool = True,
     ) -> BaseModel | None:
         """
         Extract structured data from markdown content (direct mode).
@@ -1385,12 +1488,20 @@ class LlmBackend:
             template: Pydantic model template
             context: Context description (e.g., "page 1", "full document")
             is_partial: If True, use partial/chunk-based prompt
+            allow_dense: If False, never route into the dense single-chunk
+                path even when the contract is dense. Strategies set this
+                when a proper chunked dense run already failed — re-running
+                dense on the whole document as one chunk can only do worse.
 
         Returns:
             Extracted and validated Pydantic model instance, or None if failed
         """
         # Log extraction start with contract-specific prefix
-        mode = "Dense" if (self.extraction_contract == "dense" and not is_partial) else "Direct"
+        mode = (
+            "Dense"
+            if (self.extraction_contract == "dense" and not is_partial and allow_dense)
+            else "Direct"
+        )
         prefix = f"{mode}Extraction"
         self._log_extraction(
             f"{mode} extraction from {context} ([cyan]{len(markdown)}[/cyan] chars)", prefix
@@ -1399,6 +1510,11 @@ class LlmBackend:
         # Early validation for empty markdown
         if not markdown or len(markdown.strip()) == 0:
             self._log_error(f"Markdown is empty for {context}. Cannot proceed.")
+            return None
+
+        # Full-document calls that arithmetically cannot fit the context
+        # window are refused up front instead of burning provider calls.
+        if not is_partial and not self._preflight_fits_context(markdown, context):
             return None
 
         # For direct full-document extraction, warn if the document is too large
@@ -1420,6 +1536,7 @@ class LlmBackend:
             is_partial=is_partial,
             context=context,
             template=template,
+            allow_dense=allow_dense,
         )
 
         if not parsed_json:
@@ -1430,12 +1547,14 @@ class LlmBackend:
 
         # Direct contract grounding (spec §5): the whole document is extracted
         # in one call with no per-node chunk tracking, so provenance is
-        # document-level. Only for the pure direct contract — dense sets its own
-        # (chunk-level) ledger, and partial/chunk calls are not full documents.
+        # document-level. Only for the pure direct contract ("auto" reaches
+        # this path exactly when it resolved to a direct-style single call) —
+        # dense sets its own (chunk-level) ledger, and partial/chunk calls are
+        # not full documents.
         if (
             model is not None
             and not is_partial
-            and self.extraction_contract == "direct"
+            and self.extraction_contract in ("direct", "auto")
             and str(self._dense_config_raw.get("provenance", "standard")).lower() != "off"
         ):
             from ....core.provenance.models import document_level_ledger

@@ -615,6 +615,13 @@ def resolve_effective_model_config(
         )
         if probed:
             context_limit = probed
+    # The output budget is deliberately NOT scaled off the probed context
+    # window: a large context does not imply large output capacity (a 1B
+    # model may serve a 128k window yet only usefully emit ~4k tokens). We
+    # keep the conservative default and let users raise it per model via
+    # max_output_tokens / --llm-max-output-tokens when their model supports
+    # more. Truncated calls are still handled at runtime (bounded max_tokens
+    # escalation, then batch splitting).
     max_output_tokens = _resolve_max_output_tokens(litellm_model, overrides.max_output_tokens)
 
     generation = _merge_generation(GenerationDefaults(), overrides.generation)

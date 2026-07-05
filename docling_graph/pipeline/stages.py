@@ -482,7 +482,7 @@ class ExtractionStage(PipelineStage):
 
         processing_mode = cast(Literal["one-to-one", "many-to-one"], conf["processing_mode"])
         extraction_contract = cast(
-            Literal["direct", "dense"], conf.get("extraction_contract", "direct")
+            Literal["direct", "dense", "auto"], conf.get("extraction_contract", "direct")
         )
         dense_config = {
             "structured_output": bool(conf.get("structured_output", True)),

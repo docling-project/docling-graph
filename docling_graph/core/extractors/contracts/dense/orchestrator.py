@@ -779,12 +779,16 @@ class DenseOrchestrator:
         template: type[BaseModel],
         config: DenseOrchestratorConfig,
         debug_dir: str | None = None,
+        debug_suffix: str = "",
         on_trace: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         self._llm = llm_call_fn
         self._template = template
         self._config = config
         self._debug_dir = debug_dir or ""
+        # Per-attempt namespace (e.g. "_attempt2") so a dense retry within the
+        # same output dir never overwrites the previous attempt's artifacts.
+        self._debug_suffix = debug_suffix
         self._on_trace = on_trace
         self._catalog = build_node_catalog(template)
         # Per-run observability (exposed after run() as last_run_stats).
@@ -833,7 +837,8 @@ class DenseOrchestrator:
         if not self._debug_dir:
             return
         os.makedirs(self._debug_dir, exist_ok=True)
-        path = os.path.join(self._debug_dir, name)
+        stem, ext = os.path.splitext(name)
+        path = os.path.join(self._debug_dir, f"{stem}{self._debug_suffix}{ext}")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, default=str)
 
