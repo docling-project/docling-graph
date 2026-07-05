@@ -13,9 +13,11 @@ from typing import Any, Optional, Tuple
 import networkx as nx
 import numpy as np
 import pandas as pd
-from rich import print as rich_print
 
+from ...logging_utils import get_component_logger
 from ..utils.string_formatter import DateTimeEncoder
+
+logger = get_component_logger("InteractiveVisualizer", __name__)
 
 
 class InteractiveVisualizer:
@@ -37,10 +39,10 @@ class InteractiveVisualizer:
         nodes_path = path / "nodes.csv"
         edges_path = path / "edges.csv"
 
-        rich_print(f"Loading nodes from {nodes_path}...")
+        logger.info("Loading nodes from %s...", nodes_path)
         nodes_df = pd.read_csv(nodes_path)
 
-        rich_print(f"Loading edges from {edges_path}...")
+        logger.info("Loading edges from %s...", edges_path)
         edges_df = pd.read_csv(edges_path)
 
         return nodes_df, edges_df
@@ -55,7 +57,7 @@ class InteractiveVisualizer:
         Returns:
             Tuple of (nodes_df, edges_df)
         """
-        rich_print(f"Loading graph from {path}...")
+        logger.info("Loading graph from %s...", path)
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
@@ -295,8 +297,7 @@ class InteractiveVisualizer:
                     f"<script>\n{cytoscape_dagre_lib}\n</script>",
                 )
             except FileNotFoundError as e:
-                rich_print(f"[yellow][InteractiveVisualizer][/yellow] Warning: {e}")
-                rich_print("[yellow]Falling back to CDN links for missing libraries[/yellow]")
+                logger.warning("%s; falling back to CDN links for missing libraries", e)
                 # Replace placeholders with CDN links as fallback
                 html_template = html_template.replace(
                     "<!-- Cytoscape core - EMBEDDED_CYTOSCAPE_PLACEHOLDER -->",
@@ -312,9 +313,7 @@ class InteractiveVisualizer:
                 )
         else:
             # Fallback: use inline template (minimal version)
-            rich_print(
-                "[yellow][InteractiveVisualizer][/yellow] HTML template missing - Falling back to minimal version instead"
-            )
+            logger.warning("HTML template missing - falling back to minimal version instead")
             html_template = self._get_default_template()
 
         # Inject the graph data with proper JSON serialization
@@ -371,8 +370,7 @@ class InteractiveVisualizer:
         try:
             cytoscape_lib = self._get_cytoscape_library()
         except FileNotFoundError as e:
-            rich_print(f"[yellow][InteractiveVisualizer][/yellow] Warning: {e}")
-            rich_print("[yellow]Falling back to CDN for Cytoscape.js[/yellow]")
+            logger.warning("%s; falling back to CDN for Cytoscape.js", e)
             cytoscape_lib = None
 
         # Build the script tags

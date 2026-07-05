@@ -7,15 +7,14 @@ For LLM backend, extraction behavior is driven by the configured
 extraction contract (direct or dense).
 """
 
-import logging
 import time
 from typing import Any, Tuple, Type, cast
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
-from rich import print as rich_print
 
 from ....exceptions import ExtractionError
+from ....logging_utils import get_component_logger
 from ....protocols import (
     Backend,
     ExtractionBackendProtocol,
@@ -30,8 +29,7 @@ from ..contracts.dense.strategy_ops import extract_dense_from_document, extract_
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
 
-# Initialize logger
-logger = logging.getLogger(__name__)
+logger = get_component_logger("ManyToOneStrategy", __name__)
 
 
 class ManyToOneStrategy(BaseExtractor):
@@ -247,8 +245,7 @@ class ManyToOneStrategy(BaseExtractor):
             context_limit_tokens=context_limit if isinstance(context_limit, int) else None,
             chunking_available=chunking_available,
         )
-        rich_print(f"[blue][AutoContract][/blue] Resolved {decision.describe()}")
-        logger.info("[AutoContract] Resolved %s", decision.describe())
+        logger.info("Resolved %s", decision.describe(), extra={"component": "AutoContract"})
         return decision.contract
 
     def _extract_direct_mode_from_text(

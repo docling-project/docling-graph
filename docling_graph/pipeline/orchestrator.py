@@ -6,7 +6,6 @@ of pipeline stages, handles errors, and manages resource cleanup.
 """
 
 import gc
-import logging
 import time
 from pathlib import Path
 from typing import Any, Dict, Literal, Union
@@ -14,6 +13,7 @@ from typing import Any, Dict, Literal, Union
 from .. import __version__
 from ..core import PipelineConfig
 from ..exceptions import PipelineError
+from ..logging_utils import ensure_logging, get_component_logger
 from .context import PipelineContext
 from .stages import (
     DoclingExportStage,
@@ -27,7 +27,7 @@ from .stages import (
 )
 from .trace import EventTrace
 
-logger = logging.getLogger(__name__)
+logger = get_component_logger("Pipeline", __name__)
 
 
 class PipelineOrchestrator:
@@ -123,7 +123,6 @@ class PipelineOrchestrator:
         try:
             for stage in self.stages:
                 current_stage = stage
-                logger.info(f">>> Stage: {stage.name()}")
                 context = stage.execute(context)
 
             # Calculate total processing time
@@ -227,15 +226,11 @@ class PipelineOrchestrator:
 
             # Log final output directory after all exports complete
             if context.output_manager and self.dump_to_disk:
-                from rich import print as rich_print
-
                 output_dir = context.output_manager.get_document_dir()
-                rich_print(
-                    f"[green]→[/green] Saved conversion results to [green]{output_dir}[/green]"
-                )
+                logger.info(f"Saved conversion results to {output_dir}")
 
             logger.info(
-                f"--- Pipeline Completed Successfully (took {pipeline_processing_time:.2f}s) ---"
+                f"--- Pipeline Completed Successfully (in {pipeline_processing_time:.2f}s) ---"
             )
             return context
 
@@ -364,6 +359,7 @@ def run_pipeline(
         >>> # Called internally by CLI
         >>> run_pipeline(config, mode="cli")
     """
+    ensure_logging()
     if isinstance(config, dict):
         config = PipelineConfig(**config)
 

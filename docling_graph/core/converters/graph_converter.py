@@ -18,13 +18,15 @@ from typing import Any, List, Mapping, Optional, Set
 
 import networkx as nx
 from pydantic import BaseModel
-from rich import print as rich_print
 
+from ...logging_utils import get_component_logger
 from ..utils.graph_cleaner import GraphCleaner, validate_graph_structure
 from ..utils.stats_calculator import calculate_graph_stats
 from .config import GraphConfig
 from .models import Edge, GraphMetadata
 from .node_id_registry import NodeIDRegistry
+
+logger = get_component_logger("GraphConverter", __name__)
 
 
 def get_model_config_value(model: BaseModel, key: str, default: Any) -> Any:
@@ -142,9 +144,7 @@ class GraphConverter:
             raise ValueError("Cannot create graph from empty model list")
 
         # Pre-register all models to ensure consistent node IDs across batches
-        rich_print(
-            "[blue][GraphConverter][/blue] Pre-registering models for deterministic node IDs..."
-        )
+        logger.info("Pre-registering models for deterministic node IDs...")
         self.registry.register_batch(model_instances)
 
         # Create fresh graph for this conversion
@@ -184,30 +184,30 @@ class GraphConverter:
                 provenance_binder(graph, model_instances)
             except Exception as e:
                 # Grounding must never break graph conversion.
-                rich_print(f"[yellow][GraphConverter][/yellow] Provenance binding failed: {e}")
+                logger.warning("Provenance binding failed: %s", e)
 
         # Auto-cleanup if enabled
         if self.auto_cleanup and self.cleaner:
-            rich_print("[blue][GraphConverter][/blue] Running automatic graph cleanup...")
+            logger.info("Running automatic graph cleanup...")
             graph = self.cleaner.clean_graph(graph)
 
         # Validate
         if self.validate_graph:
             try:
                 validate_graph_structure(graph, raise_on_error=True)
-                rich_print("[green][GraphConverter][/green] Graph structure validated successfully")
+                logger.info("Graph structure validated successfully")
             except ValueError as e:
-                rich_print(f"[red][GraphConverter][/red] Validation failed: {e}")
+                logger.error("Validation failed: %s", e)
                 raise
 
         # Calculate statistics
         registry_stats = self.registry.get_stats()
-        rich_print(
-            f"[blue][GraphConverter][/blue] Final graph: "
-            f"[cyan]{graph.number_of_nodes()}[/cyan] nodes, "
-            f"[yellow]{graph.number_of_edges()}[/yellow] edges\n"
-            f"  Registry: {registry_stats['total_entities']} entities across "
-            f"{len(registry_stats['classes'])} classes"
+        logger.info(
+            "Final graph: %s nodes, %s edges (registry: %s entities across %s classes)",
+            graph.number_of_nodes(),
+            graph.number_of_edges(),
+            registry_stats["total_entities"],
+            len(registry_stats["classes"]),
         )
 
         metadata = calculate_graph_stats(graph, len(model_instances))
@@ -555,7 +555,4 @@ class GraphConverter:
     def set_registry(self, registry: NodeIDRegistry) -> None:
         """Update the registry (for sharing across multiple conversions)."""
         self.registry = registry
-        rich_print(
-            f"[blue][GraphConverter][/blue] Registry updated with "
-            f"{registry.get_stats()['total_entities']} entities"
-        )
+        logger.info("Registry updated with %s entities", registry.get_stats()["total_entities"])

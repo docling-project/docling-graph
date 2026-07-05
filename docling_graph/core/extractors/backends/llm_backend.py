@@ -10,17 +10,16 @@ import copy
 import gc
 import hashlib
 import json
-import logging
 import os
 import re
 from functools import lru_cache
 from typing import Any, Literal, Mapping, Type, cast
 
 from pydantic import BaseModel, ValidationError
-from rich import print as rich_print
 
 from ....exceptions import ClientError
 from ....llm_clients.config import _DEFAULT_MAX_OUTPUT_TOKENS
+from ....logging_utils import get_component_logger
 from ....protocols import LLMClientProtocol
 from ..contracts import direct
 from ..contracts.auto import (
@@ -30,7 +29,7 @@ from ..contracts.auto import (
 from ..contracts.dense.backend_ops import run_dense_orchestrator
 from ..gleaning import merge_gleaned_direct, run_gleaning_pass_direct
 
-logger = logging.getLogger(__name__)
+logger = get_component_logger("LlmBackend", __name__)
 
 
 class LlmBackend:
@@ -96,12 +95,10 @@ class LlmBackend:
         # Get model identifier for logging
         model_attr = getattr(llm_client, "model", None) or getattr(llm_client, "model_id", None)
 
-        logger.info("Initialized LlmBackend with client: %s", self.client.__class__.__name__)
-
-        rich_print(
-            f"[yellow][LlmBackend][/yellow] Initialized with:\n"
-            f"  • Client: [cyan]{self.client.__class__.__name__}[/cyan]\n"
-            f"  • Model: [cyan]{model_attr or 'unknown'}[/cyan]"
+        logger.info(
+            "Initialized (client=%s, model=%s)",
+            self.client.__class__.__name__,
+            model_attr or "unknown",
         )
 
     def _get_json_response(
@@ -181,41 +178,41 @@ class LlmBackend:
 
     def _log_info(self, message: str, **kwargs: Any) -> None:
         """Log info message with consistent formatting."""
-        formatted = f"[blue][LlmBackend][/blue] {message}"
         if kwargs:
-            for key, value in kwargs.items():
-                formatted += f" ([cyan]{value}[/cyan] {key})"
-        rich_print(formatted)
+            message += "".join(f" ({value} {key})" for key, value in kwargs.items())
+        logger.info(message)
 
     def _log_extraction(self, message: str, prefix: str) -> None:
         """Log extraction-phase message with contract-specific prefix (e.g. DirectExtraction)."""
-        rich_print(f"[blue][{prefix}][/blue] {message}")
+        logger.info(message, extra={"component": prefix})
 
     def _log_success(self, message: str) -> None:
         """Log success message."""
-        rich_print(f"[blue][LlmBackend][/blue] {message}")
+        logger.info(message)
 
     def _log_warning(self, message: str) -> None:
         """Log warning message."""
-        rich_print(f"[yellow]Warning:[/yellow] {message}")
+        logger.warning(message)
 
     def _log_error(self, message: str, exception: Exception | None = None) -> None:
         """Log error message with optional exception details."""
-        error_text = f"[red]Error:[/red] {message}"
         if exception:
-            error_text += f" {type(exception).__name__}: {exception}"
-        rich_print(error_text)
+            message += f" {type(exception).__name__}: {exception}"
+        logger.error(message)
 
     def _log_validation_error(
         self, context: str, error: ValidationError, raw_data: dict | list
     ) -> None:
         """Log detailed validation error information. Raw data is stored in trace_data when present."""
-        rich_print(f"[blue][LlmBackend][/blue] [yellow]Validation Error for {context}:[/yellow]")
-        rich_print("  The data extracted by the LLM does not match your Pydantic template.")
-        rich_print("[red]Details:[/red]")
-        for err in error.errors():
-            loc = " -> ".join(map(str, err["loc"]))
-            rich_print(f"  - [bold magenta]{loc}[/bold magenta]: [red]{err['msg']}[/red]")
+        details = "; ".join(
+            f"{' -> '.join(map(str, err['loc']))}: {err['msg']}" for err in error.errors()
+        )
+        logger.warning(
+            "Validation error for %s: the data extracted by the LLM does not match "
+            "your Pydantic template. Details: %s",
+            context,
+            details,
+        )
         if self.trace_data is not None:
             self.trace_data.emit(
                 "validation_error_raw_data",
@@ -1349,7 +1346,7 @@ class LlmBackend:
         # this document, so it is accepted alongside an explicit "dense".
         if self.extraction_contract in ("dense", "auto"):
             self._log_extraction(
-                f"Running dense extraction ([cyan]{len(chunks)}[/cyan] chunks)...",
+                f"Running dense extraction ({len(chunks)} chunks)...",
                 "DenseExtraction",
             )
             full_markdown = "\n\n".join(chunks) if chunks else ""
@@ -1503,9 +1500,7 @@ class LlmBackend:
             else "Direct"
         )
         prefix = f"{mode}Extraction"
-        self._log_extraction(
-            f"{mode} extraction from {context} ([cyan]{len(markdown)}[/cyan] chars)", prefix
-        )
+        self._log_extraction(f"{mode} extraction from {context} ({len(markdown)} chars)", prefix)
 
         # Early validation for empty markdown
         if not markdown or len(markdown.strip()) == 0:
@@ -1611,7 +1606,7 @@ class LlmBackend:
             return Response(response)
 
         except Exception as e:
-            rich_print(f"[blue][LlmBackend][/blue] [red]Error in generate:[/red] {e}")
+            logger.error("Error in generate: %s", e)
 
             # Return empty response on error
             class EmptyResponse:
@@ -1640,7 +1635,7 @@ class LlmBackend:
             # Force garbage collection
             gc.collect()
 
-            rich_print("[blue][LlmBackend][/blue] [green]Cleaned up resources[/green]")
+            logger.info("Cleaned up resources")
 
         except Exception as e:
-            rich_print(f"[blue][LlmBackend][/blue] [yellow]Warning during cleanup:[/yellow] {e}")
+            logger.warning("Warning during cleanup: %s", e)

@@ -7,8 +7,8 @@ from typing import Any, List, Tuple, Type
 
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
-from rich import print as rich_print
 
+from ....logging_utils import ProgressTracker, get_component_logger
 from ....protocols import (
     Backend,
     ExtractionBackendProtocol,
@@ -19,6 +19,8 @@ from ....protocols import (
 )
 from ..document_processor import DocumentProcessor
 from ..extractor_base import BaseExtractor
+
+logger = get_component_logger("OneToOneStrategy", __name__)
 
 
 class OneToOneStrategy(BaseExtractor):
@@ -49,9 +51,10 @@ class OneToOneStrategy(BaseExtractor):
         )
 
         backend_type = get_backend_type(self.backend)
-        rich_print(
-            f"[blue][OneToOneStrategy][/blue] Initialized with {backend_type.upper()} backend: "
-            f"[cyan]{self.backend.__class__.__name__}[/cyan]"
+        logger.info(
+            "Initialized with %s backend: %s",
+            backend_type.upper(),
+            self.backend.__class__.__name__,
         )
 
     def extract(
@@ -73,10 +76,10 @@ class OneToOneStrategy(BaseExtractor):
         """
         try:
             if is_vlm_backend(self.backend):
-                rich_print("[blue][OneToOneStrategy][/blue] Using VLM backend for extraction")
+                logger.info("Using VLM backend for extraction")
                 return self._extract_with_vlm(self.backend, source, template)
             elif is_llm_backend(self.backend):
-                rich_print("[blue][OneToOneStrategy][/blue] Using LLM backend for extraction")
+                logger.info("Using LLM backend for extraction")
                 return self._extract_with_llm(self.backend, source, template)
             else:
                 backend_class = self.backend.__class__.__name__
@@ -85,7 +88,7 @@ class OneToOneStrategy(BaseExtractor):
                     "Expected either a VLM or LLM backend."
                 )
         except Exception as e:
-            rich_print(f"[red][OneToOneStrategy][/red] Extraction error: {e}")
+            logger.error("Extraction error: %s", e)
             return [], None
 
     def _extract_with_vlm(
@@ -155,10 +158,9 @@ class OneToOneStrategy(BaseExtractor):
                 },
             )
 
+        progress = ProgressTracker(logger, total=total_pages, label="Page extraction", unit="page")
         extraction_id = 0
         for page_num, page_md in enumerate(page_markdowns, start=1):
-            rich_print(f"[blue][OneToOneStrategy][/blue] Processing page {page_num}/{total_pages}")
-
             start_time = time.time()
             error = None
 
@@ -198,12 +200,10 @@ class OneToOneStrategy(BaseExtractor):
 
             if model:
                 extracted_models.append(model)
+                progress.advance(note=f"page {page_num}")
             else:
-                rich_print(
-                    f"[yellow][OneToOneStrategy][/yellow] No model extracted from page {page_num}"
-                )
+                logger.warning("No model extracted from page %s", page_num)
+                progress.advance(note=f"page {page_num} (no model)")
 
-        rich_print(
-            f"[green][OneToOneStrategy][/green] Successfully extracted {len(extracted_models)} model(s)"
-        )
+        progress.finish(note=f"{len(extracted_models)} model(s) extracted")
         return extracted_models, document

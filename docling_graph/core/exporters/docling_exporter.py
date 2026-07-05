@@ -4,9 +4,11 @@ import json
 from pathlib import Path
 
 from docling_core.types.doc import DoclingDocument
-from rich import print as rich_print
 
+from ...logging_utils import get_component_logger
 from ..utils.doclang_sanitizer import sanitize_for_doclang
+
+logger = get_component_logger("DoclingExporter", __name__)
 
 
 class DoclingExporter:
@@ -78,9 +80,7 @@ class DoclingExporter:
                 page_files.append(str(page_path))
 
             exported_files["page_markdowns"] = page_files
-            rich_print(
-                f"[green]→[/green] Saved {len(page_files)} page markdown files to [green]{page_dir}[/green]"
-            )
+            logger.info("Saved %s page markdown files to %s", len(page_files), page_dir)
 
         return exported_files
 
@@ -92,9 +92,8 @@ class DoclingExporter:
         JSON and markdown artifacts are unaffected).
         """
         if not hasattr(document, "export_to_doclang"):
-            rich_print(
-                "[yellow]→ DocLang export skipped:[/yellow] installed docling-core "
-                "has no export_to_doclang()"
+            logger.warning(
+                "DocLang export skipped: installed docling-core has no export_to_doclang()"
             )
             return None
         try:
@@ -102,7 +101,7 @@ class DoclingExporter:
             self._save_text(clean.export_to_doclang(), output_path)
             return output_path
         except Exception as e:
-            rich_print(f"[yellow]→ DocLang export skipped:[/yellow] {e}")
+            logger.warning("DocLang export skipped: %s", e)
             return None
 
     def _export_document_json(self, document: DoclingDocument, output_path: Path) -> None:

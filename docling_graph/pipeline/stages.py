@@ -39,10 +39,9 @@ from ..core.input import (
 )
 from ..exceptions import ConfigurationError, ExtractionError, PipelineError
 from ..llm_clients import get_client
+from ..logging_utils import get_component_logger
 from ..protocols import LLMClientProtocol
 from .context import PipelineContext
-
-logger = logging.getLogger(__name__)
 
 
 class PipelineStage(ABC):
@@ -58,6 +57,11 @@ class PipelineStage(ABC):
     def name(self) -> str:
         """Return the name of this stage for logging."""
         ...
+
+    @property
+    def log(self) -> logging.LoggerAdapter:
+        """Logger tagged with this stage's display name as the component."""
+        return get_component_logger(self.name(), __name__)
 
     @abstractmethod
     def execute(self, context: PipelineContext) -> PipelineContext:
@@ -108,22 +112,22 @@ class InputNormalizationStage(PipelineStage):
         - input_metadata: Processing hints (skip_ocr, etc.)
         - input_type: Detected input type
         """
-        logger.info(f"[{self.name()}] Detecting input type (mode: {self.mode})...")
+        self.log.info(f"Detecting input type (mode: {self.mode})...")
 
         # Detect input type with mode awareness
         input_type = InputTypeDetector.detect(context.config.source, mode=self.mode)
-        logger.info(f"[{self.name()}] Detected: {input_type.value}")
+        self.log.info(f"Detected: {input_type.value}")
 
         # Get appropriate validator and handler
         validator = self._get_validator(input_type)
         handler = self._get_handler(input_type)
 
         # Validate input
-        logger.info(f"[{self.name()}] Validating input...")
+        self.log.info("Validating input...")
         validator.validate(context.config.source)
 
         # Load and normalize
-        logger.info(f"[{self.name()}] Loading and normalizing input...")
+        self.log.info("Loading and normalizing input...")
         normalized_content = handler.load(context.config.source)
 
         # Build metadata based on input type
@@ -138,7 +142,7 @@ class InputNormalizationStage(PipelineStage):
             if isinstance(normalized_content, DoclingDocument):
                 context.docling_document = normalized_content
                 context.normalized_source = None  # Not needed for a pre-parsed document
-                logger.info(f"[{self.name()}] Loaded {input_type.value} into context")
+                self.log.info(f"Loaded {input_type.value} into context")
             else:
                 raise ConfigurationError(
                     f"{input_type.value} handler did not return a DoclingDocument object",
@@ -150,9 +154,9 @@ class InputNormalizationStage(PipelineStage):
         context.input_metadata = metadata
         context.input_type = input_type
 
-        logger.info(f"[{self.name()}] Normalized successfully")
-        logger.info(
-            f"[{self.name()}] Processing flags: skip_ocr={metadata.get('skip_ocr', False)}, "
+        self.log.info("Normalized successfully")
+        self.log.info(
+            f"Processing flags: skip_ocr={metadata.get('skip_ocr', False)}, "
             f"skip_segmentation={metadata.get('skip_segmentation', False)}"
         )
 
@@ -251,7 +255,7 @@ class TemplateLoadingStage(PipelineStage):
 
     def execute(self, context: PipelineContext) -> PipelineContext:
         """Load template from config."""
-        logger.info(f"[{self.name()}] Loading template...")
+        self.log.info("Loading template...")
 
         template_val = context.config.template
         if isinstance(template_val, str):
@@ -263,7 +267,7 @@ class TemplateLoadingStage(PipelineStage):
                 "Invalid template type", details={"type": type(template_val).__name__}
             )
 
-        logger.info(f"[{self.name()}] Loaded: {context.template.__name__}")
+        self.log.info(f"Loaded: {context.template.__name__}")
         return context
 
     @staticmethod
@@ -346,14 +350,14 @@ class ExtractionStage(PipelineStage):
 
             # Pre-parsed document input (DoclingDocument JSON or DocLang): skip conversion
             if input_type in ("docling_document", "doclang"):
-                logger.info(f"[{self.name()}] Using pre-loaded document ({input_type})")
+                self.log.info(f"Using pre-loaded document ({input_type})")
                 context.extracted_models = self._extract_from_docling_document(context)
-                logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
+                self.log.info(f"Extracted {len(context.extracted_models)} items")
                 self._capture_provenance(context)
                 return context
 
         # All other inputs: Docling conversion path (file, URL download, text normalized to .md)
-        logger.info(f"[{self.name()}] Creating extractor...")
+        self.log.info("Creating extractor...")
         context.extractor = self._create_extractor(context)
         if context.trace_data and hasattr(context.extractor, "trace_data"):
             context.extractor.trace_data = context.trace_data
@@ -364,7 +368,7 @@ class ExtractionStage(PipelineStage):
             if isinstance(context.normalized_source, Path)
             else context.config.source
         )
-        logger.info(f"[{self.name()}] Extracting from: {source_for_extract}")
+        self.log.info(f"Extracting from: {source_for_extract}")
         context.extracted_models, context.docling_document = context.extractor.extract(
             str(source_for_extract), context.template
         )
@@ -374,7 +378,7 @@ class ExtractionStage(PipelineStage):
                 "No models extracted from document", details={"source": context.config.source}
             )
 
-        logger.info(f"[{self.name()}] Extracted {len(context.extracted_models)} items")
+        self.log.info(f"Extracted {len(context.extracted_models)} items")
 
         self._capture_provenance(context)
         return context
@@ -451,8 +455,8 @@ class ExtractionStage(PipelineStage):
             template_schema_hash=schema_hash,
         )
         context.provenance = ledger
-        logger.info(
-            f"[{self.name()}] Captured provenance ledger: "
+        self.log.info(
+            f"Captured provenance ledger: "
             f"{len(ledger.nodes)} node entries, {len(ledger.chunks)} chunks, "
             f"resolution={ledger.resolution}"
         )
@@ -514,7 +518,9 @@ class ExtractionStage(PipelineStage):
             conf.get("provider_override"),
         )
 
-        logger.info(f"Using model: {model_config['model']} (provider: {model_config['provider']})")
+        self.log.info(
+            f"Using model: {model_config['model']} (provider: {model_config['provider']})"
+        )
 
         llm_input_format = cast(str, conf.get("llm_input_format", "markdown"))
 
@@ -621,10 +627,10 @@ class ExtractionStage(PipelineStage):
                 details={"input_type": "docling_document"},
             )
 
-        logger.info(f"[{self.name()}] Extracting from pre-loaded DoclingDocument")
+        self.log.info("Extracting from pre-loaded DoclingDocument")
 
         if not context.extractor:
-            logger.info(f"[{self.name()}] Creating extractor for DoclingDocument...")
+            self.log.info("Creating extractor for DoclingDocument...")
             context.extractor = self._create_extractor(context)
         if context.trace_data and hasattr(context.extractor, "trace_data"):
             context.extractor.trace_data = context.trace_data
@@ -641,7 +647,7 @@ class ExtractionStage(PipelineStage):
         except ExtractionError:
             raise
         except Exception as e:
-            logger.error(f"[{self.name()}] Error extracting from DoclingDocument: {e}")
+            self.log.error(f"Error extracting from DoclingDocument: {e}")
             raise ExtractionError(
                 f"Failed to extract from DoclingDocument: {e!s}",
                 details={"input_type": "docling_document", "error": str(e)},
@@ -653,7 +659,7 @@ class ExtractionStage(PipelineStage):
                 details={"input_type": "docling_document"},
             )
 
-        logger.info(f"[{self.name()}] Extracted {len(extracted_models)} items from DoclingDocument")
+        self.log.info(f"Extracted {len(extracted_models)} items from DoclingDocument")
         return extracted_models  # type: ignore[no-any-return]
 
 
@@ -673,18 +679,18 @@ class DoclingExportStage(PipelineStage):
             or conf.get("export_markdown", True)
             or conf.get("export_doclang", True)
         ):
-            logger.info(f"[{self.name()}] Skipped (not configured)")
+            self.log.info("Skipped (not configured)")
             return context
 
         if not context.docling_document:
-            logger.warning(f"[{self.name()}] No document available for export")
+            self.log.warning("No document available for export")
             return context
 
         if not context.output_manager:
-            logger.warning(f"[{self.name()}] No output manager available")
+            self.log.warning("No output manager available")
             return context
 
-        logger.info(f"[{self.name()}] Exporting Docling document...")
+        self.log.info("Exporting Docling document...")
 
         docling_dir = context.output_manager.get_docling_dir()
 
@@ -695,7 +701,7 @@ class DoclingExportStage(PipelineStage):
         )
         include_doclang = conf.get("export_doclang", True) and not input_was_doclang
         if input_was_doclang and conf.get("export_doclang", True):
-            logger.info(f"[{self.name()}] DocLang export skipped (input was DocLang)")
+            self.log.info("DocLang export skipped (input was DocLang)")
 
         exporter = DoclingExporter(output_dir=docling_dir)
         exporter.export_document(
@@ -721,7 +727,7 @@ class DoclingExportStage(PipelineStage):
 
         self._export_chunks(context, docling_dir)
 
-        logger.info(f"[{self.name()}] Exported to {docling_dir}")
+        self.log.info(f"Exported to {docling_dir}")
         return context
 
     def _export_chunks(self, context: PipelineContext, docling_dir: Path) -> None:
@@ -746,7 +752,7 @@ class DoclingExportStage(PipelineStage):
             json.dumps(chunks_payload, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        logger.info(f"[{self.name()}] Saved {len(chunks_payload)} chunk records to {chunks_path}")
+        self.log.info(f"Saved {len(chunks_payload)} chunk records to {chunks_path}")
         if context.trace_data is not None:
             context.trace_data.emit(
                 "export_written",
@@ -763,7 +769,7 @@ class GraphConversionStage(PipelineStage):
 
     def execute(self, context: PipelineContext) -> PipelineContext:
         """Convert extracted models to graph."""
-        logger.info(f"[{self.name()}] Converting to graph...")
+        self.log.info("Converting to graph...")
 
         converter = GraphConverter(
             add_reverse_edges=context.config.reverse_edges,
@@ -826,8 +832,8 @@ class GraphConversionStage(PipelineStage):
                 },
             )
 
-        logger.info(
-            f"[{self.name()}] Created graph: "
+        self.log.info(
+            f"Created graph: "
             f"{context.graph_metadata.node_count} nodes, "
             f"{context.graph_metadata.edge_count} edges"
         )
@@ -843,10 +849,10 @@ class ExportStage(PipelineStage):
     def execute(self, context: PipelineContext) -> PipelineContext:
         """Export graph to configured formats."""
         if not context.output_manager:
-            logger.warning(f"[{self.name()}] No output manager available")
+            self.log.warning("No output manager available")
             return context
 
-        logger.info(f"[{self.name()}] Exporting graph...")
+        self.log.info("Exporting graph...")
 
         # Export to docling_graph directory
         graph_dir = context.output_manager.get_docling_graph_dir()
@@ -856,16 +862,16 @@ class ExportStage(PipelineStage):
 
         if export_format == "csv":
             CSVExporter().export(context.knowledge_graph, graph_dir)
-            logger.info(f"Saved CSV files to {graph_dir}")
+            self.log.info(f"Saved CSV files to {graph_dir}")
         elif export_format == "cypher":
             cypher_path = graph_dir / "graph.cypher"
             CypherExporter().export(context.knowledge_graph, cypher_path)
-            logger.info(f"Saved Cypher script to {cypher_path}")
+            self.log.info(f"Saved Cypher script to {cypher_path}")
 
         # Also export JSON
         json_path = graph_dir / "graph.json"
         JSONExporter().export(context.knowledge_graph, json_path)
-        logger.info(f"Saved JSON to {json_path}")
+        self.log.info(f"Saved JSON to {json_path}")
 
         # Persist the full provenance ledger next to the graph (spec hook H11)
         if (
@@ -876,7 +882,7 @@ class ExportStage(PipelineStage):
             provenance_path.write_text(
                 context.provenance.model_dump_json(indent=2), encoding="utf-8"
             )
-            logger.info(f"Saved provenance ledger to {provenance_path}")
+            self.log.info(f"Saved provenance ledger to {provenance_path}")
         if context.trace_data is not None:
             context.trace_data.emit(
                 "export_written",
@@ -888,7 +894,7 @@ class ExportStage(PipelineStage):
                 },
             )
 
-        logger.info(f"[{self.name()}] Exported to {graph_dir}")
+        self.log.info(f"Exported to {graph_dir}")
         return context
 
 
@@ -900,7 +906,7 @@ class VisualizationStage(PipelineStage):
 
     def execute(self, context: PipelineContext) -> PipelineContext:
         """Generate visualizations and reports."""
-        logger.info(f"[{self.name()}] Generating visualizations...")
+        self.log.info("Generating visualizations...")
 
         # Get output directory from output_manager or fallback to output_dir
         output_dir = None
@@ -949,11 +955,11 @@ class VisualizationStage(PipelineStage):
             llm_diagnostics=llm_diagnostics,
             dense_stats=dense_stats if isinstance(dense_stats, dict) and dense_stats else None,
         )
-        logger.info(f"Generated markdown report at {report_path}.md")
+        self.log.info(f"Generated markdown report at {report_path}.md")
 
         html_path = output_dir / "graph.html"
         InteractiveVisualizer().save_cytoscape_graph(context.knowledge_graph, html_path)
-        logger.info(f"Generated interactive HTML graph at {html_path}")
+        self.log.info(f"Generated interactive HTML graph at {html_path}")
         if context.trace_data is not None:
             context.trace_data.emit(
                 "export_written",
@@ -961,5 +967,5 @@ class VisualizationStage(PipelineStage):
                 {"report_path": str(report_path) + ".md", "html_path": str(html_path)},
             )
 
-        logger.info(f"[{self.name()}] Generated visualizations")
+        self.log.info("Generated visualizations")
         return context

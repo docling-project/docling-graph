@@ -8,16 +8,14 @@ Fixes common issues from batch-based extraction:
 - Inconsistent edges
 """
 
-import logging
 from typing import Any, Dict, List, Set, Tuple
 
 import networkx as nx
-from rich import print as rich_print
 
+from ...logging_utils import get_component_logger
 from ..provenance.identity import PROVENANCE_NODE_ATTR, merge_compact_views
 
-# Initialize logger for error reporting
-logger = logging.getLogger(__name__)
+logger = get_component_logger("GraphCleaner", __name__)
 
 # Framework-owned node attributes that carry no extracted content. Excluded
 # from phantom detection and content hashing so grounding metadata can never
@@ -135,10 +133,7 @@ class GraphCleaner:
         initial_edges = graph.number_of_edges()
 
         if self.verbose:
-            rich_print(
-                f"[blue][GraphCleaner][/blue] Starting cleanup: "
-                f"{initial_nodes} nodes, {initial_edges} edges"
-            )
+            logger.info("Starting cleanup: %s nodes, %s edges", initial_nodes, initial_edges)
 
         # Step 1: Remove phantom nodes (nodes with only ID)
         removed_phantoms = self._remove_phantom_nodes(graph)
@@ -162,16 +157,20 @@ class GraphCleaner:
         final_edges = graph.number_of_edges()
 
         if self.verbose:
-            rich_print(
-                f"[green][GraphCleaner][/green] Cleanup complete:\n"
-                f"  • Removed {removed_phantoms} phantom nodes\n"
-                f"  • Merged {merged_nodes} duplicate nodes\n"
-                f"  • Removed {removed_self} self-edges\n"
-                f"  • Removed {removed_edges} orphaned edges\n"
-                f"  • Removed {removed_duplicates} duplicate edges\n"
-                f"  • Capped keywords on {capped_keywords} edges\n"
-                f"  • Result: {final_nodes} nodes (-{initial_nodes - final_nodes}), "
-                f"{final_edges} edges (-{initial_edges - final_edges})"
+            logger.info(
+                "Cleanup complete: removed %s phantom nodes, merged %s duplicate nodes, "
+                "removed %s self-edges, %s orphaned edges, %s duplicate edges, "
+                "capped keywords on %s edges | result: %s nodes (-%s), %s edges (-%s)",
+                removed_phantoms,
+                merged_nodes,
+                removed_self,
+                removed_edges,
+                removed_duplicates,
+                capped_keywords,
+                final_nodes,
+                initial_nodes - final_nodes,
+                final_edges,
+                initial_edges - final_edges,
             )
 
         return graph
@@ -238,9 +237,11 @@ class GraphCleaner:
             graph.remove_node(phantom_id)
 
             if self.verbose and len(phantom_nodes) <= 5:
-                rich_print(
-                    f"[yellow][GraphCleaner][/yellow] Removed phantom: {phantom_id} "
-                    f"(had {len(incoming)} incoming, {len(outgoing)} outgoing edges)"
+                logger.info(
+                    "Removed phantom: %s (had %s incoming, %s outgoing edges)",
+                    phantom_id,
+                    len(incoming),
+                    len(outgoing),
                 )
 
         self.last_dropped_relationships = dropped_relationships
@@ -300,10 +301,7 @@ class GraphCleaner:
                     merged_count += 1
 
                 if self.verbose and merged_count <= 5:
-                    rich_print(
-                        f"[blue][GraphCleaner][/blue] Merged {len(duplicates)} duplicates "
-                        f"into {canonical_id}"
-                    )
+                    logger.info("Merged %s duplicates into %s", len(duplicates), canonical_id)
 
         return merged_count
 
@@ -459,7 +457,7 @@ def validate_graph_structure(graph: nx.DiGraph, raise_on_error: bool = True) -> 
         if raise_on_error:
             raise ValueError(error_msg)
         else:
-            rich_print(f"[red][GraphValidator][/red] {error_msg}")
+            logger.error(error_msg, extra={"component": "GraphValidator"})
             return False
 
     return True

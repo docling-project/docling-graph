@@ -12,7 +12,10 @@ from docling.datamodel.base_models import InputFormat
 from docling.document_extractor import DocumentExtractor, ExtractionFormatOption
 from docling.pipeline.extraction_vlm_pipeline import ExtractionVlmPipeline
 from pydantic import BaseModel, ValidationError
-from rich import print as rich_print
+
+from ....logging_utils import get_component_logger
+
+logger = get_component_logger("VlmBackend", __name__)
 
 
 class VlmBackend:
@@ -60,12 +63,10 @@ class VlmBackend:
                 extraction_format_options=custom_format_options,
             )
 
-            rich_print(
-                f"[blue][VlmBackend][/blue] Initialized with model: [cyan]{self.model_name}[/cyan]"
-            )
+            logger.info("Initialized with model: %s", self.model_name)
 
         except Exception as e:
-            rich_print(f"[red]Error initializing VLM backend:[/red] {e}")
+            logger.error("Error initializing VLM backend: %s", e)
             raise
 
     def extract_from_document(self, source: str, template: Type[BaseModel]) -> List[BaseModel]:
@@ -79,7 +80,7 @@ class VlmBackend:
         Returns:
             List[BaseModel]: List of extracted model instances (one per page/item).
         """
-        rich_print(f"[blue][VlmBackend][/blue] Extracting from: [yellow]{source}[/yellow]")
+        logger.info("Extracting from: %s", source)
 
         if self.doc_extractor is None:
             raise RuntimeError("DocumentExtractor is not initialized")
@@ -99,34 +100,27 @@ class VlmBackend:
                             validated_model = template.model_validate(page.extracted_data)
                             extracted_objects.append(validated_model)
                         except ValidationError as e:
-                            # Detailed error reporting like your original code
-                            rich_print(
-                                f"[blue][VlmBackend][/blue] [yellow]Validation Error on page {page_num}:[/yellow]"
+                            details = "; ".join(
+                                f"{' -> '.join(map(str, error['loc']))}: {error['msg']}"
+                                for error in e.errors()
                             )
-                            rich_print(
-                                "  The data extracted by the VLM does not match your Pydantic template."
+                            logger.warning(
+                                "Validation error on page %s: the data extracted by the VLM "
+                                "does not match your Pydantic template. Details: %s",
+                                page_num,
+                                details,
                             )
-                            rich_print("[red]Details:[/red]")
-                            for error in e.errors():
-                                loc = " -> ".join(map(str, error["loc"]))
-                                rich_print(
-                                    f"  - [bold magenta]{loc}[/bold magenta]: [red]{error['msg']}[/red]"
-                                )
                             continue
 
             if extracted_objects:
-                rich_print(
-                    f"[blue][VlmBackend][/blue] Extracted [green]{len(extracted_objects)}[/green] valid items"
-                )
+                logger.info("Extracted %s valid items", len(extracted_objects))
             else:
-                rich_print(
-                    "[blue][VlmBackend][/blue] [yellow]Warning:[/yellow] No valid data extracted"
-                )
+                logger.warning("No valid data extracted")
 
             return extracted_objects
 
         except Exception as e:
-            rich_print(f"[red]Error during VLM extraction:[/red] {type(e).__name__}: {e}")
+            logger.error("Error during VLM extraction: %s: %s", type(e).__name__, e)
             return []
 
     def cleanup(self) -> None:
@@ -147,9 +141,7 @@ class VlmBackend:
             try:
                 if torch.cuda.is_available():
                     memory_before = torch.cuda.memory_allocated() / 1024**2  # MB
-                    rich_print(
-                        f"[blue][VlmBackend][/blue] GPU memory before cleanup: {memory_before:.2f} MB"
-                    )
+                    logger.info("GPU memory before cleanup: %.2f MB", memory_before)
             except Exception:
                 # Torch operations may fail in test environments
                 pass
@@ -163,21 +155,19 @@ class VlmBackend:
                         for pipeline in self.doc_extractor._pipelines.values():
                             if hasattr(pipeline, "model") and pipeline.model is not None:
                                 if hasattr(pipeline.model, "to"):
-                                    rich_print("[blue][VlmBackend][/blue] Moving model to CPU...")
+                                    logger.info("Moving model to CPU...")
                                     pipeline.model.to("cpu")
                 except Exception as e:
                     # Model access may fail, continue with cleanup
                     try:
-                        rich_print(
-                            f"[yellow][VlmBackend][/yellow] Could not move model to CPU: {e}"
-                        )
+                        logger.warning("Could not move model to CPU: %s", e)
                     except Exception:
-                        # Even printing might fail with mocks
+                        # Even logging might fail with mocks
                         pass
 
                 # Clear the extractor reference
                 self.doc_extractor = None
-                rich_print("[blue][VlmBackend][/blue] Extractor deleted")
+                logger.info("Extractor deleted")
 
             # Force garbage collection
             gc.collect()
@@ -187,7 +177,7 @@ class VlmBackend:
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
                     torch.cuda.synchronize()
-                    rich_print("[blue][VlmBackend][/blue] CUDA cache cleared")
+                    logger.info("CUDA cache cleared")
             except Exception:
                 # Torch operations may fail in test environments
                 pass
@@ -196,16 +186,16 @@ class VlmBackend:
             if torch.cuda.is_available():
                 memory_after = torch.cuda.memory_allocated() / 1024**2  # MB
                 memory_freed = memory_before - memory_after
-                rich_print(
-                    f"[green][VlmBackend][/green] GPU cleanup complete:\n"
-                    f"  • Memory freed: {memory_freed:.2f} MB\n"
-                    f"  • Memory remaining: {memory_after:.2f} MB"
+                logger.info(
+                    "GPU cleanup complete (freed %.2f MB, remaining %.2f MB)",
+                    memory_freed,
+                    memory_after,
                 )
             else:
-                rich_print("[green][VlmBackend][/green] Cleanup complete (no GPU detected)")
+                logger.info("Cleanup complete (no GPU detected)")
 
         except Exception as e:
-            rich_print(f"[yellow][VlmBackend][/yellow] Warning during cleanup: {e}")
+            logger.warning("Warning during cleanup: %s", e)
 
     def cleanup_all_gpus(self) -> None:
         """
@@ -214,11 +204,11 @@ class VlmBackend:
         Useful for multi-GPU setups or when model was distributed across devices.
         """
         if not torch.cuda.is_available():
-            rich_print("[blue][VlmBackend][/blue] No CUDA devices available")
+            logger.info("No CUDA devices available")
             return
 
         device_count = torch.cuda.device_count()
-        rich_print(f"[blue][VlmBackend][/blue] Cleaning up {device_count} GPU(s)...")
+        logger.info("Cleaning up %s GPU(s)...", device_count)
 
         for device_id in range(device_count):
             try:
@@ -240,10 +230,8 @@ class VlmBackend:
                     pass
 
                 memory_freed = memory_before - memory_after
-                rich_print(
-                    f"[blue][VlmBackend][/blue] GPU {device_id}: freed {memory_freed:.2f} MB"
-                )
+                logger.info("GPU %s: freed %.2f MB", device_id, memory_freed)
             except Exception as e:
-                rich_print(f"[yellow][VlmBackend][/yellow] Could not clear GPU {device_id}: {e}")
+                logger.warning("Could not clear GPU %s: %s", device_id, e)
 
-        rich_print("[green][VlmBackend][/green] Multi-GPU cleanup complete")
+        logger.info("Multi-GPU cleanup complete")
