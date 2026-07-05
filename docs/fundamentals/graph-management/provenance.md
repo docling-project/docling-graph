@@ -53,7 +53,8 @@ The node's identifier was found literally in the document text via a determinist
   "document_id": "9f1a2b3c4d5e6f70",
   "match": "verbatim",
   "chunks": [10],
-  "pages": [4]
+  "pages": [4],
+  "refs": ["#/texts/57"]
 }
 ```
 
@@ -67,11 +68,14 @@ No verbatim match, but the dense skeleton phase saw the node while reading a kno
   "match": "observed",
   "chunks": [3, 4],
   "pages": [2],
+  "refs": ["#/texts/12", "#/tables/1"],
   "approximate": true
 }
 ```
 
 `approximate: true` is the honesty signal — treat this as "somewhere in these chunks," not an exact cite.
+
+`refs` lists the Docling document elements (`self_ref` paths like `#/texts/1`) backing the anchored chunks, so a graph node links straight to the structural elements of the converted document (`docling/document.json` / `document.dclg`). It appears whenever the source format exposes structure (anything Docling converts, including DocLang input) and is omitted for plain-text input.
 
 ### 3. Document scope
 
@@ -99,7 +103,7 @@ No verbatim match and no skeleton observation exists for this node. This is the 
 
 ### Capping and detail
 
-`chunks` is capped at 8 entries by default; when more chunks match, a `chunks_omitted` count is added. The full, uncapped anchor list always lives in `provenance.json` — the node attribute is intentionally small so it doesn't bloat the graph export.
+`chunks` and `refs` are capped at 8 entries by default; when more chunks match, a `chunks_omitted` count is added. The full, uncapped anchor and ref lists always live in `provenance.json` — the node attribute is intentionally small so it doesn't bloat the graph export.
 
 With `provenance="detailed"`, verbatim views also carry `spans` (character offsets, capped at 4):
 
@@ -139,6 +143,9 @@ Written next to `graph.json` (i.e. `docling_graph/provenance.json`) whenever `pr
       "batch_index": 4,
       "page_numbers": [4],
       "doc_item_refs": ["#/texts/57"],
+      "item_geometry": [
+        {"ref": "#/texts/57", "page_no": 4, "bbox": [90, 280, 506, 306], "page_width": 612, "page_height": 792, "dclg_location": [75, 181, 423, 198]}
+      ],
       "headings": ["3. Results"],
       "token_count": 118,
       "text_hash": "1c2d3e4f5a6b7c8d",
@@ -181,7 +188,7 @@ Written next to `graph.json` (i.e. `docling_graph/provenance.json`) whenever `pr
 | `document` | Source identity: a content hash (`document_id`, stable across runs for the same input bytes), path/URL, detected input type, page count, template name and a hash of its JSON schema (for reproducibility). |
 | `resolution` | The precision this run actually achieved: `"document"`, `"chunk"`, or `"span"` (upgraded to `"span"` once at least one node is verbatim-located). |
 | `node_level` | `true` for dense (per-node skeleton entries exist), `false` for direct (chunk index only, no per-node entries — see [Dense vs. direct grounding](#dense-vs-direct-grounding)). |
-| `chunks` | Every chunk the document was split into, keyed by `chunk_id`, each with its **text**, page numbers, docling item refs (`doc_item_refs`, reach bounding boxes via the exported `docling/document.json`), heading trail, and a content hash (`text_hash`) for drift detection. |
+| `chunks` | Every chunk the document was split into, keyed by `chunk_id`, each with its **text**, page numbers, docling item refs (`doc_item_refs`), per-item **geometry** (`item_geometry`: page + bounding box `[l, t, r, b]` in whole page pixels, always **top-left origin**, with `page_width`/`page_height`, plus `dclg_location` — the same box on the DocLang 512-grid, matching the `<location>` values in `docling/document.dclg` exactly; empty when the source format has no geometry, e.g. markdown input), heading trail, and a content hash (`text_hash`) for drift detection. |
 | `nodes` | One entry per grounded identity, keyed by a canonical `identity_key` (`"{catalog_path}|{field}={canonical_value},..."`). Holds the anchor list, dedup/reconciliation lineage (`merged_from`), and audit flags (`synthetic`, `dropped`). |
 | `bind_stats` | Coverage counters from the last binding pass — how many nodes landed in each resolution tier. |
 
@@ -297,7 +304,7 @@ See [Export Formats](export-formats.md#provenance-in-exports) for details.
 
 ## Related
 
-- [Dense Extraction](../extraction-process/dense-extraction.md) — the skeleton-then-fill contract that produces node-level grounding
+- [Dense Extraction](../extraction-process/dense-extraction.md) — the skeleton-then-flesh contract that produces node-level grounding
 - [Graph Conversion](graph-conversion.md) — where the provenance binder runs relative to node/edge creation and cleanup
 - [Export Formats](export-formats.md) — how `__provenance__` is serialized per format
 - [Configuration reference](../../reference/config.md) — the `provenance` field

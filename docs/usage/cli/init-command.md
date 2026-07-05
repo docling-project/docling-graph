@@ -54,7 +54,7 @@ Select processing mode (one-to-one, many-to-one) [many-to-one]:
 2. Extraction Contract
  How should LLM extraction prompts/execution be orchestrated?
   • direct: Single-pass best-effort extraction (fastest)
-  • dense: Two-phase skeleton-then-fill extraction for rich, granular many-to-one results
+  • dense: Two-phase skeleton-then-flesh extraction for rich, granular many-to-one results
 Select extraction contract (direct, dense) [direct]:
 ```
 
@@ -88,7 +88,7 @@ Select inference location [remote]:
 
 ### Step 6: Docling Pipeline and Export Options
 
-You choose the Docling pipeline (ocr / vision) and whether to export Docling JSON, markdown, and per-page markdown.
+You choose the Docling pipeline (ocr / vision) and whether to export Docling JSON, markdown, DocLang (`.dclg`), and per-page markdown.
 
 ### Step 7: Provider and Model Selection
 
@@ -153,6 +153,7 @@ docling:
   export:
     docling_json: true
     markdown: true
+    doclang: true
     per_page_markdown: false
 
 models:

@@ -113,7 +113,7 @@ class ManyToOneStrategy(BaseExtractor):
 **Features:**
 
 - **Zero Data Loss**: Returns all partial models if consolidation fails, instead of discarding data
-- **Contract-driven**: `extraction_contract="direct"` (single call) or `"dense"` (two-phase skeleton-then-fill; see [Dense Extraction](../fundamentals/extraction-process/dense-extraction.md))
+- **Contract-driven**: `extraction_contract="direct"` (single call) or `"dense"` (two-phase skeleton-then-flesh; see [Dense Extraction](../fundamentals/extraction-process/dense-extraction.md))
 - **Chunking**: `use_chunking=True` splits large documents via `DocumentChunker` before extraction
 
 **Example:**
@@ -144,7 +144,7 @@ else:
 
 ### LlmBackend
 
-LLM-based extraction backend. Performs direct full-document extraction in a single call, or contract-driven skeleton-then-fill extraction when `extraction_contract="dense"`.
+LLM-based extraction backend. Performs direct full-document extraction in a single call, or contract-driven skeleton-then-flesh extraction when `extraction_contract="dense"`.
 
 ```python
 class LlmBackend:
@@ -161,7 +161,7 @@ class LlmBackend:
         """
         Args:
             llm_client: LLM client instance implementing LLMClientProtocol.
-            extraction_contract: 'direct' (single call) or 'dense' (skeleton-then-fill).
+            extraction_contract: 'direct' (single call) or 'dense' (skeleton-then-flesh).
             dense_config: Dense-contract tuning (see Dense Extraction docs).
             structured_output: Use API schema-enforced output when supported.
             structured_sparse_check: Retry with legacy prompt mode if structured output looks sparse.
@@ -387,7 +387,7 @@ chunks = chunker.chunk_document(docling_document)
 
 ## Related APIs
 
-- **[Dense Extraction](../fundamentals/extraction-process/dense-extraction.md)** - Two-phase skeleton-then-fill extraction
+- **[Dense Extraction](../fundamentals/extraction-process/dense-extraction.md)** - Two-phase skeleton-then-flesh extraction
 - **[Extraction Process](../fundamentals/extraction-process/index.md)** - Usage guide
 - **[Model Merging](../fundamentals/extraction-process/model-merging.md)** - Zero data loss
 - **[Protocols](protocols.md)** - Backend protocols

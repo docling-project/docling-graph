@@ -155,6 +155,23 @@ chunker = DocumentChunker(
 )
 ```
 
+### Chunk text and `llm_input_format`
+
+Chunk text is serialized in the pipeline's [`llm_input_format`](document-conversion.md#llm-input-serialization). With `markdown` (default) a chunk holds markdown; with `doclang` / `doclang-geo` it holds DocLang XML, which carries the same content in more tokens. Because `chunk_max_tokens` caps the *serialized* size, a DocLang chunk holds **~25–45% less document content** than a markdown chunk of the same budget — meaning more chunks and, in dense mode, more LLM calls.
+
+In DocLang modes the chunker also defaults its token counting to a **BPE tokenizer** (`tiktoken`) instead of the wordpiece MiniLM default: DocLang's syntax vocabulary is designed to map efficiently onto LLM BPE tokens, and wordpiece tokenizers fragment the XML markup and overcount it (~15–20% on real documents), skewing chunk budgets. Pass an explicit `tokenizer_name` in `chunker_config` to override.
+
+When switching to a DocLang format, raise `chunk_max_tokens` (e.g. 512 → 768) so each chunk still carries a comparable amount of source:
+
+```python
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.BillingDocument",
+    llm_input_format="doclang",
+    chunk_max_tokens=768,  # compensate for DocLang's token overhead
+)
+```
+
 ---
 
 ## Structure Preservation
@@ -835,7 +852,7 @@ print(f"Recommended max_tokens: {recommended}")
 
 Now that you understand chunking:
 
-1. **[Dense Extraction →](dense-extraction.md)** - Skeleton-then-fill extraction for complex templates
+1. **[Dense Extraction →](dense-extraction.md)** - skeleton-then-flesh extraction for complex templates
 2. **[Extraction Backends →](extraction-backends.md)** - Learn about LLM and VLM backends
 3. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
 4. **[Model Merging →](model-merging.md)** - Consolidate chunk extractions

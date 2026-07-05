@@ -1,6 +1,6 @@
 # Input Formats
 
-Docling Graph uses a unified ingestion path: all inputs go through Docling except DoclingDocument JSON (which skips conversion), using a unified path: all inputs are converted through Docling; only DoclingDocument JSON skips conversion. See [Docling supported formats](https://docling-project.github.io/docling/usage/supported_formats/) for what Docling accepts.
+Docling Graph uses a unified ingestion path: all inputs go through Docling except DoclingDocument JSON and DocLang files (which skip conversion). See [Docling supported formats](https://docling-project.github.io/docling/usage/supported_formats/) for what Docling accepts.
 
 ## Input Normalization Process
 
@@ -10,6 +10,7 @@ The pipeline automatically detects and validates input types, routing them throu
 
 **Key behavior**:
 - **DoclingDocument JSON**: Loaded directly; conversion is skipped.
+- **DocLang (`.dclg`, `.dclg.xml`, `.dclx`)**: Parsed directly into a DoclingDocument; the heavy conversion model stack (OCR/layout/VLM) is skipped.
 - **All other inputs**: Normalized (e.g. URL download, text to temp .md), then sent to Docling. Docling validates format; unsupported types raise Docling errors.
 - **URLs**: Downloaded to a temp file; path is passed to Docling.
 
@@ -184,10 +185,47 @@ run_pipeline(config)
 
 ---
 
+### DocLang (skip conversion)
+
+**Description**: [DocLang](https://github.com/doclang-project/doclang) is an XML markup format that carries a document's content, structure, and geometry in one representation. Because it already holds the parsed document, Docling Graph parses it directly and skips the expensive conversion model stack.
+
+**File Extensions**: `.dclg`, `.dclg.xml` (bare XML document) and `.dclx` (OPC ZIP archive, which may bundle page images). A bare `.xml` file whose root element is `<doclang>` is also detected.
+
+**Use Cases**:
+- Feeding documents produced by other DocLang-aware tools.
+- Re-ingesting a `document.dclg` that Docling Graph exported (see [Export Configuration](export-configuration.md)) to skip re-conversion. For the highest-fidelity re-input of a Docling Graph run, prefer the exported `document.json` (lossless); DocLang re-normalizes coordinates to a 512-grid.
+
+**CLI Example**:
+```bash
+docling-graph convert document.dclg -t templates.billing_document.BillingDocument
+docling-graph convert archive.dclx -t templates.billing_document.BillingDocument
+```
+
+**Python API Example**:
+```python
+config = PipelineConfig(
+    source="document.dclg",
+    template="templates.billing_document.BillingDocument",
+    backend="llm",
+    inference="local",
+    processing_mode="many-to-one",
+    output_dir="outputs",
+    export_format="csv",
+)
+
+run_pipeline(config)
+```
+
+!!! note "DocLang input vs. DocLang for the LLM"
+    Providing DocLang as **input** (this section) only decides how the document is *loaded*. It is unrelated to `llm_input_format`, which decides how the document text is *serialized for the LLM* during extraction (see [Document Conversion](../extraction-process/document-conversion.md)).
+
+---
+
 ## Input Format Detection
 
 - **URL**: String starting with `http://` or `https://`.
 - **DoclingDocument**: `.json` file with DoclingDocument schema (e.g. `schema_name`, `version`, `pages`).
+- **DocLang**: A file ending in `.dclg`, `.dclg.xml`, or `.dclx`, or a bare `.xml` whose root element is `<doclang>`.
 - **Document**: Everything else (any file path or, in API mode, raw text). Passed to Docling; no extension whitelist in docling-graph.
 
 ---
@@ -200,7 +238,7 @@ Input → Normalize (e.g. URL download, text → .md) → Docling conversion →
 DoclingDocument → Chunking → Extraction → Graph → Export
 ```
 
-### DoclingDocument JSON
+### DoclingDocument JSON and DocLang
 ```
 Input → Load DoclingDocument → Chunking / Extraction → Graph → Export
 (Conversion skipped)
@@ -214,6 +252,7 @@ Input → Load DoclingDocument → Chunking / Extraction → Graph → Export
 |------------|-------------|-------------|
 | Documents (files, URLs) | Yes | Yes (PDF/images at Docling level) |
 | DoclingDocument JSON | Yes | Yes |
+| DocLang (`.dclg`/`.dclx`) | Yes | Yes |
 | Plain text (API) | Yes | Converted via Docling |
 
 VLM backend only supports certain inputs at the Docling level (e.g. PDF, images). Other formats may raise Docling or backend errors.

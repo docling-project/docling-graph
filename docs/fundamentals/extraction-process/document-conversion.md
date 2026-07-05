@@ -215,6 +215,36 @@ for i, page_md in enumerate(page_markdowns, 1):
 
 ---
 
+## LLM Input Serialization
+
+By default the document text sent to the LLM during extraction is **markdown**. You can switch to [DocLang](https://github.com/doclang-project/doclang) — an XML markup that preserves structure and (optionally) page geometry — with the `llm_input_format` setting. This changes only what the LLM reads; the exported `document.md` and `document.json` are unaffected.
+
+| `llm_input_format` | LLM sees | Relative token cost | When to try |
+|:-------------------|:---------|:--------------------|:------------|
+| `markdown` (default) | Plain markdown | 1× (baseline) | Almost always; best for markdown-trained and smaller local models |
+| `doclang` | DocLang XML, structure only | ~1.3–1.8× | Structure-heavy docs (tables, forms) where markdown loses semantics |
+| `doclang-geo` | DocLang XML + `<location>` geometry | ~2.5–5× | Forms/invoices where spatial position disambiguates fields |
+
+```python
+config = PipelineConfig(
+    source="invoice.pdf",
+    template="templates.BillingDocument",
+    llm_input_format="doclang",   # or "doclang-geo", default "markdown"
+    chunk_max_tokens=768,          # raise the budget: DocLang chunks hold less content
+)
+```
+
+```bash
+docling-graph convert invoice.pdf -t templates.BillingDocument --llm-format doclang-geo
+```
+
+!!! warning "Higher token cost — benchmark before switching the default"
+    DocLang carries more tokens than markdown (geometry especially), so each chunk holds ~25–45% less document content — expect more chunks and more LLM calls in dense mode. Raise `chunk_max_tokens` (e.g. 512 → 768) alongside the switch, and A/B against markdown on your corpus before adopting it broadly. Small markdown-native models (like the default local `granite`) often do best on plain markdown.
+
+When a DocLang format is active, the extraction prompts gain a one-line orientation telling the model the text is DocLang XML, and the structure-aware chunker emits DocLang chunks so the chunk text matches what the model is told.
+
+---
+
 ## Layout Analysis
 
 ### What is Layout Analysis?

@@ -64,7 +64,7 @@ config = PipelineConfig(
 For many-to-one extraction with the LLM backend you can choose:
 
 - **direct** (default): Single-pass extraction; chunks are extracted and merged programmatically.
-- **dense**: Two-phase skeleton-then-fill (Phase 1: identify all entities per path; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
+- **dense**: Two-phase skeleton-then-flesh (Phase 1: identify all entities per path; Phase 2: fill each with full schema data). Requires chunking. See [Dense Extraction](dense-extraction.md).
 
 ---
 
@@ -735,7 +735,7 @@ config = PipelineConfig(
 
 Now that you understand extraction backends:
 
-1. **[Dense Extraction →](dense-extraction.md)** - Skeleton-then-fill for granular structure and rich data
+1. **[Dense Extraction →](dense-extraction.md)** - skeleton-then-flesh for granular structure and rich data
 2. **[Error Handling →](../../usage/advanced/error-handling.md)** - Diagnose extraction failures
 3. **[Model Merging →](model-merging.md)** - Learn how to consolidate extractions
 4. **[Batch Processing →](batch-processing.md)** - Optimize chunk processing
