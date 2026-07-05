@@ -2340,3 +2340,17 @@ def test_run_parallel_fill_records_exception_without_crashing():
         context="test",
     )
     assert root is not None
+
+
+def test_write_debug_applies_attempt_suffix(tmp_path):
+    """A debug_suffix namespaces artifacts so retries never overwrite them."""
+    orch = DenseOrchestrator(
+        llm_call_fn=lambda **_kwargs: None,
+        template=SampleInvoice,
+        config=DenseOrchestratorConfig(),
+        debug_dir=str(tmp_path / "debug_out"),
+        debug_suffix="_attempt2",
+    )
+    orch._write_debug("dense_skeleton_graph.json", {"nodes": []})
+    assert (tmp_path / "debug_out" / "dense_skeleton_graph_attempt2.json").exists()
+    assert not (tmp_path / "debug_out" / "dense_skeleton_graph.json").exists()

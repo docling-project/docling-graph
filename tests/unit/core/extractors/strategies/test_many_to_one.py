@@ -30,7 +30,9 @@ def mock_llm_backend():
     backend.client = MagicMock()
     backend.__class__.__name__ = "MockLlmBackend"
 
-    def mock_extract(markdown, template, context, is_partial) -> MockTemplate | None:
+    def mock_extract(
+        markdown, template, context, is_partial, allow_dense=True
+    ) -> MockTemplate | None:
         if "fail" in markdown:
             return None
         return template(name=context, value=len(markdown))
