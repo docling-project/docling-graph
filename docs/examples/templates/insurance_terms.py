@@ -28,14 +28,22 @@ Key entities:
 
 Key relationships:
 - AssuranceMRH --AGARANTIE--> Garantie (canonical detail), --AOFFRE--> Offre,
+  --AOPTION--> Option (canonical detail),
   --AEXCLUSIONCOMMUNE--> Exclusion (common exclusions)
 - Garantie --AEXCLUSION--> Exclusion (specific), --COUVREBIEN--> Bien (by reference)
 - Offre --INCLUTGARANTIE--> / --GARANTIEOPTIONNELLE--> Garantie (both by name only),
-  --PROPOSEOPTION--> Option
+  --PROPOSEOPTION--> Option (by name only)
 - Option --ETENDGARANTIE--> Garantie, --COUVREBIEN--> Bien (both by reference)
 - Exclusion --EXCLUTBIEN--> Bien (by reference)
 - Garantie also carries inline components: APLAFOND (Montant), AFRANCHISE
   (Franchise), ACONDITION (Condition)
+
+Options follow the same catalog pattern as garanties: every option belongs to
+several offers, so its detailed, canonical home is the root-level
+AssuranceMRH.options list, and each Offre references it by name only. A
+per-offer full home would recreate the membership-collapse problem the
+garanties catalog solved (and in dense extraction it parked options under one
+arbitrary offer, where cross-batch parent drift dropped them).
 """
 
 from __future__ import annotations
@@ -230,7 +238,10 @@ class Condition(BaseModel):
         description=(
             "Condition au plus proche du texte du document (éviter de paraphraser). "
             "For numbered security levels or bullet lists (e.g. 'Niveau 1: 2 serrures', 'Niveau 2: volets ou persiennes'), "
-            "create one Condition per item with texte summarizing that item."
+            "create one Condition per item with texte summarizing that item. "
+            "Preventive obligations and security levels ('Pour Vous prémunir contre le vol', "
+            "'Niveau de sécurité 1/2/3') are ALWAYS Conditions of the relevant garantie, "
+            "never standalone Exclusion entities."
         ),
         examples=[
             "En cas d'absence de plus de 24h, utiliser tous les moyens de fermeture et de protection.",
@@ -296,10 +307,13 @@ class Bien(BaseModel):
 
 class Exclusion(BaseModel):
     """
-    Clause d'exclusion : UNE clause cohérente par Exclusion (un péril exclu
-    complet avec sa condition), jamais un nœud par mot-clé isolé ('usure',
-    'perte', 'travaux'). Les exclusions valables pour toutes les garanties vont
-    dans exclusions_communes ; celles propres à une garantie dans son
+    Clause d'exclusion : un péril ou bien EXCLU. JAMAIS une mesure de
+    prévention, un niveau de sécurité ou une obligation (serrures, ramonage,
+    inoccupation) — celles-ci vont dans Garantie.conditions, pas ici. UNE
+    clause cohérente par Exclusion, jamais un nœud par mot-clé isolé ('usure',
+    'perte', 'travaux'). Les exclusions valables pour toutes les garanties ou
+    listées sous les catégories de biens (Article 1) vont dans
+    exclusions_communes ; celles propres à une garantie dans son
     exclusions_specifiques. Identity uses short exclusion_id for stable
     deduplication: choose a meaningful exclusion_id that names the whole
     clause, not a lone category word.
@@ -450,8 +464,10 @@ class Garantie(BaseModel):
             "LOOK FOR: Section headers such as 'EXCLUSIONS SPÉCIFIQUES', 'Exclusions spécifiques', or equivalent. "
             "Create one Exclusion object per bullet point or numbered item under that header. "
             "Use exclusion_id as a short normalized label (e.g. from the first words of the bullet). "
-            "Ne pas y mettre les exclusions 'communes à toutes les garanties' (Article 7), "
-            "qui doivent aller dans AssuranceMRH.exclusions_communes."
+            "Ne pas y mettre : les exclusions 'communes à toutes les garanties' (Article 7) "
+            "NI les exclusions listées sous les catégories de biens de l'Article 1 — les deux "
+            "vont dans AssuranceMRH.exclusions_communes ; NI les mesures de prévention/niveaux "
+            "de sécurité, qui vont dans Garantie.conditions."
         ),
         examples=[
             [
@@ -652,8 +668,15 @@ class Offre(BaseModel):
     options_disponibles: list[Option] = edge(
         label="PROPOSEOPTION",
         default_factory=list,
+        reference=True,
         validation_alias=AliasChoices("options_disponibles", "optionsdisponibles"),
-        description="Options/packs disponibles pour cette formule (si le document les distingue).",
+        description=(
+            "Options/packs disponibles pour cette formule, référence par nom UNIQUEMENT "
+            "(renseigner seulement 'nom', identique au nom utilisé dans "
+            "AssuranceMRH.options) ; le détail complet de chaque option vit au niveau "
+            "du document. Ne renseigner que les options que le document associe "
+            "explicitement à CETTE formule ; laisser vide sinon."
+        ),
         examples=[[{"nom": "Dépannage d'urgence"}, {"nom": "Rééquipement neuf"}]],
     )
 
@@ -738,13 +761,33 @@ class AssuranceMRH(BaseModel):
         examples=[[{"nom": "ESSENTIELLE"}, {"nom": "CONFORT"}]],
     )
 
+    options: list[Option] = edge(
+        label="AOPTION",
+        default_factory=list,
+        description=(
+            "Toutes les options/packs payants décrits dans le document, avec leur détail "
+            "complet (description, biens couverts, garanties étendues). C'est ICI que le "
+            "détail de chaque option doit être extrait, une seule fois, depuis la section "
+            "qui la décrit (souvent 'Vos options', 'Options', ou les encarts 'Option …'). "
+            "Les formules référencent ces options par nom via options_disponibles."
+        ),
+        examples=[[{"nom": "Dommages électriques"}, {"nom": "Dépannage d'urgence"}]],
+    )
+
     exclusions_communes: list[Exclusion] = edge(
         label="AEXCLUSIONCOMMUNE",
         default_factory=list,
         validation_alias=AliasChoices("exclusions_communes", "exclusionscommunes"),
         description=(
-            "Exclusions communes à toutes les garanties (typiquement Article 7 "
-            "'Exclusions communes' ou équivalent). Une Exclusion par puce ou alinéa. "
+            "Exclusions qui ne dépendent pas d'une garantie précise. "
+            "LOOK FOR: (a) la section dont le titre annonce des exclusions générales — "
+            "'CE QUE NOUS NE GARANTISSONS JAMAIS', 'Exclusions communes', "
+            "'exclusions générales', 'à toutes les garanties' (typiquement Article 7) ; "
+            "(b) les blocs 'EXCLUSIONS SPÉCIFIQUES' sous les catégories de biens de "
+            "l'Article 1 ('Les bâtiments assurés', 'Les biens assurés' — ex. 'bâtiments "
+            "en cours de démolition', 'piscines hors option') : ces exclusions de biens "
+            "vont ICI, avec le bien concerné référencé dans biens_exclus — jamais sous "
+            "une garantie. Une Exclusion par puce ou alinéa. "
             "Ne pas y répéter les exclusions spécifiques d'une garantie "
             "(elles vont dans Garantie.exclusions_specifiques)."
         ),
@@ -760,6 +803,11 @@ class AssuranceMRH(BaseModel):
     @classmethod
     def filtrer_offres(cls, v: Any) -> Any:
         return _filtrer_liste(v, "offres", champs_requis=["nom"])
+
+    @field_validator("options", mode="before")
+    @classmethod
+    def filtrer_options(cls, v: Any) -> Any:
+        return _filtrer_liste(v, "options", champs_requis=["nom"])
 
     @field_validator("exclusions_communes", mode="before")
     @classmethod
