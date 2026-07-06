@@ -29,6 +29,7 @@ from docling_graph.core.provenance import (
     text_hash as _chunk_text_hash,
 )
 from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
+from docling_graph.core.utils.root_identity import is_class_name_echo
 from docling_graph.logging_utils import ProgressTracker, batch_tag, get_component_logger
 
 from .catalog import (
@@ -39,6 +40,7 @@ from .catalog import (
     build_projected_fill_schema,
     build_skeleton_semantic_guide,
     get_model_for_path,
+    path_has_reference_fields,
     skeleton_output_schema,
 )
 from .models import DenseSkeletonNode
@@ -58,6 +60,18 @@ logger = get_component_logger("DenseExtraction", __name__)
 # Batches are already small (a few chunks), so a depth of 4 fully isolates pathological chunks.
 _MAX_SKELETON_SPLIT_DEPTH = 4
 
+# How many already-extracted entities the sequential skeleton prompt advertises
+# as negative reference handles. Sliding window: the most recent entities are
+# the likeliest cross-batch parents (documents introduce parents shortly before
+# their children), and an unbounded list would crowd out the batch text.
+_ALREADY_FOUND_WINDOW = 50
+
+# Fraction of the document's tokens that must sit in zero-yield chunks before
+# the Phase 1 coverage second pass spends an extra batch round re-examining
+# them. Below this, uncovered chunks are treated as legitimately empty
+# boilerplate (references, footers) not worth another set of LLM calls.
+_COVERAGE_PASS_MIN_TOKEN_SHARE = 0.10
+
 # Id fields whose name promises a numeric/code identifier (document_number, ref_no,
 # invoice number...). On sparse documents a small model, lacking a real number,
 # often grabs a prominent brand/title string for these — a mis-capture the fill
@@ -66,7 +80,10 @@ _MAX_SKELETON_SPLIT_DEPTH = 4
 _NUMERIC_ID_FIELD = re.compile(r"(^|_)(number|no|num|ref|reference)(_|$)", re.IGNORECASE)
 
 
-def strip_mislabeled_root_ids(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def strip_mislabeled_root_ids(
+    nodes: list[dict[str, Any]],
+    template_class_name: str | None = None,
+) -> list[dict[str, Any]]:
     """Clear root id values that contradict their field-name semantics.
 
     A field named like a number that holds multi-word, digit-free prose (e.g.
@@ -76,6 +93,11 @@ def strip_mislabeled_root_ids(nodes: list[dict[str, Any]]) -> list[dict[str, Any
     Conservative by design: only the root (path "") is touched, and only fields
     whose name promises a number are checked, so alphabetic codes and named
     entities elsewhere are never disturbed.
+
+    When ``template_class_name`` is given, ANY root id value that merely echoes
+    the template class name (e.g. ``reference_document = "AssuranceMRH"``) is
+    also cleared — that is schema echo, never document data, and it would make
+    the root un-matchable across runs while looking filled.
     """
     for node in nodes:
         if (node.get("path") or "") != "":
@@ -84,12 +106,41 @@ def strip_mislabeled_root_ids(nodes: list[dict[str, Any]]) -> list[dict[str, Any
         if not isinstance(ids, dict):
             continue
         for field_name, value in list(ids.items()):
-            if not isinstance(value, str) or not _NUMERIC_ID_FIELD.search(field_name):
+            if not isinstance(value, str):
+                continue
+            if template_class_name and is_class_name_echo(value, template_class_name):
+                ids.pop(field_name, None)
+                continue
+            if not _NUMERIC_ID_FIELD.search(field_name):
                 continue
             text = value.strip()
             if text and not any(ch.isdigit() for ch in text) and len(text.split()) >= 2:
                 ids.pop(field_name, None)
     return nodes
+
+
+def _reference_handle_prompt(
+    entries: list[dict[str, Any]],
+) -> tuple[str | None, dict[int, dict[str, Any]] | None]:
+    """Build the ALREADY EXTRACTED prompt block + negative handle map.
+
+    Keeps the most recent ``_ALREADY_FOUND_WINDOW`` entries; handle -1 is the
+    most recent entity (the likeliest cross-batch parent). Returns (None, None)
+    when there is nothing to advertise.
+    """
+    window = entries[-_ALREADY_FOUND_WINDOW:]
+    known_handles = {-(pos + 1): entry for pos, entry in enumerate(reversed(window))}
+    if not known_handles:
+        return None, None
+    already_str = "\n".join(
+        json.dumps(
+            {"i": handle, "path": entry["path"], "ids": entry["ids"]},
+            ensure_ascii=False,
+            default=str,
+        )
+        for handle, entry in known_handles.items()
+    )
+    return already_str, known_handles
 
 
 def _skeleton_identity_key(
@@ -171,13 +222,21 @@ def normalize_skeleton_batch(
     *,
     source_batch_index: int | None = None,
     source_chunk_ids: list[int] | None = None,
+    known_handles: dict[int, dict[str, Any]] | None = None,
+    stats_out: dict[str, int] | None = None,
 ) -> list[dict[str, Any]]:
     """Resolve batch-local integer handles into (path, ids) parent references.
 
     Two passes: first canonicalize paths and index nodes by their handle ``i``;
     then resolve each node's parent handle ``p`` to the referenced node's
-    (path, ids). An explicit parent object is accepted as fallback when a
-    model emits one instead of a handle. Nodes with unknown paths are dropped.
+    (path, ids). ``known_handles`` maps the negative handles advertised in the
+    prompt's ALREADY EXTRACTED list to entities from earlier batches, so a
+    child can reference a cross-batch parent without the model re-emitting it
+    (handles in the current response always win; the key spaces are disjoint —
+    local handles are positive, known handles negative). An explicit parent
+    object is accepted as fallback when a model emits one instead of a handle.
+    Nodes with unknown paths are dropped. ``stats_out`` (when given) receives a
+    ``parents_from_already_found`` count.
     """
     prepared: list[dict[str, Any]] = []
     by_handle: dict[int, dict[str, Any]] = {}
@@ -198,6 +257,17 @@ def normalize_skeleton_batch(
         if handle is not None and handle in by_handle and by_handle[handle] is not entry:
             referenced = by_handle[handle]
             parent = {"path": referenced["path"], "ids": dict(referenced["ids"])}
+        elif handle is not None and known_handles and handle in known_handles:
+            ref = known_handles[handle]
+            ref_ids = ref.get("ids") or {}
+            parent = {
+                "path": str(ref.get("path") or ""),
+                "ids": {str(k): str(v) for k, v in ref_ids.items() if v is not None},
+            }
+            if stats_out is not None:
+                stats_out["parents_from_already_found"] = (
+                    stats_out.get("parents_from_already_found", 0) + 1
+                )
         elif entry["parent_ref"] is not None:
             ref = entry["parent_ref"]
             ref_path = _canonical_catalog_path(ref.path or "", allowed_paths)
@@ -330,6 +400,7 @@ def apply_skeleton_reconciliation(
     skeleton_nodes: list[dict[str, Any]],
     merge_groups: list[Any],
     spec_by_path: dict[str, NodeSpec],
+    events_out: list[dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """Apply validated alias merge groups to the merged skeleton.
 
@@ -338,6 +409,14 @@ def apply_skeleton_reconciliation(
     references to a merged node are remapped to the kept node's ids. Invalid
     entries (unknown path, out-of-range or self indices) are skipped silently —
     a bad reconciliation response must never damage the skeleton.
+
+    Co-occurrence veto: two instances of the same path first emitted from the
+    SAME chunk are almost never aliases — a document does not name one entity
+    twice side by side (two columns of a table header, two bullets of a list
+    are distinct entities). Any LLM-confirmed merge whose members share a
+    first-emission chunk is rejected; genuine table-label-vs-section-title
+    aliases come from different chunks by construction. Each applied merge and
+    each veto is logged and appended to ``events_out`` when given.
     """
     by_path: dict[str, list[dict[str, Any]]] = {}
     for node in skeleton_nodes:
@@ -366,8 +445,48 @@ def apply_skeleton_reconciliation(
             node = instances[merge_idx]
             if node is keep_node or id(node) in removed:
                 continue
+            keep_chunks = {
+                c for c in (keep_node.get("_source_chunk_ids") or []) if isinstance(c, int)
+            }
+            node_chunks = {c for c in (node.get("_source_chunk_ids") or []) if isinstance(c, int)}
+            shared_chunks = keep_chunks & node_chunks
+            if shared_chunks:
+                logger.info(
+                    "Reconciliation VETO (co-occurrence): %s %s ~ %s first emitted from "
+                    "the same chunk(s) %s — same-chunk neighbors are distinct entities",
+                    path,
+                    dict(node.get("ids") or {}),
+                    dict(keep_node.get("ids") or {}),
+                    sorted(shared_chunks),
+                )
+                if events_out is not None:
+                    events_out.append(
+                        {
+                            "action": "vetoed_cooccurrence",
+                            "path": path,
+                            "keep_ids": dict(keep_node.get("ids") or {}),
+                            "merge_ids": dict(node.get("ids") or {}),
+                            "shared_chunks": sorted(shared_chunks),
+                        }
+                    )
+                continue
             removed.add(id(node))
             merged_count += 1
+            logger.info(
+                "Reconciliation merge: %s %s absorbed into %s",
+                path,
+                dict(node.get("ids") or {}),
+                dict(keep_node.get("ids") or {}),
+            )
+            if events_out is not None:
+                events_out.append(
+                    {
+                        "action": "merged",
+                        "path": path,
+                        "keep_ids": dict(keep_node.get("ids") or {}),
+                        "merge_ids": dict(node.get("ids") or {}),
+                    }
+                )
             id_remap[_skeleton_identity_key(node, spec_by_path)] = dict(keep_node.get("ids") or {})
             keep_sources = keep_node.setdefault("_source_batch_indexes", [])
             for idx in node.get("_source_batch_indexes", []) or []:
@@ -918,7 +1037,7 @@ class DenseOrchestratorConfig:
     @classmethod
     def from_dict(cls, config: dict[str, Any] | None) -> DenseOrchestratorConfig:
         c = config or {}
-        raw_skeleton_tokens = int(c.get("dense_skeleton_batch_tokens", 1024) or 1024)
+        raw_skeleton_tokens = int(c.get("dense_skeleton_batch_tokens", 2048) or 2048)
         skeleton_batch_tokens = (
             min(raw_skeleton_tokens, 4096) if raw_skeleton_tokens > 4096 else raw_skeleton_tokens
         )
@@ -985,9 +1104,9 @@ class DenseOrchestrator:
         self._shallow_built = False
         self._shallow_artifacts: tuple[str, str | None, set[str], str, list[str]] | None = None
 
-    def _bump(self, counter: str) -> None:
+    def _bump(self, counter: str, count: int = 1) -> None:
         with self._counter_lock:
-            self._counters[counter] = self._counters.get(counter, 0) + 1
+            self._counters[counter] = self._counters.get(counter, 0) + count
 
     def _record_dropped_chunks(self, chunk_ids: list[int]) -> None:
         """Mark chunk ids as producing no skeleton node (unrecoverable truncation)."""
@@ -1031,6 +1150,8 @@ class DenseOrchestrator:
         *,
         allow_escalation: bool = True,
         prompt_paths: list[str] | None = None,
+        known_handles: dict[int, dict[str, Any]] | None = None,
+        coverage_retry: bool = False,
     ) -> tuple[list[dict[str, Any]], bool]:
         """Run the LLM for one skeleton batch.
 
@@ -1040,7 +1161,9 @@ class DenseOrchestrator:
         ``allow_escalation=False`` tells the backend not to escalate max_tokens
         in-call, so a multi-chunk batch is split (attacking the real cause) before
         any escalation is spent. ``prompt_paths`` narrows the paths advertised to
-        the model (the shallow terminal-fallback projection).
+        the model (the shallow terminal-fallback projection). ``known_handles``
+        maps the negative handles listed in ``already_found_str`` back to their
+        entities so cross-batch parent references resolve without re-emission.
         """
         batch_md = format_batch_markdown(batch)
         prompt = get_skeleton_batch_prompt(
@@ -1053,6 +1176,7 @@ class DenseOrchestrator:
             already_found=already_found_str,
             semantic_guide=semantic_guide,
             input_format=self._config.input_format,
+            coverage_retry=coverage_retry,
         )
         truncated = False
         for attempt in range(self._config.max_pass_retries + 1):
@@ -1089,12 +1213,18 @@ class DenseOrchestrator:
                         "y" if invalid == 1 else "ies",
                         len(validated_nodes),
                     )
+                handle_stats: dict[str, int] = {}
                 normalized_batch = normalize_skeleton_batch(
                     validated_nodes,
                     allowed_paths,
                     source_batch_index=batch_idx,
                     source_chunk_ids=[chunk_idx for chunk_idx, _, _ in batch],
+                    known_handles=known_handles,
+                    stats_out=handle_stats,
                 )
+                resolved_refs = handle_stats.get("parents_from_already_found", 0)
+                if resolved_refs:
+                    self._bump("parents_from_already_found", resolved_refs)
                 if normalized_batch or not raw_nodes:
                     return normalized_batch, truncated
                 # Every entry was invalid: treat as a failed pass and retry.
@@ -1115,6 +1245,8 @@ class DenseOrchestrator:
         context: str,
         spec_by_path: dict[str, NodeSpec],
         already_found_str: str | None,
+        known_handles: dict[int, dict[str, Any]] | None = None,
+        coverage_retry: bool = False,
         _depth: int = 0,
     ) -> tuple[int, list[dict[str, Any]]]:
         """Run one skeleton batch; returns (batch_idx, normalized_batch_list).
@@ -1147,6 +1279,8 @@ class DenseOrchestrator:
             context,
             already_found_str,
             allow_escalation=allow_escalation,
+            known_handles=known_handles,
+            coverage_retry=coverage_retry,
         )
         if truncated and len(batch) > 1 and _depth < _MAX_SKELETON_SPLIT_DEPTH:
             self._bump("split_count")
@@ -1172,6 +1306,8 @@ class DenseOrchestrator:
                     context,
                     spec_by_path,
                     already_found_str,
+                    known_handles,
+                    coverage_retry,
                     _depth + 1,
                 )
                 merged.extend(sub_nodes)
@@ -1296,8 +1432,20 @@ class DenseOrchestrator:
         merges = out.get("merges") if isinstance(out, dict) else None
         if not isinstance(merges, list) or not merges:
             return merged_skeleton, 0
+        events: list[dict[str, Any]] = []
         reconciled, merged_count = apply_skeleton_reconciliation(
-            merged_skeleton, merges, spec_by_path
+            merged_skeleton, merges, spec_by_path, events_out=events
+        )
+        # Forensics artifact: without it, merge decisions only survive as
+        # _merged_from breadcrumbs inside the skeleton dump.
+        self._write_debug(
+            "dense_reconciliation.json",
+            {
+                "instances_by_path": instances_by_path,
+                "containment_candidates": candidates,
+                "llm_merges": merges,
+                "events": events,
+            },
         )
         if merged_count:
             logger.info(
@@ -1365,6 +1513,8 @@ class DenseOrchestrator:
             "truncation_count": self._counters.get("truncation_count", 0),
             "split_count": self._counters.get("split_count", 0),
             "skeleton_batches_failed": self._counters.get("failed_batch_count", 0),
+            "parents_from_already_found": self._counters.get("parents_from_already_found", 0),
+            "coverage_pass_recovered": self._counters.get("coverage_pass_recovered", 0),
             "dropped_chunk_ids": dropped_chunk_ids,
             "chunk_coverage_pct": (
                 round(100.0 * covered_chunks / total_chunks, 1) if total_chunks else 0.0
@@ -1685,6 +1835,7 @@ class DenseOrchestrator:
             descriptors=batch_descriptors,
             projected_schema_json=sub_schema,
             input_format=self._config.input_format,
+            has_reference_fields=path_has_reference_fields(self._template, spec),
         )
         # Hoist $defs to the wrapper root: the sub-schema's $ref pointers are
         # root-relative (#/$defs/...), so nesting it unchanged would leave them
@@ -1747,11 +1898,16 @@ class DenseOrchestrator:
         )
         skeleton_results: list[list[dict[str, Any]]]
         if workers <= 1 or total_batches <= 1:
-            # Sequential: preserve already_found for cross-batch consistency
-            already_found: list[str] = []
+            # Sequential: advertise already-extracted entities as stable
+            # NEGATIVE reference handles so later batches can attach children
+            # to cross-batch parents without re-emitting them (the re-emit
+            # instruction alone was observed to be ignored — children arrived
+            # with p=null and were dropped at merge).
+            already_entries: list[dict[str, Any]] = []
+            seen_entry_keys: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
             skeleton_results = []
             for batch_idx, batch in enumerate(batches):
-                already_str = "\n".join(already_found[-50:]) if already_found else None
+                already_str, known_handles = _reference_handle_prompt(already_entries)
                 _, normalized_batch = self._run_one_skeleton_batch(
                     batch_idx=batch_idx,
                     batch=batch,
@@ -1764,10 +1920,19 @@ class DenseOrchestrator:
                     context=context,
                     spec_by_path=spec_by_path,
                     already_found_str=already_str,
+                    known_handles=known_handles or None,
                 )
                 for node in normalized_batch:
+                    ids = node.get("ids") or {}
+                    if not ids:
+                        # Id-less nodes cannot be referenced by a handle and
+                        # only add noise to the already-extracted list.
+                        continue
                     key = _skeleton_identity_key(node, spec_by_path)
-                    already_found.append(json.dumps({"path": key[0], "ids": dict(key[1])}))
+                    if key in seen_entry_keys:
+                        continue
+                    seen_entry_keys.add(key)
+                    already_entries.append({"path": node["path"], "ids": dict(ids)})
                 skeleton_results.append(normalized_batch)
                 progress.advance(note=f"+{len(normalized_batch)} node(s)")
             progress.finish()
@@ -1810,6 +1975,110 @@ class DenseOrchestrator:
                     progress.advance(note="failed")
         progress.finish()
         return [lst if lst is not None else [] for lst in skeleton_results]
+
+    def _run_coverage_pass(
+        self,
+        *,
+        batches: list[list[tuple[int, str, int]]],
+        merged_skeleton: list[dict[str, Any]],
+        catalog_block: str,
+        allowed_paths: set[str],
+        global_context: str | None,
+        semantic_guide: str | None,
+        schema_json: str,
+        context: str,
+        spec_by_path: dict[str, NodeSpec],
+    ) -> tuple[list[list[tuple[int, str, int]]], list[list[dict[str, Any]]]]:
+        """Re-examine chunks that produced no skeleton node on the first pass.
+
+        Chunk coverage in the field sits at 74-91%: some of that is legitimately
+        empty boilerplate, some is recall silently left on the table (a chunk
+        sharing a batch with entity-dense neighbors gets outshone). One bounded
+        extra round — only when the zero-yield chunks hold at least
+        ``_COVERAGE_PASS_MIN_TOKEN_SHARE`` of the document's tokens — re-runs
+        just those chunks with the full already-found reference-handle list, so
+        recovered children attach to existing parents. The prompt explicitly
+        licenses an empty response (never pressure-invents instances).
+
+        Returns (coverage_batches, coverage_results) to append to the phase 1
+        outputs; both empty when the pass is not warranted.
+        """
+        if not merged_skeleton:
+            return [], []  # nothing to attach to; the quality gate handles this run
+        covered: set[int] = set()
+        for node in merged_skeleton:
+            for chunk_id in node.get("_source_chunk_ids") or []:
+                if isinstance(chunk_id, int):
+                    covered.add(chunk_id)
+        dropped = set(self._dropped_chunk_ids)
+        uncovered: list[tuple[int, str, int]] = []
+        total_tokens = 0
+        for batch in batches:
+            for chunk_id, text, tcount in batch:
+                total_tokens += tcount
+                if chunk_id not in covered and chunk_id not in dropped:
+                    uncovered.append((chunk_id, text, tcount))
+        uncovered_tokens = sum(t for _, _, t in uncovered)
+        if (
+            not uncovered
+            or total_tokens <= 0
+            or uncovered_tokens < _COVERAGE_PASS_MIN_TOKEN_SHARE * total_tokens
+        ):
+            return [], []
+
+        # Pack uncovered chunks under the skeleton budget, keeping original ids.
+        coverage_batches: list[list[tuple[int, str, int]]] = []
+        current: list[tuple[int, str, int]] = []
+        current_tokens = 0
+        for item in uncovered:
+            if current and current_tokens + item[2] > self._config.skeleton_batch_tokens:
+                coverage_batches.append(current)
+                current = []
+                current_tokens = 0
+            current.append(item)
+            current_tokens += item[2]
+        if current:
+            coverage_batches.append(current)
+
+        already_entries = [
+            {"path": node.get("path") or "", "ids": dict(node.get("ids") or {})}
+            for node in merged_skeleton
+            if node.get("ids")
+        ]
+        already_str, known_handles = _reference_handle_prompt(already_entries)
+
+        logger.info(
+            "Phase 1 coverage pass: %s zero-yield chunk(s) hold %.0f%% of tokens; "
+            "re-examining in %s batch(es)",
+            len(uncovered),
+            100.0 * uncovered_tokens / total_tokens,
+            len(coverage_batches),
+        )
+        base_index = len(batches)
+        results: list[list[dict[str, Any]]] = []
+        recovered = 0
+        for i, coverage_batch in enumerate(coverage_batches):
+            _, nodes = self._run_one_skeleton_batch(
+                batch_idx=base_index + i,
+                batch=coverage_batch,
+                total_batches=base_index + len(coverage_batches),
+                catalog_block=catalog_block,
+                allowed_paths=allowed_paths,
+                global_context=global_context,
+                semantic_guide=semantic_guide,
+                schema_json=schema_json,
+                context=f"{context}_coverage",
+                spec_by_path=spec_by_path,
+                already_found_str=already_str,
+                known_handles=known_handles,
+                coverage_retry=True,
+            )
+            results.append(nodes)
+            recovered += len(nodes)
+        if recovered:
+            self._bump("coverage_pass_recovered", recovered)
+        logger.info("Phase 1 coverage pass: recovered %s node(s)", recovered)
+        return coverage_batches, results
 
     def run(
         self,
@@ -1867,15 +2136,35 @@ class DenseOrchestrator:
             context=context,
             spec_by_path=spec_by_path,
         )
+        merged_skeleton = merge_skeleton_batches(skeleton_results, self._catalog)
+        coverage_batches, coverage_results = self._run_coverage_pass(
+            batches=batches,
+            merged_skeleton=merged_skeleton,
+            catalog_block=catalog_block,
+            allowed_paths=allowed_paths,
+            global_context=global_context,
+            semantic_guide=semantic_guide,
+            schema_json=schema_json,
+            context=context,
+            spec_by_path=spec_by_path,
+        )
+        if coverage_results:
+            # Coverage batches join the batch list so fill-context scoping and
+            # provenance chunk records see them like any first-pass batch.
+            batches.extend(coverage_batches)
+            skeleton_results.extend(coverage_results)
+            merged_skeleton = merge_skeleton_batches(skeleton_results, self._catalog)
         phase1_elapsed = time.perf_counter() - phase1_start
         self._phase1_elapsed = phase1_elapsed
-        merged_skeleton = merge_skeleton_batches(skeleton_results, self._catalog)
         merged_skeleton, reconciliation_merged = self._dedupe_skeleton(
             merged_skeleton, spec_by_path, context
         )
-        # Invariant: drop root ids that contradict their field-name semantics so a
-        # sparse-document mis-capture is not locked in by Phase 2 id restoration.
-        merged_skeleton = strip_mislabeled_root_ids(merged_skeleton)
+        # Invariant: drop root ids that contradict their field-name semantics
+        # (or echo the template class name) so a sparse-document mis-capture is
+        # not locked in by Phase 2 id restoration.
+        merged_skeleton = strip_mislabeled_root_ids(
+            merged_skeleton, template_class_name=self._template.__name__
+        )
         if self._debug_dir:
             self._write_debug("dense_skeleton_graph.json", {"nodes": merged_skeleton})
 
@@ -1931,9 +2220,18 @@ class DenseOrchestrator:
             if not spec:
                 continue
             sub_schema = build_projected_fill_schema(self._template, spec, self._catalog)
+            # Per-parent fill for reference-carrying paths: batching N sibling
+            # parents into one call is the observed cause of first-instance
+            # membership dumping (one parent absorbs every row of a summary
+            # table, the rest stay empty). One instance per call makes
+            # "membership must be stated for THIS instance" enforceable.
+            fill_cap = (
+                1
+                if path_has_reference_fields(self._template, spec)
+                else self._config.fill_nodes_cap
+            )
             fill_batches = [
-                descriptors[i : i + self._config.fill_nodes_cap]
-                for i in range(0, len(descriptors), self._config.fill_nodes_cap)
+                descriptors[i : i + fill_cap] for i in range(0, len(descriptors), fill_cap)
             ]
             for batch_index, batch_descriptors in enumerate(fill_batches):
                 fill_markdown = self._build_fill_context(

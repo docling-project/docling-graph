@@ -336,6 +336,23 @@ def build_projected_fill_schema(
     return json.dumps(schema, indent=2)
 
 
+def path_has_reference_fields(template: type[BaseModel], spec: NodeSpec) -> bool:
+    """True when the path's fill schema carries id-only reference projections.
+
+    Reference-list fields (per-instance membership lists) are the fields most
+    prone to first-instance dumping when several sibling parents share one fill
+    call, so callers use this to drop the fill batch size to one for such paths.
+    """
+    model = get_model_for_path(template, spec.path)
+    if model is None:
+        return False
+    for field_info in model.model_fields.values():
+        target_model = _unwrap_model_from_annotation(field_info.annotation)
+        if _is_reference_field(field_info, target_model):
+            return True
+    return False
+
+
 # Character budget per path description in the skeleton semantic guide. Phase 1
 # decides identity and classification, so schema authors should front-load the
 # discriminating sentence of each class docstring within this budget.

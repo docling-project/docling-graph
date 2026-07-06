@@ -2521,3 +2521,351 @@ def test_write_debug_applies_attempt_suffix(tmp_path):
     orch._write_debug("dense_skeleton_graph.json", {"nodes": []})
     assert (tmp_path / "debug_out" / "dense_skeleton_graph_attempt2.json").exists()
     assert not (tmp_path / "debug_out" / "dense_skeleton_graph.json").exists()
+
+
+# --- P1: stable negative reference handles for already-extracted entities ---
+
+
+def test_normalize_skeleton_batch_resolves_negative_known_handles():
+    """A negative p handle resolves against the advertised already-found map."""
+    allowed = {"", "studies[]", "studies[].experiments[]"}
+    known = {
+        -1: {"path": "studies[]", "ids": {"study_id": "S1"}},
+        -2: {"path": "", "ids": {"title": "Doc"}},
+    }
+    nodes = [
+        _skeleton({"i": 1, "path": "studies[].experiments[]", "ids": {"exp_id": "E9"}, "p": -1}),
+        _skeleton({"i": 2, "path": "studies[]", "ids": {"study_id": "S2"}, "p": -2}),
+    ]
+    stats: dict[str, int] = {}
+    out = normalize_skeleton_batch(nodes, allowed, known_handles=known, stats_out=stats)
+    assert out[0]["parent"] == {"path": "studies[]", "ids": {"study_id": "S1"}}
+    assert out[1]["parent"] == {"path": "", "ids": {"title": "Doc"}}
+    assert stats["parents_from_already_found"] == 2
+
+
+def test_normalize_skeleton_batch_local_handles_win_over_known_handles():
+    """A positive handle present in the response resolves locally, never via known map."""
+    allowed = {"", "studies[]"}
+    known = {-1: {"path": "", "ids": {"title": "Doc"}}}
+    nodes = [
+        _skeleton({"i": 1, "path": "", "ids": {"title": "Local Root"}}),
+        _skeleton({"i": 2, "path": "studies[]", "ids": {"study_id": "S1"}, "p": 1}),
+    ]
+    stats: dict[str, int] = {}
+    out = normalize_skeleton_batch(nodes, allowed, known_handles=known, stats_out=stats)
+    assert out[1]["parent"] == {"path": "", "ids": {"title": "Local Root"}}
+    assert stats.get("parents_from_already_found", 0) == 0
+
+
+def test_normalize_skeleton_batch_unknown_negative_handle_yields_no_parent():
+    """A negative handle absent from the known map falls back to parent=None."""
+    allowed = {"", "studies[]"}
+    nodes = [_skeleton({"i": 1, "path": "studies[]", "ids": {"study_id": "S1"}, "p": -7})]
+    out = normalize_skeleton_batch(nodes, allowed, known_handles={-1: {"path": "", "ids": {}}})
+    assert out[0]["parent"] is None
+
+
+def test_sequential_skeleton_phase_advertises_and_resolves_negative_handles():
+    """Batch N+1 sees already-found entities as negative handles and can parent onto them."""
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    prompts_seen: list[str] = []
+
+    def mock_llm(
+        *,
+        prompt: Any,
+        schema_json: str,
+        context: str,
+        response_top_level: str = "object",
+        response_schema_name: str = "extraction",
+        _diagnostics_out: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any] | None:
+        prompts_seen.append(prompt["user"])
+        if len(prompts_seen) == 1:
+            return {
+                "nodes": [
+                    {"i": 1, "path": "", "ids": {"company_name": "Acme"}},
+                    {
+                        "i": 2,
+                        "path": "employees[]",
+                        "ids": {"email": "alice@x.com"},
+                        "p": 1,
+                    },
+                ]
+            }
+        # Second batch: a NEW employee referencing the already-extracted root
+        # via its negative handle instead of re-emitting it. The window is
+        # ordered most-recent-first: -1 = alice, -2 = root.
+        return {"nodes": [{"i": 1, "path": "employees[]", "ids": {"email": "bob@x.com"}, "p": -2}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    results = orch._run_skeleton_phase(
+        batches=[[(0, "Alice works at Acme", 40)], [(1, "Bob also works here", 40)]],
+        workers=1,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+    )
+    assert "ALREADY EXTRACTED" not in prompts_seen[0]
+    assert '"i": -1' in prompts_seen[1] and '"i": -2' in prompts_seen[1]
+    assert '"alice@x.com"' in prompts_seen[1]
+    bob = results[1][0]
+    assert bob["ids"] == {"email": "bob@x.com"}
+    assert bob["parent"] == {"path": "", "ids": {"company_name": "Acme"}}
+    assert orch._counters.get("parents_from_already_found") == 1
+
+
+# --- P5: class-name-echo guard in strip_mislabeled_root_ids ---
+
+
+def test_strip_mislabeled_root_ids_clears_class_name_echo():
+    """A root id that merely echoes the template class name is schema echo, not data."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        strip_mislabeled_root_ids,
+    )
+
+    nodes = [
+        {"path": "", "ids": {"reference_document": "AssuranceMRH", "version": "2.1"}},
+        {"path": "garanties[]", "ids": {"nom": "AssuranceMRH"}},
+    ]
+    out = strip_mislabeled_root_ids(nodes, template_class_name="AssuranceMRH")
+    assert "reference_document" not in out[0]["ids"]
+    assert out[0]["ids"]["version"] == "2.1"
+    # Only the root is touched; a child legitimately named like the class survives.
+    assert out[1]["ids"]["nom"] == "AssuranceMRH"
+
+
+def test_strip_mislabeled_root_ids_keeps_real_reference_with_class_guard():
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        strip_mislabeled_root_ids,
+    )
+
+    nodes = [{"path": "", "ids": {"reference_document": "HABITATION_07-25"}}]
+    out = strip_mislabeled_root_ids(nodes, template_class_name="AssuranceMRH")
+    assert out[0]["ids"]["reference_document"] == "HABITATION_07-25"
+
+
+# --- Plan F: Phase 1 coverage second pass over zero-yield chunks ---
+
+
+def _coverage_orchestrator(mock_llm: Any) -> tuple[DenseOrchestrator, set, dict]:
+    template_cls, allowed, spec_by_path = _company_skeleton_args()
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm, template=template_cls, config=DenseOrchestratorConfig()
+    )
+    return orch, allowed, spec_by_path
+
+
+def test_coverage_pass_reexamines_zero_yield_chunks():
+    """Chunks with no skeleton yield get one focused retry with reference handles."""
+    coverage_prompts: list[str] = []
+
+    def mock_llm(*, prompt: Any, context: str, _diagnostics_out: Any = None, **kwargs: Any) -> dict:
+        if "_coverage" in context:
+            coverage_prompts.append(prompt["user"])
+            return {
+                "nodes": [{"i": 1, "path": "employees[]", "ids": {"email": "bob@x.com"}, "p": -2}]
+            }
+        return {"nodes": []}
+
+    orch, allowed, spec_by_path = _coverage_orchestrator(mock_llm)
+    batches = [[(0, "covered chunk", 50), (1, "missed chunk", 50)]]
+    merged_skeleton = [
+        {"path": "", "ids": {"company_name": "Acme"}, "parent": None, "_source_chunk_ids": [0]},
+        {
+            "path": "employees[]",
+            "ids": {"email": "alice@x.com"},
+            "parent": {"path": "", "ids": {"company_name": "Acme"}},
+            "_source_chunk_ids": [0],
+        },
+    ]
+    cov_batches, cov_results = orch._run_coverage_pass(
+        batches=batches,
+        merged_skeleton=merged_skeleton,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+    )
+    # Only the uncovered chunk 1 is re-examined, with the retry note + handles.
+    assert len(cov_batches) == 1
+    assert [cid for cid, _, _ in cov_batches[0]] == [1]
+    assert "no entities on the first pass" in coverage_prompts[0]
+    assert "ALREADY EXTRACTED" in coverage_prompts[0]
+    # The recovered node resolved its parent via the negative handle (-2 = root:
+    # -1 is the most recent entity, alice).
+    bob = cov_results[0][0]
+    assert bob["parent"] == {"path": "", "ids": {"company_name": "Acme"}}
+    assert orch._counters.get("coverage_pass_recovered") == 1
+
+
+def test_coverage_pass_skips_small_uncovered_share():
+    """Zero-yield chunks below the token-share threshold are treated as boilerplate."""
+    calls: list[str] = []
+
+    def mock_llm(*, prompt: Any, context: str, _diagnostics_out: Any = None, **kwargs: Any) -> dict:
+        calls.append(context)
+        return {"nodes": []}
+
+    orch, allowed, spec_by_path = _coverage_orchestrator(mock_llm)
+    # Uncovered chunk holds 5/1005 tokens (<10%).
+    batches = [[(0, "big covered chunk", 1000), (1, "tiny footer", 5)]]
+    merged_skeleton = [
+        {"path": "", "ids": {"company_name": "Acme"}, "parent": None, "_source_chunk_ids": [0]}
+    ]
+    cov_batches, cov_results = orch._run_coverage_pass(
+        batches=batches,
+        merged_skeleton=merged_skeleton,
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+    )
+    assert cov_batches == [] and cov_results == []
+    assert calls == []
+
+
+def test_coverage_pass_noop_on_empty_skeleton():
+    """A failed phase 1 (no skeleton) must not trigger a duplicate full pass."""
+    orch, allowed, spec_by_path = _coverage_orchestrator(lambda **_kwargs: {"nodes": []})
+    cov_batches, cov_results = orch._run_coverage_pass(
+        batches=[[(0, "chunk", 100)]],
+        merged_skeleton=[],
+        catalog_block="",
+        allowed_paths=allowed,
+        global_context=None,
+        semantic_guide=None,
+        schema_json="{}",
+        context="t",
+        spec_by_path=spec_by_path,
+    )
+    assert cov_batches == [] and cov_results == []
+
+
+# --- P2/P3: reconciliation co-occurrence veto + observability ---
+
+
+def test_reconciliation_vetoes_same_chunk_merge():
+    """Instances first emitted from the same chunk are never merged (CONFORT case)."""
+    from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        apply_skeleton_reconciliation,
+    )
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    catalog = build_node_catalog(SampleCompany)
+    spec_by_path = {s.path: s for s in catalog.nodes}
+    # Both offers came from the same page-1 summary-table chunk.
+    nodes = [
+        {
+            "path": "employees[]",
+            "ids": {"email": "confort@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [0],
+        },
+        {
+            "path": "employees[]",
+            "ids": {"email": "confort-plus@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [0, 3],
+        },
+    ]
+    events: list[dict] = []
+    kept, merged = apply_skeleton_reconciliation(
+        nodes,
+        [{"path": "employees[]", "keep": 1, "merge": [0]}],
+        spec_by_path,
+        events_out=events,
+    )
+    assert merged == 0
+    assert len(kept) == 2
+    assert events[0]["action"] == "vetoed_cooccurrence"
+    assert events[0]["shared_chunks"] == [0]
+
+
+def test_reconciliation_merge_from_distinct_chunks_applies_and_logs():
+    """A genuine alias (table label chunk vs section title chunk) still merges."""
+    from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        apply_skeleton_reconciliation,
+    )
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    catalog = build_node_catalog(SampleCompany)
+    spec_by_path = {s.path: s for s in catalog.nodes}
+    nodes = [
+        {
+            "path": "employees[]",
+            "ids": {"email": "rc@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [0],
+        },
+        {
+            "path": "employees[]",
+            "ids": {"email": "rc-vie-privee@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [7],
+        },
+    ]
+    events: list[dict] = []
+    kept, merged = apply_skeleton_reconciliation(
+        nodes,
+        [{"path": "employees[]", "keep": 1, "merge": [0]}],
+        spec_by_path,
+        events_out=events,
+    )
+    assert merged == 1
+    assert len(kept) == 1
+    assert events[0]["action"] == "merged"
+    assert events[0]["merge_ids"] == {"email": "rc@x.com"}
+
+
+def test_reconciliation_writes_debug_artifact(tmp_path):
+    """The reconciliation pass dumps proposals, LLM answer, and events to debug."""
+    template_cls, _allowed, spec_by_path = _company_skeleton_args()
+
+    def mock_llm(*, prompt: Any, context: str, **kwargs: Any) -> dict:
+        if "_dense_reconcile" in context:
+            return {"merges": [{"path": "employees[]", "keep": 1, "merge": [0]}]}
+        return {"nodes": []}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=template_cls,
+        config=DenseOrchestratorConfig(),
+        debug_dir=str(tmp_path / "debug"),
+    )
+    skeleton = [
+        {
+            "path": "employees[]",
+            "ids": {"email": "a@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [0],
+        },
+        {
+            "path": "employees[]",
+            "ids": {"email": "alice-a@x.com"},
+            "parent": None,
+            "_source_chunk_ids": [4],
+        },
+    ]
+    _, merged = orch._run_skeleton_reconciliation(skeleton, spec_by_path, "t")
+    assert merged == 1
+    import json as _json
+
+    artifact = _json.loads((tmp_path / "debug" / "dense_reconciliation.json").read_text())
+    assert artifact["llm_merges"] == [{"path": "employees[]", "keep": 1, "merge": [0]}]
+    assert artifact["events"][0]["action"] == "merged"
