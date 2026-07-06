@@ -48,11 +48,13 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **🦆 DocLang support:** Read `.dclg`/`.dclx` inputs, and [optionally serialize](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/document-conversion/#llm-input-serialization) document as [DocLang](https://github.com/doclang-project/doclang) for the LLM.
+- **🦆 DocLang support:** Parse `.dclg`/`.dclx` inputs, and [optionally serialize](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/document-conversion/#llm-input-serialization) document as [DocLang](https://github.com/doclang-project/doclang) for the LLM.
 
 - **📍 Data grounding:** Deterministic [provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/) ledger with bounding-box geometry and no extra LLM calls.
 
 - **✨ Dense extraction:** Advanced [skeleton-then-flesh](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/dense-extraction/) extraction mode for complex documents.
+
+- **🚀 Docling Serve support:** Offload [document conversion](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/docling-serve/) to a remote [docling-serve](https://github.com/docling-project/docling-serve) instance.
 
 ### Coming Soon
 
