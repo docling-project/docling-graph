@@ -10,7 +10,7 @@ Install the latest release from PyPI:
 pip install docling-graph
 ```
 
-This installs the core package with VLM support and LiteLLM (for LLM providers). No extra steps are required for remote or local LLM backends.
+This installs the core package with LiteLLM (for remote and local LLM backends). No extra steps are required for LLM-based extraction. The VLM backend (local NuExtract models, requires PyTorch) needs the `vlm` extra: `pip install "docling-graph[vlm]"`.
 
 **Verify installation:**
 
@@ -63,7 +63,7 @@ cd docling-graph
 uv sync
 ```
 
-This installs the same core package as PyPI (VLM + LiteLLM). Use `uv sync --extra dev` for development tools.
+This installs the same core package as PyPI (LiteLLM included; VLM excluded by default). Use `uv sync --extra vlm` for VLM support, or `uv sync --extra dev` for development tools.
 
 #### Step 4: Verify Installation
 
@@ -101,8 +101,8 @@ docling-graph --version
 For users with GPU who want local inference:
 
 ```bash
-# Install from PyPI
-pip install docling-graph
+# Install from PyPI with VLM support
+pip install "docling-graph[vlm]"
 
 # Verify GPU
 nvidia-smi
@@ -120,8 +120,8 @@ docling-graph --version
 For users who want all local capabilities:
 
 ```bash
-# Install from PyPI
-pip install docling-graph
+# Install from PyPI with VLM support
+pip install "docling-graph[vlm]"
 
 # Verify GPU
 nvidia-smi

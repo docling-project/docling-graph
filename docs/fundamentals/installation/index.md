@@ -6,9 +6,9 @@ Docling Graph is available on **PyPI**. Install with pip for the recommended exp
 
 ### What You'll Install
 
-1. **Core Package**: Docling Graph with VLM support
-2. **Optional Features**: LLM providers (local and/or remote) via LiteLLM (included by default)
-3. **GPU Support** (optional): PyTorch with CUDA for local inference
+1. **Core Package**: Docling Graph with document conversion and LLM-based extraction
+2. **Optional Features**: LLM providers (local and/or remote) via LiteLLM (included by default), VLM backend (via the `vlm` extra), Bedrock (via the `bedrock` extra)
+3. **GPU Support** (optional): PyTorch with CUDA for local inference (installed with the `vlm` extra, or separately for local LLM serving)
 4. **API Keys** (optional): For remote LLM providers
 
 ## Quick Start
@@ -22,9 +22,14 @@ pip install docling-graph
 This installs:
 
 - ✅ Docling (document conversion)
-- ✅ VLM backend (NuExtract models)
 - ✅ Core graph functionality
 - ✅ LiteLLM (for LLM providers; no extra install needed)
+
+VLM backend support (local NuExtract models, requires PyTorch) is **not** included by default:
+
+```bash
+pip install "docling-graph[vlm]"
+```
 
 Run the CLI with:
 
