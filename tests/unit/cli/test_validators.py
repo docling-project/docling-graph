@@ -224,6 +224,16 @@ class TestValidateProvider:
         result = validate_provider("openai", "remote")
         assert result == "openai"
 
+    def test_validate_provider_bedrock_remote_valid(self):
+        """Should accept Amazon Bedrock as a remote provider."""
+        result = validate_provider("bedrock", "remote")
+        assert result == "bedrock"
+
+    def test_validate_provider_bedrock_local_raises_error(self):
+        """Bedrock is remote-only; local inference should be rejected."""
+        with pytest.raises(ValueError):
+            validate_provider("bedrock", "local")
+
     def test_validate_provider_invalid_raises_error(self):
         """Should raise ValueError for invalid provider."""
         with pytest.raises(ValueError):
