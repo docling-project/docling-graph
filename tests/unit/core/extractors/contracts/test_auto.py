@@ -2,6 +2,7 @@
 
 from docling_graph.core.extractors.contracts.auto import (
     CHARS_PER_TOKEN,
+    DIRECT_OVERFLOW_RATIO,
     ContractDecision,
     resolve_auto_contract,
 )
@@ -62,7 +63,7 @@ class TestResolveAutoContract:
     def test_boundary_exactly_at_output_capacity(self):
         # Exactly at the overflow ratio boundary is still direct (<=).
         budget = 4092
-        boundary_chars = int(budget * CHARS_PER_TOKEN * 2.0)
+        boundary_chars = int(budget * CHARS_PER_TOKEN * DIRECT_OVERFLOW_RATIO)
         decision = resolve_auto_contract(
             markdown_chars=boundary_chars,
             output_budget_tokens=budget,
@@ -77,6 +78,24 @@ class TestResolveAutoContract:
             chunking_available=True,
         )
         assert over.contract == "dense"
+
+    def test_output_pressure_ratio_is_one(self):
+        """R=1.0 by decision: silent self-rationing of verbatim fields costs
+        more than dense's extra calls. Guards against quietly relaxing it."""
+        assert DIRECT_OVERFLOW_RATIO == 1.0
+
+    def test_cgv_sized_document_now_routes_dense(self):
+        """Regression for the 2026-07-06 run: 62,540 chars with an 8192-token
+        output budget resolved direct at ratio 2.0 and lost 57% of verbatim
+        exclusion texts; at R=1.0 it must route to dense."""
+        decision = resolve_auto_contract(
+            markdown_chars=62_540,
+            output_budget_tokens=8_192,
+            context_limit_tokens=131_072,
+            chunking_available=True,
+        )
+        assert decision.contract == "dense"
+        assert "response can represent" in decision.reason
 
     def test_describe_includes_numbers(self):
         decision = resolve_auto_contract(

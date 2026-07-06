@@ -858,6 +858,140 @@ def test_merge_filled_rescues_idless_orphans_into_shared_bucket():
     assert {e["exp_id"] for e in bucket["experiments"]} == {"E1", "E2"}
 
 
+def _linkage_template() -> type:
+    """Pydantic counterpart of _linkage_catalog with a REQUIRED study_id."""
+    from pydantic import BaseModel, ConfigDict, Field
+
+    class _Experiment(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["exp_id"])
+        exp_id: str
+
+    class _Study(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["study_id"])
+        study_id: str
+        experiments: list[_Experiment] = Field(default_factory=list)
+
+    class _Doc(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["title"])
+        title: str | None = None
+        studies: list[_Study] = Field(default_factory=list)
+
+    return _Doc
+
+
+def test_merge_filled_locality_adopts_unique_co_chunk_parent():
+    """A child with a dangling parent handle attaches to the single parent
+    discovered in the same source chunk — before any bucket is considered."""
+    from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    template = _linkage_template()
+    catalog = build_node_catalog(template)
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha"}, {"study_id": "Beta"}],
+        "studies[].experiments[]": [{"exp_id": "E1"}],
+    }
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "studies[]": [
+            {**_desc("studies[]", {"study_id": "Alpha"}, None), "_source_chunk_ids": [1]},
+            {**_desc("studies[]", {"study_id": "Beta"}, None), "_source_chunk_ids": [5, 6]},
+        ],
+        "studies[].experiments[]": [
+            {
+                **_desc("studies[].experiments[]", {"exp_id": "E1"}, None),
+                "_source_chunk_ids": [5],
+            }
+        ],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(
+        path_filled, path_descriptors, catalog, stats_out=stats, template=template
+    )
+    beta = next(s for s in root["studies"] if s["study_id"] == "Beta")
+    assert [e["exp_id"] for e in beta.get("experiments", [])] == ["E1"]
+    assert stats["recovered_locality"] == 1
+    assert stats["dropped"] == 0
+    assert stats["recovered_bucket"] == 0
+
+
+def test_merge_filled_bucket_gated_when_identity_required():
+    """With a template whose parent identity is required, an id-less bucket
+    parent is never materialized (it would be deleted or blanked downstream);
+    the orphan is dropped honestly and counted."""
+    from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    template = _linkage_template()
+    catalog = build_node_catalog(template)
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha"}, {"study_id": "Beta"}],
+        "studies[].experiments[]": [{"exp_id": "E1"}],
+    }
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "studies[]": [
+            _desc("studies[]", {"study_id": "Alpha"}, None),
+            _desc("studies[]", {"study_id": "Beta"}, None),
+        ],
+        # No parent ids, no source-locality data -> nothing can resolve it.
+        "studies[].experiments[]": [_desc("studies[].experiments[]", {"exp_id": "E1"}, None)],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(
+        path_filled, path_descriptors, catalog, stats_out=stats, template=template
+    )
+    assert stats["dropped"] == 1
+    assert stats["recovered_bucket"] == 0
+    assert len(root["studies"]) == 2  # no phantom third study
+
+
+def test_merge_filled_bucket_still_allowed_when_identity_optional():
+    """Bucket rescue is preserved for templates whose identity fields are
+    optional — there the bucket survives validation and keeps the subtree."""
+    from pydantic import BaseModel, ConfigDict, Field
+
+    from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    class _Experiment(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["exp_id"])
+        exp_id: str
+
+    class _Study(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["study_id"])
+        study_id: str | None = None
+        experiments: list[_Experiment] = Field(default_factory=list)
+
+    class _Doc(BaseModel):
+        title: str | None = None
+        studies: list[_Study] = Field(default_factory=list)
+
+    catalog = build_node_catalog(_Doc)
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha"}, {"study_id": "Beta"}],
+        "studies[].experiments[]": [{"exp_id": "E1"}],
+    }
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "studies[]": [
+            _desc("studies[]", {"study_id": "Alpha"}, None),
+            _desc("studies[]", {"study_id": "Beta"}, None),
+        ],
+        "studies[].experiments[]": [_desc("studies[].experiments[]", {"exp_id": "E1"}, None)],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(
+        path_filled, path_descriptors, catalog, stats_out=stats, template=_Doc
+    )
+    assert stats["recovered_bucket"] == 1
+    assert stats["dropped"] == 0
+    assert len(root["studies"]) == 3
+
+
 def test_merge_filled_distinct_siblings_with_value_as_key_ids_do_not_collapse():
     """Siblings whose ids use the value as the key (a small-model shape error,
     e.g. {"Alpha": "alpha"} instead of {"study_id": "Alpha"}) must stay distinct
@@ -1676,15 +1810,23 @@ def test_shallow_skeleton_retry_returns_empty_without_root_spec():
     assert result == []
 
 
-def test_dedupe_skeleton_traces_containment_and_aggressive_resolver_stats():
-    """on_trace receives containment-merge and (aggressive-mode) resolver stats."""
+def test_dedupe_skeleton_proposes_containment_and_keeps_both_without_llm_confirm():
+    """Containment pairs are traced as PROPOSALS and reach the reconciliation
+    prompt as candidates; when the (mocked) LLM declines, both instances survive
+    — the tier-destroying auto-merge is gone."""
     from tests.fixtures.sample_templates.test_template import SampleCompany
 
     traced: list[dict[str, Any]] = []
+    prompts_seen: list[dict[str, str]] = []
+
+    def fake_llm(**kwargs: Any) -> dict[str, Any]:
+        prompts_seen.append(kwargs.get("prompt") or {})
+        return {"merges": []}
+
     orch = DenseOrchestrator(
-        llm_call_fn=lambda **_kwargs: {"merges": []},
+        llm_call_fn=fake_llm,
         template=SampleCompany,
-        config=DenseOrchestratorConfig(dedupe_mode="aggressive"),
+        config=DenseOrchestratorConfig(dedupe_mode="standard"),
         on_trace=traced.append,
     )
     spec_by_path = {s.path: s for s in orch._catalog.nodes}
@@ -1693,10 +1835,35 @@ def test_dedupe_skeleton_traces_containment_and_aggressive_resolver_stats():
         {"path": "employees[]", "ids": {"email": "alice@x.com"}, "parent": None},
         {"path": "employees[]", "ids": {"email": "alice@x.com extra"}, "parent": None},
     ]
-    orch._dedupe_skeleton(skeleton, spec_by_path, "t")
-    kinds = {list(t.keys())[1] for t in traced if len(t) > 1}
-    # At minimum containment-merge tracing must have fired for this pair.
-    assert "phase1_containment" in kinds or "phase1_resolvers" in kinds
+    kept, merged = orch._dedupe_skeleton(skeleton, spec_by_path, "t")
+    assert len(kept) == 2  # LLM declined -> nothing merged
+    assert merged == 0
+    kinds = {key for t in traced for key in t if key != "contract"}
+    assert "phase1_containment_proposals" in kinds
+    assert any("CONTAINMENT CANDIDATES" in (p.get("user") or "") for p in prompts_seen)
+
+
+def test_dedupe_skeleton_applies_llm_confirmed_containment_merge():
+    """A containment candidate the LLM confirms is merged via reconciliation."""
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def fake_llm(**_kwargs: Any) -> dict[str, Any]:
+        return {"merges": [{"path": "employees[]", "keep": 0, "merge": [1]}]}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=fake_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(dedupe_mode="standard"),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    skeleton = [
+        {"path": "employees[]", "ids": {"email": "alice@x.com"}, "parent": None},
+        {"path": "employees[]", "ids": {"email": "alice@x.com extra"}, "parent": None},
+    ]
+    kept, merged = orch._dedupe_skeleton(skeleton, spec_by_path, "t")
+    assert merged == 1
+    assert len(kept) == 1
+    assert kept[0]["ids"] == {"email": "alice@x.com"}
 
 
 def test_write_debug_writes_json_file(tmp_path):

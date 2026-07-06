@@ -201,13 +201,10 @@ def test_build_node_catalog_covers_component_and_nested_entity_branches() -> Non
     assert "" in by_path
     assert by_path[""].kind == "entity"
 
-    # Single component field with an edge_label produces a node (kind=component).
-    assert "labeled_comp" in by_path
-    assert by_path["labeled_comp"].kind == "component"
-    assert by_path["labeled_comp"].is_list is False
-
-    # Components without an edge_label are skipped (no node created), whether
-    # scalar or list-typed, but the walk still recurses into their fields.
+    # Components NEVER become catalog paths — with or without an edge_label.
+    # They are identity-less value objects Phase 1 cannot discover; they stay
+    # in the parent's fill schema and are embedded inline by the converter.
+    assert "labeled_comp" not in by_path
     assert "unlabeled_comp" not in by_path
     assert "unlabeled_comp_list[]" not in by_path
 
@@ -258,7 +255,8 @@ def test_build_projected_fill_schema_excludes_child_path_fields() -> None:
     schema = json.loads(build_projected_fill_schema(_Root, spec, catalog))
     props = schema["properties"]
     assert "ents" not in props
-    assert "labeled_comp" not in props
+    # Components are filled inline with their parent, edge-labeled or not.
+    assert "labeled_comp" in props
     assert "unlabeled_comp" in props
 
 
@@ -271,6 +269,67 @@ def test_build_projected_fill_schema_filters_required_list_for_child_field() -> 
     assert "sub" not in schema["properties"]
     assert "sub" not in schema.get("required", [])
     assert "name" in schema["properties"]
+
+
+class _Plan(BaseModel):
+    """A subscribable plan."""
+
+    model_config = ConfigDict(graph_id_fields=["name"])
+    name: str
+    included: List[_Entity] = Field(
+        default_factory=list,
+        json_schema_extra={"edge_label": "INCLUDES", "graph_reference": True},
+    )
+    featured: _Entity | None = Field(default=None, json_schema_extra={"graph_reference": True})
+    anonymous_refs: List[_Comp] = Field(
+        default_factory=list, json_schema_extra={"graph_reference": True}
+    )
+
+
+class _PlanRoot(BaseModel):
+    plans: List[_Plan] = Field(default_factory=list)
+    ents: List[_Entity] = Field(default_factory=list)
+
+
+def test_reference_fields_produce_no_catalog_paths() -> None:
+    """Reference fields (and their subtrees) are absent from the catalog: they
+    are filled by the parent, not skeleton-discovered."""
+    catalog = build_node_catalog(_PlanRoot)
+    paths = set(catalog.paths())
+    assert "plans[]" in paths
+    assert "ents[]" in paths
+    assert "plans[].included[]" not in paths
+    assert "plans[].included[].sub" not in paths
+    assert "plans[].featured" not in paths
+
+
+def test_reference_marker_on_identity_less_target_is_ignored() -> None:
+    """graph_reference on a component target is meaningless -> normal handling
+    (walked through, no path, still absent because components have no paths)."""
+    catalog = build_node_catalog(_PlanRoot)
+    assert "plans[].anonymous_refs[]" not in set(catalog.paths())
+    # The projection must NOT rewrite the field either: it keeps its full schema.
+    spec = next(n for n in catalog.nodes if n.path == "plans[]")
+    schema = json.loads(build_projected_fill_schema(_PlanRoot, spec, catalog))
+    anon = schema["properties"]["anonymous_refs"]
+    assert "Identity-only reference" not in json.dumps(anon)
+
+
+def test_projected_fill_schema_inlines_reference_fields_id_only() -> None:
+    """The parent's fill schema re-includes reference fields projected to the
+    target's graph_id_fields (list and scalar forms), self-contained (no $ref)."""
+    catalog = build_node_catalog(_PlanRoot)
+    spec = next(n for n in catalog.nodes if n.path == "plans[]")
+    schema = json.loads(build_projected_fill_schema(_PlanRoot, spec, catalog))
+    included = schema["properties"]["included"]
+    assert included["type"] == "array"
+    item = included["items"]
+    assert set(item["properties"].keys()) == {"name"}
+    assert item["required"] == ["name"]
+    assert "Identity-only reference to a _Entity" in item["description"]
+    assert "$ref" not in json.dumps(included)
+    featured = schema["properties"]["featured"]
+    assert set(featured["properties"].keys()) == {"name"}
 
 
 def test_build_skeleton_semantic_guide_lists_paths_and_ids() -> None:

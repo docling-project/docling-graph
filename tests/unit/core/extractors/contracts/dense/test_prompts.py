@@ -217,6 +217,73 @@ def test_reconciliation_prompt_is_conservative_and_id_space_only():
     assert "LFP slurry" in user and "LFP_20vol" in user
 
 
+def test_reconciliation_prompt_carries_tier_guard_and_renders_candidates():
+    """Containment proposals are shown as candidates to verify, never as done
+    deals, and the system prompt forbids merging tier/variant names."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_reconciliation_prompt,
+    )
+
+    prompt = get_skeleton_reconciliation_prompt(
+        {"offres[]": [{"nom": "CONFORT"}, {"nom": "CONFORT PLUS"}]},
+        candidate_groups=[{"path": "offres[]", "keep": 0, "merge": [1]}],
+    )
+    system = prompt["system"]
+    assert "CONFORT PLUS" in system
+    assert "never merge them" in system
+    user = prompt["user"]
+    assert "CONTAINMENT CANDIDATES" in user
+    assert "may alias" in user
+    assert "reject tier/variant pairs" in user
+
+
+def test_reconciliation_prompt_without_candidates_has_no_candidates_block():
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_reconciliation_prompt,
+    )
+
+    prompt = get_skeleton_reconciliation_prompt({"items[]": [{"name": "a"}, {"name": "b"}]})
+    assert "CONTAINMENT CANDIDATES" not in prompt["user"]
+
+
+def test_semantic_guide_renders_docstrings_and_identity_examples():
+    """Phase 1 must see the template author's classification guidance: the class
+    docstring (truncated) and identity-field examples reach the guide."""
+    from pydantic import BaseModel, ConfigDict, Field
+
+    class Formula(BaseModel):
+        """A subscribable plan tier; add-on options are NOT formulas."""
+
+        model_config = ConfigDict(graph_id_fields=["name"])
+        name: str = Field(..., examples=["ESSENTIAL", "COMFORT"])
+        summary: str | None = None
+
+    class Root(BaseModel):
+        """Root document."""
+
+        model_config = ConfigDict(graph_id_fields=[])
+        formulas: list[Formula] = Field(default_factory=list)
+
+    guide = build_skeleton_semantic_guide(build_node_catalog(Root))
+    assert "A subscribable plan tier" in guide
+    assert "ESSENTIAL" in guide
+    assert "summary" not in guide  # non-identity property names stay out
+
+
+def test_skeleton_prompt_includes_path_choice_rule():
+    """Rule 9 tells the model to pick paths using the per-path descriptions."""
+    prompt = get_skeleton_batch_prompt(
+        batch_markdown="doc",
+        catalog_block='- "" (Root) ids=[]',
+        batch_index=0,
+        total_batches=1,
+        allowed_paths=[""],
+    )
+    system = prompt["system"]
+    assert "SEMANTIC FIELD GUIDANCE" in system
+    assert "never place an instance at a path whose description does not fit" in system
+
+
 def test_skeleton_prompt_prefers_specific_names_over_generic_labels():
     """Rule 3a steers the model to proper names over generic/positional labels."""
     from docling_graph.core.extractors.contracts.dense.prompts import (
