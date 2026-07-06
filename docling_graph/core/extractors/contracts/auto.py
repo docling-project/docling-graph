@@ -72,6 +72,12 @@ def resolve_auto_contract(
 ) -> ContractDecision:
     """Pick direct or dense for one document.
 
+    ``markdown_chars`` must be the document's CONTENT character count — for
+    DocLang serializations, strip the markup first (see
+    ``doclang_format.content_chars``). The same document must resolve to the
+    same contract regardless of the chosen LLM serialization; markup overhead
+    is not information the response has to represent.
+
     Direct is chosen only when BOTH hold:
     1. the estimated input plus the output budget fits the context window
        (always true when the window is unknown — the guard cannot lie), and

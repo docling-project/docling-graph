@@ -24,6 +24,8 @@ from ....protocols import (
     is_vlm_backend,
 )
 from ...utils.dict_merger import merge_pydantic_models
+from ...utils.doclang_format import content_chars
+from ...utils.root_identity import repair_root_identity
 from ..contracts.auto import resolve_auto_contract
 from ..contracts.dense.strategy_ops import extract_dense_from_document, extract_dense_from_text
 from ..document_processor import DocumentProcessor
@@ -232,6 +234,13 @@ class ManyToOneStrategy(BaseExtractor):
         full-document call fits both the model's context window and its
         output budget, dense otherwise; the decision and the numbers behind
         it are logged so a run is never opaque about which path it took.
+
+        The size heuristic measures CONTENT characters (markup stripped for
+        DocLang serializations): the same document must resolve to the same
+        contract regardless of which LLM serialization the user picked, and
+        DocLang markup inflates raw length without adding information. The
+        backend's pre-flight context check still uses the actual serialized
+        text it sends.
         """
         if self._extraction_contract != "auto":
             return self._extraction_contract
@@ -242,15 +251,57 @@ class ManyToOneStrategy(BaseExtractor):
         chunking_available = getattr(self.doc_processor, "chunker", None) is not None and hasattr(
             backend, "extract_from_chunk_batches"
         )
+        input_format = getattr(self.doc_processor, "llm_input_format", "markdown")
 
         decision = resolve_auto_contract(
-            markdown_chars=len(markdown),
+            markdown_chars=content_chars(markdown, input_format),
             output_budget_tokens=output_budget,
             context_limit_tokens=context_limit if isinstance(context_limit, int) else None,
             chunking_available=chunking_available,
         )
         logger.info("Resolved %s", decision.describe(), extra={"component": "AutoContract"})
         return decision.contract
+
+    def _resolve_llm_format(
+        self,
+        backend: TextExtractionBackendProtocol,
+        effective_contract: str,
+        *,
+        text_input: bool = False,
+    ) -> bool:
+        """Resolve ``llm_input_format="auto"`` once the contract is known.
+
+        Pairing (2026-07-06 benchmark): direct -> doclang-geo (geometry
+        recovers footer identifiers and table matrices in one-call
+        extraction), dense -> doclang (structure without geometry keeps chunk
+        batches content-dense). Raw text inputs have no DoclingDocument to
+        serialize, so ``text_input=True`` resolves to markdown. Updates the
+        document processor (full-text + chunk serialization) and the backend
+        (prompt framing + dense orchestrator config). Returns True when a
+        resolution was applied, so callers can re-serialize text produced
+        before the resolution.
+        """
+        if getattr(self.doc_processor, "llm_input_format", "markdown") != "auto":
+            return False
+        if text_input:
+            resolved = "markdown"
+        else:
+            resolved = "doclang-geo" if effective_contract == "direct" else "doclang"
+        logger.info(
+            "Resolved llm_input_format=auto -> %s (contract=%s)",
+            resolved,
+            effective_contract,
+            extra={"component": "AutoContract"},
+        )
+        set_format = getattr(self.doc_processor, "set_llm_input_format", None)
+        if callable(set_format):
+            set_format(resolved)
+        if hasattr(backend, "llm_input_format"):
+            backend.llm_input_format = resolved
+        raw = getattr(backend, "_dense_config_raw", None)
+        if isinstance(raw, dict):
+            raw["llm_input_format"] = resolved
+        return True
 
     def _extract_direct_mode_from_text(
         self,
@@ -286,6 +337,7 @@ class ManyToOneStrategy(BaseExtractor):
                 backend.trace_data = self.trace_data
 
             effective_contract = self._resolve_contract(backend, text)
+            self._resolve_llm_format(backend, effective_contract, text_input=True)
             if effective_contract == "dense" and hasattr(backend, "extract_from_chunk_batches"):
                 model, extraction_time = extract_dense_from_text(
                     backend=backend,
@@ -313,6 +365,7 @@ class ManyToOneStrategy(BaseExtractor):
                     )
                 if model:
                     logger.info("Dense text extraction successful")
+                    repair_root_identity(model)
                     return [model], None
                 logger.warning(
                     "Dense text extraction returned no model; falling back to direct extraction"
@@ -352,6 +405,7 @@ class ManyToOneStrategy(BaseExtractor):
 
             if model:
                 logger.info("Direct text extraction successful")
+                repair_root_identity(model)
                 return [model], None
             else:
                 logger.warning("Direct text extraction returned no model")
@@ -425,6 +479,10 @@ class ManyToOneStrategy(BaseExtractor):
                 backend.trace_data = self.trace_data
 
             effective_contract = self._resolve_contract(backend, full_markdown)
+            if self._resolve_llm_format(backend, effective_contract):
+                # The text above was serialized before the format resolution;
+                # re-serialize so the LLM sees the resolved format.
+                full_markdown = self.doc_processor.extract_full_markdown(document)
             if effective_contract == "dense" and hasattr(backend, "extract_from_chunk_batches"):
                 model, extraction_time = extract_dense_from_document(
                     backend=backend,
@@ -453,6 +511,7 @@ class ManyToOneStrategy(BaseExtractor):
                     )
                 if model:
                     logger.info("Dense extraction successful")
+                    repair_root_identity(model, document_stem=getattr(document, "name", None))
                     return [model], document
                 logger.warning(
                     "Dense extraction returned no model; falling back to direct extraction"
@@ -493,6 +552,7 @@ class ManyToOneStrategy(BaseExtractor):
 
             if model:
                 logger.info("Direct extraction successful")
+                repair_root_identity(model, document_stem=getattr(document, "name", None))
                 self._attach_direct_provenance(backend, document)
                 return [model], document
             else:

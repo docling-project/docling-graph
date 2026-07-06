@@ -473,3 +473,35 @@ def test_docling_serve_config_without_url_uses_local_converter(
     mock_serve_class.assert_not_called()
     mock_converter_class.assert_called_once()
     assert processor.serve_client is None
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_set_llm_input_format_rebuilds_chunker(mock_chunker_class, mock_converter_class):
+    """llm-format auto: switching format after construction rebuilds the chunker."""
+    processor = DocumentProcessor(chunker_config={"chunk_max_tokens": 512}, llm_input_format="auto")
+    assert processor.llm_input_format == "auto"
+    # "auto" is not a doclang format: initial chunker gets no serializer provider.
+    assert "serializer_provider" not in mock_chunker_class.call_args.kwargs
+
+    processor.set_llm_input_format("doclang-geo")
+    assert processor.llm_input_format == "doclang-geo"
+    rebuilt_kwargs = mock_chunker_class.call_args.kwargs
+    assert "serializer_provider" in rebuilt_kwargs
+    assert rebuilt_kwargs["serializer_provider"].add_location is True
+    assert rebuilt_kwargs["tokenizer_name"] == "tiktoken"
+
+    # No-op when unchanged.
+    calls_before = mock_chunker_class.call_count
+    processor.set_llm_input_format("doclang-geo")
+    assert mock_chunker_class.call_count == calls_before
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DocumentChunker")
+def test_set_llm_input_format_without_chunker(mock_chunker_class, mock_converter_class):
+    """Format switch works when chunking is disabled (chunker stays None)."""
+    processor = DocumentProcessor(llm_input_format="auto")
+    processor.set_llm_input_format("doclang")
+    assert processor.llm_input_format == "doclang"
+    assert processor.chunker is None

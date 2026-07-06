@@ -166,6 +166,10 @@ class DocumentProcessor:
         """
         self.docling_config = docling_config
         self.llm_input_format = llm_input_format
+        # Pristine copy kept so set_llm_input_format can rebuild the chunker
+        # with format-appropriate defaults (llm-format "auto" resolves per
+        # document, after this processor is constructed).
+        self._chunker_base_config = dict(chunker_config) if chunker_config else None
 
         # Initialize chunker if config provided. In DocLang mode, hand the chunker
         # a serializer provider so chunk text is DocLang instead of markdown, and
@@ -173,16 +177,7 @@ class DocumentProcessor:
         # syntax vocabulary is designed to map efficiently onto LLM BPE tokens,
         # while wordpiece tokenizers (the MiniLM default) fragment the XML markup
         # and overcount it, skewing chunk budgets.
-        self.chunker = None
-        if chunker_config:
-            chunker_config = dict(chunker_config)
-            if is_doclang_format(llm_input_format):
-                chunker_config.setdefault(
-                    "serializer_provider",
-                    DocLangSerializerProvider(add_location=wants_location(llm_input_format)),
-                )
-                chunker_config.setdefault("tokenizer_name", "tiktoken")
-            self.chunker = DocumentChunker(**chunker_config)
+        self.chunker = self._build_chunker(llm_input_format)
 
         # Remote conversion via docling-serve: no local converter (and none of
         # its model stack) is created; the server does the conversion.
@@ -231,6 +226,36 @@ class DocumentProcessor:
                 }
             )
             logger.info("Initialized with Classic OCR pipeline (English, French)")
+
+    def _build_chunker(self, llm_input_format: str) -> "DocumentChunker | None":
+        """Build the chunker with format-appropriate serializer/tokenizer defaults."""
+        if not self._chunker_base_config:
+            return None
+        chunker_config = dict(self._chunker_base_config)
+        if is_doclang_format(llm_input_format):
+            chunker_config.setdefault(
+                "serializer_provider",
+                DocLangSerializerProvider(add_location=wants_location(llm_input_format)),
+            )
+            chunker_config.setdefault("tokenizer_name", "tiktoken")
+        return DocumentChunker(**chunker_config)
+
+    def set_llm_input_format(self, llm_input_format: str) -> None:
+        """Switch the LLM-facing serialization after construction.
+
+        Exists for ``llm_input_format="auto"``, which resolves per document once
+        the extraction contract is known. Rebuilds the chunker so chunk text
+        matches the new serialization; a no-op when the format is unchanged.
+        """
+        if llm_input_format == self.llm_input_format:
+            return
+        logger.info(
+            "LLM input format: %s -> %s (chunker rebuilt to match)",
+            self.llm_input_format,
+            llm_input_format,
+        )
+        self.llm_input_format = llm_input_format
+        self.chunker = self._build_chunker(llm_input_format)
 
     def convert_to_docling_doc(self, source: str) -> DoclingDocument:
         """

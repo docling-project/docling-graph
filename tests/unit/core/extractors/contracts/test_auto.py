@@ -165,3 +165,85 @@ class TestStrategyContractResolution:
     def test_auto_without_chunker_picks_direct(self):
         strategy = self._strategy("auto", chunker=False)
         assert strategy._resolve_contract(self._backend(budget=8192), "x" * 626_746) == "direct"
+
+
+class TestFormatNeutralDecision:
+    """The auto decision measures content chars, not serialized chars: the same
+    document resolves to the same contract in every LLM serialization."""
+
+    def _strategy(self, contract: str, llm_format: str) -> object:
+        from unittest.mock import MagicMock
+
+        from docling_graph.core.extractors.strategies.many_to_one import ManyToOneStrategy
+
+        strategy = ManyToOneStrategy.__new__(ManyToOneStrategy)
+        strategy._extraction_contract = contract
+        strategy.doc_processor = MagicMock()
+        strategy.doc_processor.chunker = MagicMock()
+        strategy.doc_processor.llm_input_format = llm_format
+        return strategy
+
+    def _backend(self, budget: int = 8192, context: int = 131_072) -> object:
+        from unittest.mock import MagicMock
+
+        backend = MagicMock()
+        backend._estimated_output_token_budget = lambda: budget
+        backend.client.context_limit = context
+        return backend
+
+    def test_doclang_geo_markup_does_not_flip_the_contract(self):
+        # ~20k chars of content: direct at an 8192-token budget (capacity 32k).
+        content = "word " * 4_000
+        markdown_strategy = self._strategy("auto", "markdown")
+        assert markdown_strategy._resolve_contract(self._backend(), content) == "direct"
+
+        # The same content wrapped in enough geo markup to cross 32k raw chars
+        # must STILL resolve direct: markup is not information.
+        geo_text = "".join(
+            f'<text><location value="{i}"/><location value="{i}"/><![CDATA[{chunk}]]></text>\n'
+            for i, chunk in enumerate([content[i : i + 100] for i in range(0, len(content), 100)])
+        )
+        assert len(geo_text) > 32_768 * DIRECT_OVERFLOW_RATIO
+        geo_strategy = self._strategy("auto", "doclang-geo")
+        assert geo_strategy._resolve_contract(self._backend(), geo_text) == "direct"
+
+
+class TestAutoFormatPairing:
+    """llm_input_format='auto' pairs the serialization to the resolved contract."""
+
+    def _strategy_and_backend(self, llm_format: str = "auto") -> tuple:
+        from unittest.mock import MagicMock
+
+        from docling_graph.core.extractors.strategies.many_to_one import ManyToOneStrategy
+
+        strategy = ManyToOneStrategy.__new__(ManyToOneStrategy)
+        strategy._extraction_contract = "auto"
+        strategy.doc_processor = MagicMock()
+        strategy.doc_processor.llm_input_format = llm_format
+        backend = MagicMock()
+        backend.llm_input_format = "auto"
+        backend._dense_config_raw = {"llm_input_format": "auto"}
+        return strategy, backend
+
+    def test_direct_pairs_with_doclang_geo(self):
+        strategy, backend = self._strategy_and_backend()
+        assert strategy._resolve_llm_format(backend, "direct") is True
+        strategy.doc_processor.set_llm_input_format.assert_called_once_with("doclang-geo")
+        assert backend.llm_input_format == "doclang-geo"
+        assert backend._dense_config_raw["llm_input_format"] == "doclang-geo"
+
+    def test_dense_pairs_with_doclang(self):
+        strategy, backend = self._strategy_and_backend()
+        assert strategy._resolve_llm_format(backend, "dense") is True
+        strategy.doc_processor.set_llm_input_format.assert_called_once_with("doclang")
+        assert backend.llm_input_format == "doclang"
+
+    def test_text_input_resolves_markdown(self):
+        strategy, backend = self._strategy_and_backend()
+        assert strategy._resolve_llm_format(backend, "dense", text_input=True) is True
+        strategy.doc_processor.set_llm_input_format.assert_called_once_with("markdown")
+
+    def test_explicit_format_is_never_touched(self):
+        strategy, backend = self._strategy_and_backend(llm_format="markdown")
+        assert strategy._resolve_llm_format(backend, "direct") is False
+        strategy.doc_processor.set_llm_input_format.assert_not_called()

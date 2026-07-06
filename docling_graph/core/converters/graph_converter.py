@@ -54,6 +54,24 @@ def get_model_config_value(model: BaseModel, key: str, default: Any) -> Any:
     return getattr(config, key, default)
 
 
+def _empty_identity_node_ids(graph: nx.DiGraph, id_fields_map: dict[str, list[str]]) -> list[str]:
+    """Node ids whose class declares identity fields that are all empty on the node."""
+
+    def _filled(value: Any) -> bool:
+        if value is None:
+            return False
+        if isinstance(value, str):
+            return bool(value.strip())
+        return True
+
+    out: list[str] = []
+    for node_id, attrs in graph.nodes(data=True):
+        fields = id_fields_map.get(str(attrs.get("__class__") or ""))
+        if fields and not any(_filled(attrs.get(f)) for f in fields):
+            out.append(str(node_id))
+    return out
+
+
 def _is_empty_value(value: Any) -> bool:
     """True for values that carry no data (None or empty str/list/dict).
 
@@ -208,6 +226,18 @@ class GraphConverter:
             )
             if alias_stats.get("candidates"):
                 graph.graph["alias_reconciliation"] = alias_stats
+
+        # Integrity: a node whose class declares identity fields but carries no
+        # identity value can never be matched, deduplicated, or evaluated —
+        # surface it loudly instead of letting it reach the export silently.
+        empty_identity = _empty_identity_node_ids(graph, id_fields_by_class(model_instances))
+        if empty_identity:
+            graph.graph["empty_identity_nodes"] = empty_identity
+            logger.warning(
+                "Integrity: %s exported node(s) have empty identity fields: %s",
+                len(empty_identity),
+                ", ".join(empty_identity[:5]) + ("..." if len(empty_identity) > 5 else ""),
+            )
 
         # Validate
         if self.validate_graph:
