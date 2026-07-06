@@ -10,6 +10,8 @@ import click
 import typer
 from rich import print as rich_print
 
+from docling_graph.config import PipelineConfig
+
 from .constants import (
     API_PROVIDERS,
     BACKENDS,
@@ -17,6 +19,7 @@ from .constants import (
     EXPORT_FORMATS,
     EXTRACTION_CONTRACTS,
     INFERENCE_LOCATIONS,
+    LLM_INPUT_FORMATS,
     LOCAL_PROVIDER_DEFAULTS,
     LOCAL_PROVIDERS,
     PROCESSING_MODES,
@@ -47,30 +50,41 @@ class PromptConfig:
 
 
 class ConfigurationBuilder:
-    """Orchestrates interactive configuration building."""
+    """Orchestrates interactive configuration building.
+
+    Prompt defaults come from ``PipelineConfig`` (the single source of truth)
+    so the wizard can never drift from the package defaults, and the wizard's
+    answers are merged OVER the complete generated config so the saved file
+    always carries every current key — a sparse file written by an old wizard
+    is how stale values (e.g. a pinned ``extraction_contract``) silently
+    override newer package defaults.
+    """
 
     def __init__(self) -> None:
         self.step_counter = 1
         self._use_custom_endpoint = False
+        self._defaults = PipelineConfig()
 
     def build_config(self) -> Dict[str, Any]:
         """Build configuration through interactive prompts (optimized)."""
         rich_print("[bold blue]Welcome to Docling-Graph Setup![/bold blue]")
         rich_print("Let's configure your knowledge graph pipeline.\n")
 
-        # Build all sections
+        # Build all prompted sections
         defaults = self._build_defaults()
         models = self._build_models(defaults["backend"], defaults["inference"])
         defaults["export_format"] = self._build_export_format()
         docling = self._build_docling()
         output = self._build_output()
 
-        result = {
-            "defaults": defaults,
-            "docling": docling,
-            "models": models,
-            "output": output,
-        }
+        # Overlay the answers on the full default config: everything the
+        # wizard does not ask about (dense tuning, provenance, chunking,
+        # llm_overrides, ...) is still written out with current defaults.
+        result = PipelineConfig.generate_yaml_dict()
+        result["defaults"].update(defaults)
+        result["docling"].update(docling)
+        result["models"] = models
+        result["output"] = output
 
         if self._use_custom_endpoint:
             result["_init_hints"] = {"use_custom_endpoint": True}
@@ -97,14 +111,14 @@ class ConfigurationBuilder:
         ).lower()
 
     def _build_defaults(self) -> Dict[str, Any]:
-        """Build default settings section."""
+        """Build default settings section (prompt defaults from PipelineConfig)."""
         rich_print("\n── [bold]Default Settings[/bold] ──")
         processing_mode = self._prompt_option(
             PromptConfig(
                 label="Processing Mode",
                 description="How should documents be processed?",
                 options=list(PROCESSING_MODES),
-                default="many-to-one",
+                default=self._defaults.processing_mode,
                 step_num=self.step_counter,
                 option_help={
                     "one-to-one": "Creates a separate Pydantic instance for each page",
@@ -118,12 +132,28 @@ class ConfigurationBuilder:
                 label="Extraction Contract",
                 description="How should LLM extraction prompts/execution be orchestrated?",
                 options=list(EXTRACTION_CONTRACTS),
-                default="direct",
+                default=self._defaults.extraction_contract,
                 step_num=self.step_counter,
                 option_help={
-                    "direct": "Single-pass best-effort extraction (fastest)",
-                    "dense": "Two-phase skeleton-then-flesh extraction (autonomous)",
-                    "auto": "Picks direct or dense per document based on size vs model limits",
+                    "direct": "Always a single full-document call (fastest; self-rations on large documents)",
+                    "dense": "Always two-phase skeleton-then-flesh over chunks (scales to any size)",
+                    "auto": "Picks direct or dense per document based on size vs model limits (recommended)",
+                },
+            )
+        )
+
+        llm_input_format = self._prompt_option(
+            PromptConfig(
+                label="LLM Input Format",
+                description="How should document text be serialized for the LLM?",
+                options=list(LLM_INPUT_FORMATS),
+                default=self._defaults.llm_input_format,
+                step_num=self.step_counter,
+                option_help={
+                    "markdown": "Plain markdown (baseline; best for small markdown-native models)",
+                    "doclang": "DocLang XML, structure only (~1.3-1.8x tokens)",
+                    "doclang-geo": "DocLang XML + page geometry (~2.5-5x tokens)",
+                    "auto": "Pairs the format to the resolved contract (direct->doclang-geo, dense->doclang)",
                 },
             )
         )
@@ -133,7 +163,7 @@ class ConfigurationBuilder:
                 label="Backend Type",
                 description="Which AI backend should be used?",
                 options=list(BACKENDS),
-                default="llm",
+                default=self._defaults.backend,
                 step_num=self.step_counter,
                 option_help={
                     "llm": "Language Model (text-based)",
@@ -152,7 +182,7 @@ class ConfigurationBuilder:
                     label="Inference Location",
                     description="How should models be executed?",
                     options=list(INFERENCE_LOCATIONS),
-                    default="remote",
+                    default=self._defaults.inference,
                     step_num=self.step_counter,
                     option_help={
                         "local": "Run on your machine",
@@ -164,6 +194,7 @@ class ConfigurationBuilder:
         return {
             "processing_mode": processing_mode,
             "extraction_contract": extraction_contract,
+            "llm_input_format": llm_input_format,
             "backend": backend,
             "inference": inference,
         }
@@ -175,7 +206,7 @@ class ConfigurationBuilder:
                 label="Export Format",
                 description="Output format for results",
                 options=list(EXPORT_FORMATS),
-                default="csv",
+                default=self._defaults.export_format,
                 step_num=self.step_counter,
                 option_help={
                     "csv": "CSV files (nodes.csv, edges.csv)",
@@ -192,7 +223,7 @@ class ConfigurationBuilder:
                 label="Document Processing Pipeline",
                 description="Choose processing strategy",
                 options=list(DOCLING_PIPELINES),
-                default="ocr",
+                default=self._defaults.docling_config,
                 step_num=self.step_counter,
                 option_help={
                     "ocr": "OCR pipeline (standard documents - faster)",
@@ -205,10 +236,19 @@ class ConfigurationBuilder:
         rich_print(" Choose what to export from document processing:")
         self.step_counter += 1
 
-        docling_json = typer.confirm("Export Docling document structure (JSON)?", default=True)
-        markdown = typer.confirm("Export full document markdown?", default=True)
-        doclang = typer.confirm("Export DocLang (.dclg, content + geometry)?", default=True)
-        per_page = typer.confirm("Export per-page markdown files?", default=False)
+        docling_json = typer.confirm(
+            "Export Docling document structure (JSON)?",
+            default=self._defaults.export_docling_json,
+        )
+        markdown = typer.confirm(
+            "Export full document markdown?", default=self._defaults.export_markdown
+        )
+        doclang = typer.confirm(
+            "Export DocLang (.dclg, content + geometry)?", default=self._defaults.export_doclang
+        )
+        per_page = typer.confirm(
+            "Export per-page markdown files?", default=self._defaults.export_per_page_markdown
+        )
 
         return {
             "pipeline": pipeline,
@@ -216,8 +256,8 @@ class ConfigurationBuilder:
             # http://localhost:5001) to convert documents there instead of
             # locally. API key comes from the DOCLING_SERVE_API_KEY env var.
             "serve": {
-                "url": None,
-                "timeout": 300,
+                "url": self._defaults.docling_serve_url,
+                "timeout": self._defaults.docling_serve_timeout,
             },
             "export": {
                 "docling_json": docling_json,
@@ -383,7 +423,7 @@ class ConfigurationBuilder:
         rich_print("\n── [bold]Output[/bold] ──")
         directory = typer.prompt(
             "Output directory",
-            default="outputs",
+            default=str(self._defaults.output_dir),
         )
         return {"directory": directory}
 

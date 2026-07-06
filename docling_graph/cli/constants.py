@@ -17,6 +17,10 @@ PROCESSING_MODES: Final[list[str]] = ["one-to-one", "many-to-one"]
 # "auto" resolves to direct or dense per document once its size is known.
 EXTRACTION_CONTRACTS: Final[list[str]] = ["direct", "dense", "auto"]
 
+# LLM input serializations. "auto" pairs the format to the resolved contract
+# (direct -> doclang-geo, dense -> doclang, raw text -> markdown).
+LLM_INPUT_FORMATS: Final[list[str]] = ["markdown", "doclang", "doclang-geo", "auto"]
+
 # Backend types (enum for validation)
 BACKENDS: Final[list[str]] = ["llm", "vlm"]
 

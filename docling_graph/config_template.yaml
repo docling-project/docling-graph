@@ -20,7 +20,7 @@ defaults:
   # Direct contract: one optional "what did you miss?" second pass
   gleaning_enabled: true
   # Dense contract tuning
-  dense_skeleton_batch_tokens: 1024  # max input tokens per Phase 1 skeleton batch
+  dense_skeleton_batch_tokens: 2048  # max input tokens per Phase 1 skeleton batch
   dense_fill_nodes_cap: 5            # max node instances per Phase 2 fill call
   dense_fill_context: scoped         # scoped | full (document context per fill call)
   dense_dedupe: standard             # off | standard | aggressive (skeleton dedupe intensity)
