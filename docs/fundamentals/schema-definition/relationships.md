@@ -64,6 +64,51 @@ addresses: List[Address] = edge(
 
 **Critical Rule:** For list edges, you **must** provide `default_factory=list`.
 
+### Reference Edges (`reference=True`)
+
+A reference edge links to an entity **by identity only** — the target's full
+detail is extracted elsewhere (its canonical home), or the target is an
+identity-only shared node. Declare it by adding `graph_reference` to the
+field's `json_schema_extra` (the `edge()` helper pattern exposes it as a
+keyword):
+
+```python
+def edge(label: str, default=None, *, reference: bool = False, **kwargs):
+    json_schema_extra = dict(kwargs.pop("json_schema_extra", {}) or {})
+    json_schema_extra["edge_label"] = label
+    if reference:
+        json_schema_extra["graph_reference"] = True
+    ...
+
+class Offre(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["nom"])
+    nom: str
+    # Membership list: guarantees are described in full at the document root;
+    # here each offer only NAMES the ones it includes.
+    garanties_incluses: List[Garantie] = edge(
+        label="INCLUTGARANTIE",
+        default_factory=list,
+        reference=True,
+    )
+```
+
+What it changes:
+
+- **Dense extraction** gives the field no discovery path: the *parent's* fill
+  call emits it as an id-only list (`[{"nom": "Bris de vitre"}]`). Per-parent
+  membership always survives, and there is no separate child instance whose
+  parent reference could drift into a phantom "bucket" parent.
+- **Graph assembly** is unchanged: id-only instances resolve onto the
+  canonical node through the identity registry, producing the edge.
+- The marker is ignored when the target model has no `graph_id_fields`
+  (nothing to reference by).
+
+Use it for membership tables, cross-references, and links to identity-only
+shared entities (e.g. a `Person` node referenced from role records). Do NOT
+use it on the one field that is the target's canonical home — the node would
+end up with nothing but its name. Decision guidance:
+[Best Practices — Reference edges vs nested full entities](best-practices.md#reference-edges-vs-nested-full-entities).
+
 ---
 
 ## Edge Label Conventions
