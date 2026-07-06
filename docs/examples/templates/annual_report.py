@@ -53,16 +53,24 @@ from typing_extensions import Self
 # =============================================================================
 
 
-def edge(label: str, default: Any = None, **kwargs: Any) -> Any:
+def edge(label: str, default: Any = None, *, reference: bool = False, **kwargs: Any) -> Any:
     """
     Helper function to create a Pydantic Field with edge metadata.
     The 'edge_label' defines the type of relationship in the knowledge graph.
     Edges are optional by default (default=None) so a missing relationship
     never fails validation of the whole document; use default_factory=list
     for list edges.
+
+    ``reference=True`` marks an identity-only link (graph_reference): the field
+    carries id-only references to an entity whose detail lives elsewhere (or
+    that is identity-only by design, like Person). Dense extraction fills such
+    fields inside the PARENT's own fill call instead of discovering them as
+    separate instances.
     """
     json_schema_extra = dict(kwargs.pop("json_schema_extra", {}) or {})
     json_schema_extra["edge_label"] = label
+    if reference:
+        json_schema_extra["graph_reference"] = True
     if "default_factory" in kwargs:
         default_factory = kwargs.pop("default_factory")
         return Field(default_factory=default_factory, json_schema_extra=json_schema_extra, **kwargs)
@@ -948,7 +956,9 @@ class BoardMember(BaseModel):
         examples=["Term on the Board begins on March 1, 2026."],
     )
     person: Person | None = edge(
-        label="IS_PERSON", description="The shared identity of this board member."
+        label="IS_PERSON",
+        reference=True,
+        description="The shared identity of this board member (reference by full_name only).",
     )
 
     @model_validator(mode="after")
@@ -985,7 +995,9 @@ class ExecutiveOfficer(BaseModel):
         examples=["IBM Consulting", "IBM Infrastructure", "IBM Research"],
     )
     person: Person | None = edge(
-        label="IS_PERSON", description="The shared identity of this executive officer."
+        label="IS_PERSON",
+        reference=True,
+        description="The shared identity of this executive officer (reference by full_name only).",
     )
 
     @model_validator(mode="after")
@@ -1044,6 +1056,7 @@ class Acquisition(BaseModel):
     )
     assigned_segment: BusinessSegment | None = edge(
         label="ASSIGNED_TO_SEGMENT",
+        reference=True,
         description=(
             "The reportable segment the acquired business was integrated into. "
             "Reference by name only (e.g. {'name': 'Software'}) — full segment "
