@@ -196,7 +196,7 @@ uv run docling-graph convert document.pdf \
 **Available providers:**
 
 - **Local:** `vllm`, `ollama`, `lmstudio`
-- **Remote:** `mistral`, `openai`, `gemini`, `watsonx`
+- **Remote:** `mistral`, `openai`, `gemini`, `watsonx`, `bedrock`
 
 ### Model Override
 

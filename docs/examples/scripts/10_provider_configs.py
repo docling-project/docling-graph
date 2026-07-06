@@ -77,6 +77,13 @@ def get_provider_configs() -> List[Tuple[str, str, str, str]]:
         ("Mistral Large", "mistral", "mistral-large-latest", "MISTRAL_API_KEY"),
         ("Google Gemini", "gemini", "gemini-1.5-pro", "GEMINI_API_KEY"),
         ("IBM watsonx", "watsonx", "ibm/granite-4-h-small", "WATSONX_API_KEY"),
+        # Bedrock uses the AWS credential chain; region lives in AWS_REGION_NAME.
+        (
+            "Amazon Bedrock",
+            "bedrock",
+            "anthropic.claude-3-5-sonnet-20240620-v1:0",
+            "AWS_ACCESS_KEY_ID",
+        ),
     ]
 
 
@@ -141,6 +148,9 @@ def main() -> None:
         console.print("  • Gemini: [cyan]export GEMINI_API_KEY='...'[/cyan]")
         console.print("  • watsonx: [cyan]export WATSONX_API_KEY='...'[/cyan]")
         console.print("            [cyan]export WATSONX_PROJECT_ID='...'[/cyan]")
+        console.print("  • Bedrock: [cyan]export AWS_ACCESS_KEY_ID='...'[/cyan]")
+        console.print("            [cyan]export AWS_SECRET_ACCESS_KEY='...'[/cyan]")
+        console.print("            [cyan]export AWS_REGION_NAME='us-east-1'[/cyan]")
         sys.exit(1)
 
     console.print(f"\n[green]Found {len(configured)} configured provider(s)[/green]")
@@ -171,6 +181,7 @@ def main() -> None:
     table.add_row("Mistral", "Mistral Large", "Good balance, fast", "$$ (Moderate)")
     table.add_row("Gemini", "Gemini 1.5 Pro", "Long context, multimodal", "$$ (Moderate)")
     table.add_row("watsonx", "Granite", "Enterprise, compliance", "$ (Enterprise)")
+    table.add_row("Bedrock", "Claude 3.5 Sonnet", "AWS-native, IAM auth", "$$ (AWS pricing)")
 
     console.print(table)
 

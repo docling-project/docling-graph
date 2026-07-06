@@ -128,6 +128,7 @@ chunker = DocumentChunker(
 - `ollama` - Ollama local models
 - `watsonx` - IBM watsonx models
 - `google` - Google Gemini models
+- `bedrock` - Amazon Bedrock models (uses the default tokenizer)
 
 ---
 

@@ -10,7 +10,7 @@ Docling-Graph turns documents into validated **Pydantic** objects, then builds a
 
 This transformation enables high-precision use cases in **chemistry, finance, and legal** domains, where AI must capture exact entity connections (compounds and reactions, instruments and dependencies, properties and measurements) **rather than rely on approximate text embeddings**.
 
-This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** using either local runtimes (vLLM, Ollama, LM Studio) or API providers (Mistral, OpenAI, Gemini, IBM watsonx), all orchestrated through a flexible, config-driven pipeline.
+This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** using either local runtimes (vLLM, Ollama, LM Studio) or API providers (Mistral, OpenAI, Gemini, IBM watsonx, Amazon Bedrock), all orchestrated through a flexible, config-driven pipeline.
 
 ---
 
