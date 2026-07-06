@@ -17,6 +17,10 @@ def normalize_entity_name(raw: str) -> str:
     if not raw or not isinstance(raw, str):
         return ""
     text = unicodedata.normalize("NFKD", raw)
+    # Strip combining marks: NFKD only *separates* accents from base letters;
+    # without removing them "PROPRI\u00c9TAIRE" still differs from "PROPRIETAIRE"
+    # and the same offer extracted with/without accents becomes two nodes.
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
     trimmed = text.strip()
     if not trimmed:
         return ""
@@ -29,7 +33,11 @@ def normalize_entity_name(raw: str) -> str:
     if not trimmed:
         return ""
     words = []
-    for word in trimmed.split():
+    # Underscores and hyphens are word separators here: models emit the same
+    # name as "PROPRIETAIRE_NON_OCCUPANT", "Propri\u00e9taire non occupant" or
+    # "PROPRIETAIRE-NON-OCCUPANT" depending on the batch, and a dedup key must
+    # not depend on that choice.
+    for word in re.split(r"[\s_\-]+", trimmed):
         if not word:
             continue
         if word.endswith("'s"):

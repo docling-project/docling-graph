@@ -116,3 +116,26 @@ def test_canonicalize_identity_for_dedup_none_empty():
     assert canonicalize_identity_for_dedup("run_id", None) == ""
     assert canonicalize_identity_for_dedup("name", "") == ""
     assert canonicalize_identity_for_dedup("batch_id", "  ") == ""
+
+
+class TestAccentAndSeparatorFolding:
+    """P4: accent marks and _/- separators must not split dedup keys."""
+
+    def test_accent_variants_fold(self):
+        assert (
+            normalize_entity_name("PROPRIÉTAIRE NON OCCUPANT")
+            == normalize_entity_name("PROPRIETAIRE_NON_OCCUPANT")
+            == "PROPRIETAIRE_NON_OCCUPANT"
+        )
+        assert normalize_entity_name("Événements climatiques") == normalize_entity_name(
+            "EVENEMENTS CLIMATIQUES"
+        )
+
+    def test_hyphen_and_underscore_are_separators(self):
+        assert normalize_entity_name("Jean-Pierre Dupont") == "JEAN_PIERRE_DUPONT"
+        assert normalize_entity_name("vol-sans-effraction") == normalize_entity_name(
+            "vol sans effraction"
+        )
+
+    def test_distinct_words_stay_distinct(self):
+        assert normalize_entity_name("CONFORT") != normalize_entity_name("CONFORT PLUS")
