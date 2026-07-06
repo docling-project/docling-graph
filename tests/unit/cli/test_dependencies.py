@@ -105,6 +105,14 @@ class TestOptionalDepsRegistry:
         assert "openai" in OPTIONAL_DEPS
         assert "gemini" in OPTIONAL_DEPS
         assert "ibm-watsonx-ai" in OPTIONAL_DEPS
+        assert "bedrock" in OPTIONAL_DEPS
+
+    def test_bedrock_dependency_uses_boto3(self):
+        """Amazon Bedrock routes through LiteLLM but needs boto3 for AWS SigV4."""
+        dep = OPTIONAL_DEPS["bedrock"]
+        assert dep.package == "boto3"
+        assert dep.extra == "bedrock"
+        assert dep.inference_type == "remote"
 
     def test_optional_deps_entries_are_valid(self):
         """All registry entries should be OptionalDependency instances."""
@@ -122,6 +130,7 @@ class TestOptionalDepsRegistry:
             "openai",
             "gemini",
             "ibm-watsonx-ai",
+            "bedrock",
         }
 
 

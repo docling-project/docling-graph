@@ -176,6 +176,46 @@ def test_resolve_effective_model_config_lmstudio_produces_litellm_model(_info, _
     assert effective.provider_id == "lmstudio"
 
 
+def test_build_litellm_model_name_bedrock():
+    """Bedrock model ids get the bedrock/ prefix LiteLLM routes on."""
+    assert (
+        build_litellm_model_name("bedrock", "anthropic.claude-3-5-sonnet-20240620-v1:0", None)
+        == "bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
+    )
+    # Inference-profile ids (region-prefixed) are preserved verbatim.
+    assert (
+        build_litellm_model_name("bedrock", "us.anthropic.claude-3-5-sonnet-20241022-v2:0", None)
+        == "bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+    )
+
+
+def test_build_litellm_model_name_bedrock_does_not_double_prefix():
+    """A model id already carrying the bedrock/ prefix is not prefixed twice."""
+    assert (
+        build_litellm_model_name("bedrock", "bedrock/anthropic.claude-3-haiku-20240307-v1:0", None)
+        == "bedrock/anthropic.claude-3-haiku-20240307-v1:0"
+    )
+
+
+@patch("docling_graph.llm_clients.config._get_litellm_max_tokens", return_value=200000)
+@patch(
+    "docling_graph.llm_clients.config._get_litellm_model_info",
+    return_value={"max_output_tokens": 4096},
+)
+def test_resolve_effective_model_config_bedrock(_info, _max_tokens):
+    """Bedrock resolves to a bedrock/ model id and needs no api_key.
+
+    Auth flows through the AWS credential chain that LiteLLM reads natively, so
+    resolution must succeed with no credentials configured (no exception).
+    """
+    effective = resolve_effective_model_config(
+        "bedrock", "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    )
+    assert effective.provider_id == "bedrock"
+    assert effective.litellm_model == "bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
+    assert effective.connection.api_key is None
+
+
 # ============================================================================
 # Streaming Configuration Tests
 # ============================================================================
