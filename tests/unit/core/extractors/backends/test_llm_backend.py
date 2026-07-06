@@ -369,6 +369,87 @@ class TestFillMissingRequiredFieldsStableSyntheticIds:
         assert data["studies"][1]["study_id"].startswith("STUD-")
 
 
+class TestIdentityGuardSalvage:
+    """Salvage must never fabricate a value for a graph_id_fields member: the
+    offending instance is dropped instead (phantom-hub guard, RC3)."""
+
+    def _template(self) -> type:
+        from pydantic import ConfigDict
+
+        class Garantie(BaseModel):
+            model_config = ConfigDict(graph_id_fields=["nom"])
+            nom: str
+            description: str | None = None
+
+        class Root(BaseModel):
+            title: str | None = None
+            garanties: list[Garantie] = Field(default_factory=list)
+
+        return Root
+
+    def test_instance_missing_required_identity_is_dropped_not_blanked(self, llm_backend):
+        root_model = self._template()
+        data = {
+            "title": "T",
+            "garanties": [
+                {"nom": "Vol", "description": "d1"},
+                {"description": "bucket junk with no name"},
+                {"nom": "Incendie"},
+            ],
+        }
+        result = llm_backend._validate_extraction(data, root_model, context="test")
+        assert result is not None
+        noms = [g.nom for g in result.garanties]
+        assert noms == ["Vol", "Incendie"]
+        assert "" not in noms  # no blank-identity phantom
+
+    def test_multiple_drops_in_one_list_do_not_shift_each_other(self, llm_backend):
+        root_model = self._template()
+        data = {
+            "garanties": [
+                {"description": "junk 1"},
+                {"nom": "Keep A"},
+                {"description": "junk 2"},
+                {"nom": "Keep B"},
+                {"description": "junk 3"},
+            ]
+        }
+        result = llm_backend._validate_extraction(data, root_model, context="test")
+        assert result is not None
+        assert [g.nom for g in result.garanties] == ["Keep A", "Keep B"]
+
+    def test_non_identity_required_fields_still_get_filled(self, llm_backend):
+        """The guard is identity-specific: other required strings keep the
+        legacy fill-with-generated-value salvage."""
+        from pydantic import ConfigDict
+
+        class Item(BaseModel):
+            model_config = ConfigDict(graph_id_fields=["item_id"])
+            item_id: str
+            label: str  # required NON-identity
+
+        class Root(BaseModel):
+            items: list[Item] = Field(default_factory=list)
+
+        data = {"items": [{"item_id": "IT-1"}]}
+        result = llm_backend._validate_extraction(data, Root, context="test")
+        assert result is not None
+        assert result.items[0].item_id == "IT-1"
+        assert result.items[0].label == ""  # legacy salvage fill
+
+    def test_root_document_is_never_dropped(self, llm_backend):
+        """A missing root-level required field keeps legacy behavior (filled),
+        never deletes the whole document."""
+        from pydantic import ConfigDict
+
+        class Root(BaseModel):
+            model_config = ConfigDict(graph_id_fields=["reference_document"])
+            reference_document: str
+
+        result = llm_backend._validate_extraction({}, Root, context="test")
+        assert result is not None
+
+
 class TestCoerceStringTypeErrors:
     """Test that int/float/bool in string fields are coerced so validation can pass."""
 
@@ -1460,7 +1541,9 @@ class TestExtractStringFromListOrDict:
         assert LlmBackend._extract_string_from_list_or_dict(["", "  ", "first"]) == "first"
 
     def test_list_skips_complex_block_dict(self):
-        complex_item = {"conditions": "x", "nom": "should not use"}
+        # A dict nesting a container is a full entity block, whatever its keys
+        # are named — its inner name must not become the parent's string value.
+        complex_item = {"conditions": [{"texte": "clause"}], "nom": "should not use"}
         result = LlmBackend._extract_string_from_list_or_dict([complex_item])
         assert result is None
 
@@ -1481,8 +1564,30 @@ class TestExtractStringFromListOrDict:
         assert result is None
 
     def test_dict_complex_block_returns_none(self):
-        result = LlmBackend._extract_string_from_list_or_dict({"conditions": "text", "nom": "X"})
+        result = LlmBackend._extract_string_from_list_or_dict(
+            {"conditions": [{"texte": "t"}], "nom": "X"}
+        )
         assert result is None
+
+    def test_dict_with_long_prose_is_complex(self):
+        """Long text marks a full entity block (a clause body, a description)
+        regardless of key names — structural, not name-based."""
+        prose = "les Dommages corporels subis par les personnes Assurées lors du sinistre " * 2
+        result = LlmBackend._extract_string_from_list_or_dict(
+            {"exclusion_id": "corporels", "texte": prose}
+        )
+        assert result is None
+
+    def test_dict_of_short_scalars_is_a_simple_label(self):
+        """Two short scalar values stay coercible: structurally this is a
+        labeled reference, whatever the keys are called (the old name-list
+        heuristic would have vetoed domain-specific key names here)."""
+        result = LlmBackend._extract_string_from_list_or_dict({"status": "x", "nom": "X"})
+        assert result == "X"
+
+    def test_single_key_container_dict_is_not_complex(self):
+        """Single-key dicts are never complex: there is no label to confuse."""
+        assert LlmBackend._looks_like_complex_block({"items": [1, 2]}) is False
 
     def test_dict_identity_key_scalar_value(self):
         result = LlmBackend._extract_string_from_list_or_dict({"id": 3.5})
