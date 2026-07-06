@@ -20,6 +20,7 @@ import networkx as nx
 from pydantic import BaseModel
 
 from ...logging_utils import get_component_logger
+from ..utils.alias_reconciler import id_fields_by_class, reconcile_graph_aliases
 from ..utils.graph_cleaner import GraphCleaner, validate_graph_structure
 from ..utils.stats_calculator import calculate_graph_stats
 from .config import GraphConfig
@@ -86,6 +87,7 @@ class GraphConverter:
         validate_graph: bool = True,
         registry: NodeIDRegistry | None = None,
         auto_cleanup: bool = True,
+        alias_llm_fn: Any | None = None,
     ) -> None:
         """
         Initialize the graph converter.
@@ -99,6 +101,11 @@ class GraphConverter:
                 Pass a shared registry for cross-batch consistency.
             auto_cleanup: Automatically cleanup graph after conversion,
                 removing phantom nodes, duplicates, orphaned edges (default: True)
+            alias_llm_fn: Optional id-space LLM callable
+                ``fn(prompt=..., schema_json=..., context=...)`` used to CONFIRM
+                deterministic same-class alias candidates (short table label vs
+                full section title). Without it the alias pass is propose-only:
+                candidates are logged, nothing is merged.
         """
         self.config = config or GraphConfig()
         # Use parameter value directly (don't use 'or' which would make False use config default)
@@ -111,6 +118,7 @@ class GraphConverter:
         # Initialize cleaner for automatic cleanup
         self.auto_cleanup = auto_cleanup
         self.cleaner = GraphCleaner(verbose=True) if auto_cleanup else None
+        self.alias_llm_fn = alias_llm_fn
 
     def pydantic_list_to_graph(
         self,
@@ -190,6 +198,16 @@ class GraphConverter:
         if self.auto_cleanup and self.cleaner:
             logger.info("Running automatic graph cleanup...")
             graph = self.cleaner.clean_graph(graph)
+            # Alias reconciliation (default-on with cleanup): merge same-class
+            # nodes whose identifiers are containment aliases (table label vs
+            # section title), subject to LLM confirmation via alias_llm_fn.
+            alias_stats = reconcile_graph_aliases(
+                graph,
+                id_fields_by_class(model_instances),
+                llm_call_fn=self.alias_llm_fn,
+            )
+            if alias_stats.get("candidates"):
+                graph.graph["alias_reconciliation"] = alias_stats
 
         # Validate
         if self.validate_graph:

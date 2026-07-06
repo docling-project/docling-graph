@@ -50,7 +50,7 @@ from .prompts import (
     get_skeleton_reconciliation_prompt,
     reconciliation_output_schema,
 )
-from .resolvers import merge_contained_skeleton_nodes, resolve_skeleton_nodes
+from .resolvers import propose_containment_groups, resolve_skeleton_nodes
 
 logger = get_component_logger("DenseExtraction", __name__)
 
@@ -283,6 +283,12 @@ def skeleton_to_descriptors(
         source_indexes = node.get("_source_batch_indexes")
         if isinstance(source_indexes, list) and source_indexes:
             desc["_source_batch_indexes"] = list(source_indexes)
+        source_chunks = node.get("_source_chunk_ids")
+        if isinstance(source_chunks, list) and source_chunks:
+            # Kept for locality-based parent adoption during the merge: a child
+            # with a dangling parent handle usually belongs to the parent
+            # discovered in the same chunk.
+            desc["_source_chunk_ids"] = list(source_chunks)
         path_descriptors.setdefault(path, []).append(desc)
     return path_descriptors
 
@@ -416,30 +422,203 @@ def _unique_fuzzy_parent_match(
     return matches[0] if len(matches) == 1 else None
 
 
+def _unique_local_parent(
+    parent_path: str,
+    child_desc: dict[str, Any],
+    path_filled: dict[str, list[dict[str, Any]]],
+    path_descriptors: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any] | None:
+    """Adopt the single parent-path instance observed in the same chunk(s) as the
+    child (falling back to batch granularity when chunk ids are absent).
+
+    Small models routinely drop or dangle parent handles; the parent entity
+    described next to the child in the source text is almost always the right
+    one. Uniqueness keeps this conservative: any ambiguity at chunk level stays
+    ambiguous at the coarser batch level, so the first level with matches
+    decides.
+    """
+    parent_descs = path_descriptors.get(parent_path, [])
+    filled = path_filled.get(parent_path, [])
+    for key in ("_source_chunk_ids", "_source_batch_indexes"):
+        child_set = {v for v in (child_desc.get(key) or []) if isinstance(v, int)}
+        if not child_set:
+            continue
+        matches = [
+            filled[i]
+            for i, parent_desc in enumerate(parent_descs)
+            if i < len(filled)
+            and isinstance(filled[i], dict)
+            and child_set & {v for v in (parent_desc.get(key) or []) if isinstance(v, int)}
+        ]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            return None
+    return None
+
+
+def _missing_required_id_fields(
+    template: type[BaseModel] | None,
+    path: str,
+    spec: NodeSpec,
+    placeholder: dict[str, Any],
+) -> list[str]:
+    """Identity fields absent from ``placeholder`` that the model requires.
+
+    Materializing a rescue parent without them produces an instance that
+    template validation later deletes wholesale (taking every rescued child
+    with it) or that salvage blanks into a phantom hub — both worse than an
+    explicit drop here. Returns [] when no template is available (legacy
+    permissive behavior for direct callers)."""
+    if template is None:
+        return []
+    model = get_model_for_path(template, path)
+    if model is None:
+        return []
+    missing: list[str] = []
+    for field_name in spec.id_fields:
+        if placeholder.get(field_name) not in (None, ""):
+            continue
+        info = model.model_fields.get(field_name)
+        if info is not None and info.is_required():
+            missing.append(field_name)
+    return missing
+
+
+class _ParentResolver:
+    """Resolution ladder for drifted parent references (see merge_filled_into_root).
+
+    Ladder per lookup: exact id match -> unique parent instance -> unique fuzzy
+    (canonical containment) id match -> unique co-located parent (same source
+    chunk/batch) -> id-only placeholder parent created up the chain -> shared
+    id-less bucket parent. Placeholder/bucket materialization is gated on the
+    parent model not REQUIRING the missing identity fields.
+    """
+
+    def __init__(
+        self,
+        *,
+        root: dict[str, Any],
+        lookup: dict[tuple[Any, ...], dict[str, Any]],
+        spec_by_path: dict[str, NodeSpec],
+        path_filled: dict[str, list[dict[str, Any]]],
+        path_descriptors: dict[str, list[dict[str, Any]]],
+        rescue_parents: dict[int, str],
+        events_out: list[dict[str, Any]] | None,
+        template: type[BaseModel] | None,
+        attach: Callable[[dict[str, Any], NodeSpec, dict[str, Any]], None],
+    ) -> None:
+        self._root = root
+        self._lookup = lookup
+        self._spec_by_path = spec_by_path
+        self._path_filled = path_filled
+        self._path_descriptors = path_descriptors
+        self._rescue_parents = rescue_parents
+        self._events_out = events_out
+        self._template = template
+        self._attach = attach
+
+    def resolve(
+        self,
+        parent_path: str,
+        parent_ids: dict[str, Any],
+        depth: int = 0,
+        child_desc: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, Any] | None, str]:
+        """Return (parent_obj, how) for a child's parent reference; None if unresolvable."""
+        parent_spec = self._spec_by_path.get(parent_path)
+        if parent_spec is None:
+            return None, ""
+        if parent_path == "":
+            return self._root, "exact"
+        key = _canonical_lookup_key(parent_path, parent_spec, parent_ids)
+        obj = self._lookup.get(key)
+        if obj is not None:
+            return obj, "exact"
+        instances = [o for o in self._path_filled.get(parent_path, []) if isinstance(o, dict)]
+        if len(instances) == 1:
+            self._lookup[key] = instances[0]
+            return instances[0], "single"
+        fuzzy_match = _unique_fuzzy_parent_match(
+            parent_path, parent_ids, self._path_filled, self._path_descriptors
+        )
+        if fuzzy_match is not None:
+            self._lookup[key] = fuzzy_match
+            return fuzzy_match, "fuzzy"
+        if child_desc is not None:
+            local_match = _unique_local_parent(
+                parent_path, child_desc, self._path_filled, self._path_descriptors
+            )
+            if local_match is not None:
+                # Deliberately NOT registered in `lookup`: an empty parent
+                # reference shares its key with every other parentless sibling,
+                # and locality is a per-child decision.
+                return local_match, "locality"
+        # Last resort: materialize a parent so the subtree survives. With usable
+        # ids this is an id-only placeholder; without any (dangling handle,
+        # wrong-level ids) it degrades to a shared id-less bucket for the path,
+        # which is reused by every sibling orphan via the lookup registration.
+        # The recursion strictly walks the finite catalog parent chain, so it
+        # always terminates at the root; the depth guard is pure paranoia.
+        if depth >= 8:
+            return None, ""
+        placeholder = {
+            f: parent_ids[f] for f in parent_spec.id_fields if parent_ids.get(f) not in (None, "")
+        }
+        if _missing_required_id_fields(self._template, parent_path, parent_spec, placeholder):
+            # A rescue parent violating its own required identity would be
+            # deleted by template validation (with all rescued children) or
+            # blanked by salvage into a phantom hub. Dropping the child here is
+            # the honest failure; the caller logs and counts it.
+            return None, ""
+        grand_obj, _how = self.resolve(parent_spec.parent_path, {}, depth + 1)
+        if grand_obj is None:
+            return None, ""
+        self._attach(grand_obj, parent_spec, placeholder)
+        self._lookup[key] = placeholder
+        self._rescue_parents[id(placeholder)] = "placeholder" if placeholder else "bucket"
+        if self._events_out is not None:
+            # Ledger event: a parent was materialized without direct observation.
+            self._events_out.append(
+                {"event": "synthetic", "path": parent_path, "ids": dict(placeholder)}
+            )
+        return placeholder, ("placeholder" if placeholder else "bucket")
+
+
 def merge_filled_into_root(
     path_filled: dict[str, list[dict[str, Any]]],
     path_descriptors: dict[str, list[dict[str, Any]]],
     catalog: NodeCatalog,
     stats_out: dict[str, int] | None = None,
     events_out: list[dict[str, Any]] | None = None,
+    template: type[BaseModel] | None = None,
 ) -> dict[str, Any]:
     """Attach filled instances to their parents, rescuing drifted parent references.
 
     LLMs (especially small ones) drift on parent identifiers, so a strict
     (path, ids) lookup silently drops entire subtrees. Resolution ladder per
     instance: exact id match -> unique parent instance -> unique fuzzy
-    (canonical containment) id match -> id-only placeholder parent created up
-    the chain -> shared id-less bucket parent (when the reference carries no
-    usable ids at all, e.g. a dangling handle). Only instances that survive
-    none of these are dropped, and every recovery/drop is counted in stats_out.
+    (canonical containment) id match -> unique co-located parent (same source
+    chunk/batch) -> id-only placeholder parent created up the chain -> shared
+    id-less bucket parent. Placeholders and buckets are only materialized when
+    the parent model does not REQUIRE the missing identity fields (template
+    provided): an identity-less rescue parent would later be deleted by
+    template validation (taking its children along) or blanked by salvage into
+    a phantom hub. Instances that survive nothing are dropped, and every
+    recovery/drop is counted in stats_out.
     """
     root: dict[str, Any] = {}
     spec_by_path = {s.path: s for s in catalog.nodes}
     lookup: dict[tuple[Any, ...], dict[str, Any]] = {}
+    # id(obj) -> "placeholder" | "bucket" for rescue parents, so attachments to
+    # a bucket are reported honestly instead of hiding behind the lookup hit.
+    rescue_parents: dict[int, str] = {}
     stats = {
         "attached_exact": 0,
+        "attached_to_bucket": 0,
         "recovered_single_parent": 0,
         "recovered_fuzzy": 0,
+        "recovered_locality": 0,
         "recovered_placeholder": 0,
         "recovered_bucket": 0,
         "dropped": 0,
@@ -461,56 +640,68 @@ def merge_filled_into_root(
         else:
             parent_obj[spec.field_name] = obj
 
-    def _resolve_parent(
-        parent_path: str, parent_ids: dict[str, Any], depth: int = 0
-    ) -> tuple[dict[str, Any] | None, str]:
-        """Return (parent_obj, how) for a child's parent reference; None if unresolvable."""
-        parent_spec = spec_by_path.get(parent_path)
-        if parent_spec is None:
-            return None, ""
-        if parent_path == "":
-            return root, "exact"
-        key = _canonical_lookup_key(parent_path, parent_spec, parent_ids)
-        obj = lookup.get(key)
-        if obj is not None:
-            return obj, "exact"
-        instances = [o for o in path_filled.get(parent_path, []) if isinstance(o, dict)]
-        if len(instances) == 1:
-            lookup[key] = instances[0]
-            return instances[0], "single"
-        fuzzy_match = _unique_fuzzy_parent_match(
-            parent_path, parent_ids, path_filled, path_descriptors
-        )
-        if fuzzy_match is not None:
-            lookup[key] = fuzzy_match
-            return fuzzy_match, "fuzzy"
-        # Last resort: materialize a parent so the subtree survives. With usable
-        # ids this is an id-only placeholder; without any (dangling handle,
-        # wrong-level ids) it degrades to a shared id-less bucket for the path,
-        # which is reused by every sibling orphan via the lookup registration.
-        # The recursion strictly walks the finite catalog parent chain, so it
-        # always terminates at the root; the depth guard is pure paranoia.
-        if depth >= 8:
-            return None, ""
-        placeholder = {
-            f: parent_ids[f] for f in parent_spec.id_fields if parent_ids.get(f) not in (None, "")
-        }
-        grand_obj, _how = _resolve_parent(parent_spec.parent_path, {}, depth + 1)
-        if grand_obj is None:
-            return None, ""
-        _attach(grand_obj, parent_spec, placeholder)
-        lookup[key] = placeholder
-        if events_out is not None:
-            # Ledger event: a parent was materialized without direct observation.
-            events_out.append({"event": "synthetic", "path": parent_path, "ids": dict(placeholder)})
-        return placeholder, ("placeholder" if placeholder else "bucket")
+    resolver = _ParentResolver(
+        root=root,
+        lookup=lookup,
+        spec_by_path=spec_by_path,
+        path_filled=path_filled,
+        path_descriptors=path_descriptors,
+        rescue_parents=rescue_parents,
+        events_out=events_out,
+        template=template,
+        attach=_attach,
+    )
+    _resolve_parent = resolver.resolve
 
     _how_to_stat = {
         "single": "recovered_single_parent",
         "fuzzy": "recovered_fuzzy",
+        "locality": "recovered_locality",
         "placeholder": "recovered_placeholder",
         "bucket": "recovered_bucket",
     }
+
+    def _attach_instance(
+        spec: NodeSpec,
+        path: str,
+        parent_path: str,
+        obj: dict[str, Any],
+        desc: dict[str, Any],
+    ) -> None:
+        parent = desc.get("parent")
+        parent_ids = (parent.get("ids") or {}) if isinstance(parent, dict) else {}
+        parent_obj, how = _resolve_parent(parent_path, parent_ids, child_desc=desc)
+        if parent_obj is None:
+            stats["dropped"] += 1
+            if events_out is not None:
+                events_out.append(
+                    {"event": "dropped", "path": path, "ids": dict(desc.get("ids") or {})}
+                )
+            logger.warning(
+                "Merge: dropped %s instance ids=%s (unresolvable parent %s ids=%s)",
+                path,
+                json.dumps(desc.get("ids") or {}, ensure_ascii=False, default=str)[:120],
+                parent_path,
+                json.dumps(parent_ids, ensure_ascii=False, default=str)[:120],
+            )
+            return
+        _attach(parent_obj, spec, obj)
+        stats[_how_to_stat.get(how, "attached_exact")] += 1
+        if rescue_parents.get(id(parent_obj)) == "bucket" and how != "bucket":
+            # Lookup hits on an existing bucket count as exact above;
+            # surface them so a swelling bucket cannot hide.
+            stats["attached_to_bucket"] += 1
+        if events_out is not None and how in ("placeholder", "bucket"):
+            events_out.append(
+                {
+                    "event": "rescued",
+                    "how": how,
+                    "path": path,
+                    "ids": dict(desc.get("ids") or {}),
+                    "parent_path": parent_path,
+                    "parent_ids": dict(parent_ids),
+                }
+            )
 
     for spec in catalog.nodes:
         path = spec.path
@@ -542,53 +733,36 @@ def merge_filled_into_root(
             continue
         for i, obj in enumerate(filled_list):
             desc = descriptors[i] if i < len(descriptors) else {}
-            parent = desc.get("parent")
-            parent_ids = (parent.get("ids") or {}) if isinstance(parent, dict) else {}
-            parent_obj, how = _resolve_parent(parent_path, parent_ids)
-            if parent_obj is not None:
-                _attach(parent_obj, spec, obj)
-                stats[_how_to_stat.get(how, "attached_exact")] += 1
-                if events_out is not None and how in ("placeholder", "bucket"):
-                    events_out.append(
-                        {
-                            "event": "rescued",
-                            "how": how,
-                            "path": path,
-                            "ids": dict(desc.get("ids") or {}),
-                            "parent_path": parent_path,
-                            "parent_ids": dict(parent_ids),
-                        }
-                    )
-            else:
-                stats["dropped"] += 1
-                if events_out is not None:
-                    events_out.append(
-                        {"event": "dropped", "path": path, "ids": dict(desc.get("ids") or {})}
-                    )
-                logger.warning(
-                    "Merge: dropped %s instance ids=%s (unresolvable parent %s ids=%s)",
-                    path,
-                    json.dumps(desc.get("ids") or {}, ensure_ascii=False, default=str)[:120],
-                    parent_path,
-                    json.dumps(parent_ids, ensure_ascii=False, default=str)[:120],
-                )
+            _attach_instance(spec, path, parent_path, obj, desc)
 
-    recovered = (
-        stats["recovered_single_parent"] + stats["recovered_fuzzy"] + stats["recovered_placeholder"]
-    )
-    if recovered or stats["dropped"]:
-        logger.warning(
-            "Merge: %s drifted parent link(s) recovered "
-            "(%s unique-parent, %s fuzzy, %s placeholder), %s instance(s) dropped",
-            recovered,
-            stats["recovered_single_parent"],
-            stats["recovered_fuzzy"],
-            stats["recovered_placeholder"],
-            stats["dropped"],
-        )
+    _log_merge_summary(stats)
     if stats_out is not None:
         stats_out.update(stats)
     return root
+
+
+def _log_merge_summary(stats: dict[str, int]) -> None:
+    """One consolidated warning covering recoveries, buckets, and drops."""
+    recovered = (
+        stats["recovered_single_parent"]
+        + stats["recovered_fuzzy"]
+        + stats["recovered_locality"]
+        + stats["recovered_placeholder"]
+    )
+    if recovered or stats["dropped"] or stats["recovered_bucket"]:
+        logger.warning(
+            "Merge: %s drifted parent link(s) recovered "
+            "(%s unique-parent, %s fuzzy, %s locality, %s placeholder), "
+            "%s bucket parent(s) with %s total attachment(s), %s instance(s) dropped",
+            recovered,
+            stats["recovered_single_parent"],
+            stats["recovered_fuzzy"],
+            stats["recovered_locality"],
+            stats["recovered_placeholder"],
+            stats["recovered_bucket"],
+            stats["recovered_bucket"] + stats["attached_to_bucket"],
+            stats["dropped"],
+        )
 
 
 def _compute_branch_paths(catalog: NodeCatalog) -> set[str]:
@@ -1089,8 +1263,13 @@ class DenseOrchestrator:
         same entity at several specificity levels (e.g. "LFP slurry batch"
         alongside "LFP_20vol_5wtPVDF_4wtCB"). Pure string similarity cannot
         judge granularity, so a single cheap call over the identifier lists
-        (no document content) proposes alias groups; anything invalid in the
+        (no document content) decides alias groups; anything invalid in the
         response is ignored, so this pass can only merge, never lose nodes.
+
+        Deterministic containment matches are passed along as CANDIDATES the
+        model must confirm — never auto-applied, because containment cannot
+        tell a same-entity refinement from a distinct tier ("CONFORT PLUS"
+        must survive next to "CONFORT").
         """
         instances_by_path: dict[str, list[dict[str, Any]]] = {}
         for node in merged_skeleton:
@@ -1103,7 +1282,10 @@ class DenseOrchestrator:
         }
         if not instances_by_path:
             return merged_skeleton, 0
-        prompt = get_skeleton_reconciliation_prompt(instances_by_path)
+        candidates = propose_containment_groups(instances_by_path)
+        if candidates and self._on_trace:
+            self._on_trace({"contract": "dense", "phase1_containment_proposals": len(candidates)})
+        prompt = get_skeleton_reconciliation_prompt(instances_by_path, candidate_groups=candidates)
         out = self._llm(
             prompt=prompt,
             schema_json=json.dumps(reconciliation_output_schema()),
@@ -1130,25 +1312,19 @@ class DenseOrchestrator:
         spec_by_path: dict[str, NodeSpec],
         context: str,
     ) -> tuple[list[dict[str, Any]], int]:
-        """Collapse duplicate skeleton instances (containment -> fuzzy -> LLM).
+        """Collapse duplicate skeleton instances (fuzzy -> LLM-confirmed).
 
-        Runs in standard+ (never in "off"). Cheap deterministic passes first:
-        containment merge (a superset id like "nanoscaled LiFePO4" is the same
-        entity as its base "LiFePO4", which case/fuzzy dedup misses; the
-        digit-signature guard keeps "20vol"/"30vol" and "Article 5"/"6"
-        distinct), then the aggressive-only fuzzy string merge, then one id-space
-        reconciliation LLM call for granularity aliases.
+        Runs in standard+ (never in "off"). The aggressive-only fuzzy string
+        merge handles OCR noise deterministically; containment matches
+        (a superset id like "nanoscaled LiFePO4" alongside its base "LiFePO4")
+        are only PROPOSED to the reconciliation LLM call, which confirms or
+        rejects them — auto-applying containment destroyed tiered names
+        ("CONFORT PLUS" was merged into "CONFORT").
         """
 
         def key_fn(n: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
             return _skeleton_identity_key(n, spec_by_path)
 
-        if self._config.dedupe_mode != "off" and len(merged_skeleton) > 1:
-            merged_skeleton, containment_stats = merge_contained_skeleton_nodes(
-                merged_skeleton, key_fn
-            )
-            if self._on_trace and containment_stats.get("merged_count", 0) > 0:
-                self._on_trace({"contract": "dense", "phase1_containment": containment_stats})
         if self._config.dedupe_mode == "aggressive":
             merged_skeleton, resolver_stats = resolve_skeleton_nodes(merged_skeleton, key_fn)
             if self._on_trace and resolver_stats.get("merged_count", 0) > 0:
@@ -1198,7 +1374,12 @@ class DenseOrchestrator:
             "merge_recovered": (
                 merge_stats.get("recovered_single_parent", 0)
                 + merge_stats.get("recovered_fuzzy", 0)
+                + merge_stats.get("recovered_locality", 0)
                 + merge_stats.get("recovered_placeholder", 0)
+            ),
+            "merge_bucket_parents": merge_stats.get("recovered_bucket", 0),
+            "merge_bucket_attachments": (
+                merge_stats.get("recovered_bucket", 0) + merge_stats.get("attached_to_bucket", 0)
             ),
             "retention_pct": (
                 round(100.0 * (1 - dropped / skeleton_nodes), 1) if skeleton_nodes else 0.0
@@ -1838,6 +2019,7 @@ class DenseOrchestrator:
             self._catalog,
             stats_out=merge_stats,
             events_out=merge_events,
+            template=self._template,
         )
         # Invariant: id-only childless branch nodes are skeleton noise that the
         # fill could not substantiate; they are always pruned. Rescue buckets

@@ -771,10 +771,17 @@ class GraphConversionStage(PipelineStage):
         """Convert extracted models to graph."""
         self.log.info("Converting to graph...")
 
+        # Alias reconciliation confirmation: reuse the extraction backend's LLM
+        # (id-space call, no document content). Backends without the method
+        # (VLM, mocks) leave the alias pass propose-only.
+        extraction_backend = getattr(context.extractor, "backend", None)
+        alias_llm_fn = getattr(extraction_backend, "call_id_reconciliation", None)
+
         converter = GraphConverter(
             add_reverse_edges=context.config.reverse_edges,
             validate_graph=True,
             registry=context.node_registry,
+            alias_llm_fn=alias_llm_fn,
         )
 
         # Ensure extracted_models is not None
@@ -820,6 +827,9 @@ class GraphConversionStage(PipelineStage):
         )
         if bind_stats and context.trace_data is not None:
             context.trace_data.emit("provenance_bound", "graph_conversion", dict(bind_stats))
+        alias_stats = context.knowledge_graph.graph.get("alias_reconciliation")
+        if alias_stats and context.trace_data is not None:
+            context.trace_data.emit("alias_reconciliation", "graph_conversion", dict(alias_stats))
         if context.trace_data is not None:
             context.trace_data.emit(
                 "graph_created",
