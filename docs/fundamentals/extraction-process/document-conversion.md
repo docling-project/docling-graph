@@ -224,6 +224,9 @@ By default the document text sent to the LLM during extraction is **markdown**. 
 | `markdown` (default) | Plain markdown | 1× (baseline) | Almost always; best for markdown-trained and smaller local models |
 | `doclang` | DocLang XML, structure only | ~1.3–1.8× | Structure-heavy docs (tables, forms) where markdown loses semantics |
 | `doclang-geo` | DocLang XML + `<location>` geometry | ~2.5–5× | Forms/invoices where spatial position disambiguates fields |
+| `auto` | Paired to the resolved contract | varies | Benchmark-driven pairing: `direct` → `doclang-geo` (geometry recovers footers/table matrices in one call), `dense` → `doclang` (keeps chunk batches content-dense), raw text → `markdown` |
+
+With `auto`, the direct-vs-dense contract decision itself measures **content** characters (DocLang markup stripped), so the chosen serialization never flips the contract for the same document.
 
 ```python
 config = PipelineConfig(

@@ -265,11 +265,11 @@ uv run docling-graph convert small_doc.pdf \
 
 ### Extraction contract
 
-`--extraction-contract` accepts `direct` (default), `dense`, or `auto`:
+`--extraction-contract` accepts `auto` (default), `direct`, or `dense`:
 
-- `direct` — single full-document call, fastest for documents that fit the model.
-- `dense` — two-phase skeleton-then-flesh over chunks; scales to documents far beyond the model's context window.
-- `auto` — resolves to `direct` or `dense` per document once its converted size is known: `direct` only when a single call fits both the model's context window and its output-token budget. The decision is logged as `[AutoContract] Resolved contract=... (...)` with the token estimates that drove it. Use this to avoid running `direct` on documents that are too large for it.
+- `auto` (default) — resolves to `direct` or `dense` per document once its converted size is known: `direct` only when a single call fits both the model's context window and its output-token budget. The decision is logged as `[AutoContract] Resolved contract=... (...)` with the token estimates that drove it.
+- `direct` — always a single full-document call, fastest for documents that fit the model.
+- `dense` — always two-phase skeleton-then-flesh over chunks; scales to documents far beyond the model's context window.
 
 ### Dense extraction
 
@@ -278,7 +278,7 @@ Use `--extraction-contract dense` for two-phase **skeleton-then-flesh** extracti
 Dense options map 1:1 to CLI flags:
 
 ```bash
---dense-skeleton-batch-tokens INT   # max tokens per Phase 1 skeleton batch (default: 1024)
+--dense-skeleton-batch-tokens INT   # max tokens per Phase 1 skeleton batch (default: 2048)
 --dense-fill-nodes-cap INT          # max node instances per Phase 2 fill call (default: 5)
 --dense-fill-context [scoped|full]  # document context per fill call (default: scoped)
 --dense-dedupe [off|standard|aggressive]  # skeleton dedupe intensity (default: standard)
@@ -539,10 +539,12 @@ uv run docling-graph convert document.pdf \
 ### LLM Input Format
 
 ```bash
---llm-format {markdown|doclang|doclang-geo}
+--llm-format {markdown|doclang|doclang-geo|auto}
 ```
 
 Controls how the document text is serialized **for the LLM** during extraction (default `markdown`). DocLang formats preserve structure and (with `doclang-geo`) page geometry, at a higher token cost — see [Document Conversion](../../fundamentals/extraction-process/document-conversion.md#llm-input-serialization).
+
+`auto` pairs the serialization to the resolved extraction contract, per document: `direct` → `doclang-geo` (geometry helps a single full-document call recover footers and table matrices), `dense` → `doclang` (structure without geometry keeps chunk batches content-dense), raw-text inputs → `markdown`. The resolution is logged as `[AutoContract]`. The direct-vs-dense decision itself measures *content* characters (markup stripped), so changing `--llm-format` never flips the contract.
 
 **Example:**
 ```bash
