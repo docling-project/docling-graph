@@ -450,6 +450,23 @@ uv run docling-graph convert complex_doc.pdf \
     --docling-pipeline vision
 ```
 
+### Remote Conversion (docling-serve)
+
+```bash
+--docling-serve-url URL
+```
+
+Delegates document conversion to a remote [docling-serve](https://github.com/docling-project/docling-serve) instance instead of running Docling locally. No local conversion models are loaded; the rest of the pipeline (chunking, extraction, export) is unchanged.
+
+**Example:**
+```bash
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --docling-serve-url http://localhost:5001
+```
+
+Also configurable via `docling.serve.url` in `config.yaml` or the `DOCLING_SERVE_URL` environment variable; the API key (if the server requires one) is read from `DOCLING_SERVE_API_KEY`. See [Docling-Serve Integration](../../fundamentals/pipeline-configuration/docling-serve.md).
+
 ---
 
 ## Export Options
