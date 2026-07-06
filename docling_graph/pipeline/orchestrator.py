@@ -229,9 +229,7 @@ class PipelineOrchestrator:
                 output_dir = context.output_manager.get_document_dir()
                 logger.info(f"Saved conversion results to {output_dir}")
 
-            logger.info(
-                f"Pipeline Completed Successfully (in {pipeline_processing_time:.2f}s)"
-            )
+            logger.info(f"Pipeline Completed Successfully (in {pipeline_processing_time:.2f}s)")
             return context
 
         except Exception as e:
