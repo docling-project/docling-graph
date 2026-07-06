@@ -424,3 +424,52 @@ def test_chunk_text_metadata_provenance_fields(mock_chunker_class, mock_converte
         assert m["resplit_of"] is None
         assert isinstance(m["text_hash"], str) and len(m["text_hash"]) == 16
         assert m["char_length"] > 0
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DoclingServeClient")
+def test_init_with_docling_serve_skips_local_converter(mock_serve_class, mock_converter_class):
+    """A docling-serve config builds the remote client and no local converter."""
+    processor = DocumentProcessor(
+        docling_config="vision",
+        docling_serve_config={"base_url": "http://serve:5001", "api_key": "k", "timeout": 60},
+    )
+
+    mock_converter_class.assert_not_called()
+    mock_serve_class.assert_called_once_with(
+        base_url="http://serve:5001",
+        api_key="k",
+        timeout=60.0,
+        docling_config="vision",
+    )
+    assert processor.converter is None
+    assert processor.serve_client is mock_serve_class.return_value
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DoclingServeClient")
+def test_convert_to_docling_doc_delegates_to_serve_client(
+    mock_serve_class, mock_converter_class, mock_docling_doc
+):
+    """Serve mode routes conversion through the remote client."""
+    mock_serve_class.return_value.convert_to_docling_doc.return_value = mock_docling_doc
+    processor = DocumentProcessor(docling_serve_config={"base_url": "http://serve:5001"})
+
+    doc = processor.convert_to_docling_doc("source/path.pdf")
+
+    mock_serve_class.return_value.convert_to_docling_doc.assert_called_once_with("source/path.pdf")
+    mock_converter_class.return_value.convert.assert_not_called()
+    assert doc == mock_docling_doc
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DoclingServeClient")
+def test_docling_serve_config_without_url_uses_local_converter(
+    mock_serve_class, mock_converter_class
+):
+    """An empty serve config (no base_url) falls back to local conversion."""
+    processor = DocumentProcessor(docling_serve_config={})
+
+    mock_serve_class.assert_not_called()
+    mock_converter_class.assert_called_once()
+    assert processor.serve_client is None

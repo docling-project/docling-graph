@@ -70,6 +70,23 @@ def test_create_one_to_one(mock_strategy, mock_backend):
     mock_strategy.assert_called_once()
 
 
+@patch("docling_graph.core.extractors.factory.LlmBackend")
+@patch("docling_graph.core.extractors.factory.ManyToOneStrategy")
+def test_docling_serve_config_forwarded_to_strategy(mock_strategy, mock_backend):
+    """The docling-serve settings reach the strategy (and thus DocumentProcessor)."""
+    serve_config = {"base_url": "http://serve:5001", "api_key": None, "timeout": 300}
+
+    ExtractorFactory.create_extractor(
+        processing_mode="many-to-one",
+        backend_name="llm",
+        llm_client=MagicMock(),
+        docling_config="ocr",
+        docling_serve_config=serve_config,
+    )
+
+    assert mock_strategy.call_args.kwargs["docling_serve_config"] == serve_config
+
+
 def test_create_vlm_without_model_name():
     """Test that VLM without model_name raises error."""
     with pytest.raises(ValueError, match="VLM requires model_name"):

@@ -306,6 +306,64 @@ class TestExtractionStage:
 
     @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
     @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_extraction_passes_docling_serve_config(self, mock_init_client, mock_factory):
+        """A configured docling-serve URL reaches the extractor factory."""
+        from pydantic import BaseModel
+
+        class TestModel(BaseModel):
+            name: str
+
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = ([TestModel(name="ok")], Mock())
+        mock_factory.return_value = mock_extractor
+        config = PipelineConfig(
+            source="test.pdf",
+            template=TestModel,
+            backend="llm",
+            inference="local",
+            docling_serve_url="http://serve:5001",
+            docling_serve_api_key="secret",
+            docling_serve_timeout=120,
+        )
+        context = PipelineContext(config=config, template=TestModel)
+
+        ExtractionStage().execute(context)
+
+        kwargs = mock_factory.call_args.kwargs
+        assert kwargs["docling_serve_config"] == {
+            "base_url": "http://serve:5001",
+            "api_key": "secret",
+            "timeout": 120,
+        }
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
+    def test_extraction_no_docling_serve_by_default(
+        self, mock_init_client, mock_factory, monkeypatch
+    ):
+        """Without a serve URL, the factory gets no docling-serve config."""
+        from pydantic import BaseModel
+
+        class TestModel(BaseModel):
+            name: str
+
+        monkeypatch.delenv("DOCLING_SERVE_URL", raising=False)
+        mock_init_client.return_value = Mock()
+        mock_extractor = Mock()
+        mock_extractor.extract.return_value = ([TestModel(name="ok")], Mock())
+        mock_factory.return_value = mock_extractor
+        config = PipelineConfig(
+            source="test.pdf", template=TestModel, backend="llm", inference="local"
+        )
+        context = PipelineContext(config=config, template=TestModel)
+
+        ExtractionStage().execute(context)
+
+        assert mock_factory.call_args.kwargs["docling_serve_config"] is None
+
+    @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")
+    @patch("docling_graph.pipeline.stages.ExtractionStage._initialize_llm_client")
     def test_extraction_uses_custom_llm_client(self, mock_init_client, mock_factory):
         """When llm_client is set, the pipeline uses it and does not initialize provider/model."""
         from pydantic import BaseModel
