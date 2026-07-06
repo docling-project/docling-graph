@@ -344,6 +344,51 @@ export WATSONX_PROJECT_ID="your-project-id"
 
 **See:** [API Keys Setup](../installation/api-keys.md) for watsonx configuration details.
 
+#### 5. Amazon Bedrock
+
+**Best for:** AWS-hosted foundation models (Anthropic Claude, Llama, Mistral, Titan) with IAM-based access control
+
+```python
+config = PipelineConfig(
+    source="document.pdf",
+    template="templates.BillingDocument",
+    inference="remote",
+    model_override="anthropic.claude-3-5-sonnet-20240620-v1:0",
+    provider_override="bedrock",
+)
+```
+
+**Setup:**
+```bash
+# Requires boto3 (installed via the bedrock extra)
+pip install 'docling-graph[bedrock]'
+
+# Authenticate via the standard AWS credential chain
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_REGION_NAME="us-east-1"   # region is REQUIRED for Bedrock
+```
+
+Bedrock uses the AWS credential chain rather than a single API key, so an IAM
+role (on EC2/ECS/Lambda), an `AWS_PROFILE`, or the Bedrock bearer token
+(`AWS_BEARER_TOKEN_BEDROCK`) all work without any code changes — LiteLLM reads
+them natively.
+
+**Model IDs:**
+
+- On-demand: `anthropic.claude-3-5-sonnet-20240620-v1:0`, `meta.llama3-70b-instruct-v1:0`, `mistral.mistral-large-2402-v1:0`
+- Inference profiles (required for some newer models): prefix with the region, e.g. `us.anthropic.claude-3-5-sonnet-20241022-v2:0`
+
+You must have requested access to the chosen model in the Bedrock console for
+your account and region.
+
+!!! note "Structured output on Bedrock"
+    Schema-enforced (`response_format`) output works for models that support it
+    via Bedrock's Converse API (e.g. Anthropic Claude). For models without that
+    support, run with `--no-schema-enforced-llm` (CLI) or `structured_output=False`.
+
+**See:** [API Keys Setup](../installation/api-keys.md) for full Bedrock configuration details.
+
 ---
 
 ## Model Selection Strategies

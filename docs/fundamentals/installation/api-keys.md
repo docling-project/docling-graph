@@ -8,6 +8,7 @@ Remote LLM providers require API keys for authentication. This guide covers:
 - **Mistral AI** (Mistral Small, Medium, Large)
 - **Google Gemini** (Gemini Pro, Gemini Flash)
 - **IBM watsonx** (Granite, Llama, Mixtral)
+- **Amazon Bedrock** (Anthropic Claude, Llama, Mistral, Titan) — uses AWS credentials, not a single API key
 
 !!! info "API Keys Not Required"
     API keys are **not required** for:
@@ -35,6 +36,11 @@ export GEMINI_API_KEY="..."
 export WATSONX_API_KEY="..."
 export WATSONX_PROJECT_ID="..."
 export WATSONX_URL="https://us-south.ml.cloud.ibm.com"  # Optional
+
+# Amazon Bedrock (AWS credential chain — not a single API key)
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_REGION_NAME="us-east-1"   # required
 ```
 
 Then reload:
@@ -72,16 +78,10 @@ set WATSONX_PROJECT_ID=...
 
 ### Using .env File (Recommended)
 
-Create a `.env` file in your project root:
+Copy the provided [`.env.example`](https://github.com/docling-project/docling-graph/blob/main/.env.example) to `.env` in your project root and fill in only the values for the provider(s) you use:
 
-```env
-# .env file
-OPENAI_API_KEY=sk-...
-MISTRAL_API_KEY=...
-GEMINI_API_KEY=...
-WATSONX_API_KEY=...
-WATSONX_PROJECT_ID=...
-WATSONX_URL=https://us-south.ml.cloud.ibm.com
+```bash
+cp .env.example .env
 ```
 
 **Security**: Add `.env` to `.gitignore`:
@@ -288,6 +288,83 @@ uv run docling-graph convert document.pdf \
 
 !!! tip "watsonx Configuration"
     For detailed watsonx configuration, refer to the [Model Configuration](../pipeline-configuration/model-configuration.md) guide.
+
+### Amazon Bedrock
+
+Bedrock is different from the other providers: it authenticates with **AWS
+credentials** (the standard AWS credential chain) rather than a single API key,
+and it requires the `boto3` package.
+
+#### 1. Install the extra
+
+```bash
+pip install 'docling-graph[bedrock]'
+```
+
+#### 2. Request model access
+
+1. Open the [Amazon Bedrock console](https://console.aws.amazon.com/bedrock/)
+2. Go to **Model access** and request access to the model(s) you need (e.g. Anthropic Claude)
+3. Note the **model ID** and the **region** it is available in
+
+#### 3. Provide credentials
+
+Any method the AWS credential chain understands works — pick one:
+
+```bash
+# Static keys
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_REGION_NAME="us-east-1"          # required
+
+# ...or a named profile / SSO
+export AWS_PROFILE="my-profile"
+export AWS_REGION_NAME="us-east-1"
+
+# ...or a Bedrock bearer token
+export AWS_BEARER_TOKEN_BEDROCK="your-bearer-token"
+export AWS_REGION_NAME="us-east-1"
+```
+
+On EC2/ECS/Lambda with an attached **IAM role**, no keys are needed at all —
+only `AWS_REGION_NAME` (or the region baked into the instance metadata).
+
+!!! warning "Region is required"
+    Unlike other providers, Bedrock has no default region. If `AWS_REGION_NAME`
+    is unset (and no region is available from your AWS profile/instance),
+    requests fail. Note that Bedrock reads `AWS_REGION_NAME`, not `AWS_REGION`.
+
+#### 4. Verify
+
+```bash
+uv run python -c "import os; print('AWS creds set:', bool(os.getenv('AWS_ACCESS_KEY_ID') or os.getenv('AWS_PROFILE') or os.getenv('AWS_BEARER_TOKEN_BEDROCK'))); print('Region set:', bool(os.getenv('AWS_REGION_NAME')))"
+```
+
+#### 5. Test
+
+```bash
+uv run docling-graph convert document.pdf \
+    --template "templates.BillingDocument" \
+    --backend llm \
+    --inference remote \
+    --provider bedrock \
+    --model anthropic.claude-3-5-sonnet-20240620-v1:0
+```
+
+#### Available Models
+
+| Model ID | Notes |
+|----------|-------|
+| `anthropic.claude-3-5-sonnet-20240620-v1:0` | Default; strong quality, supports structured output |
+| `anthropic.claude-3-haiku-20240307-v1:0` | Fast, economical |
+| `us.anthropic.claude-3-5-sonnet-20241022-v2:0` | Inference-profile id (region-prefixed) for newer Claude |
+| `meta.llama3-70b-instruct-v1:0` | Llama 3 70B |
+| `mistral.mistral-large-2402-v1:0` | Mistral Large |
+
+!!! note "Structured output"
+    Schema-enforced output uses Bedrock's Converse API and works for models that
+    support it (e.g. Anthropic Claude). For models that do not, run with
+    `--no-schema-enforced-llm` (CLI) or `structured_output=False` (Python API).
 
 ## Verification
 
@@ -515,6 +592,7 @@ Error: Insufficient credits
 | **Mistral** | Good balance, affordable | Smaller context | General purpose |
 | **Gemini** | Very cheap, fast | Newer, less tested | High volume |
 | **watsonx** | Enterprise features | Setup complexity | Enterprise use |
+| **Bedrock** | AWS-native, IAM auth, model choice | Requires AWS setup + model access | AWS-hosted workloads |
 
 ## Next Steps
 

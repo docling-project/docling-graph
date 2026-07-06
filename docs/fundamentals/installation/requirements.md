@@ -322,6 +322,7 @@ Legend:
 | Mistral | ❌ | ✅ | No | Yes |
 | Gemini | ❌ | ✅ | No | Yes |
 | watsonx | ❌ | ✅ | No | Yes |
+| Bedrock | ❌ | ✅ | No | AWS credentials |
 
 ## Verification Checklist
 

@@ -110,8 +110,9 @@ Choose remote provider:
 2. OpenAI
 3. Google Gemini
 4. IBM watsonx
+5. Amazon Bedrock
 
-Your choice [1-4]:
+Your choice [1-5]:
 ```
 
 ### Step 8: Model Selection
