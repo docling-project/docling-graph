@@ -13,6 +13,9 @@ Docling settings control how documents are converted before extraction. Docling 
 - Performance considerations
 - Troubleshooting
 
+!!! tip "Remote conversion"
+    Conversion can also run on a remote [docling-serve](https://github.com/docling-project/docling-serve) instance instead of locally — see [Docling-Serve Integration](docling-serve.md). The pipeline selection below still applies (it maps to the server-side pipeline).
+
 ---
 
 ## Docling Pipeline Types
@@ -588,6 +591,7 @@ config = PipelineConfig(
 
 Now that you understand Docling settings:
 
-1. **[Export Configuration](export-configuration.md)** - Configure output formats
-2. **[Configuration Examples](configuration-examples.md)** - Complete scenarios
-3. **[Model Configuration](model-configuration.md)** - Model settings
+1. **[Docling-Serve Integration](docling-serve.md)** - Convert documents on a remote instance
+2. **[Export Configuration](export-configuration.md)** - Configure output formats
+3. **[Configuration Examples](configuration-examples.md)** - Complete scenarios
+4. **[Model Configuration](model-configuration.md)** - Model settings
