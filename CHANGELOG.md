@@ -2,6 +2,262 @@
 
 <!-- version list -->
 
+## v1.7.0 (2026-07-06)
+
+### Bug Fixes
+
+- **cli**: Derive init wizard defaults from PipelineConfig
+  ([`ae12531`](https://github.com/docling-project/docling-graph/commit/ae12531b735588497e8c7fb9581bd8410f33d558))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Enhance salvage loop coercion, prevent debug clobbering, and optimize token defaults
+  ([`dd0a9c8`](https://github.com/docling-project/docling-graph/commit/dd0a9c8bef89c17d3e6da835381f60df690d2908))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Implement strict reference edges, tier-guarded containment, and post-cleanup alias
+  reconciliation
+  ([`072ad06`](https://github.com/docling-project/docling-graph/commit/072ad063b8258cb0923892fbaf3c70605709afbf))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Resolve nested entity dropping and structural child loss in graph converter
+  ([`16743ff`](https://github.com/docling-project/docling-graph/commit/16743ff8fab52c77a056ccfae5f795412c31ce2d))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **normalizer**: Fold accent and separator variants in entity name dedup
+  ([`0d972a1`](https://github.com/docling-project/docling-graph/commit/0d972a13047fa206c3308ddb56ac54baafe27987))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **config**: Add .env template for provider credentials
+  ([`9ee2633`](https://github.com/docling-project/docling-graph/commit/9ee26332c565ea8a26d7706c05e267a8b0ccc75d))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **config**: Add docling-serve variables to env template
+  ([`f131614`](https://github.com/docling-project/docling-graph/commit/f13161409962685eed133cbd6885699ced8f70fe))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Add requests as an explicit runtime dependency
+  ([`22be220`](https://github.com/docling-project/docling-graph/commit/22be2203258c8beb31fe0e3ea4d1cfd16b6cf6e5))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Bump upstream docling stack constraints and lock environment
+  ([`d8480d6`](https://github.com/docling-project/docling-graph/commit/d8480d6b131b2337197f219cd52b966298af54f1))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Update lock to synchronize project dependencies
+  ([`8575554`](https://github.com/docling-project/docling-graph/commit/8575554c9fad13c20fc7bd9f7dd2d5b1095d0b85))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docs**: Document auto-contract resolution mechanics and new CLI parameters
+  ([`64ca09d`](https://github.com/docling-project/docling-graph/commit/64ca09d3b38ba2da80b4d3a66e140f6e32d8bd8b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docs**: Standardize hyperlink formatting across project documentation
+  ([`643db66`](https://github.com/docling-project/docling-graph/commit/643db660e951a6599aa8ca5fc74b9858c994f166))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **examples**: Add comprehensive annual report pydantic template
+  ([`da92412`](https://github.com/docling-project/docling-graph/commit/da92412939e6ce88b4b28969496b0f448cc39c2d))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **git**: Update gitignore to exclude local environment configurations
+  ([`c613af9`](https://github.com/docling-project/docling-graph/commit/c613af9449a2c9843d995faebda6c5de34eda5e2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **lint**: Fix ruff syntax and formatting drift
+  ([`6a8da94`](https://github.com/docling-project/docling-graph/commit/6a8da94e4bee5b8b15ed23e0f2558ce2e395329a))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Documentation
+
+- **doclang**: Document DocLang specifications, pipeline configurations, and benchmarks
+  ([`9f57985`](https://github.com/docling-project/docling-graph/commit/9f57985966ba35b57d59b8e68e15f07be999ba26))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docling-serve**: Document remote conversion setup and CLI usage
+  ([`955127b`](https://github.com/docling-project/docling-graph/commit/955127b7c5c6983e0c7f76f35ff0aff24789c0f7))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **extraction**: Document auto contract/format resolution and dense updates
+  ([`ac6be92`](https://github.com/docling-project/docling-graph/commit/ac6be92b38f608458b15ac20b92f93f54568e16a))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **installation**: Correct VLM extra requirement in install guides
+  ([`4092f0a`](https://github.com/docling-project/docling-graph/commit/4092f0a8f5e4801f98827f978c51fd3493597ef4))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **manual**: Update schema definition best practices and guidelines
+  ([`5332a29`](https://github.com/docling-project/docling-graph/commit/5332a297e2874b96f8920765c960abf6db7b6162))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **providers**: Document Amazon Bedrock setup across provider guides and examples
+  ([`9455806`](https://github.com/docling-project/docling-graph/commit/94558061c1347563826a1abf973e9de429b0c1f8))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **readme**: Highlight docling-serve integration in latest changes
+  ([`822e0ea`](https://github.com/docling-project/docling-graph/commit/822e0eae01182f0d2e54cb5f766332fddf47dbd1))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **readme**: Refresh provider list, env setup, and installation guidance
+  ([`3426737`](https://github.com/docling-project/docling-graph/commit/34267373db6a7bb41afaf62cd14500bb5d4c41d7))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **schema-definition**: Codify structural assembly mechanics and multi-path entity patterns
+  ([`050da78`](https://github.com/docling-project/docling-graph/commit/050da78d57a97aec11dcd5495972ccfb9078495c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templates**: Add comprehensive structural metadata and design intent headers to schemas
+  ([`ea8c10a`](https://github.com/docling-project/docling-graph/commit/ea8c10aeca41f2e74b515049debeddde65260750))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Features
+
+- **contract**: Implement dynamic auto-contract mode for context-aware routing
+  ([`bc4d0e9`](https://github.com/docling-project/docling-graph/commit/bc4d0e9a73d7451ecb89adfe6dcea0e5e50652a7))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Implement XML-safe sanitizer utility for DocLang serialization
+  ([`43ca3c8`](https://github.com/docling-project/docling-graph/commit/43ca3c82ab0436682da304d8ba516e33a89b500e))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Stabilize cross-batch parent linkage and skeleton discovery
+  ([`2b3c981`](https://github.com/docling-project/docling-graph/commit/2b3c981646177edfa6049f22b90050b9560808c0))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docling-serve**: Add remote conversion client and pipeline integration, closes #3
+  ([`5f22963`](https://github.com/docling-project/docling-graph/commit/5f229635201ec30f14d44658c14064781a8c977b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **eval**: Add structural alignment, micro metrics, and benchmark aggregation
+  ([`0722226`](https://github.com/docling-project/docling-graph/commit/072222604e3a1dabb8894b693366392413f555f6))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **examples**: Introduce extraction evaluation harness
+  ([`c7b5326`](https://github.com/docling-project/docling-graph/commit/c7b5326451df28b14f549985edd2fce415f8fcc6))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **export**: Generate sanitized .dclg artifacts during pipeline export stage
+  ([`4fd38af`](https://github.com/docling-project/docling-graph/commit/4fd38af5cac02863688824da3daa1c5e05d2184c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **input**: Add support for native DocLang (.dclg, .dclx) document ingestion
+  ([`4feb7a0`](https://github.com/docling-project/docling-graph/commit/4feb7a0b9e63041e42217835fb90d8208d775725))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **logging**: Introduce unified ANSI color pipeline formatter and TTY auto-detection
+  ([`78b68b8`](https://github.com/docling-project/docling-graph/commit/78b68b8b6a07387555ccf505b46cc5167b910ef4))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Resolve extraction contract and LLM format automatically
+  ([`2e3b52e`](https://github.com/docling-project/docling-graph/commit/2e3b52eaebc64fd902c8ae77e9b9816c9fd13a1b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **provenance**: Capture page-level element geometry in chunk ledger records
+  ([`dcba033`](https://github.com/docling-project/docling-graph/commit/dcba0336165c025b2795e16a4cfb52fe4acc542a))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **providers**: Add Amazon Bedrock provider support via LiteLLM, closes #2
+  ([`849903b`](https://github.com/docling-project/docling-graph/commit/849903bdb5bf0e5b54e1d348f2c5a493845d0ec2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templates**: Align insurance and billing templates with document structure
+  ([`3f7e7df`](https://github.com/docling-project/docling-graph/commit/3f7e7dfaab4c9f5b2f24e0353bb8d4eb2d2da3d0))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Refactoring
+
+- **backend**: Replace language-specific block hints with structural complexity heuristics
+  ([`5e628e5`](https://github.com/docling-project/docling-graph/commit/5e628e537356809c8b63390258a5a17573d4377d))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Migrate pipeline subcomponents from direct print statements to system logger
+  ([`05024ef`](https://github.com/docling-project/docling-graph/commit/05024ef7347106eefe921da72f35f9470fa513df))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templates**: Apply reference edge constraints and enhance schema classification context
+  ([`fc84382`](https://github.com/docling-project/docling-graph/commit/fc843826ece75ba5c0ddeefda902bbba8f056fb1))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Testing
+
+- **backend**: Update extraction fixtures and add boundary tests for structural block rules
+  ([`2a1320e`](https://github.com/docling-project/docling-graph/commit/2a1320e3d9f88b559273f3d20ea355f571a32916))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **contract**: Add unit and regression test suite for auto-routing and salvage loops
+  ([`03e3e2a`](https://github.com/docling-project/docling-graph/commit/03e3e2a2e2d37167203ac2e34b406374b6455171))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Convert rich_print test mocks to native caplog standard assertions
+  ([`ab78059`](https://github.com/docling-project/docling-graph/commit/ab78059244cdd8a7be5fbb75c03f981b7673b10e))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docling-serve**: Add unit tests for remote conversion client and config plumbing
+  ([`7f84523`](https://github.com/docling-project/docling-graph/commit/7f84523615d4b5ff50b1dafc2d97ce51ff60fcd9))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Add comprehensive test suite for DocLang ingestion, export, and serialization
+  ([`a7e76ea`](https://github.com/docling-project/docling-graph/commit/a7e76eaa3070164ef87fd358a26769174a138edf))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Introduce structural evaluation script and dense routing regression tests
+  ([`15c4262`](https://github.com/docling-project/docling-graph/commit/15c4262f4ac0b95bcd25fb08c68ec8ace40186f7))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **providers**: Add coverage for Amazon Bedrock resolution and validation
+  ([`6a28980`](https://github.com/docling-project/docling-graph/commit/6a2898027812e086c4f62910600e051cd9ffb366))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.6.0 (2026-07-04)
 
 ### Bug Fixes
