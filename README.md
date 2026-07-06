@@ -28,13 +28,13 @@ Docling-Graph turns documents into validated **Pydantic** objects, then builds a
 
 This transformation enables high-precision use cases in **chemistry, finance, and legal** domains, where AI must capture exact entity connections (compounds and reactions, instruments and dependencies, properties and measurements) **rather than rely on approximate text embeddings**.
 
-This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** routed through **LiteLLM** for local runtimes (vLLM, Ollama) and API providers (Mistral, OpenAI, Gemini, IBM watsonx), all orchestrated through a flexible, config-driven pipeline.
+This toolkit supports two extraction paths: **local VLM extraction** via Docling, and **LLM-based extraction** routed through **LiteLLM** for local runtimes (vLLM, Ollama) and API providers (OpenAI, Gemini, IBM watsonx, Mistral and more), all orchestrated through a flexible, config-driven pipeline.
 
 
 
 ## Key Capabilities
 
-- **✍🏻 Input formats:** [Docling](https://docling-project.github.io/docling/usage/supported_formats/)’s supported inputs: PDF, images, markdown, Office, HTML, and more.
+- **✍🏻 Input formats:** [Docling](https://docling-project.github.io/docling/usage/supported_formats/)’s supported inputs: PDF, images, DocLang, markdown, Office and more.
 
 - **🧠 Extraction:** [LLM](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/backend-selection/) or [VLM](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/backend-selection/) backends, with [chunking](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/chunking-strategies/) and [processing modes](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/processing-modes/).
 
@@ -48,17 +48,17 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **✨ Dense extraction:** Advanced [skeleton-then-flesh](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/dense-extraction/) extraction mode for complex documents.
+- **🦆 DocLang support:** Read `.dclg`/`.dclx` inputs, and [optionally serialize](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/document-conversion/#llm-input-serialization) document as [DocLang](https://github.com/doclang-project/doclang) for the LLM.
 
-- **📍 Data grounding:** Deterministic [provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/) ledger with no extra LLM calls.
+- **📍 Data grounding:** Deterministic [provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/) ledger with bounding-box geometry and no extra LLM calls.
+
+- **✨ Dense extraction:** Advanced [skeleton-then-flesh](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/dense-extraction/) extraction mode for complex documents.
 
 ### Coming Soon
 
-* 🦆 **DocLang Support:** Leverage the [DocLang](https://doclang.ai/) input format to unlock advanced document structure parsing.
+* 🔗 **Graph Fusion:** Combine and reconcile disparate knowledge graphs into a unified structure.
 
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
-
-* 🔗 **Graph Fusion:** Combine and reconcile disparate knowledge graphs into a unified structure.
 
 * 🧲 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
 
@@ -76,20 +76,24 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 pip install docling-graph
 ```
 
-This installs the core package with VLM support and LiteLLM for LLM providers. For detailed installation instructions (including optional extras and GPU setup), see [Installation Guide](https://docling-project.github.io/docling-graph/fundamentals/installation/).
+This installs the core package with LiteLLM for remote and local LLM providers.
+
+VLM backend support requires the `vlm` extra:
+```bash
+pip install "docling-graph[vlm]
+```
+
+For detailed installation instructions (including optional extras and GPU setup), see [Installation Guide](https://docling-project.github.io/docling-graph/fundamentals/installation/).
 
 ### API Key Setup (Remote Inference)
 
-```bash
-export OPENAI_API_KEY="..."        # OpenAI
-export MISTRAL_API_KEY="..."       # Mistral
-export GEMINI_API_KEY="..."        # Google Gemini
+Copy [`.env.example`](.env.example) to `.env` and fill in the values for the provider(s) you use:
 
-# IBM watsonx
-export WATSONX_API_KEY="..."       # IBM watsonx API Key
-export WATSONX_PROJECT_ID="..."    # IBM watsonx Project ID
-export WATSONX_URL="..."           # IBM watsonx URL (optional)
+```bash
+cp .env.example .env
 ```
+
+See [API Keys Setup](https://docling-project.github.io/docling-graph/fundamentals/installation/api-keys/) for provider-specific instructions (including Amazon Bedrock's AWS credential chain).
 
 ### Basic Usage
 
@@ -123,7 +127,7 @@ config = {
     "backend": "llm",
     "inference": "remote",
     "processing_mode": "many-to-one",
-    "extraction_contract": "dense",
+    "extraction_contract": "auto",
     "provider_override": "mistral",
     "model_override": "mistral-medium-latest",
     "structured_output": True,  # default
