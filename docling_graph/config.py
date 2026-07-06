@@ -107,6 +107,34 @@ class PipelineConfig(BaseModel):
     # Docling settings (with defaults)
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
 
+    # Remote conversion via docling-serve. When a URL is set (directly or via
+    # the DOCLING_SERVE_URL env var), document conversion is delegated to that
+    # instance and no local conversion models are loaded. docling_config still
+    # selects the server-side pipeline ('ocr' -> standard, 'vision' -> vlm).
+    docling_serve_url: str | None = Field(
+        default=None,
+        description=(
+            "Base URL of a docling-serve instance (e.g. 'http://localhost:5001'). "
+            "When set, document conversion runs remotely on that instance instead "
+            "of locally. Falls back to the DOCLING_SERVE_URL environment variable."
+        ),
+    )
+    docling_serve_api_key: str | None = Field(
+        default=None,
+        description=(
+            "API key for the docling-serve instance, sent as the X-Api-Key header. "
+            "Falls back to the DOCLING_SERVE_API_KEY environment variable."
+        ),
+    )
+    docling_serve_timeout: int = Field(
+        default=300,
+        description=(
+            "Timeout in seconds for docling-serve conversion requests. The "
+            "synchronous API holds the connection while converting, so large "
+            "documents need generous values."
+        ),
+    )
+
     # Model overrides
     model_override: str | None = None
     provider_override: str | None = None
@@ -244,12 +272,45 @@ class PipelineConfig(BaseModel):
     def _path_to_str(cls, v: Union[str, Path]) -> str:
         return str(v)
 
+    @field_validator("docling_serve_url")
+    @classmethod
+    def _normalize_serve_url(cls, v: str | None) -> str | None:
+        return cls._clean_serve_url(v)
+
+    @staticmethod
+    def _clean_serve_url(v: str | None) -> str | None:
+        """Normalize a docling-serve URL; empty -> None, validate scheme."""
+        if v is None:
+            return None
+        v = v.strip().rstrip("/")
+        if not v:
+            return None
+        if not v.startswith(("http://", "https://")):
+            raise ValueError(f"docling_serve_url must start with http:// or https://, got: {v!r}")
+        return v
+
     @model_validator(mode="after")
     def _validate_vlm_constraints(self) -> Self:
         if self.backend == "vlm" and self.inference == "remote":
             raise ValueError(
                 "VLM backend currently only supports local inference. Use inference='local' or backend='llm'."
             )
+        return self
+
+    @model_validator(mode="after")
+    def _resolve_docling_serve_env(self) -> Self:
+        """Fill docling-serve settings from environment variables.
+
+        Explicit values (config file, CLI flag, constructor) win; the env vars
+        DOCLING_SERVE_URL / DOCLING_SERVE_API_KEY are fallbacks so cluster
+        deployments can enable remote conversion without touching configs.
+        """
+        import os
+
+        if not self.docling_serve_url:
+            self.docling_serve_url = self._clean_serve_url(os.environ.get("DOCLING_SERVE_URL"))
+        if self.docling_serve_url and not self.docling_serve_api_key:
+            self.docling_serve_api_key = os.environ.get("DOCLING_SERVE_API_KEY") or None
         return self
 
     def to_metadata_config_dict(
@@ -263,7 +324,10 @@ class PipelineConfig(BaseModel):
         Includes all options with their effective values (including defaults not overridden).
         """
         # Full dump, JSON-serializable (Path -> str, etc.), exclude non-serializable
-        data = self.model_dump(mode="json", exclude={"llm_client", "template"})
+        # and secrets (the docling-serve API key must never land in metadata.json)
+        data = self.model_dump(
+            mode="json", exclude={"llm_client", "template", "docling_serve_api_key"}
+        )
         # template can be a Pydantic model class; serialize as dotted path string
         if isinstance(self.template, str):
             data["template"] = self.template
@@ -285,6 +349,9 @@ class PipelineConfig(BaseModel):
             "processing_mode": self.processing_mode,
             "extraction_contract": self.extraction_contract,
             "docling_config": self.docling_config,
+            "docling_serve_url": self.docling_serve_url,
+            "docling_serve_api_key": self.docling_serve_api_key,
+            "docling_serve_timeout": self.docling_serve_timeout,
             "structured_output": self.structured_output,
             "structured_sparse_check": self.structured_sparse_check,
             "llm_input_format": self.llm_input_format,
@@ -349,6 +416,12 @@ class PipelineConfig(BaseModel):
             },
             "docling": {
                 "pipeline": default_config.docling_config,
+                # Remote conversion via docling-serve; keep url null for local
+                # conversion. The api key is read from DOCLING_SERVE_API_KEY.
+                "serve": {
+                    "url": default_config.docling_serve_url,
+                    "timeout": default_config.docling_serve_timeout,
+                },
                 "export": {
                     "docling_json": default_config.export_docling_json,
                     "markdown": default_config.export_markdown,

@@ -524,7 +524,24 @@ class ExtractionStage(PipelineStage):
 
         llm_input_format = cast(str, conf.get("llm_input_format", "markdown"))
 
+        # Remote conversion via docling-serve (conversion step only)
+        docling_serve_config: Dict[str, Any] | None = None
+        if conf.get("docling_serve_url"):
+            docling_serve_config = {
+                "base_url": conf["docling_serve_url"],
+                "api_key": conf.get("docling_serve_api_key"),
+                "timeout": conf.get("docling_serve_timeout", 300),
+            }
+            self.log.info(
+                f"Document conversion delegated to docling-serve: {conf['docling_serve_url']}"
+            )
+
         if backend == "vlm":
+            if docling_serve_config:
+                self.log.warning(
+                    "docling-serve conversion has no effect with the VLM backend: "
+                    "VLM extraction processes the source document directly and locally."
+                )
             return ExtractorFactory.create_extractor(
                 processing_mode=processing_mode,
                 backend_name="vlm",
@@ -558,6 +575,7 @@ class ExtractionStage(PipelineStage):
                 chunk_max_tokens=conf.get("chunk_max_tokens"),
                 dense_config=dense_config,
                 llm_input_format=llm_input_format,
+                docling_serve_config=docling_serve_config,
             )
 
     @staticmethod

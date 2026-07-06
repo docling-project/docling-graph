@@ -47,6 +47,7 @@ class ManyToOneStrategy(BaseExtractor):
         use_chunking: bool = True,
         chunk_max_tokens: int | None = None,
         llm_input_format: str = "markdown",
+        docling_serve_config: dict[str, Any] | None = None,
     ) -> None:
         """
         Initialize extraction strategy.
@@ -56,6 +57,8 @@ class ManyToOneStrategy(BaseExtractor):
             docling_config: Docling pipeline config ("ocr" or "vision")
             llm_input_format: Document serialization for the LLM ('markdown',
                 'doclang', or 'doclang-geo')
+            docling_serve_config: When set, document conversion is delegated
+                to a remote docling-serve instance (see DocumentProcessor)
         """
         super().__init__()
         self.backend = backend
@@ -80,6 +83,7 @@ class ManyToOneStrategy(BaseExtractor):
             docling_config=docling_config,
             chunker_config=chunker_config,
             llm_input_format=llm_input_format,
+            docling_serve_config=docling_serve_config,
         )
 
         logger.info(

@@ -32,6 +32,7 @@ class ExtractorFactory:
         chunk_max_tokens: int | None = None,
         dense_config: dict[str, Any] | None = None,
         llm_input_format: str = "markdown",
+        docling_serve_config: dict[str, Any] | None = None,
     ) -> BaseExtractor:
         """
         Create an extractor based on configuration.
@@ -46,6 +47,9 @@ class ExtractorFactory:
             docling_config (str): Docling pipeline configuration ('ocr' or 'vision')
             dense_config (dict): Dense/gleaning runtime settings forwarded to LlmBackend
                 (batch tokens, fill cap, workers, resolvers, debug_dir, ...)
+            docling_serve_config (dict): Remote docling-serve conversion settings
+                (base_url, api_key, timeout); document conversion runs remotely
+                when set. Applies to the LLM backend's conversion step only.
 
         Returns:
             BaseExtractor: Configured extractor instance.
@@ -89,6 +93,7 @@ class ExtractorFactory:
                 backend=backend_obj,
                 docling_config=docling_config,
                 llm_input_format=llm_input_format,
+                docling_serve_config=docling_serve_config,
             )
         elif processing_mode == "many-to-one":
             extractor = ManyToOneStrategy(
@@ -98,6 +103,7 @@ class ExtractorFactory:
                 use_chunking=use_chunking,
                 chunk_max_tokens=chunk_max_tokens,
                 llm_input_format=llm_input_format,
+                docling_serve_config=docling_serve_config,
             )
         else:
             raise ValueError(f"Unknown processing_mode: {processing_mode}")

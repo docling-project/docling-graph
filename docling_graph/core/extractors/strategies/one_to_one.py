@@ -33,6 +33,7 @@ class OneToOneStrategy(BaseExtractor):
         backend: Backend,
         docling_config: str = "default",
         llm_input_format: str = "markdown",
+        docling_serve_config: dict[str, Any] | None = None,
     ) -> None:
         """Initialize with a backend (VlmBackend or LlmBackend).
 
@@ -42,12 +43,15 @@ class OneToOneStrategy(BaseExtractor):
             docling_config: Docling pipeline configuration ('ocr' or 'vision').
             llm_input_format: Document serialization for the LLM ('markdown',
                 'doclang', or 'doclang-geo').
+            docling_serve_config: When set, document conversion is delegated
+                to a remote docling-serve instance (see DocumentProcessor).
         """
         super().__init__()  # Initialize base extractor with trace_data attribute
         self.backend = backend
         self.doc_processor = DocumentProcessor(
             docling_config=docling_config,
             llm_input_format=llm_input_format,
+            docling_serve_config=docling_serve_config,
         )
 
         backend_type = get_backend_type(self.backend)
