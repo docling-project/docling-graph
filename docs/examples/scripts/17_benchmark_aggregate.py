@@ -151,7 +151,7 @@ def discover_runs(root: Path) -> list[dict[str, Any]]:
 
 
 def _mean(values: list[Any]) -> float | None:
-    nums = [v for v in values if isinstance(v, (int, float))]
+    nums = [v for v in values if isinstance(v, int | float)]
     return round(mean(nums), 3) if nums else None
 
 

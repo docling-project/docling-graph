@@ -97,6 +97,7 @@ class TestConfigurationBuilder:
         mock_prompt.side_effect = [
             "one-to-one",  # processing_mode
             "direct",  # extraction_contract
+            "markdown",  # llm_input_format
             "llm",  # backend
             "local",  # inference
         ]
@@ -107,6 +108,7 @@ class TestConfigurationBuilder:
         assert isinstance(result, dict)
         assert result["processing_mode"] == "one-to-one"
         assert result["extraction_contract"] == "direct"
+        assert result["llm_input_format"] == "markdown"
         assert result["backend"] == "llm"
         assert result["inference"] == "local"
 
@@ -116,6 +118,7 @@ class TestConfigurationBuilder:
         mock_prompt.side_effect = [
             "one-to-one",  # processing_mode
             "direct",  # extraction_contract
+            "markdown",  # llm_input_format
             "vlm",  # backend
         ]
 
@@ -124,6 +127,49 @@ class TestConfigurationBuilder:
 
         assert result["backend"] == "vlm"
         assert result["inference"] == "local"
+
+    @patch("typer.prompt")
+    def test_build_defaults_prompt_defaults_track_pipeline_config(self, mock_prompt):
+        """Prompt defaults must come from PipelineConfig, never hardcoded copies.
+
+        Regression: the wizard pre-filled extraction_contract='direct' and
+        inference='remote' after the package defaults had moved on, so freshly
+        generated config.yaml files pinned stale values."""
+        from docling_graph.config import PipelineConfig
+
+        # Echo back each prompt's default so the answers ARE the defaults.
+        mock_prompt.side_effect = lambda *args, **kwargs: kwargs.get("default")
+
+        builder = ConfigurationBuilder()
+        result = builder._build_defaults()
+
+        expected = PipelineConfig()
+        assert result["extraction_contract"] == expected.extraction_contract
+        assert result["llm_input_format"] == expected.llm_input_format
+        assert result["processing_mode"] == expected.processing_mode
+        assert result["backend"] == expected.backend
+        assert result["inference"] == expected.inference
+
+    @patch("typer.confirm")
+    @patch("typer.prompt")
+    def test_build_config_writes_complete_default_set(self, mock_prompt, mock_confirm):
+        """The saved config must carry EVERY current defaults key, not just the
+        prompted ones: a sparse file freezes wizard-time values and silently
+        overrides newer package defaults on load."""
+        from docling_graph.config import PipelineConfig
+
+        mock_prompt.side_effect = lambda *args, **kwargs: kwargs.get("default")
+        mock_confirm.side_effect = lambda *args, **kwargs: kwargs.get("default", True)
+
+        builder = ConfigurationBuilder()
+        result = builder.build_config()
+
+        generated = PipelineConfig.generate_yaml_dict()
+        assert set(generated["defaults"]).issubset(set(result["defaults"]))
+        assert "llm_overrides" in result
+        assert result["defaults"]["extraction_contract"] == "auto"
+        assert result["defaults"]["llm_input_format"] == "markdown"
+        assert result["docling"]["export"]["doclang"] is True
 
     @patch("typer.prompt")
     def test_build_export_format_returns_value(self, mock_prompt):
