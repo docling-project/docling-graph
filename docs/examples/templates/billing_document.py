@@ -220,6 +220,9 @@ class Item(BaseModel):
             "Item name as printed in the document (identity field). "
             "LOOK FOR: 'Item', 'Product', 'Description', 'Service' columns in line item table. "
             "EXTRACT: The product/service name verbatim; never invent or number items. "
+            "When the invoice names no separate catalog item, use the line's description "
+            "text verbatim as the name (one Item per distinct line description) — never "
+            "shorten, merge, or rephrase it. "
             "EXAMPLES: 'Professional Consulting Services', 'Laptop Computer - Model XYZ'"
         ),
         examples=["Professional Consulting Services", "Laptop Computer - Model XYZ"],
