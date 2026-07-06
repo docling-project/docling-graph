@@ -27,12 +27,12 @@ config = PipelineConfig(
     backend: Literal["llm", "vlm"] = "llm",
     inference: Literal["local", "remote"] = "local",
     processing_mode: Literal["one-to-one", "many-to-one"] = "many-to-one",
-    extraction_contract: Literal["direct", "dense", "auto"] = "direct",
+    extraction_contract: Literal["direct", "dense", "auto"] = "auto",
     docling_config: Literal["ocr", "vision"] = "ocr",
     model_override: str | None = None,
     provider_override: str | None = None,
     models: ModelsConfig = ModelsConfig(),
-    llm_input_format: Literal["markdown", "doclang", "doclang-geo"] = "markdown",
+    llm_input_format: Literal["markdown", "doclang", "doclang-geo", "auto"] = "markdown",
     use_chunking: bool = True,
     chunk_max_tokens: int | None = None,
     debug: bool = False,
@@ -72,9 +72,9 @@ config = PipelineConfig(
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
-| `extraction_contract` | `"direct"`, `"dense"`, or `"auto"` | `"direct"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-flesh; `auto` resolves per document — direct only when a single call fits the model's context window and output budget, dense otherwise; the decision is logged as `[AutoContract]`) |
+| `extraction_contract` | `"auto"`, `"direct"`, or `"dense"` | `"auto"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-flesh; `auto` resolves per document — direct only when a single call fits the model's context window and output budget, dense otherwise; the decision is logged as `[AutoContract]`) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
-| `llm_input_format` | `"markdown"`, `"doclang"`, or `"doclang-geo"` | `"markdown"` | Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost) |
+| `llm_input_format` | `"markdown"`, `"doclang"`, `"doclang-geo"`, or `"auto"` | `"markdown"` | Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost). `auto` pairs the format to the resolved contract per document: direct → `doclang-geo`, dense → `doclang`, raw-text inputs → `markdown` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking; raise it when using a DocLang `llm_input_format`) |
 | `debug` | `bool` | `False` | Enable debug artifacts |
@@ -86,7 +86,7 @@ Options for the **dense** contract (Phase 1 skeleton + Phase 2 fill). Set `extra
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `dense_skeleton_batch_tokens` | `int` | `1024` | Max tokens per skeleton batch (Phase 1). |
+| `dense_skeleton_batch_tokens` | `int` | `2048` | Max tokens per skeleton batch (Phase 1). |
 | `dense_fill_nodes_cap` | `int` | `5` | Max node instances per fill call (Phase 2). |
 | `dense_fill_context` | `"scoped"` or `"full"` | `"scoped"` | Document context per fill call: scoped batches where the node was observed, or the full document. |
 | `dense_dedupe` | `"off"`, `"standard"` or `"aggressive"` | `"standard"` | Skeleton dedupe intensity. `off`: exact canonical-id dedup only. `standard`: one id-space LLM reconciliation call that collapses same-entity aliases found at different granularities; deterministic containment matches (a same-path id that is a superset of another, digit-signature-guarded) are proposed as candidates in that call and merged only when the LLM confirms them — tier names ('X' vs 'X PLUS') are protected. `aggressive`: also merges near-identical same-path identifier strings (OCR noise); similarity thresholds are handled internally, and identifiers that differ numerically never merge. |
