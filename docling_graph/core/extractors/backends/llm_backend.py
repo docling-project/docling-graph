@@ -13,7 +13,7 @@ import json
 import os
 import re
 from functools import lru_cache
-from typing import Any, Literal, Mapping, Type, cast
+from typing import Any, Literal, Mapping, Type, cast, get_args
 
 from pydantic import BaseModel, ValidationError
 
@@ -367,6 +367,83 @@ class LlmBackend:
                 return v
         return enum_vals[0]
 
+    @staticmethod
+    def _unwrap_model_annotation(annotation: Any) -> type[BaseModel] | None:
+        """First BaseModel subclass inside an annotation (Optional/list wrappers)."""
+        if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+            return annotation
+        for arg in get_args(annotation):
+            model = LlmBackend._unwrap_model_annotation(arg)
+            if model is not None:
+                return model
+        return None
+
+    @staticmethod
+    def _identity_fields_of_owner(template: type[BaseModel], loc: tuple) -> frozenset[str]:
+        """graph_id_fields of the model owning the field at ``loc`` (empty when unresolvable)."""
+        current: type[BaseModel] | None = template
+        for segment in loc[:-1]:
+            if current is None:
+                return frozenset()
+            if isinstance(segment, int):
+                continue
+            field_info = current.model_fields.get(str(segment))
+            if field_info is None:
+                return frozenset()
+            current = LlmBackend._unwrap_model_annotation(field_info.annotation)
+        if current is None:
+            return frozenset()
+        config = getattr(current, "model_config", {}) or {}
+        raw = config.get("graph_id_fields", []) if isinstance(config, dict) else []
+        return frozenset(f for f in raw if isinstance(f, str))
+
+    def _drop_instances_missing_identity(
+        self,
+        data: dict | list,
+        errors: list,
+        template: type[BaseModel] | None,
+    ) -> bool:
+        """Remove instances whose REQUIRED identity field is missing, instead of
+        fabricating one.
+
+        Identity is sacred: a generated or blank value for a graph_id_fields
+        member does not salvage the instance, it mints a phantom entity (an
+        ""-named hub absorbing edges in the graph). Dropping mirrors what
+        template-side list filters do, and is logged loudly. Deletions shift
+        list indices, so when this fires the caller must re-validate before
+        applying any other fixer. The root instance (loc of length 1) is never
+        dropped — there is nothing to fall back to.
+        """
+        if template is None:
+            return False
+        drop_locs: set[tuple] = set()
+        for err in errors:
+            if err.get("type") != "missing":
+                continue
+            loc = tuple(err.get("loc", ()))
+            if len(loc) < 2 or not isinstance(loc[-1], str):
+                continue
+            if loc[-1] in self._identity_fields_of_owner(template, loc):
+                drop_locs.add(loc[:-1])
+        if not drop_locs:
+            return False
+
+        # Deepest-first, and within one container highest index first, so a
+        # deletion can never shift the position of a later one.
+        def _order(loc: tuple) -> tuple:
+            return (
+                len(loc),
+                tuple((0, str(seg)) if isinstance(seg, str) else (1, seg) for seg in loc),
+            )
+
+        for parent_loc in sorted(drop_locs, key=_order, reverse=True):
+            self._delete_at_path(data, parent_loc)
+        self._log_warning(
+            f"Salvage: dropped {len(drop_locs)} instance(s) missing a required identity "
+            "field instead of fabricating identity (phantom-hub guard)"
+        )
+        return True
+
     def _fill_missing_required_fields(
         self,
         data: dict | list,
@@ -443,29 +520,37 @@ class LlmBackend:
             changed = True
         return changed
 
-    # Keys that indicate a dict is a guarantee/condition block (structural content),
-    # not a simple label. Do not use such dicts' nom/name for string coercion
-    # (avoids "Vol" as offer name). Excludes "description" so simple description+nom
-    # still coerces; "conditions"/"texte" etc. mark full blocks.
-    _COMPLEX_DICT_HINTS: frozenset[str] = frozenset(
-        ("conditions", "texte", "exclusions_specifiques", "biens_couverts")
-    )
+    # A string value at least this long is prose (a clause, a description body),
+    # not a label — a dict carrying prose is a full entity block, and its inner
+    # name must never be pulled up into a parent scalar field.
+    _COMPLEX_TEXT_MIN_CHARS = 80
 
     @staticmethod
     def _looks_like_complex_block(d: dict) -> bool:
-        """True if dict looks like a guarantee/condition block, not a simple label."""
+        """True when a dict carries structured content, not just a simple label.
+
+        Structural and domain-agnostic: a full entity block (an item with its
+        sub-lists, a clause with its prose) nests containers or long text; a
+        simple labeled reference is a couple of short scalars. Single-key
+        dicts are never complex — there is nothing to confuse the label with.
+        """
         if not isinstance(d, dict) or len(d) <= 1:
             return False
-        hints = LlmBackend._COMPLEX_DICT_HINTS
-        return bool(hints & set(d))
+        for value in d.values():
+            if isinstance(value, list | dict):
+                return True
+            if isinstance(value, str) and len(value) >= LlmBackend._COMPLEX_TEXT_MIN_CHARS:
+                return True
+        return False
 
     @classmethod
     def _extract_string_from_list_or_dict(cls, value: Any) -> str | None:
         """
         Extract a single string from a list or dict when schema expected string.
         Domain-agnostic: uses common identity-like keys and first string element.
-        Skips dicts that look like guarantee/condition blocks (description, conditions, etc.)
-        so their inner nom is not used for a parent field (e.g. offer name).
+        Skips dicts that look like full entity blocks (nested containers or long
+        prose) so their inner name is not used for a parent field (e.g. a child
+        item's name coerced into its container's name).
         """
         if value is None:
             return None
@@ -658,6 +743,12 @@ class LlmBackend:
                         for err in errors
                     ]
                     break
+                # Identity guard first and alone: dropping an instance shifts
+                # list indices, so no other fixer may act on this error set —
+                # re-validate immediately instead.
+                if self._drop_instances_missing_identity(data, errors, template=template):
+                    continue
+
                 any_fixed = False
 
                 # First pass: try QuantityWithUnit coercion
@@ -1407,6 +1498,29 @@ class LlmBackend:
             context=context,
             template=template,
             trace_data=trace_data,
+        )
+
+    def call_id_reconciliation(
+        self,
+        *,
+        prompt: dict[str, str],
+        schema_json: str,
+        context: str = "graph",
+    ) -> dict | list | None:
+        """Public id-space reconciliation call for graph-level alias merging.
+
+        Uses the same legacy prompt-schema mode as the dense contract (no API
+        structured output) so provider-specific grammar quirks cannot break
+        graph cleanup. Cheap by construction: the prompt carries identifier
+        lists only, never document content.
+        """
+        return self._call_prompt(
+            prompt,
+            schema_json,
+            context,
+            response_top_level="object",
+            response_schema_name="alias_reconcile",
+            structured_output_override=False,
         )
 
     def _run_dense_orchestrator(
