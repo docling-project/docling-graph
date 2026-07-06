@@ -6,10 +6,10 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 
 | Path | Description |
 |------|-------------|
-| `docs/examples/scripts/` | Python example scripts (01–15) |
-| `docs/examples/templates/` | Pydantic templates (e.g. `billing_document.py`, `rheology_research.py`) |
+| `docs/examples/scripts/` | Python example scripts (01–16) |
+| `docs/examples/templates/` | Pydantic templates (e.g. `billing_document.py`, `insurance_terms.py`, `rheology_research.py`) |
 
-## Example Scripts (01–15)
+## Example Scripts (01–16)
 
 ### Getting Started
 
@@ -36,6 +36,10 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 
 13. **`15_provenance_grounding.py`** — Trace extracted nodes back to source chunks and pages via `__provenance__` and `provenance.json`
 
+### Evaluation
+
+14. **`16_extraction_evaluation.py`** — Score an extracted `graph.json` against a template-shaped ground-truth JSON (node/edge P/R/F1, attribute completeness, integrity). Domain-agnostic — works with any `(template, ground_truth.json, graph.json)` triple.
+
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).
 
 ## Quick Start
@@ -48,6 +52,12 @@ uv run python docs/examples/scripts/01_quickstart_vlm_image.py
 uv run docling-graph convert "https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg" \
     --template "docs.examples.templates.billing_document.BillingDocument" \
     --backend "vlm"
+
+# Score a completed run against a ground-truth JSON
+uv run python docs/examples/scripts/16_extraction_evaluation.py \
+    --graph outputs/RUN_DIR/docling_graph/graph.json \
+    --truth ground_truth.json \
+    --template "docs.examples.templates.insurance_terms.AssuranceMRH"
 ```
 
 ## Learning Path
