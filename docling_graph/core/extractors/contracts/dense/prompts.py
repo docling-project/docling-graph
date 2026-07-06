@@ -38,10 +38,27 @@ def get_skeleton_batch_prompt(
     already_found: str | None = None,
     semantic_guide: str | None = None,
     input_format: str = "markdown",
+    coverage_retry: bool = False,
 ) -> dict[str, str]:
-    """Build system and user prompts for one skeleton (Phase 1) batch."""
+    """Build system and user prompts for one skeleton (Phase 1) batch.
+
+    ``coverage_retry=True`` marks a second-pass batch over document sections
+    that produced no entities on the first pass; the prompt says so explicitly
+    and licenses an empty response, so the retry cannot pressure the model
+    into inventing instances.
+    """
     framing = prompt_framing(input_format)
     framing_block = f"{framing}\n\n" if framing else ""
+    # Rule 2 mentions negative reference handles ONLY when an ALREADY EXTRACTED
+    # list is actually present: on the first batch (and single-batch documents)
+    # the extra clause has nothing to refer to, and on small models it was
+    # observed to dilute the core "p must reference a handle in this response"
+    # instruction badly enough that p was omitted entirely.
+    rule2_cross_batch = (
+        ' — or, when the parent was already extracted in an earlier batch, the NEGATIVE handle shown for it in the ALREADY EXTRACTED list (e.g. "p": -3). Re-emitting an already-extracted parent with the same ids also works; duplicates are merged automatically'
+        if already_found
+        else ""
+    )
     system_prompt = (
         f"{framing_block}"
         "You are an expert extraction engine for document structure. "
@@ -55,7 +72,8 @@ def get_skeleton_batch_prompt(
         "Each data row of a table is a separate entity instance; document-level metadata (titles, dates, totals, summary rows) is not.\n\n"
         "Rules:\n"
         '1. Use ONLY the catalog paths listed. Each node has exactly: "i" (its handle: a sequential integer starting at 1, unique in this response), "path", "ids" (identifier values from the document), and "p" (the handle of its parent node in this response; omit or null for the root).\n'
-        '2. Emit the root (path "", no parent) exactly once, first. Every other node\'s "p" must reference the handle of a node in this same response whose path is its parent path in the catalog. If a parent entity appears in ALREADY EXTRACTED but not in this response, re-emit that parent here with the same ids so its children can reference it; duplicates are merged automatically.\n'
+        '2. Emit the root (path "", no parent) exactly once, first. Every other node\'s "p" must reference the handle of a node in this same response whose path is its parent path in the catalog'
+        f"{rule2_cross_batch}.\n"
         '3. ids values are short labels copied verbatim from the document — a code, number, or name of at most a few words, never a sentence or description. Every ids entry MUST be a complete "field": "value" pair (e.g. {"name": "Gardenwork"}); NEVER emit a bare value without its field name. Use figure labels, table rows, section titles that name entities (e.g. FIG-4, Sample A, Protocol 1). Do not use generic section/chapter titles as identities for localized entities. For global/singleton entities (e.g. one protocol or one setup for the whole document), use a short descriptive id from the text or section (e.g. General Protocol) or ids={} if the schema allows; ensure at least one root and such singletons are still emitted.\n'
         '4. Always prefer the most specific proper name that the document gives an entity over a generic category word or a positional label. If a set of items each carry their own name, use those names as ids. For example, when a document lists offers named ESSENTIELLE, CONFORT and CONFORT PLUS, the ids must be "ESSENTIELLE", "CONFORT", "CONFORT PLUS" — NOT the generic word "Offer"/"Offre" nor positional labels like "Offer 1", "Offer 2". Only fall back to a generic or positional label when the document truly gives the entity no name of its own.\n'
         "5. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance.\n"
@@ -64,19 +82,28 @@ def get_skeleton_batch_prompt(
         "8. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments.\n"
         "9. When several catalog paths could host an instance, choose the path whose description "
         "(see SEMANTIC FIELD GUIDANCE) matches the text; never place an instance at a path whose "
-        "description does not fit it, and never invent instances for paths the text does not mention."
+        "description does not fit it, and never invent instances for paths the text does not mention.\n"
+        '10. Each node names exactly ONE entity. NEVER join two entity names into a single id (e.g. "Guarantee X, Offer Y" from a table row and column): a table cell linking two entities is a RELATIONSHIP between existing nodes, not a new entity — relationships are captured in a later phase. When a table cross-references entities, emit each row entity and each column entity once.'
     )
     user_prompt = f"[Batch {batch_index + 1}/{total_batches}]\n\n"
+    if coverage_retry:
+        user_prompt += (
+            "NOTE: These document sections produced no entities on the first "
+            "pass. Look again carefully and extract every catalog-path instance "
+            "they contain; if they truly contain none, return "
+            '{"nodes": []} — never invent instances.\n\n'
+        )
     if already_found:
         user_prompt += (
-            "=== ALREADY EXTRACTED — REFERENCE ONLY, DO NOT RE-OUTPUT ===\n"
+            "=== ALREADY EXTRACTED (negative reference handles) — DO NOT RE-OUTPUT ===\n"
             f"{already_found}\n"
             "=== END ===\n\n"
-            "The entities above are already captured. Do NOT include any of them in your "
-            "output — emit ONLY entities that are NEW in this batch. The single exception: "
-            "re-emit a listed PARENT node when (and only when) a NEW child in this batch must "
-            "reference it. Re-emitting already-listed entities for any other reason wastes "
-            "output budget and risks truncating the response.\n\n"
+            "The entities above are already captured; each line shows its reference handle "
+            '"i" (a negative number). Do NOT include any of them in your output — emit ONLY '
+            "entities that are NEW in this batch. When a NEW node's parent is one of the "
+            'entities above, set the new node\'s "p" to that negative handle (e.g. "p": -3); '
+            "no re-emission is needed. Re-emitting a listed entity wastes output budget and "
+            "risks truncating the response.\n\n"
         )
     if global_context:
         user_prompt += f"=== DOCUMENT CONTEXT ===\n{global_context}\n=== END ===\n\n"
@@ -187,14 +214,28 @@ def get_fill_batch_prompt(
     descriptors: list[dict[str, Any]],
     projected_schema_json: str,
     input_format: str = "markdown",
+    has_reference_fields: bool = False,
 ) -> dict[str, str]:
-    """Build system and user prompts for one fill (Phase 2) batch."""
+    """Build system and user prompts for one fill (Phase 2) batch.
+
+    ``has_reference_fields=True`` adds the per-instance membership rule for
+    id-only reference lists (such paths are filled one instance per call, so
+    "THIS instance" is unambiguous).
+    """
     n = len(descriptors)
     # Every instance id must be listed: the response is matched back to
     # descriptors by position, so the LLM needs the complete ordered list.
     instances_preview = json.dumps([d.get("ids") or {} for d in descriptors], indent=2, default=str)
     framing = prompt_framing(input_format)
     framing_block = f"{framing}\n\n" if framing else ""
+    membership_rule = (
+        " Reference-list fields (id-only lists naming related entities) must contain ONLY "
+        "the memberships the document explicitly states for THIS specific instance; when the "
+        "document does not state them for this instance, leave the list empty — never copy "
+        "another instance's memberships or the union of a whole table."
+        if has_reference_fields
+        else ""
+    )
     system_prompt = (
         f"{framing_block}"
         "You are a precise extraction assistant. For each of the given node instances, "
@@ -207,6 +248,7 @@ def get_fill_batch_prompt(
         "Copy numeric values digit-for-digit from the document; never compute, round, or aggregate them. "
         "Values from table summary rows (totals, subtotals) belong to document-level fields, never to row-level instances. "
         "Omit values that are not present in the document rather than guessing."
+        f"{membership_rule}"
     )
     user_prompt = (
         "=== DOCUMENT ===\n"

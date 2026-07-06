@@ -355,3 +355,38 @@ def test_bottom_up_path_order_sorts_deepest_first() -> None:
     order = bottom_up_path_order(catalog)
     assert order.index("ents[].sub") < order.index("ents[]")
     assert order.index("ents[]") < order.index("")
+
+
+def test_path_has_reference_fields_detects_reference_lists():
+    """Paths whose fill schema carries id-only reference projections are flagged
+    (they get per-parent fill batches to prevent membership dumping)."""
+    from typing import List
+
+    from pydantic import BaseModel, Field
+
+    from docling_graph.core.extractors.contracts.dense.catalog import (
+        build_node_catalog,
+        path_has_reference_fields,
+    )
+
+    class Tag(BaseModel):
+        name: str
+        model_config = {"graph_id_fields": ["name"]}
+
+    class Group(BaseModel):
+        name: str
+        tags: List[Tag] = Field(
+            default_factory=list,
+            json_schema_extra={"edge_label": "HAS_TAG", "graph_reference": True},
+        )
+        model_config = {"graph_id_fields": ["name"]}
+
+    class RootDoc(BaseModel):
+        title: str = ""
+        groups: List[Group] = Field(default_factory=list)
+        model_config = {"graph_id_fields": ["title"]}
+
+    catalog = build_node_catalog(RootDoc)
+    by_path = {s.path: s for s in catalog.nodes}
+    assert path_has_reference_fields(RootDoc, by_path["groups[]"]) is True
+    assert path_has_reference_fields(RootDoc, by_path[""]) is False

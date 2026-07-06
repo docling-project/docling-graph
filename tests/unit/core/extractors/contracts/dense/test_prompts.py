@@ -302,3 +302,85 @@ def test_skeleton_prompt_prefers_specific_names_over_generic_labels():
     assert "ESSENTIELLE" in system
     # It must explicitly reject the generic/positional fallback labels.
     assert "Offer 1" in system or "Offre" in system
+
+
+class TestNegativeHandleClauseConditional:
+    """The cross-batch negative-handle clause appears ONLY when an already-found
+    list exists: on batch 0 it has nothing to refer to and was observed to
+    dilute the core p-emission instruction on small models (invoice regression:
+    all parents omitted)."""
+
+    def test_first_batch_prompt_has_no_negative_handle_clause(self):
+        from docling_graph.core.extractors.contracts.dense.prompts import (
+            get_skeleton_batch_prompt,
+        )
+
+        prompt = get_skeleton_batch_prompt(
+            batch_markdown="doc",
+            catalog_block="",
+            batch_index=0,
+            total_batches=3,
+            allowed_paths=[""],
+            already_found=None,
+        )
+        assert "NEGATIVE handle" not in prompt["system"]
+        assert '"p" must reference the handle of a node in this same response' in prompt["system"]
+
+    def test_later_batch_prompt_carries_negative_handle_clause(self):
+        from docling_graph.core.extractors.contracts.dense.prompts import (
+            get_skeleton_batch_prompt,
+        )
+
+        prompt = get_skeleton_batch_prompt(
+            batch_markdown="doc",
+            catalog_block="",
+            batch_index=1,
+            total_batches=3,
+            allowed_paths=[""],
+            already_found='{"i": -1, "path": "x[]", "ids": {"nom": "A"}}',
+        )
+        assert "NEGATIVE handle" in prompt["system"]
+        assert "ALREADY EXTRACTED" in prompt["user"]
+
+
+def test_skeleton_prompt_forbids_pair_combination_ids():
+    """Rule 10: table row-column pairings must not become combined-id instances."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_batch_prompt,
+    )
+
+    prompt = get_skeleton_batch_prompt(
+        batch_markdown="doc",
+        catalog_block="",
+        batch_index=0,
+        total_batches=1,
+        allowed_paths=[""],
+    )
+    assert "NEVER join two entity names into a single id" in prompt["system"]
+
+
+def test_fill_prompt_membership_rule_only_for_reference_paths():
+    from docling_graph.core.extractors.contracts.dense.catalog import (
+        NodeSpec,
+        build_node_catalog,
+    )
+    from docling_graph.core.extractors.contracts.dense.prompts import get_fill_batch_prompt
+
+    spec = NodeSpec(path="offres[]", node_type="entity", id_fields=["nom"], parent_path="")
+    with_refs = get_fill_batch_prompt(
+        markdown="doc",
+        path="offres[]",
+        spec=spec,
+        descriptors=[{"ids": {"nom": "A"}}],
+        projected_schema_json="{}",
+        has_reference_fields=True,
+    )
+    without = get_fill_batch_prompt(
+        markdown="doc",
+        path="offres[]",
+        spec=spec,
+        descriptors=[{"ids": {"nom": "A"}}],
+        projected_schema_json="{}",
+    )
+    assert "THIS specific instance" in with_refs["system"]
+    assert "THIS specific instance" not in without["system"]
