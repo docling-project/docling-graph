@@ -1,9 +1,24 @@
 """
-Pydantic templates for French ID Card extraction.
+French ID Card extraction template.
 
-These models include descriptions and concrete examples in each field to guide
-the language model, improving the accuracy and consistency of the extracted data.
-The schema is designed to be converted into a knowledge graph.
+Extracts a graph-ready structure from identity documents: the card's own
+metadata (number, issuing country, issue/expiry dates) and the cardholder,
+together with their address. Field descriptions carry concrete examples to
+guide the language model toward accurate, consistent output.
+
+An ID card is a small, single-page document, so extraction is straightforward
+and the `direct` (single-call) contract fits it comfortably. The cardholder is
+modeled as a shared Person entity — identified by surname plus date of birth —
+so the same individual resolves to one node if referenced from several
+documents built into the same graph; the address is a value-object component
+embedded on the person rather than its own node.
+
+Key entities:
+- IDCard (root): the document itself, identified by document_number.
+- Person: the cardholder, identified by last_name + date_of_birth.
+
+Key relationships:
+- IDCard --BELONGS_TO--> Person --LIVES_AT--> Address (component)
 """
 
 import re

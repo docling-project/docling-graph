@@ -1,8 +1,32 @@
 """
-Simplified Invoice/Bill extraction template.
+Invoice / Bill extraction template.
 
-Extracts structured data from invoices, bills, credit notes, and receipts.
-Streamlined for clarity and ease of use while maintaining essential business logic.
+Extracts a graph-ready structure from invoices, bills, credit notes, and
+receipts — the header metadata (numbers, dates, currency), the parties
+involved, the billed line items, and the financial totals.
+
+An invoice is a short, self-contained document where each fact usually appears
+once, so this template works with either extraction contract. Entities are the
+things worth deduplicating and linking across the document: the seller and
+buyer (a Party may appear in more than one role), the products/services billed
+(an Item can recur across several line items), and each numbered line. Value
+blocks that only describe the enclosing document — tax brackets, payment and
+delivery instructions, references to other documents — are modeled as
+components nested on their parent rather than as independently-discovered nodes.
+
+Key entities:
+- BillingDocument (root): the invoice/bill/receipt, identified by document_number.
+- Party: an organization or person, identified by name (reused as seller and buyer).
+- Item: a product or service billed, identified by its printed name.
+- LineItem: one row of the billing table, identified by line_number.
+
+Key relationships:
+- BillingDocument --ISSUED_BY--> Party (seller)
+- BillingDocument --BILLED_TO--> Party (buyer)
+- BillingDocument --CONTAINS_LINE--> LineItem --REFERENCES_ITEM--> Item
+- BillingDocument also carries component blocks: HAS_TAX (document-level tax
+  brackets), HAS_PAYMENT_INFO, HAS_DELIVERY_INFO, REFERENCES_DOCUMENT; each
+  LineItem may carry its own HAS_TAX (line-level tax).
 
 Version: 2.0.0
 Last Updated: 2026-01-26
