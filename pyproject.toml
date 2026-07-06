@@ -59,6 +59,11 @@ vlm = [
     "docling[vlm]>=2.100.0,<3.0.0",
 ]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
+# Amazon Bedrock routes through LiteLLM but needs boto3 for the AWS
+# credential chain and SigV4 signing.
+bedrock = [
+    "boto3>=1.34.0,<2.0.0",
+]
 semantic = [
     "rapidfuzz",
 ]

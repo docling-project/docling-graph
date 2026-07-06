@@ -268,6 +268,16 @@ def _build_default_registry() -> ProviderRegistry:
                 tokenizer="ibm-granite/granite-embedding-278m-multilingual",
                 merge_threshold=0.95,
             ),
+            # Bedrock authenticates via the AWS credential chain (env vars, IAM
+            # role, SSO profile, or the Bedrock bearer token), which LiteLLM reads
+            # natively — there is no single api_key/project_id to plumb here, so
+            # requires_api_key stays False and credentials never touch this config.
+            "bedrock": ProviderDefinition(
+                requires_api_key=False,
+                connection=ProviderConnection(),
+                tokenizer="sentence-transformers/all-MiniLM-L6-v2",
+                merge_threshold=0.95,
+            ),
             "vllm": ProviderDefinition(
                 requires_api_key=False,
                 connection=ProviderConnection(

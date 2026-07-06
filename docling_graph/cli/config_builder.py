@@ -303,6 +303,7 @@ class ConfigurationBuilder:
                     "openai": "Use OpenAI API",
                     "gemini": "Use Gemini API",
                     "watsonx": "Use IBM watsonx",
+                    "bedrock": "Use Amazon Bedrock (AWS credential chain)",
                     "custom": "Enter a custom LiteLLM provider ID",
                 },
             )

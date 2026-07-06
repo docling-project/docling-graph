@@ -148,6 +148,13 @@ OPTIONAL_DEPS: Dict[str, OptionalDependency] = {
         description="IBM watsonx.ai API provider",
         inference_type="remote",
     ),
+    "bedrock": OptionalDependency(
+        name="bedrock",
+        package="boto3",
+        extra="bedrock",
+        description="Amazon Bedrock API provider (AWS credential chain)",
+        inference_type="remote",
+    ),
     # Shared LiteLLM client library used by multiple providers
     "litellm": OptionalDependency(
         name="litellm",
@@ -160,7 +167,7 @@ OPTIONAL_DEPS: Dict[str, OptionalDependency] = {
 # Mapping of inference types to their providers
 INFERENCE_PROVIDERS: Dict[str, List[str]] = {
     "local": ["ollama", "vllm", "lmstudio"],
-    "remote": ["mistral", "openai", "gemini", "ibm-watsonx-ai"],
+    "remote": ["mistral", "openai", "gemini", "ibm-watsonx-ai", "bedrock"],
 }
 
 
