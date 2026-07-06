@@ -61,7 +61,10 @@ def get_skeleton_batch_prompt(
         "5. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance.\n"
         '6. Output valid JSON only: {"nodes": [{"i": 1, "path": "", "ids": {}}, {"i": 2, "path": "...", "ids": {"...": "..."}, "p": 1}]}. No other fields.\n'
         "7. When identifying container nodes (nodes that have children with identity fields, e.g. Dataset with Curves), create separate instances if the contained data comes from distinct sources (e.g. different Figure numbers, different Tables) or represents distinct conditions. If child identifiers differ (e.g. Figure 2a vs Figure 7c), create separate parent instances so each logical group has its own container.\n"
-        "8. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments."
+        "8. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments.\n"
+        "9. When several catalog paths could host an instance, choose the path whose description "
+        "(see SEMANTIC FIELD GUIDANCE) matches the text; never place an instance at a path whose "
+        "description does not fit it, and never invent instances for paths the text does not mention."
     )
     user_prompt = f"[Batch {batch_index + 1}/{total_batches}]\n\n"
     if already_found:
@@ -93,12 +96,16 @@ def get_skeleton_batch_prompt(
 
 def get_skeleton_reconciliation_prompt(
     instances_by_path: dict[str, list[dict[str, Any]]],
+    candidate_groups: list[dict[str, Any]] | None = None,
 ) -> dict[str, str]:
     """Build prompts for the post-merge skeleton reconciliation pass.
 
     Pure id-space: the LLM sees only per-path instance identifier lists (no
     document) and returns groups of instances that are aliases of the same
-    real-world entity at different granularities.
+    real-world entity at different granularities. ``candidate_groups`` are
+    mechanical containment proposals (see resolvers.propose_containment_groups)
+    the model must explicitly confirm or reject — they are suggestions, never
+    pre-approved merges.
     """
     system_prompt = (
         "You deduplicate entity instance lists extracted from one document. "
@@ -107,6 +114,10 @@ def get_skeleton_reconciliation_prompt(
         "typically a generic or shorthand alias alongside its more specific form. "
         "NEVER group instances that differ by any parameter, quantity, concentration, condition, "
         "date, version, figure/table number, or index: those are distinct entities. "
+        "Tier or variant names where one name extends the other with a qualifier word "
+        "(e.g. 'CONFORT' vs 'CONFORT PLUS', 'Standard' vs 'Standard Pro') denote DIFFERENT "
+        "offerings — never merge them; only merge a longer form that is merely a more "
+        "descriptive way of writing the SAME entity. "
         "When in doubt, do not merge. Groups must stay within one path. "
         'For each group, "keep" is the number of the most specific instance and "merge" lists the '
         "numbers of its aliases. "
@@ -119,10 +130,30 @@ def get_skeleton_reconciliation_prompt(
         for idx, ids in enumerate(instances):
             lines.append(f"{idx}: {json.dumps(ids, ensure_ascii=False, default=str)}")
         blocks.append("\n".join(lines))
-    user_prompt = (
-        "\n\n".join(blocks)
-        + '\n\nIdentify alias groups. Return JSON: {"merges": [...]} (empty list if none).'
-    )
+    user_prompt = "\n\n".join(blocks)
+    if candidate_groups:
+
+        def _ids_text(instances: list[dict[str, Any]], idx: Any) -> str:
+            if isinstance(idx, int) and 0 <= idx < len(instances):
+                return json.dumps(instances[idx], ensure_ascii=False, default=str)
+            return "?"
+
+        lines = [
+            "=== CONTAINMENT CANDIDATES (mechanical substring matches — verify each) ===",
+            "Include a candidate in your merges ONLY if the identifiers denote the same "
+            "real-world entity; reject tier/variant pairs.",
+        ]
+        for group in candidate_groups:
+            group_path = group.get("path")
+            keep = group.get("keep")
+            merge = group.get("merge") or []
+            instances = instances_by_path.get(group_path, []) if isinstance(group_path, str) else []
+            merged_txt = ", ".join(f"{m} ({_ids_text(instances, m)})" for m in merge)
+            lines.append(
+                f"- {group_path}: {merged_txt} may alias {keep} ({_ids_text(instances, keep)})"
+            )
+        user_prompt += "\n\n" + "\n".join(lines)
+    user_prompt += '\n\nIdentify alias groups. Return JSON: {"merges": [...]} (empty list if none).'
     return {"system": system_prompt, "user": user_prompt}
 
 

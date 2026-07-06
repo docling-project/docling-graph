@@ -1,10 +1,18 @@
 """
-Fuzzy post-merge resolver for dense skeleton nodes.
+Post-merge resolvers for dense skeleton nodes.
 
-Used only by the "aggressive" dedupe mode: merges skeleton nodes on the same
-path whose identifier strings are near-identical (OCR noise, casing, ligature
-splits). The similarity threshold is internal — it is a property of how OCR
-noise looks, not something users should tune per run.
+Two mechanisms live here:
+
+- ``propose_containment_groups``: deterministic *proposal* of same-path alias
+  groups (one canonical id contained in another). Proposals are confirmed or
+  rejected by the reconciliation LLM call — containment alone cannot tell a
+  refinement of the same entity ("nanoscaled LiFePO4" ~ "LiFePO4") from a
+  distinct product tier ("CONFORT PLUS" is NOT "CONFORT"), so it never merges
+  on its own.
+- ``resolve_skeleton_nodes``: fuzzy same-path merge for OCR noise (casing,
+  dropped accents, ligature splits). Aggressive dedupe mode only; the
+  similarity threshold is internal — it is a property of how OCR noise looks,
+  not something users should tune per run.
 
 Fully autonomous: no imports from other contracts.
 """
@@ -16,15 +24,14 @@ import re
 from difflib import SequenceMatcher
 from typing import Any, Callable
 
+from docling_graph.core.utils.alias_reconciler import containment_groups
+from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
+
 logger = logging.getLogger(__name__)
 
 # Similarity above which two same-path identifier strings are considered the
 # same real-world entity (OCR noise: dropped accents, punctuation, spacing).
 _FUZZY_MERGE_THRESHOLD = 0.9
-
-# A canonical id must be at least this long to be treated as a containment base;
-# below it, substrings are too common to be a safe merge signal ("PVDF" is 4).
-_MIN_CONTAINMENT_LEN = 4
 
 _DIGIT_RUNS = re.compile(r"\d+")
 
@@ -85,95 +92,53 @@ def _absorb_sources(keeper: dict[str, Any], merged: dict[str, Any], merged_key: 
             merged_from.append(serialized)
 
 
-def _canonical_text_from_key(key: Any) -> str:
-    """Concatenated canonical id text from a (path, pairs) identity key.
+def _canonical_ids_text(ids: Any) -> str:
+    """Concatenated canonical text of an instance's identifier values.
 
-    Uses the canonical values the key already carries (same normalization dense
-    dedup uses), so containment comparison is case/diacritic-insensitive. Returns
-    "" for positional-fallback keys (a synthetic "__key" field), which must never
-    be treated as containment candidates.
+    Uses the same normalization dense dedup uses, so containment comparison is
+    case/diacritic-insensitive. Returns "" when there is nothing usable.
     """
-    try:
-        _path, pairs = key
-    except Exception:
+    if not isinstance(ids, dict):
         return ""
-    if any(field == "__key" for field, _ in pairs):
-        return ""
-    return "".join(str(value) for _, value in pairs if value)
+    return "".join(
+        canonicalize_identity_for_dedup(str(field), value)
+        for field, value in sorted(ids.items(), key=lambda kv: str(kv[0]))
+        if value is not None
+    )
 
 
-def merge_contained_skeleton_nodes(
-    skeleton_nodes: list[dict[str, Any]],
-    key_fn: Callable[[dict[str, Any]], Any],
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Deterministically merge same-path nodes whose canonical id is a superset.
+def propose_containment_groups(
+    instances_by_path: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    """Propose same-path alias groups where one canonical id contains another.
 
-    A more specific descriptive id ("nanoscaled LiFePO4 (LFP)") names the same
-    real-world entity as its base ("LiFePO4 (LFP)"); likewise "Polyvinylidene
-    difluoride (PVDF)" and "PVDF". Case/diacritic dedup and the fuzzy resolver
-    both miss this — it is a substring, not near-equality. Safe enough to run in
-    ``standard`` because it is bounded by three guards:
+    PROPOSAL ONLY — nothing is merged here. A more specific descriptive id
+    ("nanoscaled LiFePO4 (LFP)") often names the same real-world entity as its
+    base ("LiFePO4 (LFP)"), which case/diacritic dedup and the fuzzy resolver
+    both miss. But containment alone cannot distinguish that case from a
+    distinct product tier ("CONFORT PLUS" vs "CONFORT"), so the groups are
+    handed to the reconciliation LLM call, which confirms or rejects each one.
+
+    Group indices refer to the per-path instance order of ``instances_by_path``
+    (the same numbering the reconciliation prompt shows). Deterministic guards:
 
     - same catalog path only;
     - equal digit signatures (so "LFP_20vol"/"LFP_30vol" and "Article 5"/"6"
-      never merge — a false merge destroys data, a kept duplicate is only noise);
-    - a unique base: a superset that contains *two* different shorter ids is
-      ambiguous and is left alone (mirrors the binder's fuzzy-containment guard).
+      are never even proposed);
+    - a unique base: a superset containing *two* different shorter ids is
+      ambiguous and skipped;
+    - very short bases are ignored (substrings that short are too common to
+      be a signal); see utils.alias_reconciler.containment_groups.
 
-    The shorter (base) id is kept — it is the canonical term and the most
-    verbatim-friendly locator. Returns (resolved_nodes, stats) with a full parent
-    remap so no child is orphaned by a merge.
+    ``keep`` points at the shorter base id — the canonical term and the most
+    verbatim-friendly locator; the confirming LLM may still restructure.
     """
-    nodes = [dict(n) for n in skeleton_nodes]
-    keys = [key_fn(n) for n in nodes]
-    texts = [_canonical_text_from_key(k) for k in keys]
-    sigs = [_digit_signature(t) for t in texts]
-    paths = [str(n.get("path") or "") for n in nodes]
-
-    removed_indexes: set[int] = set()
-    id_remap: dict[Any, dict[str, Any]] = {}
-    merged_count = 0
-
-    # For each candidate superset j, find the strictly-shorter same-path bases it
-    # contains; merge only when exactly one base qualifies. removed_indexes only
-    # ever gains the CURRENT j within its own iteration (never a smaller index
-    # revisited later), so a distinct not-yet-removed check on entry is redundant.
-    for j in range(len(nodes)):
-        superset_text = texts[j]
-        if not superset_text:
-            continue
-        bases = [
-            i
-            for i in range(len(nodes))
-            if i != j
-            and i not in removed_indexes
-            and paths[i] == paths[j]
-            and texts[i]
-            and len(texts[i]) >= _MIN_CONTAINMENT_LEN
-            and len(texts[i]) < len(superset_text)
-            and texts[i] in superset_text
-            and sigs[i] == sigs[j]
-        ]
-        if len(bases) != 1:
-            continue
-        keeper_idx = bases[0]
-        id_remap[keys[j]] = dict(nodes[keeper_idx].get("ids") or {})
-        _absorb_sources(nodes[keeper_idx], nodes[j], keys[j])
-        removed_indexes.add(j)
-        merged_count += 1
-
-    kept_nodes = [n for idx, n in enumerate(nodes) if idx not in removed_indexes]
-
-    if id_remap:
-        for node in kept_nodes:
-            parent = node.get("parent")
-            if parent is None or not isinstance(parent, dict):
-                continue
-            pkey = _parent_key(parent, key_fn)
-            if pkey is not None and pkey in id_remap:
-                node["parent"] = {"path": parent.get("path"), "ids": id_remap[pkey]}
-
-    return kept_nodes, {"merged_count": merged_count}
+    groups: list[dict[str, Any]] = []
+    for path, ids_list in instances_by_path.items():
+        texts = [_canonical_ids_text(ids) for ids in ids_list]
+        for keep, merge in sorted(containment_groups(texts).items()):
+            groups.append({"path": path, "keep": keep, "merge": merge})
+    return groups
 
 
 def resolve_skeleton_nodes(

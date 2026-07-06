@@ -186,7 +186,10 @@ def bind_provenance(
     """
     from ..extractors.contracts.dense.catalog import build_node_catalog
 
-    catalog = build_node_catalog(template)
+    # include_references: nodes that exist only via reference fields (id-only
+    # links filled by their parent) still live in the graph and must be walked
+    # here, or they would end up with no provenance at all.
+    catalog = build_node_catalog(template, include_references=True)
     spec_by_path = {s.path: s for s in catalog.nodes}
     children_by_parent: dict[str, list[Any]] = {}
     for spec in catalog.nodes:

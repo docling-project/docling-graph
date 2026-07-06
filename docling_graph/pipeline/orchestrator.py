@@ -118,7 +118,7 @@ class PipelineOrchestrator:
             )
             logger.info(f"Output directory: {context.output_manager.get_document_dir()}")
 
-        logger.info("--- Starting Docling-Graph Pipeline ---")
+        logger.info("Starting Docling-Graph Pipeline")
 
         try:
             for stage in self.stages:
@@ -230,7 +230,7 @@ class PipelineOrchestrator:
                 logger.info(f"Saved conversion results to {output_dir}")
 
             logger.info(
-                f"--- Pipeline Completed Successfully (in {pipeline_processing_time:.2f}s) ---"
+                f"Pipeline Completed Successfully (in {pipeline_processing_time:.2f}s)"
             )
             return context
 

@@ -51,6 +51,25 @@ def _is_component(model: type[BaseModel]) -> bool:
     return cfg.get("is_entity") is False
 
 
+def _is_reference_field(field_info: Any, target_model: type[BaseModel] | None) -> bool:
+    """True for entity-link fields declared reference-only in the template.
+
+    A field marked ``json_schema_extra={"graph_reference": True}`` (the
+    ``edge(..., reference=True)`` helper pattern) carries id-only references to
+    entities whose full detail lives elsewhere. Such fields are filled BY THE
+    PARENT's own fill call (projected down to the target's graph_id_fields)
+    instead of being skeleton-discovered: per-parent membership then survives
+    (skeleton dedup collapses same-id children across parents) and there is no
+    parent reference to drift. The marker is honored only when the target
+    actually has identity fields — a reference to an identity-less model is
+    meaningless and falls back to normal handling.
+    """
+    if target_model is None or not _get_id_fields(target_model):
+        return False
+    extra = getattr(field_info, "json_schema_extra", None)
+    return isinstance(extra, dict) and extra.get("graph_reference") is True
+
+
 def _field_aliases(field_name: str, field_info: Any) -> list[str]:
     values: list[str] = []
     alias = getattr(field_info, "alias", None)
@@ -127,8 +146,18 @@ class NodeCatalog:
         return [n.path for n in self.nodes]
 
 
-def build_node_catalog(template: type[BaseModel]) -> NodeCatalog:
-    """Build NodeCatalog from a Pydantic template. Entities and edge-labeled components only."""
+def build_node_catalog(
+    template: type[BaseModel], *, include_references: bool = False
+) -> NodeCatalog:
+    """Build NodeCatalog from a Pydantic template. Entity paths only: components
+    are filled inline with their parent, and reference fields
+    (``json_schema_extra={"graph_reference": True}``) are filled id-only by the
+    parent — neither is skeleton-discovered.
+
+    ``include_references=True`` restores paths for reference fields (and their
+    subtrees). The provenance binder uses this: nodes that exist in the graph
+    only through references still need to be walked and grounded.
+    """
     nodes: list[NodeSpec] = []
     field_aliases: dict[str, str] = {}
 
@@ -171,27 +200,36 @@ def build_node_catalog(template: type[BaseModel]) -> NodeCatalog:
                 field_aliases.setdefault(alias_name, fname)
             segment = f".{fname}" if path_prefix else fname
             path = f"{path_prefix}{segment}" if path_prefix else fname
-            extra = getattr(field_info, "json_schema_extra", None) or {}
-            raw_edge_label = extra.get("edge_label") if isinstance(extra, dict) else None
-            edge_label = str(raw_edge_label) if raw_edge_label is not None else None
             target_model = _unwrap_model_from_annotation(field_info.annotation)
             origin = get_origin(field_info.annotation)
             if target_model is None:
                 continue
 
-            is_entity_child = _is_entity(target_model)
-            is_component_child = _is_component(target_model)
-            if is_entity_child or (is_component_child and edge_label):
+            if _is_reference_field(field_info, target_model) and not include_references:
+                # Reference fields get no path (and no descendant paths): the
+                # parent's projected fill schema re-includes them id-only, and
+                # the GraphConverter resolves the id-only instances onto the
+                # canonical nodes via the NodeIDRegistry.
+                continue
+
+            if _is_entity(target_model) and not _is_component(target_model):
                 if origin is list:
                     list_path = f"{path}[]"
                     add_node(list_path, target_model, parent_entity_path, fname, True)
-                    next_entity_path = list_path if is_entity_child else parent_entity_path
-                    walk(list_path, target_model, next_entity_path, from_root=False)
+                    walk(list_path, target_model, list_path, from_root=False)
                 else:
                     add_node(path, target_model, parent_entity_path, fname, False)
-                    next_entity_path = path if is_entity_child else parent_entity_path
-                    walk(path, target_model, next_entity_path, from_root=False)
+                    walk(path, target_model, path, from_root=False)
             else:
+                # Components (is_entity=False) never become catalog paths — even
+                # with an edge_label. They are value objects without identity,
+                # which Phase 1 cannot reliably discover (ids={}), so hoisting
+                # them starved the parent's fill schema of exactly these fields
+                # (conditions/franchises stayed empty while direct mode filled
+                # them inline). They stay in the parent's projected fill schema
+                # and the GraphConverter embeds them inline regardless. The walk
+                # still recurses so entities nested below a component keep paths
+                # parented to the nearest entity ancestor.
                 if origin is list:
                     walk(f"{path}[]", target_model, parent_entity_path, from_root=False)
                 else:
@@ -226,10 +264,48 @@ def get_model_for_path(template: type[BaseModel], path: str) -> type[BaseModel] 
     return path_to_model.get(path)
 
 
+def _reference_projection(
+    field_info: Any, target_model: type[BaseModel], is_list: bool
+) -> dict[str, Any]:
+    """Id-fields-only schema for a reference field, self-contained (no $refs)."""
+    id_fields = _get_id_fields(target_model)
+    try:
+        target_props = target_model.model_json_schema().get("properties") or {}
+    except Exception:
+        target_props = {}
+    item_props: dict[str, Any] = {}
+    for id_field in id_fields:
+        source = target_props.get(id_field)
+        item_props[id_field] = (
+            {k: v for k, v in source.items() if k in ("type", "description", "examples")}
+            if isinstance(source, dict)
+            else {"type": "string"}
+        )
+    item_schema: dict[str, Any] = {
+        "type": "object",
+        "description": (
+            f"Identity-only reference to a {target_model.__name__}: output ONLY "
+            f"{', '.join(repr(f) for f in id_fields)}, matching the name used where the "
+            f"{target_model.__name__} is described in full."
+        ),
+        "properties": item_props,
+        "required": list(id_fields),
+    }
+    field_description = getattr(field_info, "description", None)
+    if is_list:
+        out: dict[str, Any] = {"type": "array", "items": item_schema}
+    else:
+        out = dict(item_schema)
+    if isinstance(field_description, str) and field_description:
+        out["description"] = field_description
+    return out
+
+
 def build_projected_fill_schema(
     template: type[BaseModel], spec: NodeSpec, catalog: NodeCatalog
 ) -> str:
-    """Return JSON schema for filling one path: model schema minus nested child path fields."""
+    """Return JSON schema for filling one path: the model schema minus nested
+    child path fields, with reference fields projected down to identity only."""
     model = get_model_for_path(template, spec.path)
     if model is None:
         return "{}"
@@ -243,6 +319,16 @@ def build_projected_fill_schema(
         if child.parent_path == spec.path and child.field_name
     }
     keep_props = {k: v for k, v in props.items() if k not in child_fields}
+    for fname, field_info in model.model_fields.items():
+        if fname not in keep_props:
+            continue
+        target_model = _unwrap_model_from_annotation(field_info.annotation)
+        if not _is_reference_field(field_info, target_model):
+            continue
+        assert target_model is not None  # guaranteed by _is_reference_field
+        keep_props[fname] = _reference_projection(
+            field_info, target_model, is_list=get_origin(field_info.annotation) is list
+        )
     schema = dict(schema)
     schema["properties"] = keep_props
     if isinstance(schema.get("required"), list):
@@ -250,13 +336,32 @@ def build_projected_fill_schema(
     return json.dumps(schema, indent=2)
 
 
+# Character budget per path description in the skeleton semantic guide. Phase 1
+# decides identity and classification, so schema authors should front-load the
+# discriminating sentence of each class docstring within this budget.
+_GUIDE_DESCRIPTION_CHARS = 240
+
+
 def build_skeleton_semantic_guide(catalog: NodeCatalog) -> str:
-    """Skeleton-only semantic guide: path, node type, id_fields. No other property names or descriptions."""
+    """Per-path semantic guide for Phase 1: path, node type, id_fields, plus the
+    class docstring (truncated) and identity examples.
+
+    This is where the template author's classification guidance ("an Option is
+    not an Offre", granularity rules, canonical naming) reaches the skeleton —
+    without it the model assigns paths blind and misfiles instances. Non-identity
+    property names are still deliberately absent: Phase 1 must not extract values.
+    """
     lines: list[str] = []
     for spec in catalog.nodes:
         path_label = '""' if spec.path == "" else spec.path
         ids_label = ", ".join(spec.id_fields) if spec.id_fields else "none (use ids={})"
-        lines.append(f"- {path_label} ({spec.node_type}) ids=[{ids_label}]")
+        line = f"- {path_label} ({spec.node_type}) ids=[{ids_label}]"
+        description = " ".join((spec.description or "").split())
+        if description:
+            line += f" — {description[:_GUIDE_DESCRIPTION_CHARS]}"
+        if spec.example_hint:
+            line += f" ({spec.example_hint.strip()})"
+        lines.append(line)
     return "\n".join(lines)
 
 

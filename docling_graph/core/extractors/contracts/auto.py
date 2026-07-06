@@ -31,8 +31,12 @@ logger = logging.getLogger(__name__)
 CHARS_PER_TOKEN = 4
 # Direct is viable while the input stays within this multiple of the output
 # character capacity; beyond it a single response cannot represent the
-# document without truncating.
-DIRECT_OVERFLOW_RATIO = 2.0
+# document without silently self-rationing. 1.0 is deliberate (R=1.0): with a
+# verbatim-heavy template the output scales with the document, and at ratio
+# 2.0 a 62k-char contract slipped through direct and lost 57% of its verbatim
+# clause texts with no truncation warning. When output pressure is detected,
+# route to dense early.
+DIRECT_OVERFLOW_RATIO = 1.0
 
 
 @dataclass(frozen=True)
