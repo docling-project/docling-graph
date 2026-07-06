@@ -1087,6 +1087,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#amazon-bedrock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amazon Bedrock
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1882,6 +1893,34 @@
     
   
     Docling Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
   
 
     
@@ -4365,6 +4404,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#amazon-bedrock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amazon Bedrock
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4642,6 +4692,7 @@
 <li><strong>Mistral AI</strong> (Mistral Small, Medium, Large)</li>
 <li><strong>Google Gemini</strong> (Gemini Pro, Gemini Flash)</li>
 <li><strong>IBM watsonx</strong> (Granite, Llama, Mixtral)</li>
+<li><strong>Amazon Bedrock</strong> (Anthropic Claude, Llama, Mistral, Titan) — uses AWS credentials, not a single API key</li>
 </ul>
 <div class="admonition info">
 <p class="admonition-title">API Keys Not Required</p>
@@ -4667,6 +4718,11 @@
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_API_KEY</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_PROJECT_ID</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_URL</span><span class="o">=</span><span class="s2">&quot;https://us-south.ml.cloud.ibm.com&quot;</span><span class="w">  </span><span class="c1"># Optional</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># Amazon Bedrock (AWS credential chain — not a single API key)</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION_NAME</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span><span class="w">   </span><span class="c1"># required</span>
 </code></pre></div>
 <p>Then reload:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc<span class="w">  </span><span class="c1"># or ~/.zshrc</span>
@@ -4694,14 +4750,8 @@
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>set WATSONX_PROJECT_ID=...
 </code></pre></div>
 <h3 id="using-env-file-recommended">Using .env File (Recommended)<a class="headerlink" href="#using-env-file-recommended" title="Permanent link">&para;</a></h3>
-<p>Create a <code>.env</code> file in your project root:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># .env file
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>OPENAI_API_KEY=sk-...
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>MISTRAL_API_KEY=...
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>GEMINI_API_KEY=...
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>WATSONX_API_KEY=...
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>WATSONX_PROJECT_ID=...
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>WATSONX_URL=https://us-south.ml.cloud.ibm.com
+<p>Copy the provided <a href="https://github.com/docling-project/docling-graph/blob/main/.env.example"><code>.env.example</code></a> to <code>.env</code> in your project root and fill in only the values for the provider(s) you use:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 <p><strong>Security</strong>: Add <code>.env</code> to <code>.gitignore</code>:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;.env&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
@@ -4939,58 +4989,142 @@
 <p class="admonition-title">watsonx Configuration</p>
 <p>For detailed watsonx configuration, refer to the <a href="../../pipeline-configuration/model-configuration/">Model Configuration</a> guide.</p>
 </div>
+<h3 id="amazon-bedrock">Amazon Bedrock<a class="headerlink" href="#amazon-bedrock" title="Permanent link">&para;</a></h3>
+<p>Bedrock is different from the other providers: it authenticates with <strong>AWS
+credentials</strong> (the standard AWS credential chain) rather than a single API key,
+and it requires the <code>boto3</code> package.</p>
+<h4 id="1-install-the-extra">1. Install the extra<a class="headerlink" href="#1-install-the-extra" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;docling-graph[bedrock]&#39;</span>
+</code></pre></div>
+<h4 id="2-request-model-access">2. Request model access<a class="headerlink" href="#2-request-model-access" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Open the <a href="https://console.aws.amazon.com/bedrock/">Amazon Bedrock console</a></li>
+<li>Go to <strong>Model access</strong> and request access to the model(s) you need (e.g. Anthropic Claude)</li>
+<li>Note the <strong>model ID</strong> and the <strong>region</strong> it is available in</li>
+</ol>
+<h4 id="3-provide-credentials">3. Provide credentials<a class="headerlink" href="#3-provide-credentials" title="Permanent link">&para;</a></h4>
+<p>Any method the AWS credential chain understands works — pick one:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Static keys</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;your-access-key&quot;</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;your-secret-key&quot;</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION_NAME</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span><span class="w">          </span><span class="c1"># required</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="c1"># ...or a named profile / SSO</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my-profile&quot;</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION_NAME</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="c1"># ...or a Bedrock bearer token</span>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_BEARER_TOKEN_BEDROCK</span><span class="o">=</span><span class="s2">&quot;your-bearer-token&quot;</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION_NAME</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+</code></pre></div>
+<p>On EC2/ECS/Lambda with an attached <strong>IAM role</strong>, no keys are needed at all —
+only <code>AWS_REGION_NAME</code> (or the region baked into the instance metadata).</p>
+<div class="admonition warning">
+<p class="admonition-title">Region is required</p>
+<p>Unlike other providers, Bedrock has no default region. If <code>AWS_REGION_NAME</code>
+is unset (and no region is available from your AWS profile/instance),
+requests fail. Note that Bedrock reads <code>AWS_REGION_NAME</code>, not <code>AWS_REGION</code>.</p>
+</div>
+<h4 id="4-verify">4. Verify<a class="headerlink" href="#4-verify" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import os; print(&#39;AWS creds set:&#39;, bool(os.getenv(&#39;AWS_ACCESS_KEY_ID&#39;) or os.getenv(&#39;AWS_PROFILE&#39;) or os.getenv(&#39;AWS_BEARER_TOKEN_BEDROCK&#39;))); print(&#39;Region set:&#39;, bool(os.getenv(&#39;AWS_REGION_NAME&#39;)))&quot;</span>
+</code></pre></div>
+<h4 id="5-test">5. Test<a class="headerlink" href="#5-test" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--inference<span class="w"> </span>remote<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--provider<span class="w"> </span>bedrock<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>--model<span class="w"> </span>anthropic.claude-3-5-sonnet-20240620-v1:0
+</code></pre></div>
+<h4 id="available-models_4">Available Models<a class="headerlink" href="#available-models_4" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Model ID</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>anthropic.claude-3-5-sonnet-20240620-v1:0</code></td>
+<td>Default; strong quality, supports structured output</td>
+</tr>
+<tr>
+<td><code>anthropic.claude-3-haiku-20240307-v1:0</code></td>
+<td>Fast, economical</td>
+</tr>
+<tr>
+<td><code>us.anthropic.claude-3-5-sonnet-20241022-v2:0</code></td>
+<td>Inference-profile id (region-prefixed) for newer Claude</td>
+</tr>
+<tr>
+<td><code>meta.llama3-70b-instruct-v1:0</code></td>
+<td>Llama 3 70B</td>
+</tr>
+<tr>
+<td><code>mistral.mistral-large-2402-v1:0</code></td>
+<td>Mistral Large</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Structured output</p>
+<p>Schema-enforced output uses Bedrock's Converse API and works for models that
+support it (e.g. Anthropic Claude). For models that do not, run with
+<code>--no-schema-enforced-llm</code> (CLI) or <code>structured_output=False</code> (Python API).</p>
+</div>
 <h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
 <h3 id="check-all-keys">Check All Keys<a class="headerlink" href="#check-all-keys" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="s">import os</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="s">providers = {</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="s">    &#39;OpenAI&#39;: &#39;OPENAI_API_KEY&#39;,</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="s">    &#39;Mistral&#39;: &#39;MISTRAL_API_KEY&#39;,</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="s">    &#39;Gemini&#39;: &#39;GEMINI_API_KEY&#39;,</span>
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="s">    &#39;watsonx API&#39;: &#39;WATSONX_API_KEY&#39;,</span>
-<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="s">    &#39;watsonx Project&#39;: &#39;WATSONX_PROJECT_ID&#39;</span>
-<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="s">}</span>
-<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>
-<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="s">for name, var in providers.items():</span>
-<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="s">    value = os.getenv(var)</span>
-<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="s">    status = &#39;✅ Set&#39; if value else &#39;❌ Not set&#39;</span>
-<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="s">    print(f&#39;{name:20} {status}&#39;)</span>
-<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="s">EOF</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="s">import os</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="s">providers = {</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="s">    &#39;OpenAI&#39;: &#39;OPENAI_API_KEY&#39;,</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="s">    &#39;Mistral&#39;: &#39;MISTRAL_API_KEY&#39;,</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="s">    &#39;Gemini&#39;: &#39;GEMINI_API_KEY&#39;,</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="s">    &#39;watsonx API&#39;: &#39;WATSONX_API_KEY&#39;,</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="s">    &#39;watsonx Project&#39;: &#39;WATSONX_PROJECT_ID&#39;</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="s">}</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="s">for name, var in providers.items():</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="s">    value = os.getenv(var)</span>
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a><span class="s">    status = &#39;✅ Set&#39; if value else &#39;❌ Not set&#39;</span>
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a><span class="s">    print(f&#39;{name:20} {status}&#39;)</span>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a><span class="s">EOF</span>
 </code></pre></div>
 <p>Expected output:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>OpenAI               ✅ Set
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>Mistral              ✅ Set
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>Gemini               ✅ Set
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>watsonx API          ✅ Set
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>watsonx Project      ✅ Set
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>OpenAI               ✅ Set
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>Mistral              ✅ Set
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>Gemini               ✅ Set
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>watsonx API          ✅ Set
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>watsonx Project      ✅ Set
 </code></pre></div></p>
 <h3 id="test-connection">Test Connection<a class="headerlink" href="#test-connection" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Test with a simple extraction</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>docs/examples/data/sample.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span>--inference<span class="w"> </span>remote<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--provider<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span>--model<span class="w"> </span>gpt-3.5-turbo<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">    </span>--output-dir<span class="w"> </span>test_output
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Test with a simple extraction</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>docs/examples/data/sample.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">    </span>--inference<span class="w"> </span>remote<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">    </span>--provider<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">    </span>--model<span class="w"> </span>gpt-3.5-turbo<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="w">    </span>--output-dir<span class="w"> </span>test_output
 </code></pre></div>
 <h2 id="security-best-practices">Security Best Practices<a class="headerlink" href="#security-best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="1-never-commit-api-keys">1. Never Commit API Keys<a class="headerlink" href="#1-never-commit-api-keys" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Add to .gitignore</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;.env&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;*.key&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;secrets/&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Add to .gitignore</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;.env&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;*.key&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;secrets/&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
 </code></pre></div>
 <h3 id="2-use-environment-variables">2. Use Environment Variables<a class="headerlink" href="#2-use-environment-variables" title="Permanent link">&para;</a></h3>
 <p><strong>Don't</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># ❌ Hardcoded in code</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">api_key</span> <span class="o">=</span> <span class="s2">&quot;sk-...&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># ❌ Hardcoded in code</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">api_key</span> <span class="o">=</span> <span class="s2">&quot;sk-...&quot;</span>
 </code></pre></div></p>
 <p><strong>Do</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># ✅ From environment</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;OPENAI_API_KEY&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># ✅ From environment</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;OPENAI_API_KEY&#39;</span><span class="p">)</span>
 </code></pre></div></p>
 <h3 id="3-rotate-keys-regularly">3. Rotate Keys Regularly<a class="headerlink" href="#3-rotate-keys-regularly" title="Permanent link">&para;</a></h3>
 <ul>
@@ -5064,18 +5198,18 @@
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="api-key-not-recognized">🐛 API key not recognized<a class="headerlink" href="#api-key-not-recognized" title="Permanent link">&para;</a></h3>
 <p><strong>Check</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$OPENAI_API_KEY</span><span class="w">  </span><span class="c1"># Should show your key</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$OPENAI_API_KEY</span><span class="w">  </span><span class="c1"># Should show your key</span>
 </code></pre></div></p>
 <p><strong>If empty</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Re-export</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># Or reload shell config</span>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Re-export</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># Or reload shell config</span>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc
 </code></pre></div></p>
 <h3 id="authentication-failed">🐛 Authentication failed<a class="headerlink" href="#authentication-failed" title="Permanent link">&para;</a></h3>
 <p><strong>Symptoms</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>Error: Invalid API key
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>Error: Invalid API key
 </code></pre></div></p>
 <p><strong>Solutions</strong>:</p>
 <ol>
@@ -5102,7 +5236,7 @@
 </ol>
 <h3 id="rate-limit-exceeded">🐛 Rate limit exceeded<a class="headerlink" href="#rate-limit-exceeded" title="Permanent link">&para;</a></h3>
 <p><strong>Symptoms</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>Error: Rate limit exceeded
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>Error: Rate limit exceeded
 </code></pre></div></p>
 <p><strong>Solutions</strong>:</p>
 <ol>
@@ -5123,7 +5257,7 @@
 </ol>
 <h3 id="insufficient-credits">🐛 Insufficient credits<a class="headerlink" href="#insufficient-credits" title="Permanent link">&para;</a></h3>
 <p><strong>Symptoms</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>Error: Insufficient credits
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>Error: Insufficient credits
 </code></pre></div></p>
 <p><strong>Solutions</strong>:</p>
 <ol>
@@ -5177,6 +5311,12 @@
 <td>Enterprise features</td>
 <td>Setup complexity</td>
 <td>Enterprise use</td>
+</tr>
+<tr>
+<td><strong>Bedrock</strong></td>
+<td>AWS-native, IAM auth, model choice</td>
+<td>Requires AWS setup + model access</td>
+<td>AWS-hosted workloads</td>
 </tr>
 </tbody>
 </table>

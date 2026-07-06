@@ -1919,6 +1919,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -4674,7 +4702,7 @@
 <p>Install the latest release from PyPI:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
 </code></pre></div>
-<p>This installs the core package with VLM support and LiteLLM (for LLM providers). No extra steps are required for remote or local LLM backends.</p>
+<p>This installs the core package with LiteLLM (for remote and local LLM backends). No extra steps are required for LLM-based extraction. The VLM backend (local NuExtract models, requires PyTorch) needs the <code>vlm</code> extra: <code>pip install "docling-graph[vlm]"</code>.</p>
 <p><strong>Verify installation:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docling-graph<span class="w"> </span>--version
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docling-graph<span class="w"> </span>--help
@@ -4705,7 +4733,7 @@
 <h4 id="step-3-install-dependencies">Step 3: Install Dependencies<a class="headerlink" href="#step-3-install-dependencies" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>uv<span class="w"> </span>sync
 </code></pre></div>
-<p>This installs the same core package as PyPI (VLM + LiteLLM). Use <code>uv sync --extra dev</code> for development tools.</p>
+<p>This installs the same core package as PyPI (LiteLLM included; VLM excluded by default). Use <code>uv sync --extra vlm</code> for VLM support, or <code>uv sync --extra dev</code> for development tools.</p>
 <h4 id="step-4-verify-installation">Step 4: Verify Installation<a class="headerlink" href="#step-4-verify-installation" title="Permanent link">&para;</a></h4>
 <p>When installed from source, run the CLI with <code>uv run</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>--version
@@ -4729,8 +4757,8 @@
 <strong>GPU</strong>: Not required</p>
 <h3 id="scenario-2-local-vlm-gpu-required">Scenario 2: Local VLM (GPU Required)<a class="headerlink" href="#scenario-2-local-vlm-gpu-required" title="Permanent link">&para;</a></h3>
 <p>For users with GPU who want local inference:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Install from PyPI</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Install from PyPI with VLM support</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;docling-graph[vlm]&quot;</span>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Verify GPU</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>nvidia-smi
@@ -4743,8 +4771,8 @@
 <strong>GPU</strong>: Required</p>
 <h3 id="scenario-3-full-local-setup-gpu-required">Scenario 3: Full Local Setup (GPU Required)<a class="headerlink" href="#scenario-3-full-local-setup-gpu-required" title="Permanent link">&para;</a></h3>
 <p>For users who want all local capabilities:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Install from PyPI</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Install from PyPI with VLM support</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;docling-graph[vlm]&quot;</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Verify GPU</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>nvidia-smi

@@ -1442,6 +1442,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#doclang-skip-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DocLang (skip conversion)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1482,10 +1493,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#doclingdocument-json" class="md-nav__link">
+  <a href="#doclingdocument-json-and-doclang" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DoclingDocument JSON
+        DoclingDocument JSON and DocLang
       
     </span>
   </a>
@@ -1799,6 +1810,34 @@
     
   
     Docling Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
   
 
     
@@ -4199,6 +4238,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#doclang-skip-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DocLang (skip conversion)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4239,10 +4289,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#doclingdocument-json" class="md-nav__link">
+  <a href="#doclingdocument-json-and-doclang" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DoclingDocument JSON
+        DoclingDocument JSON and DocLang
       
     </span>
   </a>
@@ -4469,7 +4519,7 @@
 
 
 <h1 id="input-formats">Input Formats<a class="headerlink" href="#input-formats" title="Permanent link">&para;</a></h1>
-<p>Docling Graph uses a unified ingestion path: all inputs go through Docling except DoclingDocument JSON (which skips conversion), using a unified path: all inputs are converted through Docling; only DoclingDocument JSON skips conversion. See <a href="https://docling-project.github.io/docling/usage/supported_formats/">Docling supported formats</a> for what Docling accepts.</p>
+<p>Docling Graph uses a unified ingestion path: all inputs go through Docling except DoclingDocument JSON and DocLang files (which skip conversion). See <a href="https://docling-project.github.io/docling/usage/supported_formats/">Docling supported formats</a> for what Docling accepts.</p>
 <h2 id="input-normalization-process">Input Normalization Process<a class="headerlink" href="#input-normalization-process" title="Permanent link">&para;</a></h2>
 <p>The pipeline automatically detects and validates input types, routing them through the appropriate processing stages:</p>
 <pre class="mermaid"><code>%%{init: {'theme': 'redux-dark', 'look': 'default', 'layout': 'elk'}}%%
@@ -4542,6 +4592,7 @@ flowchart TD
     class Output output</code></pre>
 <p><strong>Key behavior</strong>:
 - <strong>DoclingDocument JSON</strong>: Loaded directly; conversion is skipped.
+- <strong>DocLang (<code>.dclg</code>, <code>.dclg.xml</code>, <code>.dclx</code>)</strong>: Parsed directly into a DoclingDocument; the heavy conversion model stack (OCR/layout/VLM) is skipped.
 - <strong>All other inputs</strong>: Normalized (e.g. URL download, text to temp .md), then sent to Docling. Docling validates format; unsupported types raise Docling errors.
 - <strong>URLs</strong>: Downloaded to a temp file; path is passed to Docling.</p>
 <h2 id="supported-input-formats">Supported Input Formats<a class="headerlink" href="#supported-input-formats" title="Permanent link">&para;</a></h2>
@@ -4678,21 +4729,50 @@ flowchart TD
 <a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="p">}</span>
 </code></pre></div></p>
 <hr />
+<h3 id="doclang-skip-conversion">DocLang (skip conversion)<a class="headerlink" href="#doclang-skip-conversion" title="Permanent link">&para;</a></h3>
+<p><strong>Description</strong>: <a href="https://github.com/doclang-project/doclang">DocLang</a> is an XML markup format that carries a document's content, structure, and geometry in one representation. Because it already holds the parsed document, Docling Graph parses it directly and skips the expensive conversion model stack.</p>
+<p><strong>File Extensions</strong>: <code>.dclg</code>, <code>.dclg.xml</code> (bare XML document) and <code>.dclx</code> (OPC ZIP archive, which may bundle page images). A bare <code>.xml</code> file whose root element is <code>&lt;doclang&gt;</code> is also detected.</p>
+<p><strong>Use Cases</strong>:
+- Feeding documents produced by other DocLang-aware tools.
+- Re-ingesting a <code>document.dclg</code> that Docling Graph exported (see <a href="../export-configuration/">Export Configuration</a>) to skip re-conversion. For the highest-fidelity re-input of a Docling Graph run, prefer the exported <code>document.json</code> (lossless); DocLang re-normalizes coordinates to a 512-grid.</p>
+<p><strong>CLI Example</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.dclg<span class="w"> </span>-t<span class="w"> </span>templates.billing_document.BillingDocument
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>archive.dclx<span class="w"> </span>-t<span class="w"> </span>templates.billing_document.BillingDocument
+</code></pre></div></p>
+<p><strong>Python API Example</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.dclg&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.billing_document.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;outputs&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">)</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div></p>
+<div class="admonition note">
+<p class="admonition-title">DocLang input vs. DocLang for the LLM</p>
+<p>Providing DocLang as <strong>input</strong> (this section) only decides how the document is <em>loaded</em>. It is unrelated to <code>llm_input_format</code>, which decides how the document text is <em>serialized for the LLM</em> during extraction (see <a href="../../extraction-process/document-conversion/">Document Conversion</a>).</p>
+</div>
+<hr />
 <h2 id="input-format-detection">Input Format Detection<a class="headerlink" href="#input-format-detection" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>URL</strong>: String starting with <code>http://</code> or <code>https://</code>.</li>
 <li><strong>DoclingDocument</strong>: <code>.json</code> file with DoclingDocument schema (e.g. <code>schema_name</code>, <code>version</code>, <code>pages</code>).</li>
+<li><strong>DocLang</strong>: A file ending in <code>.dclg</code>, <code>.dclg.xml</code>, or <code>.dclx</code>, or a bare <code>.xml</code> whose root element is <code>&lt;doclang&gt;</code>.</li>
 <li><strong>Document</strong>: Everything else (any file path or, in API mode, raw text). Passed to Docling; no extension whitelist in docling-graph.</li>
 </ul>
 <hr />
 <h2 id="processing-pipeline-by-input-type">Processing Pipeline by Input Type<a class="headerlink" href="#processing-pipeline-by-input-type" title="Permanent link">&para;</a></h2>
 <h3 id="all-inputs-except-doclingdocument">All inputs except DoclingDocument<a class="headerlink" href="#all-inputs-except-doclingdocument" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Input → Normalize (e.g. URL download, text → .md) → Docling conversion →
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>DoclingDocument → Chunking → Extraction → Graph → Export
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Input → Normalize (e.g. URL download, text → .md) → Docling conversion →
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>DoclingDocument → Chunking → Extraction → Graph → Export
 </code></pre></div>
-<h3 id="doclingdocument-json">DoclingDocument JSON<a class="headerlink" href="#doclingdocument-json" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Input → Load DoclingDocument → Chunking / Extraction → Graph → Export
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>(Conversion skipped)
+<h3 id="doclingdocument-json-and-doclang">DoclingDocument JSON and DocLang<a class="headerlink" href="#doclingdocument-json-and-doclang" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Input → Load DoclingDocument → Chunking / Extraction → Graph → Export
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>(Conversion skipped)
 </code></pre></div>
 <hr />
 <h2 id="backend-compatibility">Backend Compatibility<a class="headerlink" href="#backend-compatibility" title="Permanent link">&para;</a></h2>
@@ -4716,6 +4796,11 @@ flowchart TD
 <td>Yes</td>
 </tr>
 <tr>
+<td>DocLang (<code>.dclg</code>/<code>.dclx</code>)</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
 <td>Plain text (API)</td>
 <td>Yes</td>
 <td>Converted via Docling</td>
@@ -4727,8 +4812,8 @@ flowchart TD
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
 <h3 id="unsupported-format-from-docling">Unsupported format (from Docling)<a class="headerlink" href="#unsupported-format-from-docling" title="Permanent link">&para;</a></h3>
 <p>When the file type is not supported by Docling:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>ExtractionError: Conversion failed in Docling: ...
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Details: source=/path/to/file.xyz
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>ExtractionError: Conversion failed in Docling: ...
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Details: source=/path/to/file.xyz
 </code></pre></div>
 Use a <a href="https://docling-project.github.io/docling/usage/supported_formats/">Docling-supported format</a> or convert the file first.</p>
 <h3 id="empty-text">Empty text<a class="headerlink" href="#empty-text" title="Permanent link">&para;</a></h3>
@@ -4746,23 +4831,23 @@ Use a <a href="https://docling-project.github.io/docling/usage/supported_formats
 <li><strong>Mixed Workflows</strong>: Use LLM backend for maximum compatibility</li>
 </ul>
 <h3 id="validate-input-files">👍 Validate Input Files<a class="headerlink" href="#validate-input-files" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">source_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;document.txt&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">source_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input file not found: </span><span class="si">{</span><span class="n">source_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="k">if</span> <span class="n">source_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input file is empty&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">source_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;document.txt&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">source_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input file not found: </span><span class="si">{</span><span class="n">source_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="k">if</span> <span class="n">source_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input file is empty&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="handle-urls-safely">👍 Handle URLs Safely<a class="headerlink" href="#handle-urls-safely" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.input.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">URLValidator</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">validator</span> <span class="o">=</span> <span class="n">URLValidator</span><span class="p">()</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid URL: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.input.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">URLValidator</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">validator</span> <span class="o">=</span> <span class="n">URLValidator</span><span class="p">()</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid URL: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="use-appropriate-processing-modes">👍 Use Appropriate Processing Modes<a class="headerlink" href="#use-appropriate-processing-modes" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4774,26 +4859,26 @@ Use a <a href="https://docling-project.github.io/docling/usage/supported_formats
 <h3 id="plain-text-input-is-only-supported-via-python-api">🐛 Plain text input is only supported via Python API<a class="headerlink" href="#plain-text-input-is-only-supported-via-python-api" title="Permanent link">&para;</a></h3>
 <p><strong>Cause</strong>: Trying to pass plain text string via CLI</p>
 <p><strong>Solution</strong>: Use Python API or save text to a <code>.txt</code> file first</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Option 1: Use Python API</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;api&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Option 2: Save to file</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;temp.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">text_content</span><span class="p">)</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;temp.txt&quot;</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;cli&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Option 1: Use Python API</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;api&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Option 2: Save to file</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;temp.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">text_content</span><span class="p">)</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;temp.txt&quot;</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;cli&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="vlm-backend-does-not-support-text-only-inputs">🐛 VLM backend does not support text-only inputs<a class="headerlink" href="#vlm-backend-does-not-support-text-only-inputs" title="Permanent link">&para;</a></h3>
 <p><strong>Cause</strong>: Using VLM backend with text files</p>
 <p><strong>Solution</strong>: Switch to LLM backend</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>notes.txt<span class="w"> </span>-t<span class="w"> </span>templates.Report<span class="w"> </span>--backend<span class="w"> </span>llm
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>notes.txt<span class="w"> </span>-t<span class="w"> </span>templates.Report<span class="w"> </span>--backend<span class="w"> </span>llm
 </code></pre></div>
 <h3 id="url-download-timeout">🐛 URL download timeout<a class="headerlink" href="#url-download-timeout" title="Permanent link">&para;</a></h3>
 <p><strong>Cause</strong>: Slow network or large file</p>
 <p><strong>Solution</strong>: Increase timeout or download manually</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.input.handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">URLInputHandler</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">handler</span> <span class="o">=</span> <span class="n">URLInputHandler</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>  <span class="c1"># 60 seconds</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">temp_path</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.input.handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">URLInputHandler</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">handler</span> <span class="o">=</span> <span class="n">URLInputHandler</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>  <span class="c1"># 60 seconds</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">temp_path</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>

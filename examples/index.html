@@ -1442,6 +1442,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../fundamentals/pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../fundamentals/pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -3761,15 +3789,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#example-scripts-0115" class="md-nav__link">
+  <a href="#example-scripts-0116" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example Scripts (01–15)
+        Example Scripts (01–16)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Example Scripts (01–15)">
+    <nav class="md-nav" aria-label="Example Scripts (01–16)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3810,6 +3838,17 @@
     <span class="md-ellipsis">
       
         Data Grounding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation
       
     </span>
   </a>
@@ -3876,15 +3915,15 @@
 <tbody>
 <tr>
 <td><code>docs/examples/scripts/</code></td>
-<td>Python example scripts (01–15)</td>
+<td>Python example scripts (01–16)</td>
 </tr>
 <tr>
 <td><code>docs/examples/templates/</code></td>
-<td>Pydantic templates (e.g. <code>billing_document.py</code>, <code>rheology_research.py</code>)</td>
+<td>Pydantic templates (e.g. <code>billing_document.py</code>, <code>insurance_terms.py</code>, <code>rheology_research.py</code>)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="example-scripts-0115">Example Scripts (01–15)<a class="headerlink" href="#example-scripts-0115" title="Permanent link">&para;</a></h2>
+<h2 id="example-scripts-0116">Example Scripts (01–16)<a class="headerlink" href="#example-scripts-0116" title="Permanent link">&para;</a></h2>
 <h3 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong><code>01_quickstart_vlm_image.py</code></strong> — VLM extraction from an invoice image</li>
@@ -3902,13 +3941,18 @@
 <ol>
 <li><strong><code>08_chunking_consolidation.py</code></strong> — Chunking and merge behavior</li>
 <li><strong><code>09_batch_processing.py</code></strong> — Batch processing with error handling</li>
-<li><strong><code>10_provider_configs.py</code></strong> — OpenAI, Mistral, Gemini, watsonx</li>
+<li><strong><code>10_provider_configs.py</code></strong> — OpenAI, Mistral, Gemini, watsonx, Amazon Bedrock</li>
 <li><strong><code>12_custom_llm_client.py</code></strong> — Custom LLM client (bring your own URL) with full pipeline</li>
 <li><strong><code>14_streaming_responses.py</code></strong> — Streaming LLM responses for real-time processing and progress feedback</li>
 </ol>
 <h3 id="data-grounding">Data Grounding<a class="headerlink" href="#data-grounding" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong><code>15_provenance_grounding.py</code></strong> — Trace extracted nodes back to source chunks and pages via <code>__provenance__</code> and <code>provenance.json</code></li>
+</ol>
+<h3 id="evaluation">Evaluation<a class="headerlink" href="#evaluation" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong><code>16_extraction_evaluation.py</code></strong> — Score an extracted <code>graph.json</code> against a template-shaped ground-truth JSON (node/edge P/R/F1, attribute completeness, integrity). Domain-agnostic — works with any <code>(template, ground_truth.json, graph.json)</code> triple.</li>
+<li><strong><code>17_benchmark_aggregate.py</code></strong> — Aggregate a benchmark matrix tree (documents × contracts × LLM formats × repeats) of Example 16 outputs into <code>_aggregate.json</code> + a synthesis report with micro node/edge F1, dense retention, and chunk coverage. Driven by <code>run_benchmark.sh</code>.</li>
 </ol>
 <p>For CLI usage, see <a href="../usage/cli/">CLI Reference</a> and <a href="../usage/cli/convert-command/">convert command</a>.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
@@ -3919,6 +3963,12 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;https://upload.wikimedia.org/wikipedia/commons/9/9f/Swiss_QR-Bill_example.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;vlm&quot;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Score a completed run against a ground-truth JSON</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>docs/examples/scripts/16_extraction_evaluation.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span>--graph<span class="w"> </span>outputs/RUN_DIR/docling_graph/graph.json<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span>--truth<span class="w"> </span>ground_truth.json<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.insurance_terms.AssuranceMRH&quot;</span>
 </code></pre></div>
 <h2 id="learning-path">Learning Path<a class="headerlink" href="#learning-path" title="Permanent link">&para;</a></h2>
 <ol>

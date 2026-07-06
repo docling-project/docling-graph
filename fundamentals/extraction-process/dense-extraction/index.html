@@ -1460,6 +1460,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -4172,7 +4200,7 @@
 
 <h1 id="dense-extraction">Dense Extraction<a class="headerlink" href="#dense-extraction" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p><strong>Dense extraction</strong> is an LLM extraction contract for <strong>many-to-one</strong> processing that combines granular document structure with rich per-node data via a <strong>two-phase "Skeleton-then-Fill"</strong> flow. It is fully autonomous and designed for chunked, structure-aware extraction.</p>
+<p><strong>Dense extraction</strong> is an LLM extraction contract for <strong>many-to-one</strong> processing that combines granular document structure with rich per-node data via a <strong>two-phase "skeleton-then-flesh"</strong> flow. It is fully autonomous and designed for chunked, structure-aware extraction.</p>
 <p>Set <code>extraction_contract="dense"</code> in your config or use <code>--extraction-contract dense</code> on the CLI. Chunking must be enabled (<code>use_chunking=True</code>, which is the default for many-to-one).</p>
 <p><strong>Structured output:</strong> Dense currently uses <strong>legacy prompt-schema mode only</strong> (no API-level structured output). This avoids provider-specific failures, empty/null JSON on skeleton batches, and repeated structured-output failures on fill. The global <code>structured_output</code> setting does not apply to dense.</p>
 <p><strong>When to use:</strong></p>
@@ -4180,13 +4208,14 @@
 <li>You want both <strong>fine-grained structure</strong> (many distinct entities, e.g. every figure/experiment/curve) and <strong>dense attribute data</strong> (protocols, derived quantities, model fits) in one run.</li>
 <li>You need chunk-aware many-to-one extraction that first discovers entity instances and then fills them with complete per-node data.</li>
 </ul>
-<p><strong>When to use direct or dense:</strong></p>
+<p><strong>When to use direct, dense, or auto:</strong></p>
 <ul>
 <li><strong>Direct</strong>: Flat or simple templates; single-pass extraction.</li>
 <li><strong>Dense</strong>: Complex or long documents where you need strong structure discovery plus rich per-entity data.</li>
+<li><strong>Auto</strong>: Let the pipeline decide per document. After conversion, when the real document size is known, <code>extraction_contract="auto"</code> resolves to direct only when a single full-document call fits both the model's context window and its output-token budget, and to dense otherwise. The decision and the numbers behind it are logged (<code>[AutoContract] Resolved contract=...</code>). Recommended when document sizes vary or when running local models with modest context windows.</li>
 </ul>
 <blockquote>
-<p><strong>Large documents:</strong> a direct extraction returns the whole result in one LLM response, so a document much larger than the model's output budget will truncate no matter how the prompt is tuned. When this is detected on a direct run, the backend prints a one-time hint suggesting <code>extraction_contract="dense"</code>, which splits the work across many calls.</p>
+<p><strong>Large documents:</strong> a direct extraction returns the whole result in one LLM response, so a document much larger than the model's output budget will truncate no matter how the prompt is tuned. When this is detected on a direct run, the backend prints a one-time hint suggesting <code>extraction_contract="dense"</code> (or <code>"auto"</code>), which splits the work across many calls. Full-document calls whose input arithmetically cannot fit the model's context window are refused up front with an actionable error instead of failing after doomed round-trips to the provider.</p>
 </blockquote>
 <hr />
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
@@ -4249,6 +4278,12 @@ flowchart TD
 <p><strong>Phase 1 (Skeleton)</strong> — Chunks are packed into token-bounded batches. For each batch, the LLM is asked to <strong>identify every distinct entity</strong> per catalog path using a compact <strong>handle contract</strong>: each node is</p>
 <ul>
 <li>
+<p><strong>Cross-batch parent references (reference handles)</strong> — In sequential mode, entities found by earlier batches are advertised to later batches as a sliding window of <strong>negative reference handles</strong> (<code>{"i": -3, "path": …, "ids": …}</code>); a new child whose parent was already extracted simply sets <code>"p": -3</code> instead of re-emitting the parent. This closes the dominant dense recall gap observed in the field: models reliably obey a "do not re-output" instruction but ignore its re-emit-the-parent exception, so children of cross-batch parents used to arrive with no parent reference at all and were dropped at merge (retention as low as 38–44% on multi-page documents). Re-emitting the parent with identical ids still works as a fallback; resolved handle references are counted as <code>parents_from_already_found</code> in the run stats.</p>
+</li>
+<li>
+<p><strong>Coverage second pass</strong> — After the batch merge, chunks that produced <strong>no</strong> skeleton node are re-examined once when they collectively hold at least 10% of the document's tokens: they are repacked into fresh batches and retried with the full reference-handle list (so recovered children attach to already-discovered parents) and a prompt that explicitly licenses an empty response. Some zero-yield chunks are legitimately empty boilerplate; this pass recovers the ones that were outshone by entity-dense neighbors in their original batch, at a bounded cost of one extra batch round. Recovered nodes are counted as <code>coverage_pass_recovered</code>.</p>
+</li>
+<li>
 <p><strong>Truncation resilience (split before escalate)</strong> — If a skeleton batch is too entity-dense to fit one response within the model's output budget (common on small local models with a low output cap), the model's output is truncated and nodes are lost. A multi-chunk batch is <strong>split in half and each half retried first</strong> (recursively, down to single chunks) — splitting attacks the actual cause (too much content per call), while escalating the output budget first would just spend tokens chasing a repetition loop. Only once a batch is down to a <strong>single chunk that still can't be split further</strong> is one retry with a larger output budget attempted, bounded by the model's true context window (probed automatically from LiteLLM metadata or the local server's <code>/models</code> endpoint, e.g. vLLM's <code>max_model_len</code> — never configured by the user); if that also truncates, escalation is disabled for the rest of the run. If a single chunk is still unrecoverable after that, it is retried once more with a <strong>minimal root-and-direct-children projection</strong> (a much smaller output ask) so a degraded but chunk-grounded node survives where possible. Only if that also fails is the chunk's content recorded as dropped — surfaced as <code>skeleton_batches_failed</code> / <code>dropped_chunk_ids</code> in the run stats (see below), never silently lost. This is fully domain-agnostic and needs no per-model tuning; it is the primary safeguard that keeps large or deeply nested documents from silently losing entities or failing the quality gate.</p>
 </li>
 <li>
@@ -4258,17 +4293,18 @@ flowchart TD
 <p><strong>Skeleton dedupe (<code>dense_dedupe</code>)</strong> — After batch merge, duplicate skeleton nodes are collapsed.</p>
 <ul>
 <li><code>off</code>: exact canonical-id dedup only (case/diacritic-insensitive; see <a href="../../schema-definition/best-practices/#identity-and-resolution-primitives">identity rules</a>).</li>
-<li><code>standard</code> (default): adds two passes on top of exact dedup — a deterministic <strong>containment merge</strong> (a same-path id that is a superset of another, e.g. <code>"nanoscaled LiFePO4 (LFP)"</code> containing <code>"LiFePO4 (LFP)"</code>, collapses into the shorter/base id, guarded by matching digit signatures and a unique-base requirement) and one cheap id-space LLM call (no document content) that reviews the per-path instance lists and proposes alias groups—instances that refer to the same real-world entity at different granularities (e.g. a generic <code>"LFP slurry batch"</code> alongside the specific <code>"LFP_20vol_5wtPVDF_4wtCB"</code>). Aliases are merged into the most specific instance. The reconciliation prompt explicitly forbids merging instances that differ by any parameter, quantity, condition, date, or index, and invalid responses are ignored, so both passes can only merge, never lose nodes.</li>
-<li><code>aggressive</code>: also fuzzy-merges near-identical same-path identifier strings (OCR noise such as dropped accents or spacing), on top of the containment merge. The similarity threshold is internal, and identifiers that differ in any digit run never merge.</li>
+<li><code>standard</code> (default): adds one id-space LLM reconciliation call (no document content) on top of exact dedup. Deterministic <strong>containment matches</strong> (a same-path id that is a superset of another, e.g. <code>"nanoscaled LiFePO4 (LFP)"</code> containing <code>"LiFePO4 (LFP)"</code>, guarded by matching digit signatures and a unique-base requirement) are <strong>proposed as candidates</strong> in that call — never auto-applied, because containment cannot tell a same-entity refinement from a distinct product tier (<code>"CONFORT PLUS"</code> must survive next to <code>"CONFORT"</code>; the prompt carries an explicit tier guard). The call also reviews the full per-path instance lists for granularity aliases (a generic <code>"LFP slurry batch"</code> alongside the specific <code>"LFP_20vol_5wtPVDF_4wtCB"</code>), is forbidden from merging instances that differ by any parameter, quantity, condition, date, or index, and invalid responses are ignored — the pass can only merge, never lose nodes. A deterministic <strong>co-occurrence veto</strong> backs the prompt guard: instances of the same path first emitted from the <em>same chunk</em> are never merged even when the LLM says so — a document does not name one entity twice side by side, so same-chunk neighbors (two columns of a table header, two bullets of a list) are distinct entities by construction. Every applied merge and every veto is logged at INFO and, in debug mode, written to <code>dense_reconciliation.json</code> (instance lists, containment candidates, the LLM's answer, and the applied/vetoed events).</li>
+<li><code>aggressive</code>: also fuzzy-merges near-identical same-path identifier strings (OCR noise such as dropped accents or spacing) deterministically. The similarity threshold is internal, and identifiers that differ in any digit run never merge.</li>
 </ul>
 </li>
 </ul>
 </li>
 <li>
 <p><strong>Quality gate</strong> — After Phase 1, the pipeline requires a non-empty skeleton with at least one root instance. This is an invariant, not an option. If the gate fails, <code>dense</code> returns <code>None</code> and the strategy falls back to a direct single-call extraction of the full document. A sparse-but-valid dense result is always kept (there is no sparsity veto on dense output; dense relies on this gate instead).</p>
+<p>Two root-identity invariants protect the graph anchor. During Phase 1, a root id value that merely <strong>echoes the template class name</strong> (e.g. <code>reference_document="AssuranceMRH"</code>) is cleared — schema echo is never document data, and it would make the root look filled while being unmatchable. After extraction (both contracts), if <strong>every</strong> root identity field is still empty, the first one falls back to the <strong>source document's stem</strong> (e.g. <code>insurance_terms</code>): the root is a singleton, so a synthetic identity is safe <em>for the root only</em>, and it keeps every root-anchored edge matchable across runs. Non-root nodes never receive synthetic identities; an exported node whose declared identity fields are all empty is reported as an integrity warning by the graph converter instead.</p>
 </li>
 <li>
-<p><strong>Phase 2 (Fill)</strong> — The skeleton is converted to per-path <strong>descriptors</strong> (path, ids, parent). Paths are processed in <strong>bottom-up</strong> order. For each path, descriptors are batched (up to <code>dense_fill_nodes_cap</code> per call). The LLM receives a <strong>scoped document context</strong> (by default, the skeleton batches where the instances were observed plus the document head; the root instance always gets the full document — set <code>dense_fill_context="full"</code> to always send everything) and the complete list of instance identifiers; it returns one filled object per instance, in order, according to the projected schema for that path. Short responses are padded so skeleton instances are never silently dropped, and identity values already captured by the skeleton are restored whenever the fill response omits them or returns something unusable (null, empty string, nested object). Filled objects are merged into a template-shaped root by attaching each object to its parent via descriptor linkage. Because LLMs drift on parent identifiers, the merge applies a <strong>rescue ladder</strong> per instance: exact id match → unique parent instance → unique fuzzy (canonical containment) id match → id-only placeholder parent materialized up the chain. Instances whose parent ids are entirely empty are rescued into a shared id-less bucket parent rather than dropped. After merge, branch nodes with no filled children and no scalar data (barren branches) are pruned — an invariant, not an option. Recoveries and drops are counted, logged, and written to <code>dense_merge_stats.json</code> in debug mode.</p>
+<p><strong>Phase 2 (Flesh)</strong> — The skeleton is converted to per-path <strong>descriptors</strong> (path, ids, parent). Paths are processed in <strong>bottom-up</strong> order. For each path, descriptors are batched (up to <code>dense_fill_nodes_cap</code> per call; paths whose fill schema carries id-only <strong>reference lists</strong> are filled one instance per call — batching sibling parents into one call was the observed cause of one parent absorbing every membership row of a summary table while its siblings stayed empty, and the fill prompt enforces "memberships must be stated for THIS instance" only when that is unambiguous). The LLM receives a <strong>scoped document context</strong> (by default, the skeleton batches where the instances were observed plus the document head; the root instance always gets the full document — set <code>dense_fill_context="full"</code> to always send everything) and the complete list of instance identifiers; it returns one filled object per instance, in order, according to the projected schema for that path. Short responses are padded so skeleton instances are never silently dropped, and identity values already captured by the skeleton are restored whenever the fill response omits them or returns something unusable (null, empty string, nested object). Filled objects are merged into a template-shaped root by attaching each object to its parent via descriptor linkage. Because LLMs drift on parent identifiers, the merge applies a <strong>rescue ladder</strong> per instance: exact id match → unique parent instance → unique fuzzy (canonical containment) id match → unique <strong>co-located</strong> parent (the single parent-path instance observed in the same source chunk, falling back to batch granularity) → id-only placeholder parent materialized up the chain → shared id-less bucket parent. Placeholder and bucket parents are materialized <strong>only when the parent model does not require the missing identity fields</strong>: a rescue parent violating its own required identity would later be deleted by template validation (taking every rescued child with it) or blanked by salvage into a phantom hub, so such orphans are dropped and counted instead. After merge, branch nodes with no filled children and no scalar data (barren branches) are pruned — an invariant, not an option. Recoveries, bucket attachments, and drops are counted, logged, and written to <code>dense_merge_stats.json</code> in debug mode.</p>
 </li>
 <li>
 <p><strong>Output</strong> — A single template-shaped dict (validated to your Pydantic model as with other contracts).y</p>
@@ -4278,9 +4314,12 @@ flowchart TD
 <h2 id="schema-requirements">Schema Requirements<a class="headerlink" href="#schema-requirements" title="Permanent link">&para;</a></h2>
 <p>Dense builds its <strong>own catalog</strong> from your Pydantic template:</p>
 <ul>
-<li><strong>Paths</strong> — Root <code>""</code>, then nested paths like <code>studies[]</code>, <code>studies[].experiments[]</code>. Phase 1 and Phase 2 use only these paths.</li>
+<li><strong>Paths</strong> — Root <code>""</code>, then nested <strong>entity</strong> paths like <code>studies[]</code>, <code>studies[].experiments[]</code>. Phase 1 and Phase 2 use only these paths.</li>
+<li><strong>Components stay inline</strong> — models with <code>is_entity=False</code> never become catalog paths (edge-labeled or not). They are value objects without identity, which Phase 1 cannot reliably discover; their fields remain in the parent's projected fill schema and are filled together with the parent.</li>
+<li><strong>Reference fields get no path</strong> — fields marked <code>edge(..., reference=True)</code> (see <a href="../../schema-definition/relationships/#reference-edges-referencetrue">Relationships — Reference edges</a>) are re-included in the parent's fill schema as <strong>id-only projections</strong>: the parent's own fill call emits the membership list, so per-parent links survive and there is no separately-discovered child whose parent reference could drift.</li>
 <li><strong>Identity</strong> — Entities with <code>graph_id_fields</code> get stable keys for skeleton dedup and parent linkage.</li>
-<li><strong>Projected fill schema</strong> — For Phase 2, the schema for each path is the model schema for that path <strong>minus</strong> nested child-path fields (so the LLM fills one node type at a time).</li>
+<li><strong>Projected fill schema</strong> — For Phase 2, the schema for each path is the model schema for that path <strong>minus</strong> nested entity child-path fields (so the LLM fills one node type at a time), <strong>plus</strong> inline components and id-only reference projections.</li>
+<li><strong>Phase 1 semantic guide</strong> — each path line carries the class docstring's first ~240 characters and identity-field examples; front-load the discriminating sentence of every entity docstring.</li>
 </ul>
 <p>Best practices for identity and linkage from the schema-definition guides apply to dense as well.</p>
 <h3 id="schema-tips-for-dense">Schema tips for dense<a class="headerlink" href="#schema-tips-for-dense" title="Permanent link">&para;</a></h3>
@@ -4314,7 +4353,7 @@ flowchart TD
 </tr>
 <tr>
 <td><code>dense_skeleton_batch_tokens</code></td>
-<td><code>1024</code></td>
+<td><code>2048</code></td>
 <td>Max tokens per skeleton batch (Phase 1). Capped at 4096. Recommended 1024–2048 for long documents so multiple batches (and parallel workers) are used.</td>
 </tr>
 <tr>
@@ -4345,7 +4384,7 @@ flowchart TD
 </tbody>
 </table>
 <p>Mandatory cleanup steps are <strong>invariants</strong> with no config surface: root singleton collapse, the root-required quality gate, barren-branch pruning, identity restoration from skeleton ids, and root-id semantic validation always run. The last clears a root identifier whose field name promises a number (e.g. <code>document_number</code>) but which holds multi-word, digit-free prose — a sparse-document mis-capture where the model grabbed a brand or title for lack of a real number — so Phase 2 can leave it empty instead of locking in the wrong value.</p>
-<p>Every dense run writes its health counters to <code>metadata.json</code> (<code>results.dense</code>) and the markdown report (<strong>Dense Extraction Statistics</strong>): skeleton nodes discovered, effective parallel worker count, Phase 1/2 wall-clock, truncated responses, batch splits, reconciled aliases, recovered/dropped parent links, and <strong>merge retention %</strong> (the fraction of skeleton nodes that survived the fill→graph merge). Two additional counters make source coverage — not just merge health — visible: <code>skeleton_batches_failed</code> and <code>dropped_chunk_ids</code> count chunks that produced <strong>no</strong> skeleton node even after the truncation-recovery ladder above, and <code>chunk_coverage_pct</code> is the fraction of chunks that contributed at least one node. Merge retention can read 100% even when whole chunks were lost upstream of the merge step, so the report renders a prominent warning whenever <code>skeleton_batches_failed &gt; 0</code> rather than letting a lossy run hide behind a clean-looking retention figure. Regressions in these failure modes are therefore visible per run without debugging. With <code>debug=True</code>, artifacts such as <code>dense_skeleton_graph.json</code>, <code>dense_merge_stats.json</code> and <code>dense_run_stats.json</code> are written to the debug directory.</p>
+<p>Every dense run writes its health counters to <code>metadata.json</code> (<code>results.dense</code>) and the markdown report (<strong>Dense Extraction Statistics</strong>): skeleton nodes discovered, effective parallel worker count, Phase 1/2 wall-clock, truncated responses, batch splits, reconciled aliases, cross-batch parents resolved via reference handles (<code>parents_from_already_found</code>), nodes recovered by the coverage second pass (<code>coverage_pass_recovered</code>), recovered/dropped parent links, and <strong>merge retention %</strong> (the fraction of skeleton nodes that survived the fill→graph merge). Two additional counters make source coverage — not just merge health — visible: <code>skeleton_batches_failed</code> and <code>dropped_chunk_ids</code> count chunks that produced <strong>no</strong> skeleton node even after the truncation-recovery ladder above, and <code>chunk_coverage_pct</code> is the fraction of chunks that contributed at least one node. Merge retention can read 100% even when whole chunks were lost upstream of the merge step, so the report renders a prominent warning whenever <code>skeleton_batches_failed &gt; 0</code> rather than letting a lossy run hide behind a clean-looking retention figure. Regressions in these failure modes are therefore visible per run without debugging. With <code>debug=True</code>, artifacts such as <code>dense_skeleton_graph.json</code>, <code>dense_merge_stats.json</code> and <code>dense_run_stats.json</code> are written to the debug directory.</p>
 <h3 id="provenance">Provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h3>
 <p>Dense is the contract with the richest <a href="../../graph-management/provenance/">grounding</a>: the skeleton phase's per-batch bookkeeping lets every extracted node be traced back to the chunk(s) it was observed in, and — when its final identifier appears verbatim in the document — to an exact chunk and page. This is fully deterministic and adds no prompt or output-schema overhead; it is controlled by the separate top-level <code>provenance</code> setting (default <code>"standard"</code>), not by any dense-specific option. See <a href="../../graph-management/provenance/">Data Grounding &amp; Provenance</a> for the full picture, including how it differs for the direct contract.</p>
 <h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
@@ -4362,7 +4401,7 @@ flowchart TD
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">dense_skeleton_batch_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">dense_skeleton_batch_tokens</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">dense_fill_nodes_cap</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>

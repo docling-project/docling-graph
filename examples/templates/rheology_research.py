@@ -1,15 +1,41 @@
 """
-Improved Pydantic template for Slurry-Battery Rheology Research Papers.
+Slurry-Battery Rheology Research Paper extraction template.
 
-Extracts structured data from battery electrode slurry rheology research papers,
-focusing on steady shear and oscillatory rheology measurements.
+Extracts a graph-ready structure from battery electrode slurry rheology
+research papers — the paper's bibliographic metadata and the nested hierarchy
+of experimental work: studies, experiments, the slurry batches they use and the
+rheometry runs they produce (steady-shear and oscillatory measurements, model
+fits, derived quantities).
 
-Key improvements:
-- Enhanced field descriptions with LOOK FOR / EXTRACT / EXAMPLES pattern.
-- Strict typing (Enum, date, float) with robust validators.
-- Explicit Entity vs. Component separation.
-- Prevention of placeholder values ("N/A").
-- Full restoration of all original measurement fields (sweeps, model fits, pre-shear).
+Research papers reuse the same objects across sections — a slurry batch defined
+in Methods reappears in every experiment that tests it; one instrument setup is
+shared by many runs. This template is designed for the `dense` extraction
+contract: the reusable objects (batch, formulation, component material,
+rheometer setup, protocol) are entities with short, stable, document-derived
+identities, so scattered mentions are discovered once and filled with scoped
+context instead of fragmenting into duplicates. Primitive value objects that
+only describe their parent — a quantity-with-unit, a parameter sweep, a model
+fit, a series definition — are components nested inline.
+
+Key entities:
+- ScholarlyRheologyPaper (root): the paper, identified by title.
+- SlurryRheologyStudy / SlurryRheologyExperiment: the reported research
+  campaigns and their individual experiments.
+- BatterySlurryBatch: a prepared slurry, identified by batch_id.
+- SlurryFormulation / SlurryComponent: the recipe and its constituent materials.
+- PreparationStep: a step in preparing a batch.
+- RheometerSetup / TestProtocol: the instrument configuration and measurement protocol.
+- RheologyTestRun / RheologyDataset / RheologyCurve: a measurement run and the
+  data it produces.
+
+Key relationships:
+- ScholarlyRheologyPaper --HAS_STUDY--> SlurryRheologyStudy --HAS_EXPERIMENT--> SlurryRheologyExperiment
+- SlurryRheologyExperiment --USES_BATCH--> BatterySlurryBatch --HAS_FORMULATION-->
+  SlurryFormulation --HAS_COMPONENT--> SlurryComponent
+- BatterySlurryBatch --HAS_PREPARATION_STEP--> PreparationStep
+- SlurryRheologyExperiment --HAS_TEST_RUN--> RheologyTestRun
+- RheologyTestRun --USES_RHEOMETER--> RheometerSetup, --FOLLOWS_PROTOCOL-->
+  TestProtocol, --PRODUCES_DATASET--> RheologyDataset --HAS_CURVE--> RheologyCurve
 """
 
 import re

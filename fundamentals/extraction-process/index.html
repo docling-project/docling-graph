@@ -1460,6 +1460,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -5050,7 +5078,7 @@ flowchart LR
 <li>Text extraction</li>
 </ul>
 <p><strong>Output:</strong> DoclingDocument with structure</p>
-<p><strong>Learn more:</strong> <a href="document-conversion/">Document Conversion →</a></p>
+<p><strong>Learn more:</strong> <a href="document-conversion/">Document Conversion</a></p>
 <hr />
 <h3 id="stage-2-chunking">Stage 2: Chunking<a class="headerlink" href="#stage-2-chunking" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Split document into optimal chunks for LLM processing</p>
@@ -5062,7 +5090,7 @@ flowchart LR
 <li>Context preservation</li>
 </ul>
 <p><strong>Output:</strong> List of contextualized chunks</p>
-<p><strong>Learn more:</strong> <a href="chunking-strategies/">Chunking Strategies →</a></p>
+<p><strong>Learn more:</strong> <a href="chunking-strategies/">Chunking Strategies</a></p>
 <hr />
 <h3 id="stage-3-extraction">Stage 3: Extraction<a class="headerlink" href="#stage-3-extraction" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Extract structured data using LLM/VLM</p>
@@ -5074,7 +5102,7 @@ flowchart LR
 <li>Error handling</li>
 </ul>
 <p><strong>Output:</strong> List of Pydantic models</p>
-<p><strong>Learn more:</strong> <a href="extraction-backends/">Extraction Backends →</a></p>
+<p><strong>Learn more:</strong> <a href="extraction-backends/">Extraction Backends</a></p>
 <hr />
 <h3 id="stage-4-merging">Stage 4: Merging<a class="headerlink" href="#stage-4-merging" title="Permanent link">&para;</a></h3>
 <p><strong>Purpose:</strong> Consolidate multiple extractions into single model</p>
@@ -5086,7 +5114,7 @@ flowchart LR
 <li>Validation</li>
 </ul>
 <p><strong>Output:</strong> Single consolidated model</p>
-<p><strong>Learn more:</strong> <a href="model-merging/">Model Merging →</a></p>
+<p><strong>Learn more:</strong> <a href="model-merging/">Model Merging</a></p>
 <hr />
 <h2 id="processing-modes">Processing Modes<a class="headerlink" href="#processing-modes" title="Permanent link">&para;</a></h2>
 <h3 id="many-to-one-default">Many-to-One (Default)<a class="headerlink" href="#many-to-one-default" title="Permanent link">&para;</a></h3>
@@ -5163,8 +5191,10 @@ flowchart LR
 <p>For LLM many-to-one extraction you can choose:</p>
 <ul>
 <li><strong>direct</strong> (default): Single-pass extraction then programmatic merge.</li>
-<li><strong>dense</strong>: Two-phase skeleton-then-fill (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See <a href="dense-extraction/">Dense Extraction</a>.</li>
+<li><strong>dense</strong>: Two-phase skeleton-then-flesh (Phase 1: identify all entities; Phase 2: fill each with full schema data). Requires chunking. See <a href="dense-extraction/">Dense Extraction</a>.</li>
+<li><strong>auto</strong>: Decides between the two per document, after conversion, once the actual document size is known. Direct is picked only when a single full-document call fits both the model's context window and its output-token budget (so a 100-page PDF never gets sent into a doomed single call); dense is picked otherwise. The decision and the numbers behind it are logged as <code>[AutoContract] Resolved contract=... (...)</code>.</li>
 </ul>
+<p><code>auto</code> is the recommended setting when you process documents of varying sizes with local models, whose context windows and output budgets are often much smaller than the documents you feed them.</p>
 <hr />
 <h2 id="pipeline-stages-in-code">Pipeline Stages in Code<a class="headerlink" href="#pipeline-stages-in-code" title="Permanent link">&para;</a></h2>
 <h3 id="stage-overview">Stage Overview<a class="headerlink" href="#stage-overview" title="Permanent link">&para;</a></h3>
@@ -5289,7 +5319,7 @@ from docling_graph.core.extractors import DocumentProcessor
 
 processor = DocumentProcessor(docling_config="ocr")
 document = processor.convert_to_docling_doc("document.pdf")</code></p>
-<p><strong>Learn more:</strong> <a href="document-conversion/">Document Conversion →</a></p>
+<p><strong>Learn more:</strong> <a href="document-conversion/">Document Conversion</a></p>
 <hr />
 <h3 id="2-chunking">2. Chunking<a class="headerlink" href="#2-chunking" title="Permanent link">&para;</a></h3>
 <p>Split documents intelligently:</p>
@@ -5301,7 +5331,7 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">)</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">chunks</span> <span class="o">=</span> <span class="n">chunker</span><span class="o">.</span><span class="n">chunk_document</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="chunking-strategies/">Chunking Strategies →</a></p>
+<p><strong>Learn more:</strong> <a href="chunking-strategies/">Chunking Strategies</a></p>
 <hr />
 <h3 id="3-extraction">3. Extraction<a class="headerlink" href="#3-extraction" title="Permanent link">&para;</a></h3>
 <p>Extract structured data:</p>
@@ -5310,12 +5340,12 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">ExtractorFactory</span><span class="o">.</span><span class="n">create_extractor</span><span class="p">(</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">backend_name</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;dense&quot; for chunked skeleton-then-fill extraction</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;dense&quot; for chunked skeleton-then-flesh extraction</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">)</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">models</span><span class="p">,</span> <span class="n">doc</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="extraction-backends/">Extraction Backends →</a></p>
+<p><strong>Learn more:</strong> <a href="extraction-backends/">Extraction Backends</a></p>
 <hr />
 <h3 id="4-merging">4. Merging<a class="headerlink" href="#4-merging" title="Permanent link">&para;</a></h3>
 <p>Consolidate multiple models:</p>
@@ -5323,7 +5353,7 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">merged</span> <span class="o">=</span> <span class="n">merge_pydantic_models</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="model-merging/">Model Merging →</a></p>
+<p><strong>Learn more:</strong> <a href="model-merging/">Model Merging</a></p>
 <hr />
 <h2 id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permanent link">&para;</a></h2>
 <h3 id="chunking-vs-no-chunking">Chunking vs No Chunking<a class="headerlink" href="#chunking-vs-no-chunking" title="Permanent link">&para;</a></h3>
@@ -5527,9 +5557,9 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Ready to dive deeper? Start with:</p>
 <ol>
-<li><strong><a href="document-conversion/">Document Conversion →</a></strong> - Learn about Docling pipelines</li>
-<li><strong><a href="chunking-strategies/">Chunking Strategies →</a></strong> - Optimize document splitting</li>
-<li><strong><a href="extraction-backends/">Extraction Backends →</a></strong> - Choose the right backend</li>
+<li><strong><a href="document-conversion/">Document Conversion</a></strong> - Learn about Docling pipelines</li>
+<li><strong><a href="chunking-strategies/">Chunking Strategies</a></strong> - Optimize document splitting</li>
+<li><strong><a href="extraction-backends/">Extraction Backends</a></strong> - Choose the right backend</li>
 </ol>
 
 

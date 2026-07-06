@@ -1448,6 +1448,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../fundamentals/pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../fundamentals/pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -4660,23 +4688,25 @@
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">backend</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span> <span class="s2">&quot;vlm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;llm&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">inference</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;remote&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">processing_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span> <span class="s2">&quot;many-to-one&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">extraction_contract</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span> <span class="s2">&quot;dense&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">extraction_contract</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span> <span class="s2">&quot;dense&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">docling_config</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span> <span class="s2">&quot;vision&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">model_override</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">provider_override</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">models</span><span class="p">:</span> <span class="n">ModelsConfig</span> <span class="o">=</span> <span class="n">ModelsConfig</span><span class="p">(),</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">use_chunking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">chunk_max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">dump_to_disk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">export_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;cypher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">export_docling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">export_docling_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">export_markdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">export_per_page_markdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">reverse_edges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">llm_input_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;markdown&quot;</span><span class="p">,</span> <span class="s2">&quot;doclang&quot;</span><span class="p">,</span> <span class="s2">&quot;doclang-geo&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">use_chunking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">chunk_max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">dump_to_disk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">export_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;cypher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">export_docling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">export_docling_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">export_markdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">export_doclang</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="n">export_per_page_markdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="n">reverse_edges</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h3>
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
@@ -4763,15 +4793,21 @@
 </tr>
 <tr>
 <td><code>extraction_contract</code></td>
-<td><code>"direct"</code> or <code>"dense"</code></td>
-<td><code>"direct"</code></td>
-<td>LLM extraction contract (<code>direct</code> for single-pass extraction; <code>dense</code> for skeleton-then-fill)</td>
+<td><code>"auto"</code>, <code>"direct"</code>, or <code>"dense"</code></td>
+<td><code>"auto"</code></td>
+<td>LLM extraction contract (<code>direct</code> for single-pass extraction; <code>dense</code> for skeleton-then-flesh; <code>auto</code> resolves per document — direct only when a single call fits the model's context window and output budget, dense otherwise; the decision is logged as <code>[AutoContract]</code>)</td>
 </tr>
 <tr>
 <td><code>docling_config</code></td>
 <td><code>"ocr"</code> or <code>"vision"</code></td>
 <td><code>"ocr"</code></td>
 <td>Docling pipeline type</td>
+</tr>
+<tr>
+<td><code>llm_input_format</code></td>
+<td><code>"markdown"</code>, <code>"doclang"</code>, <code>"doclang-geo"</code>, or <code>"auto"</code></td>
+<td><code>"markdown"</code></td>
+<td>Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost). <code>auto</code> pairs the format to the resolved contract per document: direct → <code>doclang-geo</code>, dense → <code>doclang</code>, raw-text inputs → <code>markdown</code></td>
 </tr>
 <tr>
 <td><code>use_chunking</code></td>
@@ -4783,7 +4819,7 @@
 <td><code>chunk_max_tokens</code></td>
 <td><code>int</code> or <code>None</code></td>
 <td><code>None</code></td>
-<td>Max tokens per chunk (default 512 when chunking)</td>
+<td>Max tokens per chunk (default 512 when chunking; raise it when using a DocLang <code>llm_input_format</code>)</td>
 </tr>
 <tr>
 <td><code>debug</code></td>
@@ -4799,7 +4835,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="dense-extraction-skeleton-then-fill">Dense extraction (skeleton-then-fill)<a class="headerlink" href="#dense-extraction-skeleton-then-fill" title="Permanent link">&para;</a></h4>
+<h4 id="dense-extraction-skeleton-then-flesh">Dense extraction (skeleton-then-flesh)<a class="headerlink" href="#dense-extraction-skeleton-then-flesh" title="Permanent link">&para;</a></h4>
 <p>Options for the <strong>dense</strong> contract (Phase 1 skeleton + Phase 2 fill). Set <code>extraction_contract="dense"</code> and <code>use_chunking=True</code>.</p>
 <table>
 <thead>
@@ -4814,7 +4850,7 @@
 <tr>
 <td><code>dense_skeleton_batch_tokens</code></td>
 <td><code>int</code></td>
-<td><code>1024</code></td>
+<td><code>2048</code></td>
 <td>Max tokens per skeleton batch (Phase 1).</td>
 </tr>
 <tr>
@@ -4833,7 +4869,7 @@
 <td><code>dense_dedupe</code></td>
 <td><code>"off"</code>, <code>"standard"</code> or <code>"aggressive"</code></td>
 <td><code>"standard"</code></td>
-<td>Skeleton dedupe intensity. <code>off</code>: exact canonical-id dedup only. <code>standard</code>: adds a deterministic containment merge (a same-path id that is a superset of another, digit-signature-guarded) plus one id-space LLM reconciliation call that collapses same-entity aliases found at different granularities. <code>aggressive</code>: also merges near-identical same-path identifier strings (OCR noise); similarity thresholds are handled internally, and identifiers that differ numerically never merge.</td>
+<td>Skeleton dedupe intensity. <code>off</code>: exact canonical-id dedup only. <code>standard</code>: one id-space LLM reconciliation call that collapses same-entity aliases found at different granularities; deterministic containment matches (a same-path id that is a superset of another, digit-signature-guarded) are proposed as candidates in that call and merged only when the LLM confirms them — tier names ('X' vs 'X PLUS') are protected. <code>aggressive</code>: also merges near-identical same-path identifier strings (OCR noise); similarity thresholds are handled internally, and identifiers that differ numerically never merge.</td>
 </tr>
 </tbody>
 </table>
@@ -4909,13 +4945,19 @@
 <td><code>export_docling_json</code></td>
 <td><code>bool</code></td>
 <td><code>True</code></td>
-<td>Export Docling JSON</td>
+<td>Export Docling JSON (canonical, lossless)</td>
 </tr>
 <tr>
 <td><code>export_markdown</code></td>
 <td><code>bool</code></td>
 <td><code>True</code></td>
 <td>Export markdown</td>
+</tr>
+<tr>
+<td><code>export_doclang</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Export DocLang <code>.dclg</code> (content + geometry interchange)</td>
 </tr>
 <tr>
 <td><code>export_per_page_markdown</code></td>

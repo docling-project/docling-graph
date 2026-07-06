@@ -12,31 +12,31 @@
         <meta name="author" content="IBM Research">
       
       
-        <link rel="canonical" href="https://ibm.github.io/docling-graph/reference/exporters/">
+        <link rel="canonical" href="https://ibm.github.io/docling-graph/fundamentals/pipeline-configuration/docling-serve/">
       
       
-        <link rel="prev" href="../extractors/">
+        <link rel="prev" href="../docling-settings/">
       
       
-        <link rel="next" href="../provenance/">
+        <link rel="next" href="../export-configuration/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/logo.png">
+      <link rel="icon" href="../../../assets/logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Exporters - Docling Graph Documentation</title>
+        <title>Docling-Serve Integration - Docling Graph Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -102,9 +102,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Docling Graph Documentation" class="md-header__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
+    <a href="../../.." title="Docling Graph Documentation" class="md-header__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="../../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Exporters
+              Docling-Serve Integration
             
           </span>
         </div>
@@ -234,7 +234,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -255,7 +255,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../introduction/" class="md-tabs__link">
+        <a href="../../../introduction/" class="md-tabs__link">
           
   
   
@@ -271,11 +271,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../fundamentals/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -295,7 +297,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../usage/" class="md-tabs__link">
+        <a href="../../../usage/" class="md-tabs__link">
           
   
   
@@ -311,13 +313,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../reference/" class="md-tabs__link">
           
   
   
@@ -337,7 +337,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../community/" class="md-tabs__link">
+        <a href="../../../community/" class="md-tabs__link">
           
   
   
@@ -371,9 +371,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Docling Graph Documentation" class="md-nav__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
+    <a href="../../.." title="Docling Graph Documentation" class="md-nav__button md-logo" aria-label="Docling Graph Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="../../../assets/logo.png" alt="logo">
 
     </a>
     Docling Graph Documentation
@@ -400,7 +400,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -481,7 +481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../introduction/" class="md-nav__link">
+      <a href="../../../introduction/" class="md-nav__link">
         
   
   
@@ -509,7 +509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../introduction/architecture/" class="md-nav__link">
+      <a href="../../../introduction/architecture/" class="md-nav__link">
         
   
   
@@ -537,7 +537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../introduction/key-concepts/" class="md-nav__link">
+      <a href="../../../introduction/key-concepts/" class="md-nav__link">
         
   
   
@@ -565,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../introduction/use-cases/" class="md-nav__link">
+      <a href="../../../introduction/use-cases/" class="md-nav__link">
         
   
   
@@ -593,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../introduction/quickstart/" class="md-nav__link">
+      <a href="../../../introduction/quickstart/" class="md-nav__link">
         
   
   
@@ -625,28 +625,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -664,7 +667,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -682,7 +685,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
@@ -716,10 +719,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -728,7 +734,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
             
   
   
@@ -764,7 +770,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -792,7 +798,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/installation/requirements/" class="md-nav__link">
+      <a href="../../installation/requirements/" class="md-nav__link">
         
   
   
@@ -820,7 +826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/installation/basic-setup/" class="md-nav__link">
+      <a href="../../installation/basic-setup/" class="md-nav__link">
         
   
   
@@ -848,7 +854,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/installation/gpu-setup/" class="md-nav__link">
+      <a href="../../installation/gpu-setup/" class="md-nav__link">
         
   
   
@@ -876,7 +882,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/installation/api-keys/" class="md-nav__link">
+      <a href="../../installation/api-keys/" class="md-nav__link">
         
   
   
@@ -918,10 +924,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -930,7 +939,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
             
   
   
@@ -966,7 +975,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/" class="md-nav__link">
+      <a href="../../schema-definition/" class="md-nav__link">
         
   
   
@@ -994,7 +1003,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/template-basics/" class="md-nav__link">
+      <a href="../../schema-definition/template-basics/" class="md-nav__link">
         
   
   
@@ -1022,7 +1031,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/entities-vs-components/" class="md-nav__link">
+      <a href="../../schema-definition/entities-vs-components/" class="md-nav__link">
         
   
   
@@ -1050,7 +1059,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/field-definitions/" class="md-nav__link">
+      <a href="../../schema-definition/field-definitions/" class="md-nav__link">
         
   
   
@@ -1078,7 +1087,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/relationships/" class="md-nav__link">
+      <a href="../../schema-definition/relationships/" class="md-nav__link">
         
   
   
@@ -1106,7 +1115,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/validation/" class="md-nav__link">
+      <a href="../../schema-definition/validation/" class="md-nav__link">
         
   
   
@@ -1134,7 +1143,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/advanced-patterns/" class="md-nav__link">
+      <a href="../../schema-definition/advanced-patterns/" class="md-nav__link">
         
   
   
@@ -1162,7 +1171,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/schema-definition/best-practices/" class="md-nav__link">
+      <a href="../../schema-definition/best-practices/" class="md-nav__link">
         
   
   
@@ -1195,28 +1204,31 @@
                 
   
   
+    
   
   
+  
     
     
     
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
         
           
+          
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
             
   
   
@@ -1234,7 +1246,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1252,7 +1264,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -1280,7 +1292,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/configuration-basics/" class="md-nav__link">
+      <a href="../configuration-basics/" class="md-nav__link">
         
   
   
@@ -1308,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/input-formats/" class="md-nav__link">
+      <a href="../input-formats/" class="md-nav__link">
         
   
   
@@ -1336,7 +1348,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/backend-selection/" class="md-nav__link">
+      <a href="../backend-selection/" class="md-nav__link">
         
   
   
@@ -1364,7 +1376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/model-configuration/" class="md-nav__link">
+      <a href="../model-configuration/" class="md-nav__link">
         
   
   
@@ -1392,7 +1404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/processing-modes/" class="md-nav__link">
+      <a href="../processing-modes/" class="md-nav__link">
         
   
   
@@ -1420,7 +1432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/docling-settings/" class="md-nav__link">
+      <a href="../docling-settings/" class="md-nav__link">
         
   
   
@@ -1445,10 +1457,35 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/docling-serve/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1464,6 +1501,201 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeouts-and-large-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts and Large Documents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trying-it-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trying It Locally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#failed-to-reach-docling-serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 Failed to reach docling-serve
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docling-serve-returned-http-401403" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 docling-serve returned HTTP 401/403
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docling-serve-request-timed-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 docling-serve request timed out
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response-contains-no-doclingdocument-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 response contains no DoclingDocument JSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1476,7 +1708,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/export-configuration/" class="md-nav__link">
+      <a href="../export-configuration/" class="md-nav__link">
         
   
   
@@ -1504,7 +1736,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/pipeline-configuration/configuration-examples/" class="md-nav__link">
+      <a href="../configuration-examples/" class="md-nav__link">
         
   
   
@@ -1546,10 +1778,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -1558,7 +1793,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
         
           
-          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="">
             
   
   
@@ -1594,7 +1829,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/" class="md-nav__link">
+      <a href="../../extraction-process/" class="md-nav__link">
         
   
   
@@ -1622,7 +1857,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/document-conversion/" class="md-nav__link">
+      <a href="../../extraction-process/document-conversion/" class="md-nav__link">
         
   
   
@@ -1650,7 +1885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/chunking-strategies/" class="md-nav__link">
+      <a href="../../extraction-process/chunking-strategies/" class="md-nav__link">
         
   
   
@@ -1678,7 +1913,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/extraction-backends/" class="md-nav__link">
+      <a href="../../extraction-process/extraction-backends/" class="md-nav__link">
         
   
   
@@ -1706,7 +1941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/dense-extraction/" class="md-nav__link">
+      <a href="../../extraction-process/dense-extraction/" class="md-nav__link">
         
   
   
@@ -1734,7 +1969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/model-merging/" class="md-nav__link">
+      <a href="../../extraction-process/model-merging/" class="md-nav__link">
         
   
   
@@ -1762,7 +1997,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/extraction-process/batch-processing/" class="md-nav__link">
+      <a href="../../extraction-process/batch-processing/" class="md-nav__link">
         
   
   
@@ -1804,10 +2039,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -1816,7 +2054,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
         
           
-          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="">
             
   
   
@@ -1852,7 +2090,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/" class="md-nav__link">
+      <a href="../../graph-management/" class="md-nav__link">
         
   
   
@@ -1880,7 +2118,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/graph-conversion/" class="md-nav__link">
+      <a href="../../graph-management/graph-conversion/" class="md-nav__link">
         
   
   
@@ -1908,7 +2146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/provenance/" class="md-nav__link">
+      <a href="../../graph-management/provenance/" class="md-nav__link">
         
   
   
@@ -1936,7 +2174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/graph-analysis/" class="md-nav__link">
+      <a href="../../graph-management/graph-analysis/" class="md-nav__link">
         
   
   
@@ -1964,7 +2202,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/export-formats/" class="md-nav__link">
+      <a href="../../graph-management/export-formats/" class="md-nav__link">
         
   
   
@@ -1992,7 +2230,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/visualization/" class="md-nav__link">
+      <a href="../../graph-management/visualization/" class="md-nav__link">
         
   
   
@@ -2020,7 +2258,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/graph-management/neo4j-integration/" class="md-nav__link">
+      <a href="../../graph-management/neo4j-integration/" class="md-nav__link">
         
   
   
@@ -2117,7 +2355,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/" class="md-nav__link">
+      <a href="../../../usage/" class="md-nav__link">
         
   
   
@@ -2199,7 +2437,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/cli/" class="md-nav__link">
+      <a href="../../../usage/cli/" class="md-nav__link">
         
   
   
@@ -2227,7 +2465,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/cli/init-command/" class="md-nav__link">
+      <a href="../../../usage/cli/init-command/" class="md-nav__link">
         
   
   
@@ -2255,7 +2493,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/cli/convert-command/" class="md-nav__link">
+      <a href="../../../usage/cli/convert-command/" class="md-nav__link">
         
   
   
@@ -2283,7 +2521,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/cli/inspect-command/" class="md-nav__link">
+      <a href="../../../usage/cli/inspect-command/" class="md-nav__link">
         
   
   
@@ -2311,7 +2549,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/cli/cli-recipes/" class="md-nav__link">
+      <a href="../../../usage/cli/cli-recipes/" class="md-nav__link">
         
   
   
@@ -2401,7 +2639,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/api/" class="md-nav__link">
+      <a href="../../../usage/api/" class="md-nav__link">
         
   
   
@@ -2429,7 +2667,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/api/pipeline-config/" class="md-nav__link">
+      <a href="../../../usage/api/pipeline-config/" class="md-nav__link">
         
   
   
@@ -2457,7 +2695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/api/llm-model-config/" class="md-nav__link">
+      <a href="../../../usage/api/llm-model-config/" class="md-nav__link">
         
   
   
@@ -2485,7 +2723,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/api/run-pipeline/" class="md-nav__link">
+      <a href="../../../usage/api/run-pipeline/" class="md-nav__link">
         
   
   
@@ -2513,7 +2751,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/api/batch-processing/" class="md-nav__link">
+      <a href="../../../usage/api/batch-processing/" class="md-nav__link">
         
   
   
@@ -2541,7 +2779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/api/programmatic-examples/" class="md-nav__link">
+      <a href="../../../usage/api/programmatic-examples/" class="md-nav__link">
         
   
   
@@ -2631,7 +2869,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/" class="md-nav__link">
+      <a href="../../../usage/examples/" class="md-nav__link">
         
   
   
@@ -2713,7 +2951,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/url-input/" class="md-nav__link">
+      <a href="../../../usage/examples/url-input/" class="md-nav__link">
         
   
   
@@ -2741,7 +2979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/markdown-input/" class="md-nav__link">
+      <a href="../../../usage/examples/markdown-input/" class="md-nav__link">
         
   
   
@@ -2769,7 +3007,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/docling-document-input/" class="md-nav__link">
+      <a href="../../../usage/examples/docling-document-input/" class="md-nav__link">
         
   
   
@@ -2859,7 +3097,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/billing-document/" class="md-nav__link">
+      <a href="../../../usage/examples/billing-document/" class="md-nav__link">
         
   
   
@@ -2887,7 +3125,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/id-card/" class="md-nav__link">
+      <a href="../../../usage/examples/id-card/" class="md-nav__link">
         
   
   
@@ -2915,7 +3153,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/insurance-policy/" class="md-nav__link">
+      <a href="../../../usage/examples/insurance-policy/" class="md-nav__link">
         
   
   
@@ -2943,7 +3181,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/examples/rheology_research/" class="md-nav__link">
+      <a href="../../../usage/examples/rheology_research/" class="md-nav__link">
         
   
   
@@ -3041,7 +3279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/" class="md-nav__link">
+      <a href="../../../usage/advanced/" class="md-nav__link">
         
   
   
@@ -3069,7 +3307,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/performance-tuning/" class="md-nav__link">
+      <a href="../../../usage/advanced/performance-tuning/" class="md-nav__link">
         
   
   
@@ -3097,7 +3335,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/error-handling/" class="md-nav__link">
+      <a href="../../../usage/advanced/error-handling/" class="md-nav__link">
         
   
   
@@ -3125,7 +3363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/trace-data-debugging/" class="md-nav__link">
+      <a href="../../../usage/advanced/trace-data-debugging/" class="md-nav__link">
         
   
   
@@ -3153,7 +3391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/custom-backends/" class="md-nav__link">
+      <a href="../../../usage/advanced/custom-backends/" class="md-nav__link">
         
   
   
@@ -3181,7 +3419,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/custom-stages/" class="md-nav__link">
+      <a href="../../../usage/advanced/custom-stages/" class="md-nav__link">
         
   
   
@@ -3209,7 +3447,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/custom-exporters/" class="md-nav__link">
+      <a href="../../../usage/advanced/custom-exporters/" class="md-nav__link">
         
   
   
@@ -3237,7 +3475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/advanced/testing/" class="md-nav__link">
+      <a href="../../../usage/advanced/testing/" class="md-nav__link">
         
   
   
@@ -3277,31 +3515,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -3319,7 +3554,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -3337,7 +3572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../../reference/" class="md-nav__link">
         
   
   
@@ -3365,7 +3600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pipeline/" class="md-nav__link">
+      <a href="../../../reference/pipeline/" class="md-nav__link">
         
   
   
@@ -3393,7 +3628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../config/" class="md-nav__link">
+      <a href="../../../reference/config/" class="md-nav__link">
         
   
   
@@ -3421,7 +3656,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../protocols/" class="md-nav__link">
+      <a href="../../../reference/protocols/" class="md-nav__link">
         
   
   
@@ -3449,7 +3684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exceptions/" class="md-nav__link">
+      <a href="../../../reference/exceptions/" class="md-nav__link">
         
   
   
@@ -3477,7 +3712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../converters/" class="md-nav__link">
+      <a href="../../../reference/converters/" class="md-nav__link">
         
   
   
@@ -3505,7 +3740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../extractors/" class="md-nav__link">
+      <a href="../../../reference/extractors/" class="md-nav__link">
         
   
   
@@ -3530,35 +3765,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exporters
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../reference/exporters/" class="md-nav__link">
         
   
   
@@ -3574,197 +3784,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#base-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Base Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Base Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#baseexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BaseExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#csv-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CSV Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="CSV Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#csvexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CSVExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cypher-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cypher Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Cypher Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cypherexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CypherExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#json-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="JSON Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#jsonexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSONExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docling-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docling Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docling Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#doclingexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DoclingExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-exporters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Exporters
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-apis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related APIs
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3777,7 +3796,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../provenance/" class="md-nav__link">
+      <a href="../../../reference/provenance/" class="md-nav__link">
         
   
   
@@ -3805,7 +3824,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../llm-clients/" class="md-nav__link">
+      <a href="../../../reference/llm-clients/" class="md-nav__link">
         
   
   
@@ -3894,7 +3913,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../community/" class="md-nav__link">
+      <a href="../../../community/" class="md-nav__link">
         
   
   
@@ -3922,7 +3941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../community/github-workflow/" class="md-nav__link">
+      <a href="../../../community/github-workflow/" class="md-nav__link">
         
   
   
@@ -3950,7 +3969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../community/release-process/" class="md-nav__link">
+      <a href="../../../community/release-process/" class="md-nav__link">
         
   
   
@@ -4014,22 +4033,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#base-exporter" class="md-nav__link">
+  <a href="#configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Base Exporter
+        Configuration
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Base Exporter">
+    <nav class="md-nav" aria-label="Configuration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#baseexporter" class="md-nav__link">
+  <a href="#python-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        BaseExporter
+        Python API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        config.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
       
     </span>
   </a>
@@ -4042,22 +4094,88 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#csv-exporter" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CSV Exporter
+        How It Works
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="CSV Exporter">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeouts-and-large-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts and Large Documents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trying-it-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trying It Locally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#csvexporter" class="md-nav__link">
+  <a href="#failed-to-reach-docling-serve" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CSVExporter
+        🐛 Failed to reach docling-serve
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docling-serve-returned-http-401403" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 docling-serve returned HTTP 401/403
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docling-serve-request-timed-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 docling-serve request timed out
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response-contains-no-doclingdocument-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 response contains no DoclingDocument JSON
       
     </span>
   </a>
@@ -4070,105 +4188,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cypher-exporter" class="md-nav__link">
+  <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cypher Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Cypher Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cypherexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CypherExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#json-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="JSON Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#jsonexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSONExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docling-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docling Exporter
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docling Exporter">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#doclingexporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DoclingExporter
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-exporters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Exporters
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-apis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related APIs
+        Next Steps
       
     </span>
   </a>
@@ -4195,195 +4218,112 @@
   
 
 
-<h1 id="exporters-api">Exporters API<a class="headerlink" href="#exporters-api" title="Permanent link">&para;</a></h1>
+<h1 id="docling-serve-integration">Docling-Serve Integration<a class="headerlink" href="#docling-serve-integration" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Graph export formats for knowledge graphs.</p>
-<p><strong>Module:</strong> <code>docling_graph.core.exporters</code></p>
-<hr />
-<h2 id="base-exporter">Base Exporter<a class="headerlink" href="#base-exporter" title="Permanent link">&para;</a></h2>
-<h3 id="baseexporter">BaseExporter<a class="headerlink" href="#baseexporter" title="Permanent link">&para;</a></h3>
-<p>Base class for all exporters.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BaseExporter</span><span class="p">:</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for graph exporters.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="p">):</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="sd">        Initialize exporter.</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="sd">            graph: NetworkX graph to export</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">            output_dir: Output directory</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Export graph to target format.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-</code></pre></div>
-<hr />
-<h2 id="csv-exporter">CSV Exporter<a class="headerlink" href="#csv-exporter" title="Permanent link">&para;</a></h2>
-<h3 id="csvexporter">CSVExporter<a class="headerlink" href="#csvexporter" title="Permanent link">&para;</a></h3>
-<p>Export graphs to Neo4j-compatible CSV format.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CSVExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export graph to CSV format.&quot;&quot;&quot;</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="sd">        Export to CSV files.</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">        Creates:</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">            - nodes.csv: Node data</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">            - edges.csv: Edge data</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">        &quot;&quot;&quot;</span>
-</code></pre></div>
-<p><strong>Output Format:</strong></p>
-<p><strong>nodes.csv:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>id,label,type,property1,property2,...
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>node_1,John Doe,Person,30,john@example.com
-</code></pre></div></p>
-<p><strong>edges.csv:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>source,target,type
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>node_1,node_2,WORKS_AT
-</code></pre></div></p>
-<p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">CSVExporter</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">CSVExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">))</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Files created:</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># - outputs/nodes.csv</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c1"># - outputs/edges.csv</span>
-</code></pre></div>
-<hr />
-<h2 id="cypher-exporter">Cypher Exporter<a class="headerlink" href="#cypher-exporter" title="Permanent link">&para;</a></h2>
-<h3 id="cypherexporter">CypherExporter<a class="headerlink" href="#cypherexporter" title="Permanent link">&para;</a></h3>
-<p>Export graphs to Cypher script format.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CypherExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export graph to Cypher script.&quot;&quot;&quot;</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="sd">        Export to Cypher script.</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="sd">        Creates:</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="sd">            - graph.cypher: Cypher CREATE statements</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="sd">        &quot;&quot;&quot;</span>
-</code></pre></div>
-<p><strong>Output Format:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n1</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;John Doe&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="p">})</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n2</span><span class="p">:</span><span class="n">Organization</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ACME Corp&quot;</span><span class="p">})</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n1</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">WORKS_AT</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">n2</span><span class="p">)</span>
-</code></pre></div>
-<p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">CypherExporter</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">CypherExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">))</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># File created: outputs/graph.cypher</span>
-</code></pre></div>
-<hr />
-<h2 id="json-exporter">JSON Exporter<a class="headerlink" href="#json-exporter" title="Permanent link">&para;</a></h2>
-<h3 id="jsonexporter">JSONExporter<a class="headerlink" href="#jsonexporter" title="Permanent link">&para;</a></h3>
-<p>Export graphs to JSON format.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">JSONExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export graph to JSON format.&quot;&quot;&quot;</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="sd">        Export to JSON.</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="sd">        Creates:</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="sd">            - graph.json: NetworkX node-link format</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="sd">        &quot;&quot;&quot;</span>
-</code></pre></div>
-<p><strong>Output Format:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;directed&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;multigraph&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Person&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;John&quot;</span><span class="p">}</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span><span class="p">],</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span><span class="nt">&quot;links&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_2&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;WORKS_AT&quot;</span><span class="p">}</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span><span class="p">]</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="p">}</span>
-</code></pre></div>
-<p><strong>Example:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONExporter</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">JSONExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">))</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># File created: outputs/graph.json</span>
-</code></pre></div>
-<hr />
-<h2 id="docling-exporter">Docling Exporter<a class="headerlink" href="#docling-exporter" title="Permanent link">&para;</a></h2>
-<h3 id="doclingexporter">DoclingExporter<a class="headerlink" href="#doclingexporter" title="Permanent link">&para;</a></h3>
-<p>Export Docling document outputs.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DoclingExporter</span><span class="p">:</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export Docling document outputs.&quot;&quot;&quot;</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="n">document</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="n">export_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">export_markdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="n">export_per_page</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="sd">        Export Docling outputs.</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="sd">        Args:</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="sd">            document: Docling document</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="sd">            output_dir: Output directory</span>
-<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="sd">            export_json: Export JSON</span>
-<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="sd">            export_markdown: Export markdown</span>
-<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="sd">            export_per_page: Export per-page markdown</span>
-<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="sd">        &quot;&quot;&quot;</span>
-</code></pre></div>
-<p><strong>Creates:</strong></p>
+<p><a href="https://github.com/docling-project/docling-serve">docling-serve</a> exposes the Docling conversion pipeline as a REST API. Docling Graph can delegate the <strong>document conversion step</strong> to such an instance instead of converting locally: the server performs OCR/layout analysis and returns the DoclingDocument, and the rest of the pipeline (chunking, LLM extraction, graph conversion, export) runs unchanged.</p>
+<p><strong>Why use it:</strong></p>
 <ul>
-<li><code>docling_document.json</code> - Docling JSON</li>
-<li><code>markdown/full_document.md</code> - Full markdown</li>
-<li><code>markdown/pages/page_N.md</code> - Per-page markdown</li>
+<li><strong>No local conversion models</strong> — the client machine doesn't download or load Docling's OCR/layout/VLM model stack.</li>
+<li><strong>Shared infrastructure</strong> — a GPU-backed docling-serve cluster can serve many lightweight docling-graph clients.</li>
+<li><strong>Consistent conversions</strong> — every pipeline run converts documents with the same centrally managed service.</li>
 </ul>
+<p><strong>Scope:</strong> only conversion is remote. LLM extraction still uses whatever <code>backend</code>/<code>inference</code> you configured. The VLM extraction backend (<code>backend="vlm"</code>) processes source documents directly and locally, so docling-serve has no effect there.</p>
 <hr />
-<h2 id="custom-exporters">Custom Exporters<a class="headerlink" href="#custom-exporters" title="Permanent link">&para;</a></h2>
-<p>Create custom exporters by extending <code>BaseExporter</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseExporter</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom exporter.&quot;&quot;&quot;</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Export to custom format.&quot;&quot;&quot;</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="n">output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;custom.txt&quot;</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<h3 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># Convert on a remote docling-serve instance</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">docling_serve_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:5001&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">docling_serve_api_key</span><span class="o">=</span><span class="s2">&quot;my-key&quot;</span><span class="p">,</span>   <span class="c1"># only if the server requires one</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">docling_serve_timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>        <span class="c1"># seconds; raise for large documents</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">config</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </code></pre></div>
-<p>See <a href="../../usage/advanced/custom-exporters/">Custom Exporters Guide</a> for details.</p>
+<h3 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>--docling-serve-url<span class="w"> </span>http://localhost:5001
+</code></pre></div>
+<h3 id="configyaml">config.yaml<a class="headerlink" href="#configyaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">docling</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">pipeline</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ocr</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">serve</span><span class="p">:</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5001</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+</code></pre></div>
+<h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
+<p>When no URL is set explicitly, Docling Graph falls back to environment variables — convenient for cluster deployments where every client should use the same instance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DOCLING_SERVE_URL</span><span class="o">=</span><span class="s2">&quot;http://docling-serve.internal:5001&quot;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DOCLING_SERVE_API_KEY</span><span class="o">=</span><span class="s2">&quot;my-key&quot;</span><span class="w">   </span><span class="c1"># optional</span>
+</code></pre></div>
+<p><strong>Precedence:</strong> CLI flag &gt; <code>config.yaml</code> / <code>PipelineConfig</code> &gt; environment variable. The API key is never written to <code>metadata.json</code>.</p>
 <hr />
-<h2 id="related-apis">Related APIs<a class="headerlink" href="#related-apis" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong><a href="../../fundamentals/graph-management/export-formats/">Export Formats</a></strong> - Usage guide</li>
-<li><strong><a href="../../usage/advanced/custom-exporters/">Custom Exporters</a></strong> - Create exporters</li>
-<li><strong><a href="../converters/">Converters</a></strong> - Graph conversion</li>
-</ul>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Local files are uploaded to <code>POST /v1/convert/file</code>; URL sources are passed to <code>POST /v1/convert/source</code> so the server fetches them itself.</li>
+<li>The client requests DoclingDocument JSON output (<code>to_formats: ["json"]</code>).</li>
+<li>The response is parsed back into a <code>DoclingDocument</code>, and the pipeline continues exactly as with local conversion (including <code>chunks.json</code>, DocLang export, and provenance).</li>
+</ol>
+<p>The <code>docling_config</code> pipeline selection still applies and maps to the server-side pipeline:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><code>docling_config</code></th>
+<th style="text-align: left;">docling-serve pipeline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>ocr</code> (default)</td>
+<td style="text-align: left;"><code>standard</code> (server defaults: OCR + table structure)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vision</code></td>
+<td style="text-align: left;"><code>vlm</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="timeouts-and-large-documents">Timeouts and Large Documents<a class="headerlink" href="#timeouts-and-large-documents" title="Permanent link">&para;</a></h2>
+<p>The synchronous docling-serve API holds the HTTP connection while converting, so the timeout must cover the whole conversion:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;500_page_report.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Report&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">docling_serve_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:5001&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">docling_serve_timeout</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>  <span class="c1"># 30 minutes</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="trying-it-locally">Trying It Locally<a class="headerlink" href="#trying-it-locally" title="Permanent link">&para;</a></h2>
+<p>Run a local instance with the official container image:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span><span class="m">5001</span>:5001<span class="w"> </span>quay.io/docling-project/docling-serve
+</code></pre></div>
+<p>Then point Docling Graph at it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DOCLING_SERVE_URL</span><span class="o">=</span><span class="s2">&quot;http://localhost:5001&quot;</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+</code></pre></div>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="failed-to-reach-docling-serve">🐛 <code>Failed to reach docling-serve</code><a class="headerlink" href="#failed-to-reach-docling-serve" title="Permanent link">&para;</a></h3>
+<p>The instance is unreachable. Check the URL, network access, and that the service is running (<code>curl &lt;url&gt;/health</code>).</p>
+<h3 id="docling-serve-returned-http-401403">🐛 <code>docling-serve returned HTTP 401/403</code><a class="headerlink" href="#docling-serve-returned-http-401403" title="Permanent link">&para;</a></h3>
+<p>The server has authentication enabled. Provide the key via <code>DOCLING_SERVE_API_KEY</code> (or <code>docling_serve_api_key</code>); it is sent as the <code>X-Api-Key</code> header.</p>
+<h3 id="docling-serve-request-timed-out">🐛 <code>docling-serve request timed out</code><a class="headerlink" href="#docling-serve-request-timed-out" title="Permanent link">&para;</a></h3>
+<p>Conversion took longer than <code>docling_serve_timeout</code>. Raise the timeout, or check the server's queue/load.</p>
+<h3 id="response-contains-no-doclingdocument-json">🐛 <code>response contains no DoclingDocument JSON</code><a class="headerlink" href="#response-contains-no-doclingdocument-json" title="Permanent link">&para;</a></h3>
+<p>The server did not honor the <code>json</code> output format — make sure the docling-serve version is recent enough to support <code>to_formats: ["json"]</code>.</p>
+<hr />
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong><a href="../docling-settings/">Docling Settings</a></strong> - OCR vs Vision pipeline selection</li>
+<li><strong><a href="../configuration-basics/">Configuration Basics</a></strong> - All configuration options</li>
+<li><strong><a href="../input-formats/">Input Formats</a></strong> - Reusing pre-converted DoclingDocument JSON</li>
+</ol>
 
 
 
@@ -4466,10 +4406,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

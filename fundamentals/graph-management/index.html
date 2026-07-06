@@ -1460,6 +1460,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -4917,7 +4945,7 @@ flowchart LR
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="graph-conversion/">Graph Conversion →</a></p>
+<p><strong>Learn more:</strong> <a href="graph-conversion/">Graph Conversion</a></p>
 <hr />
 <h3 id="2-data-grounding-provenance">2. Data Grounding &amp; Provenance<a class="headerlink" href="#2-data-grounding-provenance" title="Permanent link">&para;</a></h3>
 <p>Trace every graph node back to the source chunk(s) and page(s) it came from — fully deterministic, no LLM involvement:</p>
@@ -4928,7 +4956,7 @@ flowchart LR
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># {&quot;document_id&quot;: &quot;...&quot;, &quot;match&quot;: &quot;verbatim&quot;, &quot;chunks&quot;: [2], &quot;pages&quot;: [1]}</span>
 </code></pre></div>
 <p>Enabled by default (<code>provenance="standard"</code>); a full ledger with chunk text is also written to <code>provenance.json</code>.</p>
-<p><strong>Learn more:</strong> <a href="provenance/">Data Grounding &amp; Provenance →</a></p>
+<p><strong>Learn more:</strong> <a href="provenance/">Data Grounding &amp; Provenance</a></p>
 <hr />
 <h3 id="3-export-formats">3. Export Formats<a class="headerlink" href="#3-export-formats" title="Permanent link">&para;</a></h3>
 <p>Export graphs in multiple formats:</p>
@@ -4940,7 +4968,7 @@ flowchart LR
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Cypher export</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">CypherExporter</span><span class="p">()</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="export-formats/">Export Formats →</a></p>
+<p><strong>Learn more:</strong> <a href="export-formats/">Export Formats</a></p>
 <hr />
 <h3 id="4-visualization">4. Visualization<a class="headerlink" href="#4-visualization" title="Permanent link">&para;</a></h3>
 <p>Generate interactive visualizations:</p>
@@ -4949,14 +4977,14 @@ flowchart LR
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">visualizer</span> <span class="o">=</span> <span class="n">InteractiveVisualizer</span><span class="p">()</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">visualizer</span><span class="o">.</span><span class="n">save_cytoscape_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s2">&quot;graph.html&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="visualization/">Visualization →</a></p>
+<p><strong>Learn more:</strong> <a href="visualization/">Visualization</a></p>
 <hr />
 <h3 id="5-neo4j-integration">5. Neo4j Integration<a class="headerlink" href="#5-neo4j-integration" title="Permanent link">&para;</a></h3>
 <p>Import graphs into Neo4j:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Import Cypher script</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>cat<span class="w"> </span>graph.cypher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cypher-shell<span class="w"> </span>-u<span class="w"> </span>neo4j<span class="w"> </span>-p<span class="w"> </span>password
 </code></pre></div>
-<p><strong>Learn more:</strong> <a href="neo4j-integration/">Neo4j Integration →</a></p>
+<p><strong>Learn more:</strong> <a href="neo4j-integration/">Neo4j Integration</a></p>
 <hr />
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <h3 id="complete-pipeline">Complete Pipeline<a class="headerlink" href="#complete-pipeline" title="Permanent link">&para;</a></h3>
@@ -5277,9 +5305,9 @@ flowchart LR
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Ready to dive deeper? Start with:</p>
 <ol>
-<li><strong><a href="graph-conversion/">Graph Conversion →</a></strong> - Learn graph conversion</li>
-<li><strong><a href="export-formats/">Export Formats →</a></strong> - Choose export format</li>
-<li><strong><a href="visualization/">Visualization →</a></strong> - Visualize your graphs</li>
+<li><strong><a href="graph-conversion/">Graph Conversion</a></strong> - Learn graph conversion</li>
+<li><strong><a href="export-formats/">Export Formats</a></strong> - Choose export format</li>
+<li><strong><a href="visualization/">Visualization</a></strong> - Visualize your graphs</li>
 </ol>
 
 

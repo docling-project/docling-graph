@@ -1448,6 +1448,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../fundamentals/pipeline-configuration/docling-serve/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docling-Serve Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../fundamentals/pipeline-configuration/export-configuration/" class="md-nav__link">
         
   
@@ -4366,7 +4394,7 @@
 <p><strong>Features:</strong></p>
 <ul>
 <li><strong>Zero Data Loss</strong>: Returns all partial models if consolidation fails, instead of discarding data</li>
-<li><strong>Contract-driven</strong>: <code>extraction_contract="direct"</code> (single call) or <code>"dense"</code> (two-phase skeleton-then-fill; see <a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a>)</li>
+<li><strong>Contract-driven</strong>: <code>extraction_contract="direct"</code> (single call) or <code>"dense"</code> (two-phase skeleton-then-flesh; see <a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a>)</li>
 <li><strong>Chunking</strong>: <code>use_chunking=True</code> splits large documents via <code>DocumentChunker</code> before extraction</li>
 </ul>
 <p><strong>Example:</strong></p>
@@ -4391,7 +4419,7 @@
 <hr />
 <h2 id="backends">Backends<a class="headerlink" href="#backends" title="Permanent link">&para;</a></h2>
 <h3 id="llmbackend">LlmBackend<a class="headerlink" href="#llmbackend" title="Permanent link">&para;</a></h3>
-<p>LLM-based extraction backend. Performs direct full-document extraction in a single call, or contract-driven skeleton-then-fill extraction when <code>extraction_contract="dense"</code>.</p>
+<p>LLM-based extraction backend. Performs direct full-document extraction in a single call, or contract-driven skeleton-then-flesh extraction when <code>extraction_contract="dense"</code>.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LlmBackend</span><span class="p">:</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Backend for LLM-based extraction.&quot;&quot;&quot;</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
@@ -4406,7 +4434,7 @@
 <a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="sd">        Args:</span>
 <a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="sd">            llm_client: LLM client instance implementing LLMClientProtocol.</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="sd">            extraction_contract: &#39;direct&#39; (single call) or &#39;dense&#39; (skeleton-then-fill).</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="sd">            extraction_contract: &#39;direct&#39; (single call) or &#39;dense&#39; (skeleton-then-flesh).</span>
 <a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="sd">            dense_config: Dense-contract tuning (see Dense Extraction docs).</span>
 <a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="sd">            structured_output: Use API schema-enforced output when supported.</span>
 <a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="sd">            structured_sparse_check: Retry with legacy prompt mode if structured output looks sparse.</span>
@@ -4620,7 +4648,7 @@
 <hr />
 <h2 id="related-apis">Related APIs<a class="headerlink" href="#related-apis" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a></strong> - Two-phase skeleton-then-fill extraction</li>
+<li><strong><a href="../../fundamentals/extraction-process/dense-extraction/">Dense Extraction</a></strong> - Two-phase skeleton-then-flesh extraction</li>
 <li><strong><a href="../../fundamentals/extraction-process/">Extraction Process</a></strong> - Usage guide</li>
 <li><strong><a href="../../fundamentals/extraction-process/model-merging/">Model Merging</a></strong> - Zero data loss</li>
 <li><strong><a href="../protocols/">Protocols</a></strong> - Backend protocols</li>
