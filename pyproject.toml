@@ -43,6 +43,8 @@ dependencies = [
     "pyyaml>=6.0,<7.0",
     "aiofiles>=24.0.0,<26.0.0",
     "tenacity>=9.1.4",
+    # URL input handling and the docling-serve remote conversion client
+    "requests>=2.31,<3.0",
 ]
 
 [project.urls]
