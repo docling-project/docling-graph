@@ -218,7 +218,7 @@ def _attr_richness(node_data: dict[str, Any]) -> int:
     for key, value in node_data.items():
         if key in _META_ATTRS or value is None:
             continue
-        if isinstance(value, (str, list, dict)) and not value:
+        if isinstance(value, str | list | dict) and not value:
             continue
         count += 1
     return count

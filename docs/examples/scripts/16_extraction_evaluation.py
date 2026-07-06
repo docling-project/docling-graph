@@ -195,7 +195,7 @@ def is_filled(value: Any) -> bool:
         return False
     if isinstance(value, str):
         return bool(value.strip())
-    if isinstance(value, (list, dict)):
+    if isinstance(value, list | dict):
         return bool(value)
     return True
 
