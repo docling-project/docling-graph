@@ -212,6 +212,13 @@ class ConfigurationBuilder:
 
         return {
             "pipeline": pipeline,
+            # Remote conversion: set url to a docling-serve instance (e.g.
+            # http://localhost:5001) to convert documents there instead of
+            # locally. API key comes from the DOCLING_SERVE_API_KEY env var.
+            "serve": {
+                "url": None,
+                "timeout": 300,
+            },
             "export": {
                 "docling_json": docling_json,
                 "markdown": markdown,

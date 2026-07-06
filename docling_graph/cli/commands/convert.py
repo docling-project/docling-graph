@@ -43,6 +43,7 @@ def _resolve_cli_settings(
     inference: str | None,
     export_format: str | None,
     docling_pipeline: str | None,
+    docling_serve_url: str | None,
     llm_input_format: str | None,
     chunk_max_tokens: int | None,
     parallel_workers: int | None,
@@ -66,6 +67,13 @@ def _resolve_cli_settings(
     inference_val = inference or defaults.get("inference", "local")
     export_format_val = export_format or defaults.get("export_format", "csv")
     docling_pipeline_val = docling_pipeline or docling_cfg.get("pipeline", "ocr")
+
+    # Remote conversion via docling-serve: CLI flag > config.yaml (docling.serve)
+    # > DOCLING_SERVE_URL env var (resolved later by PipelineConfig).
+    docling_serve_cfg = docling_cfg.get("serve", {}) or {}
+    docling_serve_url_val = docling_serve_url or docling_serve_cfg.get("url")
+    docling_serve_timeout_val = docling_serve_cfg.get("timeout")
+    docling_serve_api_key_val = docling_serve_cfg.get("api_key")
 
     final_llm_input_format = str(
         llm_input_format
@@ -104,6 +112,9 @@ def _resolve_cli_settings(
         "inference": inference_val,
         "export_format": export_format_val,
         "docling_pipeline": docling_pipeline_val,
+        "docling_serve_url": docling_serve_url_val,
+        "docling_serve_api_key": docling_serve_api_key_val,
+        "docling_serve_timeout": docling_serve_timeout_val,
         "llm_input_format": final_llm_input_format,
         "chunk_max_tokens": (
             chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
@@ -215,6 +226,18 @@ def convert_command(
     docling_pipeline: Annotated[
         str | None,
         typer.Option("--docling-pipeline", "-d", help="Docling pipeline: 'ocr' or 'vision'."),
+    ] = None,
+    docling_serve_url: Annotated[
+        str | None,
+        typer.Option(
+            "--docling-serve-url",
+            help=(
+                "Base URL of a docling-serve instance (e.g. 'http://localhost:5001'). "
+                "Document conversion runs remotely on that instance instead of locally. "
+                "Also configurable via docling.serve.url in config.yaml or the "
+                "DOCLING_SERVE_URL env var; API key via DOCLING_SERVE_API_KEY."
+            ),
+        ),
     ] = None,
     llm_input_format: Annotated[
         str | None,
@@ -417,6 +440,7 @@ def convert_command(
             inference=inference,
             export_format=export_format,
             docling_pipeline=docling_pipeline,
+            docling_serve_url=docling_serve_url,
             llm_input_format=llm_input_format,
             chunk_max_tokens=chunk_max_tokens,
             parallel_workers=parallel_workers,
@@ -465,12 +489,17 @@ def convert_command(
 
     # Display the resolved configuration, one compact line per section.
     logger.info(
-        "source=%s, template=%s, input_type=%s, docling=%s, processing=%s, "
+        "source=%s, template=%s, input_type=%s, docling=%s, conversion=%s, processing=%s, "
         "inference=%s, export=%s, reverse_edges=%s",
         source,
         template,
         input_type_display,
         docling_pipeline_val,
+        (
+            f"docling-serve ({settings['docling_serve_url']})"
+            if settings["docling_serve_url"]
+            else "local"
+        ),
         processing_mode_val,
         inference_val,
         export_format_val,
@@ -536,6 +565,9 @@ def convert_command(
         processing_mode=processing_mode_val,
         extraction_contract=extraction_contract_val,
         docling_config=docling_pipeline_val,
+        docling_serve_url=settings["docling_serve_url"],
+        docling_serve_api_key=settings["docling_serve_api_key"],
+        docling_serve_timeout=int(settings["docling_serve_timeout"] or 300),
         model_override=model,
         provider_override=provider,
         models=models_from_yaml,

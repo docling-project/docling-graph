@@ -25,6 +25,7 @@ from ..utils.doclang_format import (
     serialize_doclang,
     wants_location,
 )
+from .docling_serve_client import DoclingServeClient
 from .document_chunker import DocumentChunker
 
 logger = get_component_logger("DocumentProcessor", __name__)
@@ -131,6 +132,7 @@ class DocumentProcessor:
         docling_config: str = "ocr",
         chunker_config: dict | None = None,
         llm_input_format: str = "markdown",
+        docling_serve_config: dict | None = None,
     ) -> None:
         """
         Initialize document processor with specified pipeline.
@@ -155,6 +157,12 @@ class DocumentProcessor:
                 the chunker's serializer so chunk text matches. Note: DocLang text
                 is ~25-45% larger than markdown, so raising chunk_max_tokens is
                 recommended when using it (see .claude/specs/doclang).
+            docling_serve_config (dict): When set (with a "base_url" key),
+                document conversion is delegated to a remote docling-serve
+                instance and no local conversion models are loaded. Keys:
+                base_url (required), api_key, timeout. The docling_config
+                pipeline selection still applies (mapped to the server's
+                standard/vlm pipelines).
         """
         self.docling_config = docling_config
         self.llm_input_format = llm_input_format
@@ -176,7 +184,22 @@ class DocumentProcessor:
                 chunker_config.setdefault("tokenizer_name", "tiktoken")
             self.chunker = DocumentChunker(**chunker_config)
 
-        if docling_config == "vision":
+        # Remote conversion via docling-serve: no local converter (and none of
+        # its model stack) is created; the server does the conversion.
+        self.serve_client: DoclingServeClient | None = None
+        self.converter: DocumentConverter | None = None
+        if docling_serve_config and docling_serve_config.get("base_url"):
+            self.serve_client = DoclingServeClient(
+                base_url=str(docling_serve_config["base_url"]),
+                api_key=docling_serve_config.get("api_key"),
+                timeout=float(docling_serve_config.get("timeout") or 300.0),
+                docling_config=docling_config,
+            )
+            logger.info(
+                "Initialized with remote docling-serve conversion (%s)",
+                self.serve_client.base_url,
+            )
+        elif docling_config == "vision":
             # VLM Pipeline - Best for complex layouts and images
             self.converter = DocumentConverter(
                 format_options={
@@ -226,7 +249,7 @@ class DocumentProcessor:
             Exception: Re-raises Docling conversion errors with context.
         """
         # Suppress RapidOCR INFO logs (RapidOCR() resets logger to INFO in __init__; set handler level so it sticks)
-        if self.docling_config == "ocr":
+        if self.docling_config == "ocr" and self.serve_client is None:
             try:
                 from rapidocr.utils import log as _rapidocr_log  # type: ignore[import-untyped]
 
@@ -238,19 +261,25 @@ class DocumentProcessor:
                 pass
 
         logger.info("Converting document: %s", source)
-        try:
-            result = self.converter.convert(source)
-        except Exception as e:
-            raise ExtractionError(
-                f"Conversion failed in Docling: {e}",
-                details={"source": source},
-                cause=e,
-            ) from e
+        if self.serve_client is not None:
+            # Remote conversion; the client raises ExtractionError with context.
+            document = self.serve_client.convert_to_docling_doc(source)
+        else:
+            assert self.converter is not None  # exactly one conversion path is configured
+            try:
+                result = self.converter.convert(source)
+            except Exception as e:
+                raise ExtractionError(
+                    f"Conversion failed in Docling: {e}",
+                    details={"source": source},
+                    cause=e,
+                ) from e
+            document = result.document
 
         # Some formats (e.g., DOCX/MD/HTML) may not expose page metadata in Docling.
         page_count = 0
         try:
-            num_pages_fn = getattr(result.document, "num_pages", None)
+            num_pages_fn = getattr(document, "num_pages", None)
             if callable(num_pages_fn):
                 page_count = int(num_pages_fn() or 0)
         except Exception:
@@ -258,7 +287,7 @@ class DocumentProcessor:
 
         if page_count <= 0:
             try:
-                pages = getattr(result.document, "pages", None)
+                pages = getattr(document, "pages", None)
                 if pages is not None:
                     page_count = len(pages)
             except Exception:
@@ -268,7 +297,7 @@ class DocumentProcessor:
             logger.info("Converted %s pages", page_count)
         else:
             logger.info("Converted document (page metadata not available for this input format)")
-        return result.document
+        return document
 
     @overload
     def extract_chunks(
