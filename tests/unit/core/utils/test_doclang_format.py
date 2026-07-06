@@ -80,3 +80,37 @@ class TestDocLangSerializerProvider:
         provider = DocLangSerializerProvider(add_location=True)
         out = provider.get_serializer(_doc()).serialize().text
         assert "<location" in out
+
+
+class TestContentChars:
+    """content_chars: markup-blind sizing for the auto-contract decision."""
+
+    def test_markdown_is_passthrough(self):
+        from docling_graph.core.utils.doclang_format import content_chars
+
+        text = "# Title\n\nSome content."
+        assert content_chars(text, "markdown") == len(text)
+        assert content_chars(text, "auto") == len(text)
+
+    def test_doclang_strips_tags_and_unwraps_cdata(self):
+        from docling_graph.core.utils.doclang_format import content_chars
+
+        doclang = (
+            '<doctag><location value="29"/><location value="106"/>\n'
+            "<![CDATA[Les murs d'enceinte]]>\n"
+            "<ldiv/><page_break/></doctag>"
+        )
+        stripped = content_chars(doclang, "doclang")
+        assert stripped < len(doclang)
+        # The CDATA payload plus whitespace between elements survives.
+        assert stripped >= len("Les murs d'enceinte")
+        assert content_chars(doclang, "doclang-geo") == stripped
+
+    def test_same_content_sizes_equal_across_formats(self):
+        """The decision input must not grow when geometry markup is added."""
+        from docling_graph.core.utils.doclang_format import content_chars
+
+        payload = "x" * 500
+        markdown = payload
+        geo = f'<text><location value="1"/><location value="2"/><![CDATA[{payload}]]></text>'
+        assert content_chars(geo, "doclang-geo") == content_chars(markdown, "markdown")

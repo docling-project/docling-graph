@@ -15,6 +15,8 @@ Modes:
 
 from __future__ import annotations
 
+import re
+
 from docling_core.transforms.chunker.hierarchical_chunker import ChunkingSerializerProvider
 from docling_core.transforms.serializer.base import BaseDocSerializer
 from docling_core.transforms.serializer.doclang import DocLangDocSerializer, DocLangParams
@@ -51,6 +53,37 @@ def prompt_framing(llm_input_format: str) -> str:
 def wants_location(llm_input_format: str) -> bool:
     """True when geometry ``<location>`` elements should be emitted."""
     return llm_input_format == "doclang-geo"
+
+
+_CDATA_RE = re.compile(r"<!\[CDATA\[(.*?)\]\]>", re.DOTALL)
+_TAG_RE = re.compile(r"<[^>]*>")
+
+
+def strip_doclang_markup(text: str) -> str:
+    """Return the plain-text content of a DocLang serialization.
+
+    CDATA payloads are unwrapped, then every remaining XML tag (structure,
+    ``<location>`` geometry, page breaks) is removed. Used for markup-blind
+    document sizing and for comparing extracted values against the text the
+    model was actually served.
+    """
+    unwrapped = _CDATA_RE.sub(lambda m: m.group(1), text)
+    return _TAG_RE.sub("", unwrapped)
+
+
+def content_chars(text: str, llm_input_format: str = "markdown") -> int:
+    """Character count of the *content* of an LLM-facing serialization.
+
+    DocLang markup (tags, CDATA wrappers, ``<location>`` geometry) inflates the
+    raw length substantially (+13% to several hundred percent, measured) without
+    adding extractable information. Sizing decisions — direct-vs-dense contract
+    resolution in particular — must not flip when the user changes the
+    serialization of the same document, so they measure content, not markup.
+    Markdown text is returned as-is (its markup overhead is negligible).
+    """
+    if not is_doclang_format(llm_input_format):
+        return len(text)
+    return len(strip_doclang_markup(text))
 
 
 class DocLangSerializerProvider(ChunkingSerializerProvider):

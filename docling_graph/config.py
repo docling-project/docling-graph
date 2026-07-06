@@ -27,7 +27,7 @@ class ExtractorConfig(BaseModel):
     """Configuration for the extraction strategy."""
 
     strategy: Literal["many-to-one", "one-to-one"] = Field(default="many-to-one")
-    extraction_contract: Literal["direct", "dense", "auto"] = Field(default="direct")
+    extraction_contract: Literal["direct", "dense", "auto"] = Field(default="auto")
     docling_config: Literal["ocr", "vision"] = Field(default="ocr")
     use_chunking: bool = Field(default=True)
     chunker_config: Dict[str, Any] | None = Field(default=None)
@@ -94,13 +94,18 @@ class PipelineConfig(BaseModel):
     backend: Literal["llm", "vlm"] = Field(default="llm")
     inference: Literal["local", "remote"] = Field(default="local")
     processing_mode: Literal["one-to-one", "many-to-one"] = Field(default="many-to-one")
+    # Default "auto": running direct on a document that dwarfs the model's
+    # output budget silently self-rations (verified: 36k-char paper direct
+    # scored node-F1 0.04 vs 0.14 dense), and on huge documents it burns
+    # minutes of doomed calls. Auto costs nothing on small documents (resolves
+    # to direct) and the decision is logged per document.
     extraction_contract: Literal["direct", "dense", "auto"] = Field(
-        default="direct",
+        default="auto",
         description=(
-            "Extraction contract: 'direct' (single full-document call), 'dense' "
-            "(skeleton-then-fill over chunks), or 'auto' (per document, picks direct "
-            "when a single call fits the model's context window and output budget, "
-            "dense otherwise)."
+            "Extraction contract: 'auto' (default — per document, picks direct when a "
+            "single call fits the model's context window and output budget, dense "
+            "otherwise), 'direct' (always one full-document call), or 'dense' "
+            "(always skeleton-then-fill over chunks)."
         ),
     )
 
@@ -167,12 +172,16 @@ class PipelineConfig(BaseModel):
     # LLM input serialization: how the document text is rendered for the LLM.
     # 'markdown' (default) is the well-trodden path; 'doclang'/'doclang-geo' render
     # DocLang XML (structure + optional geometry) at a higher token cost — opt-in.
-    llm_input_format: Literal["markdown", "doclang", "doclang-geo"] = Field(
+    # 'auto' pairs the format to the resolved extraction contract per document
+    # (direct -> doclang-geo, dense -> doclang; raw text inputs -> markdown).
+    llm_input_format: Literal["markdown", "doclang", "doclang-geo", "auto"] = Field(
         default="markdown",
         description=(
             "Serialization of document text sent to the LLM: 'markdown' (default), "
-            "'doclang' (DocLang XML, structure only), or 'doclang-geo' (DocLang XML with "
-            "page-coordinate geometry). DocLang costs more tokens; benchmark before switching."
+            "'doclang' (DocLang XML, structure only), 'doclang-geo' (DocLang XML with "
+            "page-coordinate geometry), or 'auto' (pair the format to the resolved "
+            "extraction contract: direct->doclang-geo, dense->doclang). DocLang costs "
+            "more tokens; benchmark before switching."
         ),
     )
 
@@ -202,7 +211,7 @@ class PipelineConfig(BaseModel):
     # Mandatory cleanup (root singleton, barren-branch pruning, quality gate)
     # are pipeline invariants and intentionally not configurable.
     dense_skeleton_batch_tokens: int = Field(
-        default=1024,
+        default=2048,
         description="Max tokens per dense Phase 1 (skeleton) chunk batch.",
     )
     dense_fill_nodes_cap: int = Field(

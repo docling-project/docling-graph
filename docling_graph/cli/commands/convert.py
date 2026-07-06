@@ -62,7 +62,7 @@ def _resolve_cli_settings(
 ) -> dict[str, Any]:
     """Resolve CLI and config-file settings into effective values."""
     processing_mode_val = processing_mode or defaults.get("processing_mode", "many-to-one")
-    extraction_contract_val = extraction_contract or defaults.get("extraction_contract", "direct")
+    extraction_contract_val = extraction_contract or defaults.get("extraction_contract", "auto")
     backend_val = backend or defaults.get("backend", "llm")
     inference_val = inference or defaults.get("inference", "local")
     export_format_val = export_format or defaults.get("export_format", "csv")
@@ -80,7 +80,7 @@ def _resolve_cli_settings(
         if llm_input_format is not None
         else defaults.get("llm_input_format", "markdown")
     ).lower()
-    if final_llm_input_format not in ("markdown", "doclang", "doclang-geo"):
+    if final_llm_input_format not in ("markdown", "doclang", "doclang-geo", "auto"):
         final_llm_input_format = "markdown"
 
     final_dense_dedupe = str(
@@ -125,7 +125,7 @@ def _resolve_cli_settings(
         "dense_skeleton_batch_tokens": int(
             dense_skeleton_batch_tokens
             if dense_skeleton_batch_tokens is not None
-            else defaults.get("dense_skeleton_batch_tokens", 1024) or 1024
+            else defaults.get("dense_skeleton_batch_tokens", 2048) or 2048
         ),
         "dense_fill_nodes_cap": int(
             dense_fill_nodes_cap
@@ -244,8 +244,9 @@ def convert_command(
         typer.Option(
             "--llm-format",
             help=(
-                "Serialization sent to the LLM: markdown (default) | doclang | doclang-geo. "
-                "DocLang preserves structure/geometry at a higher token cost."
+                "Serialization sent to the LLM: markdown (default) | doclang | doclang-geo | "
+                "auto (pairs format to the resolved contract: direct->doclang-geo, "
+                "dense->doclang). DocLang preserves structure/geometry at a higher token cost."
             ),
         ),
     ] = None,
@@ -289,7 +290,7 @@ def convert_command(
         int | None,
         typer.Option(
             "--dense-skeleton-batch-tokens",
-            help="Max tokens per dense Phase 1 (skeleton) chunk batch (default: 1024).",
+            help="Max tokens per dense Phase 1 (skeleton) chunk batch (default: 2048).",
         ),
     ] = None,
     dense_fill_nodes_cap: Annotated[

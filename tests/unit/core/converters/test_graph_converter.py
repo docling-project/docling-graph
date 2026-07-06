@@ -137,3 +137,30 @@ def test_conversion_without_cleanup():
     # Should have 2 nodes and 1 edge
     assert graph.number_of_nodes() == 2
     assert graph.number_of_edges() == 1
+
+
+# --- Integrity: exported nodes with empty identity are surfaced loudly ---
+
+
+def test_empty_identity_node_is_flagged_on_graph(converter, caplog):
+    """A node whose declared identity fields are all empty lands in graph metadata + warning."""
+    import logging
+
+    class RootDoc(BaseModel):
+        reference: str = ""
+        holder: Company | None = None
+        model_config = {"graph_id_fields": ["reference"]}
+
+    model = RootDoc(reference="", holder=Company(name="TechCorp", location="SF"))
+    with caplog.at_level(logging.WARNING):
+        graph, _ = converter.pydantic_list_to_graph([model])
+    flagged = graph.graph.get("empty_identity_nodes", [])
+    assert len(flagged) == 1
+    assert any("empty identity" in rec.message for rec in caplog.records)
+
+
+def test_filled_identity_nodes_are_not_flagged(converter):
+    company = Company(name="TechCorp", location="SF")
+    person = Person(name="Alice", works_for=company)
+    graph, _ = converter.pydantic_list_to_graph([person])
+    assert "empty_identity_nodes" not in graph.graph
