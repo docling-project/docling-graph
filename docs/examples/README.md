@@ -39,6 +39,7 @@ Example scripts and Pydantic templates for docling-graph. Run scripts from the *
 ### Evaluation
 
 14. **`16_extraction_evaluation.py`** — Score an extracted `graph.json` against a template-shaped ground-truth JSON (node/edge P/R/F1, attribute completeness, integrity). Domain-agnostic — works with any `(template, ground_truth.json, graph.json)` triple.
+15. **`17_benchmark_aggregate.py`** — Aggregate a benchmark matrix tree (documents × contracts × LLM formats × repeats) of Example 16 outputs into `_aggregate.json` + a synthesis report with micro node/edge F1, dense retention, and chunk coverage. Driven by `run_benchmark.sh`.
 
 For CLI usage, see [CLI Reference](../usage/cli/index.md) and [convert command](../usage/cli/convert-command.md).
 
