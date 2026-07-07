@@ -2360,3 +2360,70 @@ class TestAllowDenseFlag:
         result = backend.extract_from_markdown(markdown="Some content", template=MockTemplate)
         assert result is not None
         mock_orchestrator.assert_called_once()
+
+
+class TestModelTypeStringCoercion:
+    """Bare-string references where the schema expects a nested model are
+    coerced to identity-only instances instead of falling through to field
+    pruning (observed: one drifted fill response cost ~50 membership edges)."""
+
+    def test_bare_string_list_items_become_identity_instances(self, llm_backend):
+        class Tag(BaseModel):
+            name: str
+            detail: str | None = None
+            model_config = ConfigDict(graph_id_fields=["name"])
+
+        class Offer(BaseModel):
+            nom: str
+            included: list[Tag] = Field(default_factory=list)
+            model_config = ConfigDict(graph_id_fields=["nom"])
+
+        class RootDoc(BaseModel):
+            title: str = ""
+            offers: list[Offer] = Field(default_factory=list)
+            model_config = ConfigDict(graph_id_fields=["title"])
+
+        data = {
+            "title": "doc",
+            "offers": [
+                {"nom": "A", "included": [{"name": "ok"}, "Jardin", "Piscine"]},
+                {"nom": "B", "included": ["Assurance scolaire"]},
+            ],
+        }
+        model = llm_backend._validate_extraction(data, RootDoc, "test")
+        assert model is not None
+        assert [t.name for t in model.offers[0].included] == ["ok", "Jardin", "Piscine"]
+        assert model.offers[1].included[0].name == "Assurance scolaire"
+
+    def test_bare_string_singular_model_field(self, llm_backend):
+        class Setup(BaseModel):
+            label: str
+            model_config = ConfigDict(graph_id_fields=["label"])
+
+        class RootDoc(BaseModel):
+            title: str = ""
+            setup: Setup | None = None
+            model_config = ConfigDict(graph_id_fields=["title"])
+
+        model = llm_backend._validate_extraction(
+            {"title": "d", "setup": "MCR 300"}, RootDoc, "test"
+        )
+        assert model is not None
+        assert model.setup is not None and model.setup.label == "MCR 300"
+
+    def test_model_without_identity_fields_is_left_to_pruner(self, llm_backend):
+        class NoId(BaseModel):
+            text: str | None = None
+
+        class RootDoc(BaseModel):
+            title: str = ""
+            notes: list[NoId] = Field(default_factory=list)
+            model_config = ConfigDict(graph_id_fields=["title"])
+
+        # No identity field to hang the string on: the pruner removes the item,
+        # the document still validates.
+        model = llm_backend._validate_extraction(
+            {"title": "d", "notes": ["stray"]}, RootDoc, "test"
+        )
+        assert model is not None
+        assert model.notes == []

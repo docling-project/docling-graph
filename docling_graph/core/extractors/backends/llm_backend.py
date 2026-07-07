@@ -683,6 +683,79 @@ class LlmBackend:
                 continue
         return changed
 
+    @staticmethod
+    def _model_for_loc(template: Type[BaseModel], loc: tuple) -> Type[BaseModel] | None:
+        """Resolve the nested model class a validation-error loc points at.
+
+        Walks the template's field annotations along the loc, skipping list
+        indices; returns None when any segment does not resolve to a model.
+        """
+        from typing import get_args
+
+        def unwrap(annotation: Any) -> Type[BaseModel] | None:
+            if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+                return annotation
+            for arg in get_args(annotation):
+                found = unwrap(arg)
+                if found is not None:
+                    return found
+            return None
+
+        current: Type[BaseModel] | None = template
+        for part in loc:
+            if isinstance(part, int):
+                continue
+            if current is None:
+                return None
+            field = current.model_fields.get(str(part))
+            if field is None:
+                return None
+            current = unwrap(field.annotation)
+        return current
+
+    def _coerce_model_type_strings(
+        self, data: dict | list, errors: list, template: Type[BaseModel]
+    ) -> bool:
+        """Coerce a bare string into an identity-only instance where a model is expected.
+
+        Reference-style fields (id-only lists such as memberships) are the
+        common case: the schema asks for ``[{"nom": "Jardin"}]`` and a small
+        model shortcuts to ``["Jardin"]``. Without this fixer the model_type
+        errors fall through to field pruning, which deletes the memberships —
+        observed to erase ~50 real edges from one drifted fill response. The
+        string becomes ``{<first graph_id_field>: value}``; models without
+        identity fields are left for the pruner.
+        """
+        changed = False
+        seen_locs: set[tuple] = set()
+        for err in errors:
+            if err.get("type") != "model_type":
+                continue
+            loc = tuple(err.get("loc", ()))
+            if not loc or loc in seen_locs:
+                continue
+            try:
+                value = self._get_at_path(data, loc)
+            except (KeyError, IndexError, TypeError):
+                continue
+            if not isinstance(value, str) or not value.strip():
+                continue
+            target = self._model_for_loc(template, loc)
+            if target is None:
+                continue
+            config = getattr(target, "model_config", {}) or {}
+            id_fields = config.get("graph_id_fields", []) if hasattr(config, "get") else []
+            id_fields = [f for f in id_fields if isinstance(f, str) and f in target.model_fields]
+            if not id_fields:
+                continue
+            try:
+                self._set_at_path(data, loc, {id_fields[0]: value.strip()})
+                seen_locs.add(loc)
+                changed = True
+            except (KeyError, IndexError, TypeError):
+                continue
+        return changed
+
     def _prune_invalid_fields(self, data: dict | list, errors: list) -> None:
         """
         Remove offending leaf fields indicated by validation error locs.
@@ -761,6 +834,11 @@ class LlmBackend:
 
                 # Coerce int/float/bool to string where schema expects string
                 if self._coerce_string_type_errors(data, errors):
+                    any_fixed = True
+
+                # Coerce bare strings to identity-only instances where a model
+                # is expected (id-only reference lists emitted as name strings)
+                if self._coerce_model_type_strings(data, errors, template=template):
                     any_fixed = True
 
                 # Coerce scalar to list where schema expects list (comma-split when string)

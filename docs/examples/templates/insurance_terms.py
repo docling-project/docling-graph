@@ -480,6 +480,14 @@ class Garantie(BaseModel):
         ],
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def accepter_chaine(cls, v: Any) -> Any:
+        """Une référence nue "Dégâts des eaux" équivaut à {"nom": ...} (listes id-only)."""
+        if isinstance(v, str):
+            return {"nom": v}
+        return v
+
     @field_validator("biens_couverts", mode="before")
     @classmethod
     def filtrer_biens_couverts(cls, v: Any) -> Any:
@@ -568,6 +576,14 @@ class Option(BaseModel):
         ),
         examples=[[{"nom": "Incendie et événements assimilés"}]],
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def accepter_chaine(cls, v: Any) -> Any:
+        """Une référence nue "Jardin" équivaut à {"nom": ...} (listes id-only)."""
+        if isinstance(v, str):
+            return {"nom": v}
+        return v
 
     @field_validator("biens_couverts", mode="before")
     @classmethod
