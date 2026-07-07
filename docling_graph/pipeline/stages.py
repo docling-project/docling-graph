@@ -498,7 +498,7 @@ class ExtractionStage(PipelineStage):
             "dense_fill_context": conf.get("dense_fill_context", "scoped"),
             "dense_dedupe": conf.get("dense_dedupe", "standard"),
             "provenance": conf.get("provenance", "standard"),
-            "llm_input_format": conf.get("llm_input_format", "markdown"),
+            "llm_input_format": conf.get("llm_input_format", "auto"),
         }
         if conf.get("debug"):
             if context.output_manager is not None:
@@ -522,7 +522,7 @@ class ExtractionStage(PipelineStage):
             f"Using model: {model_config['model']} (provider: {model_config['provider']})"
         )
 
-        llm_input_format = cast(str, conf.get("llm_input_format", "markdown"))
+        llm_input_format = cast(str, conf.get("llm_input_format", "auto"))
 
         # Remote conversion via docling-serve (conversion step only)
         docling_serve_config: Dict[str, Any] | None = None

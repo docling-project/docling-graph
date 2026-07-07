@@ -170,18 +170,20 @@ class PipelineConfig(BaseModel):
     )
 
     # LLM input serialization: how the document text is rendered for the LLM.
-    # 'markdown' (default) is the well-trodden path; 'doclang'/'doclang-geo' render
-    # DocLang XML (structure + optional geometry) at a higher token cost — opt-in.
-    # 'auto' pairs the format to the resolved extraction contract per document
-    # (direct -> doclang-geo, dense -> doclang; raw text inputs -> markdown).
+    # 'auto' (default) pairs the format to the resolved extraction contract per
+    # document (direct -> doclang-geo, dense -> doclang; raw text inputs ->
+    # markdown) — the benchmark-validated pairing. Fixed values pin one
+    # serialization: 'markdown' is the cheapest baseline; 'doclang'/'doclang-geo'
+    # render DocLang XML (structure + optional geometry) at a higher token cost.
     llm_input_format: Literal["markdown", "doclang", "doclang-geo", "auto"] = Field(
-        default="markdown",
+        default="auto",
         description=(
-            "Serialization of document text sent to the LLM: 'markdown' (default), "
-            "'doclang' (DocLang XML, structure only), 'doclang-geo' (DocLang XML with "
-            "page-coordinate geometry), or 'auto' (pair the format to the resolved "
-            "extraction contract: direct->doclang-geo, dense->doclang). DocLang costs "
-            "more tokens; benchmark before switching."
+            "Serialization of document text sent to the LLM: 'auto' (default; pairs "
+            "the format to the resolved extraction contract: direct->doclang-geo, "
+            "dense->doclang, raw text->markdown), 'markdown' (cheapest baseline), "
+            "'doclang' (DocLang XML, structure only), or 'doclang-geo' (DocLang XML "
+            "with page-coordinate geometry). DocLang costs more tokens; benchmark "
+            "before pinning a fixed format."
         ),
     )
 

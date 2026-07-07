@@ -78,10 +78,10 @@ def _resolve_cli_settings(
     final_llm_input_format = str(
         llm_input_format
         if llm_input_format is not None
-        else defaults.get("llm_input_format", "markdown")
+        else defaults.get("llm_input_format", "auto")
     ).lower()
     if final_llm_input_format not in ("markdown", "doclang", "doclang-geo", "auto"):
-        final_llm_input_format = "markdown"
+        final_llm_input_format = "auto"
 
     final_dense_dedupe = str(
         dense_dedupe if dense_dedupe is not None else defaults.get("dense_dedupe", "standard")
@@ -244,9 +244,10 @@ def convert_command(
         typer.Option(
             "--llm-format",
             help=(
-                "Serialization sent to the LLM: markdown (default) | doclang | doclang-geo | "
-                "auto (pairs format to the resolved contract: direct->doclang-geo, "
-                "dense->doclang). DocLang preserves structure/geometry at a higher token cost."
+                "Serialization sent to the LLM: auto (default; pairs format to the resolved "
+                "contract: direct->doclang-geo, dense->doclang, raw text->markdown) | "
+                "markdown | doclang | doclang-geo. DocLang preserves structure/geometry "
+                "at a higher token cost."
             ),
         ),
     ] = None,
