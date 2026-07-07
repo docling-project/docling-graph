@@ -359,6 +359,58 @@ def test_skeleton_prompt_forbids_pair_combination_ids():
     assert "NEVER join two entity names into a single id" in prompt["system"]
 
 
+class TestNestedParentRuleConditional:
+    """Rule 11 (nested entities attach to the section-named parent, never the
+    root) exists ONLY for multi-level catalogs: on flat catalogs every node
+    hangs off the root and the sentence would dilute the core instructions."""
+
+    def test_nested_catalog_carries_rule(self):
+        from docling_graph.core.extractors.contracts.dense.prompts import (
+            get_skeleton_batch_prompt,
+        )
+
+        prompt = get_skeleton_batch_prompt(
+            batch_markdown="doc",
+            catalog_block="",
+            batch_index=0,
+            total_batches=1,
+            allowed_paths=["", "garanties[]", "garanties[].exclusions_specifiques[]"],
+        )
+        assert "NEVER to the root" in prompt["system"]
+        assert "section or article names it" in prompt["system"]
+
+    def test_flat_catalog_has_no_rule(self):
+        from docling_graph.core.extractors.contracts.dense.prompts import (
+            get_skeleton_batch_prompt,
+        )
+
+        prompt = get_skeleton_batch_prompt(
+            batch_markdown="doc",
+            catalog_block="",
+            batch_index=0,
+            total_batches=1,
+            allowed_paths=["", "seller", "line_items[]"],
+        )
+        assert "NEVER to the root" not in prompt["system"]
+
+
+def test_skeleton_prompt_mentions_chunk_attribution():
+    """The optional per-node "c" chunk attribution is described in the rules."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_batch_prompt,
+    )
+
+    prompt = get_skeleton_batch_prompt(
+        batch_markdown="doc",
+        catalog_block="",
+        batch_index=0,
+        total_batches=1,
+        allowed_paths=[""],
+    )
+    assert '"c"' in prompt["system"]
+    assert "--- CHUNK N ---" in prompt["system"]
+
+
 def test_fill_prompt_membership_rule_only_for_reference_paths():
     from docling_graph.core.extractors.contracts.dense.catalog import (
         NodeSpec,

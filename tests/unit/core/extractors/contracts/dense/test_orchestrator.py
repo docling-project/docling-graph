@@ -69,14 +69,45 @@ def test_normalize_skeleton_batch_ignores_dangling_and_self_handles():
 
 
 def test_normalize_skeleton_batch_output_shape_and_source_batch_index():
-    """Normalized nodes contain only path/ids/parent (+ _source_batch_index when given)."""
+    """Normalized nodes contain path/ids/parent/_emission_index (+ _source_batch_index when given)."""
     allowed = {""}
     nodes = [_skeleton({"i": 1, "path": "", "ids": {}})]
     out = normalize_skeleton_batch(nodes, allowed, source_batch_index=2)
-    assert set(out[0].keys()) == {"path", "ids", "parent", "_source_batch_index"}
+    assert set(out[0].keys()) == {
+        "path",
+        "ids",
+        "parent",
+        "_source_batch_index",
+        "_emission_index",
+    }
     assert out[0]["_source_batch_index"] == 2
+    assert out[0]["_emission_index"] == 0
     out_no_idx = normalize_skeleton_batch(nodes, allowed)
-    assert set(out_no_idx[0].keys()) == {"path", "ids", "parent"}
+    assert set(out_no_idx[0].keys()) == {"path", "ids", "parent", "_emission_index"}
+
+
+def test_normalize_skeleton_batch_chunk_attribution_narrows_source_chunks():
+    """A trusted "c" (a CHUNK N marker of THIS batch) narrows _source_chunk_ids
+    to that one chunk; absent or out-of-batch values keep the batch set."""
+    allowed = {"", "studies[]"}
+    nodes = [
+        _skeleton({"i": 1, "path": "", "ids": {}}),
+        # markers are 1-based over global chunk ids: c=6 -> chunk 5
+        _skeleton({"i": 2, "path": "studies[]", "ids": {"study_id": "S1"}, "p": 1, "c": 6}),
+        # string handles are coerced like i/p
+        _skeleton({"i": 3, "path": "studies[]", "ids": {"study_id": "S2"}, "p": 1, "c": "5"}),
+        # chunk 8 is not in this batch: fall back to batch granularity
+        _skeleton({"i": 4, "path": "studies[]", "ids": {"study_id": "S3"}, "p": 1, "c": 9}),
+        # no attribution at all
+        _skeleton({"i": 5, "path": "studies[]", "ids": {"study_id": "S4"}, "p": 1}),
+    ]
+    out = normalize_skeleton_batch(nodes, allowed, source_chunk_ids=[4, 5])
+    assert out[1]["_source_chunk_ids"] == [5]
+    assert out[2]["_source_chunk_ids"] == [4]
+    assert out[3]["_source_chunk_ids"] == [4, 5]
+    assert out[4]["_source_chunk_ids"] == [4, 5]
+    # emission order is recorded for the adjacency rescue
+    assert [n["_emission_index"] for n in out] == [0, 1, 2, 3, 4]
 
 
 def test_normalize_skeleton_batch_canonicalizes_paths_missing_brackets():
@@ -790,6 +821,203 @@ def test_merge_filled_recovers_child_via_fuzzy_parent_match():
     assert alpha["experiments"][0]["exp_id"] == "E1"
     assert "experiments" not in beta
     assert stats["recovered_fuzzy"] == 1
+
+
+def test_merge_filled_rescues_child_via_text_anchor():
+    """A dangling child adopts the unique parent named by its source chunk's text.
+
+    The child's own id value verbatim-locates it in chunk 1, whose head names
+    Beta-Study (and only Beta-Study), so the exclusion-style orphan attaches
+    there instead of dropping — the benchmark-validated rescue."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _linkage_catalog()
+    exp_id = "special experiment on beta samples"
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha-Study"}, {"study_id": "Beta-Study"}],
+        "studies[].experiments[]": [{"exp_id": exp_id}],
+    }
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "studies[]": [
+            _desc("studies[]", {"study_id": "Alpha-Study"}, {"path": "", "ids": {}}),
+            _desc("studies[]", {"study_id": "Beta-Study"}, {"path": "", "ids": {}}),
+        ],
+        "studies[].experiments[]": [
+            {
+                "path": "studies[].experiments[]",
+                "ids": {"exp_id": exp_id},
+                "parent": {"path": "", "ids": {}},
+                "_source_chunk_ids": [0, 1],
+            }
+        ],
+    }
+    chunk_texts = {
+        0: "Section Alpha-Study\nGeneral introduction, no experiments here.",
+        1: f"Under the Beta-Study section:\n- {exp_id} ran for two hours.",
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(
+        path_filled, path_descriptors, catalog, stats_out=stats, chunk_texts=chunk_texts
+    )
+    beta = root["studies"][1]
+    assert beta["experiments"][0]["exp_id"] == exp_id
+    assert "experiments" not in root["studies"][0]
+    assert stats["recovered_text_anchor"] == 1
+    assert stats["dropped"] == 0
+
+
+def test_merge_filled_text_anchor_refuses_ambiguous_chunk():
+    """A chunk naming SEVERAL parent instances anchors nothing — no guessing."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _linkage_catalog()
+    exp_id = "comparative experiment across studies"
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha-Study"}, {"study_id": "Beta-Study"}],
+        "studies[].experiments[]": [{"exp_id": exp_id}],
+    }
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "studies[]": [
+            _desc("studies[]", {"study_id": "Alpha-Study"}, {"path": "", "ids": {}}),
+            _desc("studies[]", {"study_id": "Beta-Study"}, {"path": "", "ids": {}}),
+        ],
+        "studies[].experiments[]": [
+            {
+                "path": "studies[].experiments[]",
+                "ids": {"exp_id": exp_id},
+                "parent": {"path": "", "ids": {}},
+                "_source_chunk_ids": [0],
+            }
+        ],
+    }
+    chunk_texts = {
+        0: f"Comparing Alpha-Study with Beta-Study:\n- {exp_id} covers both.",
+    }
+    stats: dict[str, int] = {}
+    merge_filled_into_root(
+        path_filled, path_descriptors, catalog, stats_out=stats, chunk_texts=chunk_texts
+    )
+    assert stats["recovered_text_anchor"] == 0
+
+
+def _singular_child_catalog() -> NodeCatalog:
+    return NodeCatalog(
+        nodes=[
+            NodeSpec(
+                path="",
+                node_type="Invoice",
+                id_fields=["number"],
+                parent_path="",
+                field_name="",
+                is_list=False,
+            ),
+            NodeSpec(
+                path="line_items[]",
+                node_type="LineItem",
+                id_fields=["line_number"],
+                parent_path="",
+                field_name="line_items",
+                is_list=True,
+            ),
+            NodeSpec(
+                path="line_items[].item",
+                node_type="Item",
+                id_fields=["name"],
+                parent_path="line_items[]",
+                field_name="item",
+                is_list=False,
+            ),
+        ]
+    )
+
+
+def test_merge_filled_rescues_singular_child_via_emission_adjacency():
+    """A singular child with a fully dangling handle adopts the nearest
+    PRECEDING same-response parent (models emit line item then its item)."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _singular_child_catalog()
+    path_filled = {
+        "": [{"number": "3139"}],
+        "line_items[]": [{"line_number": "1"}, {"line_number": "2"}],
+        "line_items[].item": [{"name": "Gardenwork"}, {"name": "Disposal of cuttings"}],
+    }
+
+    def _emitted(path: str, ids: dict, emission: int) -> dict:
+        return {
+            "path": path,
+            "ids": ids,
+            "parent": {"path": "", "ids": {}},
+            "_source_batch_indexes": [0],
+            "_emission_index": emission,
+        }
+
+    path_descriptors = {
+        "": [_desc("", {"number": "3139"}, None)],
+        "line_items[]": [
+            _emitted("line_items[]", {"line_number": "1"}, 3),
+            _emitted("line_items[]", {"line_number": "2"}, 5),
+        ],
+        "line_items[].item": [
+            _emitted("line_items[].item", {"name": "Gardenwork"}, 4),
+            _emitted("line_items[].item", {"name": "Disposal of cuttings"}, 6),
+        ],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    assert root["line_items"][0]["item"]["name"] == "Gardenwork"
+    assert root["line_items"][1]["item"]["name"] == "Disposal of cuttings"
+    assert stats["recovered_adjacency"] == 2
+    assert stats["dropped"] == 0
+
+
+def test_merge_filled_adjacency_never_applies_to_list_children():
+    """Emission order is no evidence for LIST children (several siblings follow
+    one parent), so the rung must not fire for them."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _linkage_catalog()
+    path_filled = {
+        "": [{"title": "T"}],
+        "studies[]": [{"study_id": "Alpha-Study"}, {"study_id": "Beta-Study"}],
+        "studies[].experiments[]": [{"exp_id": "E1"}],
+    }
+
+    path_descriptors = {
+        "": [_desc("", {"title": "T"}, None)],
+        "studies[]": [
+            {
+                "path": "studies[]",
+                "ids": {"study_id": "Alpha-Study"},
+                "parent": {"path": "", "ids": {}},
+                "_source_batch_indexes": [0],
+                "_emission_index": 1,
+            },
+            {
+                "path": "studies[]",
+                "ids": {"study_id": "Beta-Study"},
+                "parent": {"path": "", "ids": {}},
+                "_source_batch_indexes": [0],
+                "_emission_index": 2,
+            },
+        ],
+        "studies[].experiments[]": [
+            {
+                "path": "studies[].experiments[]",
+                "ids": {"exp_id": "E1"},
+                "parent": {"path": "studies[]", "ids": {}},
+                "_source_batch_indexes": [0],
+                "_emission_index": 3,
+            }
+        ],
+    }
+    stats: dict[str, int] = {}
+    merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    assert stats["recovered_adjacency"] == 0
 
 
 def test_merge_filled_creates_placeholder_parent_for_unmatched_reference():
