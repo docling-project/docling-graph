@@ -158,7 +158,7 @@ chunker = DocumentChunker(
 
 ### Chunk text and `llm_input_format`
 
-Chunk text is serialized in the pipeline's [`llm_input_format`](document-conversion.md#llm-input-serialization). With `markdown` (default) a chunk holds markdown; with `doclang` / `doclang-geo` it holds DocLang XML, which carries the same content in more tokens. Because `chunk_max_tokens` caps the *serialized* size, a DocLang chunk holds **~25–45% less document content** than a markdown chunk of the same budget — meaning more chunks and, in dense mode, more LLM calls.
+Chunk text is serialized in the pipeline's [`llm_input_format`](document-conversion.md#llm-input-serialization). With `markdown` a chunk holds markdown; with `doclang` / `doclang-geo` (what the default `auto` resolves to for dense / direct extraction of converted documents) it holds DocLang XML, which carries the same content in more tokens. Because `chunk_max_tokens` caps the *serialized* size, a DocLang chunk holds **~25–45% less document content** than a markdown chunk of the same budget — meaning more chunks and, in dense mode, more LLM calls.
 
 In DocLang modes the chunker also defaults its token counting to a **BPE tokenizer** (`tiktoken`) instead of the wordpiece MiniLM default: DocLang's syntax vocabulary is designed to map efficiently onto LLM BPE tokens, and wordpiece tokenizers fragment the XML markup and overcount it (~15–20% on real documents), skewing chunk budgets. Pass an explicit `tokenizer_name` in `chunker_config` to override.
 
