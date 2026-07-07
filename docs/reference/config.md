@@ -32,7 +32,7 @@ config = PipelineConfig(
     model_override: str | None = None,
     provider_override: str | None = None,
     models: ModelsConfig = ModelsConfig(),
-    llm_input_format: Literal["markdown", "doclang", "doclang-geo", "auto"] = "markdown",
+    llm_input_format: Literal["markdown", "doclang", "doclang-geo", "auto"] = "auto",
     use_chunking: bool = True,
     chunk_max_tokens: int | None = None,
     debug: bool = False,
@@ -74,7 +74,7 @@ config = PipelineConfig(
 | `processing_mode` | `"one-to-one"` or `"many-to-one"` | `"many-to-one"` | Processing strategy |
 | `extraction_contract` | `"auto"`, `"direct"`, or `"dense"` | `"auto"` | LLM extraction contract (`direct` for single-pass extraction; `dense` for skeleton-then-flesh; `auto` resolves per document — direct only when a single call fits the model's context window and output budget, dense otherwise; the decision is logged as `[AutoContract]`) |
 | `docling_config` | `"ocr"` or `"vision"` | `"ocr"` | Docling pipeline type |
-| `llm_input_format` | `"markdown"`, `"doclang"`, `"doclang-geo"`, or `"auto"` | `"markdown"` | Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost). `auto` pairs the format to the resolved contract per document: direct → `doclang-geo`, dense → `doclang`, raw-text inputs → `markdown` |
+| `llm_input_format` | `"markdown"`, `"doclang"`, `"doclang-geo"`, or `"auto"` | `"auto"` | Serialization of the document text sent to the LLM (DocLang preserves structure/geometry at higher token cost). `auto` pairs the format to the resolved contract per document: direct → `doclang-geo`, dense → `doclang`, raw-text inputs → `markdown` |
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking; raise it when using a DocLang `llm_input_format`) |
 | `debug` | `bool` | `False` | Enable debug artifacts |

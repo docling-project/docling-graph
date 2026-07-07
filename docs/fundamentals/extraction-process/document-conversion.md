@@ -217,14 +217,14 @@ for i, page_md in enumerate(page_markdowns, 1):
 
 ## LLM Input Serialization
 
-By default the document text sent to the LLM during extraction is **markdown**. You can switch to [DocLang](https://github.com/doclang-project/doclang) — an XML markup that preserves structure and (optionally) page geometry — with the `llm_input_format` setting. This changes only what the LLM reads; the exported `document.md` and `document.json` are unaffected.
+The `llm_input_format` setting controls how the document text is serialized for the LLM during extraction. The default is **`auto`**, which pairs the serialization to the resolved extraction contract per document; fixed values pin plain markdown or [DocLang](https://github.com/doclang-project/doclang) — an XML markup that preserves structure and (optionally) page geometry. This changes only what the LLM reads; the exported `document.md` and `document.json` are unaffected.
 
 | `llm_input_format` | LLM sees | Relative token cost | When to try |
 |:-------------------|:---------|:--------------------|:------------|
-| `markdown` (default) | Plain markdown | 1× (baseline) | Almost always; best for markdown-trained and smaller local models |
+| `auto` (default) | Paired to the resolved contract | varies | Benchmark-driven pairing: `direct` → `doclang-geo` (geometry recovers footers/table matrices in one call), `dense` → `doclang` (keeps chunk batches content-dense), raw text → `markdown` |
+| `markdown` | Plain markdown | 1× (baseline) | Cheapest; best for markdown-trained and smaller local models |
 | `doclang` | DocLang XML, structure only | ~1.3–1.8× | Structure-heavy docs (tables, forms) where markdown loses semantics |
 | `doclang-geo` | DocLang XML + `<location>` geometry | ~2.5–5× | Forms/invoices where spatial position disambiguates fields |
-| `auto` | Paired to the resolved contract | varies | Benchmark-driven pairing: `direct` → `doclang-geo` (geometry recovers footers/table matrices in one call), `dense` → `doclang` (keeps chunk batches content-dense), raw text → `markdown` |
 
 With `auto`, the direct-vs-dense contract decision itself measures **content** characters (DocLang markup stripped), so the chosen serialization never flips the contract for the same document.
 
@@ -232,7 +232,7 @@ With `auto`, the direct-vs-dense contract decision itself measures **content** c
 config = PipelineConfig(
     source="invoice.pdf",
     template="templates.BillingDocument",
-    llm_input_format="doclang",   # or "doclang-geo", default "markdown"
+    llm_input_format="doclang",   # or "doclang-geo" / "markdown", default "auto"
     chunk_max_tokens=768,          # raise the budget: DocLang chunks hold less content
 )
 ```
@@ -241,8 +241,8 @@ config = PipelineConfig(
 docling-graph convert invoice.pdf -t templates.BillingDocument --llm-format doclang-geo
 ```
 
-!!! warning "Higher token cost — benchmark before switching the default"
-    DocLang carries more tokens than markdown (geometry especially), so each chunk holds ~25–45% less document content — expect more chunks and more LLM calls in dense mode. Raise `chunk_max_tokens` (e.g. 512 → 768) alongside the switch, and A/B against markdown on your corpus before adopting it broadly. Small markdown-native models (like the default local `granite`) often do best on plain markdown.
+!!! warning "Higher token cost — benchmark before pinning a DocLang format"
+    DocLang carries more tokens than markdown (geometry especially), so each chunk holds ~25–45% less document content — expect more chunks and more LLM calls in dense mode. Raise `chunk_max_tokens` (e.g. 512 → 768) alongside a pinned DocLang format, and A/B against markdown on your corpus before adopting it broadly. Small markdown-native models (like the default local `granite`) often do best on plain `markdown`, which is also the cheapest setting.
 
 When a DocLang format is active, the extraction prompts gain a one-line orientation telling the model the text is DocLang XML, and the structure-aware chunker emits DocLang chunks so the chunk text matches what the model is told.
 

@@ -542,7 +542,7 @@ uv run docling-graph convert document.pdf \
 --llm-format {markdown|doclang|doclang-geo|auto}
 ```
 
-Controls how the document text is serialized **for the LLM** during extraction (default `markdown`). DocLang formats preserve structure and (with `doclang-geo`) page geometry, at a higher token cost — see [Document Conversion](../../fundamentals/extraction-process/document-conversion.md#llm-input-serialization).
+Controls how the document text is serialized **for the LLM** during extraction (default `auto`). DocLang formats preserve structure and (with `doclang-geo`) page geometry, at a higher token cost — see [Document Conversion](../../fundamentals/extraction-process/document-conversion.md#llm-input-serialization).
 
 `auto` pairs the serialization to the resolved extraction contract, per document: `direct` → `doclang-geo` (geometry helps a single full-document call recover footers and table matrices), `dense` → `doclang` (structure without geometry keeps chunk batches content-dense), raw-text inputs → `markdown`. The resolution is logged as `[AutoContract]`. The direct-vs-dense decision itself measures *content* characters (markup stripped), so changing `--llm-format` never flips the contract.
 
