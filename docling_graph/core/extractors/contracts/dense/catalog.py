@@ -412,6 +412,10 @@ def skeleton_output_schema(allowed_paths: list[str]) -> dict[str, Any]:
                             "type": ["integer", "null"],
                             "description": "Handle (i) of the parent node in this response; null for the root.",
                         },
+                        "c": {
+                            "type": ["integer", "null"],
+                            "description": "Number N of the '--- CHUNK N ---' marker this entity was found under; omit when unsure.",
+                        },
                     },
                     "required": ["i", "path", "ids"],
                 },

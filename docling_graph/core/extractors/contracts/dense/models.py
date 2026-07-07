@@ -46,15 +46,23 @@ class DenseParentRef(BaseModel):
 
 
 class DenseSkeletonNode(BaseModel):
-    """Skeleton node: handle ``i``, catalog path, short ids, parent handle ``p``."""
+    """Skeleton node: handle ``i``, catalog path, short ids, parent handle ``p``.
+
+    ``c`` is an optional self-reported chunk attribution: the ``--- CHUNK N ---``
+    marker number the entity was found under. When it maps to a chunk of the
+    current batch it narrows the node's source-chunk provenance from batch
+    granularity to one chunk, sharpening the merge rescue rungs that reason
+    about locality; an absent or out-of-batch value falls back to the batch set.
+    """
 
     i: int | None = None
     path: str
     ids: dict[str, str] = Field(default_factory=dict)
     p: int | None = None
+    c: int | None = None
     parent: DenseParentRef | None = None
 
-    @field_validator("i", "p", mode="before")
+    @field_validator("i", "p", "c", mode="before")
     @classmethod
     def _handles_to_int(cls, v: Any) -> int | None:
         return _coerce_handle(v)

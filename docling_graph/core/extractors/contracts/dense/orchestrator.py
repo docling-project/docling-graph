@@ -11,6 +11,7 @@ import os
 import re
 import threading
 import time
+import unicodedata
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator, cast
@@ -28,7 +29,10 @@ from docling_graph.core.provenance import (
     identity_pairs,
     text_hash as _chunk_text_hash,
 )
-from docling_graph.core.utils.entity_name_normalizer import canonicalize_identity_for_dedup
+from docling_graph.core.utils.entity_name_normalizer import (
+    canonicalize_identity_for_dedup,
+    normalize_entity_name,
+)
 from docling_graph.core.utils.root_identity import is_class_name_echo
 from docling_graph.logging_utils import ProgressTracker, batch_tag, get_component_logger
 
@@ -240,18 +244,24 @@ def normalize_skeleton_batch(
     """
     prepared: list[dict[str, Any]] = []
     by_handle: dict[int, dict[str, Any]] = {}
+    batch_chunk_set = {c for c in (source_chunk_ids or []) if isinstance(c, int)}
     for node in nodes:
         path = _canonical_catalog_path(node.path or "", allowed_paths)
         if path is None:
             continue
         ids = {str(k): str(v) for k, v in (node.ids or {}).items() if v is not None}
         entry: dict[str, Any] = {"path": path, "ids": ids, "p": node.p, "parent_ref": node.parent}
+        # Self-reported chunk attribution: "c" echoes a "--- CHUNK N ---" marker
+        # (1-based over global chunk ids). Only trusted when it names a chunk of
+        # THIS batch; anything else keeps the batch-granular fallback.
+        if node.c is not None and (node.c - 1) in batch_chunk_set:
+            entry["chunk_attr"] = node.c - 1
         prepared.append(entry)
         if node.i is not None and node.i not in by_handle:
             by_handle[node.i] = entry
 
     out: list[dict[str, Any]] = []
-    for entry in prepared:
+    for emission_index, entry in enumerate(prepared):
         parent: dict[str, Any] | None = None
         handle = entry["p"]
         if handle is not None and handle in by_handle and by_handle[handle] is not entry:
@@ -282,7 +292,14 @@ def normalize_skeleton_batch(
             # Chunk-level provenance: the exact chunks the LLM read when it
             # asserted this node. Truncation-split sub-batches pass a narrower
             # list than the full batch, so granularity improves under splits.
-            result["_source_chunk_ids"] = list(source_chunk_ids)
+            # A trusted self-reported attribution ("c") narrows it to one chunk.
+            if "chunk_attr" in entry:
+                result["_source_chunk_ids"] = [entry["chunk_attr"]]
+            else:
+                result["_source_chunk_ids"] = list(source_chunk_ids)
+        # Position in this response, for the emission-order adjacency rescue
+        # (a singular child is usually emitted right after its parent).
+        result["_emission_index"] = emission_index
         out.append(result)
     return out
 
@@ -359,6 +376,11 @@ def skeleton_to_descriptors(
             # with a dangling parent handle usually belongs to the parent
             # discovered in the same chunk.
             desc["_source_chunk_ids"] = list(source_chunks)
+        emission_index = node.get("_emission_index")
+        if isinstance(emission_index, int):
+            # Kept for the emission-order adjacency rescue (first emission's
+            # position; compared only within the same first-emission batch).
+            desc["_emission_index"] = emission_index
         path_descriptors.setdefault(path, []).append(desc)
     return path_descriptors
 
@@ -576,6 +598,87 @@ def _unique_local_parent(
     return None
 
 
+# Text-anchor rescue tuning. HEAD covers the chunk's contextual header region
+# (prepended headings + a section's opening sentence, where documents name the
+# entity a section belongs to); CARRY bounds how far a head anchor's ownership
+# extends into follow-on chunks that never restate the name (measured against
+# the longest real article span in the benchmark corpus).
+_TEXT_ANCHOR_HEAD_CHARS = 300
+_TEXT_ANCHOR_CARRY_LIMIT = 12
+# Minimum folded length before a child id value is verbatim-located in chunk
+# text; shorter strings match all over the document and prove nothing.
+_TEXT_ANCHOR_MIN_LOCATE_CHARS = 12
+# Minimum normalized length for a parent id value to serve as a text anchor.
+_TEXT_ANCHOR_MIN_VALUE_CHARS = 4
+
+
+def _fold_text(raw: str) -> str:
+    """Accent/case/whitespace-insensitive form for verbatim containment."""
+    text = unicodedata.normalize("NFKD", raw)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    return " ".join(text.lower().split())
+
+
+def _text_phrase_key(raw: str) -> str:
+    """Word-sequence key (``_WORD_WORD_``) for word-bounded phrase containment.
+
+    Compatible with ``normalize_entity_name`` output: both reduce to uppercase
+    words joined by underscores, so a normalized entity name padded with
+    underscores matches iff it appears as a contiguous word sequence."""
+    text = unicodedata.normalize("NFKD", raw)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    words = [w for w in re.split(r"[^0-9A-Za-z]+", text) if w]
+    return "_" + "_".join(w.upper() for w in words) + "_"
+
+
+def _build_chunk_owner_map(
+    chunk_texts: dict[int, str],
+    parent_values: list[tuple[int, str]],
+) -> dict[int, int]:
+    """Map each chunk to the single parent instance its text names, if any.
+
+    Three evidence tiers per chunk, strongest first:
+      head — exactly one parent value appears in the first
+        ``_TEXT_ANCHOR_HEAD_CHARS`` folded chars (headings + section intro:
+        e.g. "…au titre de la garantie Attentat :" names the owner even when
+        the article heading landed chunks earlier);
+      text — exactly one parent value appears anywhere in the chunk;
+      carry — the chunk restates nothing, so it inherits the nearest preceding
+        HEAD anchor within ``_TEXT_ANCHOR_CARRY_LIMIT`` chunks (list
+        continuations). Only head anchors carry: they are section openers,
+        while a passing full-text mention is not.
+    Chunks naming several parents get no owner — ambiguity is never guessed.
+    """
+    owners: dict[int, int] = {}
+    head_anchors: dict[int, int] = {}
+    for chunk_id in sorted(chunk_texts):
+        text = chunk_texts[chunk_id] or ""
+        head_key = _text_phrase_key(_fold_text(text)[:_TEXT_ANCHOR_HEAD_CHARS])
+        head_hits = {i for i, value in parent_values if f"_{value}_" in head_key}
+        if len(head_hits) == 1:
+            owner = next(iter(head_hits))
+            owners[chunk_id] = owner
+            head_anchors[chunk_id] = owner
+            continue
+        full_key = _text_phrase_key(text)
+        full_hits = {i for i, value in parent_values if f"_{value}_" in full_key}
+        if len(full_hits) == 1:
+            owners[chunk_id] = next(iter(full_hits))
+    current: int | None = None
+    anchor_chunk = -(10**9)
+    for chunk_id in sorted(chunk_texts):
+        if chunk_id in head_anchors:
+            current = head_anchors[chunk_id]
+            anchor_chunk = chunk_id
+        elif (
+            chunk_id not in owners
+            and current is not None
+            and chunk_id - anchor_chunk <= _TEXT_ANCHOR_CARRY_LIMIT
+        ):
+            owners[chunk_id] = current
+    return owners
+
+
 def _missing_required_id_fields(
     template: type[BaseModel] | None,
     path: str,
@@ -609,9 +712,12 @@ class _ParentResolver:
 
     Ladder per lookup: exact id match -> unique parent instance -> unique fuzzy
     (canonical containment) id match -> unique co-located parent (same source
-    chunk/batch) -> id-only placeholder parent created up the chain -> shared
-    id-less bucket parent. Placeholder/bucket materialization is gated on the
-    parent model not REQUIRING the missing identity fields.
+    chunk/batch) -> unique text-anchored parent (the child's source chunks name
+    exactly one parent instance) -> emission-order adjacency (singular child,
+    nearest preceding parent in the same response) -> id-only placeholder
+    parent created up the chain -> shared id-less bucket parent.
+    Placeholder/bucket materialization is gated on the parent model not
+    REQUIRING the missing identity fields.
     """
 
     def __init__(
@@ -626,6 +732,7 @@ class _ParentResolver:
         events_out: list[dict[str, Any]] | None,
         template: type[BaseModel] | None,
         attach: Callable[[dict[str, Any], NodeSpec, dict[str, Any]], None],
+        chunk_texts: dict[int, str] | None = None,
     ) -> None:
         self._root = root
         self._lookup = lookup
@@ -636,6 +743,119 @@ class _ParentResolver:
         self._events_out = events_out
         self._template = template
         self._attach = attach
+        self._chunk_texts = chunk_texts or {}
+        # Lazy caches for the text-anchor rung: folded chunk texts (verbatim
+        # child location) and one owner map per parent path.
+        self._folded_chunks: dict[int, str] | None = None
+        self._owner_maps: dict[str, dict[int, int]] = {}
+
+    def _folded_chunk_texts(self) -> dict[int, str]:
+        if self._folded_chunks is None:
+            self._folded_chunks = {
+                chunk_id: _fold_text(text or "") for chunk_id, text in self._chunk_texts.items()
+            }
+        return self._folded_chunks
+
+    def _owner_map_for(self, parent_path: str, parent_spec: NodeSpec) -> dict[int, int]:
+        cached = self._owner_maps.get(parent_path)
+        if cached is not None:
+            return cached
+        filled = self._path_filled.get(parent_path, [])
+        descs = self._path_descriptors.get(parent_path, [])
+        parent_values: list[tuple[int, str]] = []
+        for i, desc in enumerate(descs):
+            if i >= len(filled) or not isinstance(filled[i], dict):
+                continue
+            for field_name in parent_spec.id_fields:
+                value = (desc.get("ids") or {}).get(field_name)
+                normalized = normalize_entity_name(str(value)) if value else ""
+                if normalized and len(normalized) >= _TEXT_ANCHOR_MIN_VALUE_CHARS:
+                    parent_values.append((i, normalized))
+        owner_map = (
+            _build_chunk_owner_map(self._chunk_texts, parent_values) if parent_values else {}
+        )
+        self._owner_maps[parent_path] = owner_map
+        return owner_map
+
+    def _locate_child_chunks(self, child_desc: dict[str, Any]) -> list[int]:
+        """Chunks whose text verbatim-contains one of the child's id values."""
+        located: set[int] = set()
+        folded_chunks = self._folded_chunk_texts()
+        for value in (child_desc.get("ids") or {}).values():
+            needle = _fold_text(str(value))
+            if len(needle) < _TEXT_ANCHOR_MIN_LOCATE_CHARS:
+                continue
+            for chunk_id, folded in folded_chunks.items():
+                if needle in folded:
+                    located.add(chunk_id)
+        return sorted(located)
+
+    def _text_anchor_parent(
+        self, parent_path: str, parent_spec: NodeSpec, child_desc: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """Adopt the unique parent instance named by the child's source chunks.
+
+        The child's chunks are pinned by verbatim-locating its own id values in
+        the chunk texts (ids are verbatim labels by skeleton rule 3), falling
+        back to the recorded source-chunk set. Every considered chunk must map
+        to the SAME owner in the parent path's chunk-owner map."""
+        owner_map = self._owner_map_for(parent_path, parent_spec)
+        if not owner_map:
+            return None
+        chunk_set = self._locate_child_chunks(child_desc) or [
+            c for c in (child_desc.get("_source_chunk_ids") or []) if isinstance(c, int)
+        ]
+        if not chunk_set:
+            return None
+        # Unique owner among the MAPPED chunks; chunks the owner map cannot
+        # place are ignored rather than disqualifying (validated offline:
+        # requiring full coverage only cut recall, never precision).
+        owners = {owner_map[chunk_id] for chunk_id in chunk_set if chunk_id in owner_map}
+        if len(owners) != 1:
+            return None
+        filled = self._path_filled.get(parent_path, [])
+        index = next(iter(owners))
+        if 0 <= index < len(filled) and isinstance(filled[index], dict):
+            return filled[index]
+        return None
+
+    def _adjacent_parent(
+        self, parent_path: str, parent_ids: dict[str, Any], child_desc: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """Nearest PRECEDING parent-path instance in the same response.
+
+        Models list a singular child right after its parent (line item then its
+        item), so for a fully dangling handle on a SINGULAR child path the
+        nearest preceding same-batch parent is the emitter's intent. List
+        children stay out: order is no evidence when several siblings follow
+        one parent."""
+        if any(v not in (None, "") for v in parent_ids.values()):
+            return None
+        child_spec = self._spec_by_path.get(str(child_desc.get("path") or ""))
+        if child_spec is None or child_spec.is_list:
+            return None
+        child_emission = child_desc.get("_emission_index")
+        child_batches = child_desc.get("_source_batch_indexes") or []
+        if not isinstance(child_emission, int) or not child_batches:
+            return None
+        first_batch = child_batches[0]
+        descs = self._path_descriptors.get(parent_path, [])
+        filled = self._path_filled.get(parent_path, [])
+        best_index = -1
+        best_emission = -1
+        for i, desc in enumerate(descs):
+            if i >= len(filled) or not isinstance(filled[i], dict):
+                continue
+            batches = desc.get("_source_batch_indexes") or []
+            emission = desc.get("_emission_index")
+            if not batches or batches[0] != first_batch or not isinstance(emission, int):
+                continue
+            if best_emission < emission < child_emission:
+                best_emission = emission
+                best_index = i
+        if best_index >= 0:
+            return filled[best_index]
+        return None
 
     def resolve(
         self,
@@ -673,6 +893,14 @@ class _ParentResolver:
                 # reference shares its key with every other parentless sibling,
                 # and locality is a per-child decision.
                 return local_match, "locality"
+            if self._chunk_texts:
+                anchor_match = self._text_anchor_parent(parent_path, parent_spec, child_desc)
+                if anchor_match is not None:
+                    # Per-child decision, like locality: never registered.
+                    return anchor_match, "text_anchor"
+            adjacent_match = self._adjacent_parent(parent_path, parent_ids, child_desc)
+            if adjacent_match is not None:
+                return adjacent_match, "adjacency"
         # Last resort: materialize a parent so the subtree survives. With usable
         # ids this is an id-only placeholder; without any (dangling handle,
         # wrong-level ids) it degrades to a shared id-less bucket for the path,
@@ -711,6 +939,7 @@ def merge_filled_into_root(
     stats_out: dict[str, int] | None = None,
     events_out: list[dict[str, Any]] | None = None,
     template: type[BaseModel] | None = None,
+    chunk_texts: dict[int, str] | None = None,
 ) -> dict[str, Any]:
     """Attach filled instances to their parents, rescuing drifted parent references.
 
@@ -718,13 +947,18 @@ def merge_filled_into_root(
     (path, ids) lookup silently drops entire subtrees. Resolution ladder per
     instance: exact id match -> unique parent instance -> unique fuzzy
     (canonical containment) id match -> unique co-located parent (same source
-    chunk/batch) -> id-only placeholder parent created up the chain -> shared
-    id-less bucket parent. Placeholders and buckets are only materialized when
-    the parent model does not REQUIRE the missing identity fields (template
-    provided): an identity-less rescue parent would later be deleted by
-    template validation (taking its children along) or blanked by salvage into
-    a phantom hub. Instances that survive nothing are dropped, and every
-    recovery/drop is counted in stats_out.
+    chunk/batch) -> unique text-anchored parent (``chunk_texts`` provided: the
+    child's source chunks — pinned by verbatim-locating its id values — name
+    exactly one parent instance in their head/text, with bounded carry from
+    section-opening anchors) -> emission-order adjacency (singular child with a
+    fully dangling handle adopts the nearest preceding same-response parent) ->
+    id-only placeholder parent created up the chain -> shared id-less bucket
+    parent. Placeholders and buckets are only materialized when the parent
+    model does not REQUIRE the missing identity fields (template provided): an
+    identity-less rescue parent would later be deleted by template validation
+    (taking its children along) or blanked by salvage into a phantom hub.
+    Instances that survive nothing are dropped, and every recovery/drop is
+    counted in stats_out.
     """
     root: dict[str, Any] = {}
     spec_by_path = {s.path: s for s in catalog.nodes}
@@ -738,6 +972,8 @@ def merge_filled_into_root(
         "recovered_single_parent": 0,
         "recovered_fuzzy": 0,
         "recovered_locality": 0,
+        "recovered_text_anchor": 0,
+        "recovered_adjacency": 0,
         "recovered_placeholder": 0,
         "recovered_bucket": 0,
         "dropped": 0,
@@ -769,6 +1005,7 @@ def merge_filled_into_root(
         events_out=events_out,
         template=template,
         attach=_attach,
+        chunk_texts=chunk_texts,
     )
     _resolve_parent = resolver.resolve
 
@@ -776,6 +1013,8 @@ def merge_filled_into_root(
         "single": "recovered_single_parent",
         "fuzzy": "recovered_fuzzy",
         "locality": "recovered_locality",
+        "text_anchor": "recovered_text_anchor",
+        "adjacency": "recovered_adjacency",
         "placeholder": "recovered_placeholder",
         "bucket": "recovered_bucket",
     }
@@ -1525,6 +1764,8 @@ class DenseOrchestrator:
                 merge_stats.get("recovered_single_parent", 0)
                 + merge_stats.get("recovered_fuzzy", 0)
                 + merge_stats.get("recovered_locality", 0)
+                + merge_stats.get("recovered_text_anchor", 0)
+                + merge_stats.get("recovered_adjacency", 0)
                 + merge_stats.get("recovered_placeholder", 0)
             ),
             "merge_bucket_parents": merge_stats.get("recovered_bucket", 0),
@@ -2311,6 +2552,10 @@ class DenseOrchestrator:
         self._phase2_elapsed = phase2_elapsed
         merge_stats: dict[str, int] = {}
         merge_events: list[dict[str, Any]] | None = [] if ledger is not None else None
+        # Chunk texts for the text-anchor rescue rung: exactly what the model
+        # read (the batch tuples), keyed by the same chunk ids _source_chunk_ids
+        # refers to. Includes coverage-pass batches appended above.
+        merge_chunk_texts = {chunk_id: text for batch in batches for chunk_id, text, _ in batch}
         root = merge_filled_into_root(
             path_filled,
             path_descriptors,
@@ -2318,6 +2563,7 @@ class DenseOrchestrator:
             stats_out=merge_stats,
             events_out=merge_events,
             template=self._template,
+            chunk_texts=merge_chunk_texts,
         )
         # Invariant: id-only childless branch nodes are skeleton noise that the
         # fill could not substantiate; they are always pruned. Rescue buckets

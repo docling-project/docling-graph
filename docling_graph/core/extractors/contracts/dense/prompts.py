@@ -59,6 +59,17 @@ def get_skeleton_batch_prompt(
         if already_found
         else ""
     )
+    # Rule 11 exists only for multi-level catalogs (some path nested below a
+    # depth-1 parent): on flat catalogs every non-root node hangs off the root
+    # and the sentence would be noise (rule-2-dilution lesson).
+    has_nested_paths = any("." in p for p in allowed_paths)
+    rule11_nested_parent = (
+        "\n11. A nested entity's parent is the SPECIFIC entity instance whose section or "
+        'article names it (e.g. items listed under a section titled with entity X belong to X): set "p" to that '
+        "instance's handle (or negative handle), NEVER to the root and NEVER to a node made from a document or section title."
+        if has_nested_paths
+        else ""
+    )
     system_prompt = (
         f"{framing_block}"
         "You are an expert extraction engine for document structure. "
@@ -71,19 +82,20 @@ def get_skeleton_batch_prompt(
         "Do not ignore an entity just because it lacks a distinct sub-label; if the schema defines it and the text describes it, it must be included in the skeleton. "
         "Each data row of a table is a separate entity instance; document-level metadata (titles, dates, totals, summary rows) is not.\n\n"
         "Rules:\n"
-        '1. Use ONLY the catalog paths listed. Each node has exactly: "i" (its handle: a sequential integer starting at 1, unique in this response), "path", "ids" (identifier values from the document), and "p" (the handle of its parent node in this response; omit or null for the root).\n'
+        '1. Use ONLY the catalog paths listed. Each node has exactly: "i" (its handle: a sequential integer starting at 1, unique in this response), "path", "ids" (identifier values from the document), "p" (the handle of its parent node in this response; omit or null for the root), and optionally "c" (the number N of the "--- CHUNK N ---" marker the entity was found under).\n'
         '2. Emit the root (path "", no parent) exactly once, first. Every other node\'s "p" must reference the handle of a node in this same response whose path is its parent path in the catalog'
         f"{rule2_cross_batch}.\n"
         '3. ids values are short labels copied verbatim from the document — a code, number, or name of at most a few words, never a sentence or description. Every ids entry MUST be a complete "field": "value" pair (e.g. {"name": "Gardenwork"}); NEVER emit a bare value without its field name. Use figure labels, table rows, section titles that name entities (e.g. FIG-4, Sample A, Protocol 1). Do not use generic section/chapter titles as identities for localized entities. For global/singleton entities (e.g. one protocol or one setup for the whole document), use a short descriptive id from the text or section (e.g. General Protocol) or ids={} if the schema allows; ensure at least one root and such singletons are still emitted.\n'
         '4. Always prefer the most specific proper name that the document gives an entity over a generic category word or a positional label. If a set of items each carry their own name, use those names as ids. For example, when a document lists offers named ESSENTIELLE, CONFORT and CONFORT PLUS, the ids must be "ESSENTIELLE", "CONFORT", "CONFORT PLUS" — NOT the generic word "Offer"/"Offre" nor positional labels like "Offer 1", "Offer 2". Only fall back to a generic or positional label when the document truly gives the entity no name of its own.\n'
         "5. For list-entity paths (e.g. studies[], experiments[]), emit one node per distinct instance.\n"
-        '6. Output valid JSON only: {"nodes": [{"i": 1, "path": "", "ids": {}}, {"i": 2, "path": "...", "ids": {"...": "..."}, "p": 1}]}. No other fields.\n'
+        '6. Output valid JSON only: {"nodes": [{"i": 1, "path": "", "ids": {}}, {"i": 2, "path": "...", "ids": {"...": "..."}, "p": 1, "c": 3}]}. No other fields.\n'
         "7. When identifying container nodes (nodes that have children with identity fields, e.g. Dataset with Curves), create separate instances if the contained data comes from distinct sources (e.g. different Figure numbers, different Tables) or represents distinct conditions. If child identifiers differ (e.g. Figure 2a vs Figure 7c), create separate parent instances so each logical group has its own container.\n"
         "8. Keep entities that play different roles distinct even when described together, and use an entity's actual name as its identity, never surrounding text such as address fragments.\n"
         "9. When several catalog paths could host an instance, choose the path whose description "
         "(see SEMANTIC FIELD GUIDANCE) matches the text; never place an instance at a path whose "
         "description does not fit it, and never invent instances for paths the text does not mention.\n"
         '10. Each node names exactly ONE entity. NEVER join two entity names into a single id (e.g. "Guarantee X, Offer Y" from a table row and column): a table cell linking two entities is a RELATIONSHIP between existing nodes, not a new entity — relationships are captured in a later phase. When a table cross-references entities, emit each row entity and each column entity once.'
+        f"{rule11_nested_parent}"
     )
     user_prompt = f"[Batch {batch_index + 1}/{total_batches}]\n\n"
     if coverage_retry:
@@ -117,7 +129,7 @@ def get_skeleton_batch_prompt(
     )
     if semantic_guide:
         user_prompt += f"=== SEMANTIC FIELD GUIDANCE ===\n{semantic_guide}\n=== END ===\n\n"
-    user_prompt += 'List every distinct entity instance in this batch. Return JSON: {"nodes": [...]} with each node having i, path, ids, and p only.'
+    user_prompt += 'List every distinct entity instance in this batch. Return JSON: {"nodes": [...]} with each node having i, path, ids, p, and optionally c.'
     return {"system": system_prompt, "user": user_prompt}
 
 
