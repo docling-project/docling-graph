@@ -168,7 +168,7 @@ class TestConfigurationBuilder:
         assert set(generated["defaults"]).issubset(set(result["defaults"]))
         assert "llm_overrides" in result
         assert result["defaults"]["extraction_contract"] == "auto"
-        assert result["defaults"]["llm_input_format"] == "markdown"
+        assert result["defaults"]["llm_input_format"] == "auto"
         assert result["docling"]["export"]["doclang"] is True
 
     @patch("typer.prompt")

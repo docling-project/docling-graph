@@ -659,8 +659,11 @@ class TestLlmInputFormat:
         assert "<heading" in sent or "<text>" in sent
 
     @patch("docling_graph.core.extractors.backends.llm_backend.LlmBackend.extract_from_markdown")
-    def test_markdown_format_default_sends_plain_text(self, mock_extract, dclg_file, temp_dir):
-        """Default (markdown) sends plain markdown, no XML tags."""
+    def test_markdown_format_sends_plain_text(self, mock_extract, dclg_file, temp_dir):
+        """Pinning llm_input_format=markdown sends plain markdown, no XML tags.
+
+        The package default is 'auto' (pairs the serialization to the resolved
+        contract — see test_auto.py), so plain text now requires the explicit pin."""
         from pydantic import BaseModel, Field
 
         from docling_graph.config import PipelineConfig
@@ -680,6 +683,7 @@ class TestLlmInputFormat:
             output_dir=str(temp_dir / "output"),
             export_format="csv",
             use_chunking=False,
+            llm_input_format="markdown",
             provenance="off",
         )
         run_pipeline(config, mode="api")
