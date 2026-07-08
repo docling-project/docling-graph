@@ -140,14 +140,49 @@ def discover_runs(root: Path) -> list[dict[str, Any]]:
                             rep = int(entry.name[3:])
                         except ValueError:
                             continue
-                        for run in sorted(p for p in entry.iterdir() if is_run_dir(p)):
+                        runs = [p for p in sorted(entry.iterdir()) if is_run_dir(p)]
+                        for run in runs:
                             records.append(
                                 run_record(run, doc_dir.name, contract, fmt_dir.name, rep)
                             )
+                        # A cell that was attempted but produced no scorable run
+                        # leaves a status marker; surface it as a failed record so
+                        # the synthesis table shows FAILED, not a silent gap.
+                        if not runs:
+                            failed = _failed_record(
+                                entry, doc_dir.name, contract, fmt_dir.name, rep
+                            )
+                            if failed is not None:
+                                records.append(failed)
                     elif is_run_dir(entry):
                         # Legacy layout without a repeat level: rep 1.
                         records.append(run_record(entry, doc_dir.name, contract, fmt_dir.name, 1))
     return records
+
+
+def _failed_record(
+    cell_dir: Path, doc: str, contract: str, fmt: str, rep: int
+) -> dict[str, Any] | None:
+    """A minimal record for a cell that was attempted but yielded no run.
+
+    Reads the harness's ``cell_status.json`` marker; returns None when the cell
+    simply was not run (no marker, no run dir)."""
+    marker = cell_dir / "cell_status.json"
+    if not marker.exists():
+        return None
+    try:
+        status = json.loads(marker.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        status = {}
+    return {
+        "doc": doc,
+        "contract": contract,
+        "format": fmt,
+        "rep": rep,
+        "run": None,
+        "status": "failed",
+        "failure_reason": status.get("reason", "unknown"),
+    }
 
 
 def _mean(values: list[Any]) -> float | None:
@@ -198,7 +233,17 @@ def render_markdown(records: list[dict[str, Any]]) -> str:
         "| :-- | :-- | :-- | --: | :-- | :-- | --: | --: | --: | --: | --: | --: |",
     ]
     for (doc, contract, fmt), runs in sorted(cells.items()):
-        s = _cell_summary(runs)
+        scored = [r for r in runs if r.get("status") != "failed"]
+        failed = [r for r in runs if r.get("status") == "failed"]
+        if not scored:
+            # Every attempt in this cell failed — show it explicitly.
+            reason = failed[0].get("failure_reason", "failed") if failed else "failed"
+            lines.append(
+                f"| {doc} | {contract} | {fmt} | {len(failed)} | FAILED ({reason}) | — "
+                f"| — | — | — | — | — | — |"
+            )
+            continue
+        s = _cell_summary(scored)
         node = (
             f"{fmt_num(s['node_f1_strict'])} ({fmt_num(s['node_f1_relaxed'])})"
             if s["node_f1_strict"] is not None
@@ -209,8 +254,9 @@ def render_markdown(records: list[dict[str, Any]]) -> str:
             if s["edge_f1_strict"] is not None
             else "—"
         )
+        runs_label = str(s["runs"]) if not failed else f"{s['runs']}+{len(failed)}✗"
         lines.append(
-            f"| {doc} | {contract} | {fmt} | {s['runs']} | {node} | {edge} "
+            f"| {doc} | {contract} | {fmt} | {runs_label} | {node} | {edge} "
             f"| {fmt_num(s['completeness'])} | {fmt_num(s['time_s'])} "
             f"| {fmt_num(s['retention_pct'])} | {fmt_num(s['chunk_coverage_pct'])} "
             f"| {s['empty_identity']} | {s['orphans']} |"
