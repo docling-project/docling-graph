@@ -394,6 +394,27 @@ class TestNestedParentRuleConditional:
         assert "NEVER to the root" not in prompt["system"]
 
 
+def test_skeleton_prompt_scopes_table_row_rule():
+    """The table-row rule must be scoped to rows that name catalog entities, not
+    'every row is an entity' (which spammed financial-statement pages)."""
+    from docling_graph.core.extractors.contracts.dense.prompts import (
+        get_skeleton_batch_prompt,
+    )
+
+    prompt = get_skeleton_batch_prompt(
+        batch_markdown="doc",
+        catalog_block="",
+        batch_index=0,
+        total_batches=1,
+        allowed_paths=[""],
+    )
+    system = prompt["system"]
+    assert "ONLY when that row names a distinct instance of a catalog entity" in system
+    assert "prefer FEWER instances" in system
+    # The old unconditional wording must be gone.
+    assert "Each data row of a table is a separate entity instance" not in system
+
+
 def test_skeleton_prompt_mentions_chunk_attribution():
     """The optional per-node "c" chunk attribution is described in the rules."""
     from docling_graph.core.extractors.contracts.dense.prompts import (
@@ -436,3 +457,20 @@ def test_fill_prompt_membership_rule_only_for_reference_paths():
     )
     assert "THIS specific instance" in with_refs["system"]
     assert "THIS specific instance" not in without["system"]
+
+
+def test_fill_prompt_states_derivable_summary_rule():
+    """The fill system prompt permits deriving a short summary field from a long
+    sibling being filled (a résumé of a texte) — always present, ref or not."""
+    from docling_graph.core.extractors.contracts.dense.catalog import NodeSpec
+    from docling_graph.core.extractors.contracts.dense.prompts import get_fill_batch_prompt
+
+    spec = NodeSpec(path="exclusions[]", node_type="entity", id_fields=["id"], parent_path="")
+    prompt = get_fill_batch_prompt(
+        markdown="doc",
+        path="exclusions[]",
+        spec=spec,
+        descriptors=[{"ids": {"id": "x"}}],
+        projected_schema_json="{}",
+    )
+    assert "derivable from a longer sibling field" in prompt["system"]
