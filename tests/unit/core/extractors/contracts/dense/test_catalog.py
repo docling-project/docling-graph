@@ -340,6 +340,29 @@ def test_build_skeleton_semantic_guide_lists_paths_and_ids() -> None:
     assert "none (use ids={})" in guide
 
 
+def test_build_skeleton_semantic_guide_marks_and_warns_on_truncated_docstring(caplog) -> None:
+    """A docstring longer than the guide window gets a visible marker and an
+    author-facing warning naming the path (P6: silent steering loss)."""
+    import logging
+
+    class _Long(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["k"])
+        k: str = Field(...)
+
+    _Long.__doc__ = "A " * 400  # ~800 chars, well past the 240-char window
+
+    class _Holder(BaseModel):
+        model_config = ConfigDict(graph_id_fields=["id"])
+        id: str = Field(...)
+        items: List[_Long] = Field(default_factory=list, json_schema_extra={"edge_label": "HAS"})
+
+    catalog = build_node_catalog(_Holder)
+    with caplog.at_level(logging.WARNING):
+        guide = build_skeleton_semantic_guide(catalog)
+    assert "[…]" in guide
+    assert any("docstring truncated" in r.message for r in caplog.records)
+
+
 def test_skeleton_output_schema_shape() -> None:
     schema = skeleton_output_schema(["", "ents[]"])
     assert schema["type"] == "object"

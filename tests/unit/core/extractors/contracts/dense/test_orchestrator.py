@@ -1429,6 +1429,95 @@ def test_orchestrator_reconciliation_applies_llm_merge_groups():
     assert out[0]["ids"] == {"email": "alice.smith@x.com"}
 
 
+def test_orchestrator_reconciliation_chunks_per_path_at_scale():
+    """Above the per-call threshold, reconciliation runs one call PER PATH with
+    sub-batched instances (not one mega-prompt), rebasing response indices."""
+    from docling_graph.core.extractors.contracts.dense import orchestrator as orch_mod
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    calls: list[int] = []
+
+    def mock_llm(*, prompt: Any, schema_json: str, context: str, **kwargs: Any) -> dict[str, Any]:
+        # Count instances shown to this call by counting numbered "N:" lines.
+        user = prompt["user"] if isinstance(prompt, dict) else str(prompt)
+        n = sum(1 for line in user.splitlines() if line.strip()[:2].rstrip(":").isdigit())
+        calls.append(n)
+        return {"merges": []}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    # One path, more instances than the per-call cap -> must split into >1 call.
+    n_inst = orch_mod._RECONCILE_MAX_INSTANCES_PER_CALL + 20
+    skeleton = [
+        {"path": "employees[]", "ids": {"email": f"user{i}@x.com"}, "parent": None}
+        for i in range(n_inst)
+    ]
+    orch._run_skeleton_reconciliation(skeleton, spec_by_path, "t")
+    assert len(calls) >= 2, "large id list should be split into multiple calls"
+    assert all(c <= orch_mod._RECONCILE_MAX_INSTANCES_PER_CALL for c in calls)
+
+
+def test_orchestrator_reconciliation_rebases_subbatch_indices():
+    """A merge returned for a second sub-batch is applied at the correct global
+    per-path index (offset rebasing), collapsing the right pair."""
+    from docling_graph.core.extractors.contracts.dense import orchestrator as orch_mod
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    cap = orch_mod._RECONCILE_MAX_INSTANCES_PER_CALL
+
+    def mock_llm(*, prompt: Any, schema_json: str, context: str, **kwargs: Any) -> dict[str, Any]:
+        user = prompt["user"] if isinstance(prompt, dict) else str(prompt)
+        # Only the sub-batch that contains the duplicate pair (indices 0 and 1
+        # within that sub-batch) returns a merge.
+        if "dupe@x.com" in user:
+            return {"merges": [{"path": "employees[]", "keep": 0, "merge": [1]}]}
+        return {"merges": []}
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    # First full sub-batch of unique emails, then a duplicate pair in the 2nd.
+    skeleton = [
+        {"path": "employees[]", "ids": {"email": f"user{i}@x.com"}, "parent": None}
+        for i in range(cap)
+    ]
+    skeleton += [
+        {"path": "employees[]", "ids": {"email": "dupe@x.com"}, "parent": None},
+        {"path": "employees[]", "ids": {"email": "dupe@x.com"}, "parent": None},
+    ]
+    out, merged = orch._run_skeleton_reconciliation(skeleton, spec_by_path, "t")
+    assert merged == 1
+    assert len(out) == len(skeleton) - 1
+
+
+def test_warn_over_discovery_flags_dominant_path(caplog):
+    """A path holding far more instances than the median is flagged (no cap)."""
+    import logging
+
+    orch = _make_orchestrator("scoped")
+    counts = {"": 1, "a[]": 3, "b[]": 3, "c[]": 3, "spam[]": 40}
+    with caplog.at_level(logging.WARNING):
+        orch._warn_over_discovery(counts)
+    assert any("over-discovery" in r.message and "spam[]" in str(r.args) for r in caplog.records)
+
+
+def test_warn_over_discovery_quiet_when_balanced(caplog):
+    """Balanced path counts raise no warning."""
+    import logging
+
+    orch = _make_orchestrator("scoped")
+    with caplog.at_level(logging.WARNING):
+        orch._warn_over_discovery({"": 1, "a[]": 4, "b[]": 5, "c[]": 6})
+    assert not any("over-discovery" in r.message for r in caplog.records)
+
+
 def test_sanitize_filled_restores_unusable_id_values():
     """Skeleton-known identity values replace null/empty/object fill values."""
     from docling_graph.core.extractors.contracts.dense.orchestrator import _sanitize_filled
