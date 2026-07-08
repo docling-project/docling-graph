@@ -26,7 +26,7 @@ Key entities:
 - BoardMember / ExecutiveOfficer: per-report roles, each linked to a Person.
 - Acquisition / Divestiture: M&A activity disclosed in the filing.
 - Auditor: the independent registered public accounting firm.
-- RiskFactor / Partnership: lighter-weight supporting entities.
+- Partnership: named ecosystem/technology partners.
 
 Key relationships:
 - AnnualReport --HAS_SEGMENT--> BusinessSegment
@@ -37,7 +37,6 @@ Key relationships:
 - AnnualReport --DIVESTED--> Divestiture
 - AnnualReport --AUDITED_BY--> Auditor
 - AnnualReport --PARTNERS_WITH--> Partnership
-- AnnualReport --HAS_RISK_FACTOR--> RiskFactor
 """
 
 import re
@@ -768,10 +767,13 @@ class Person(BaseModel):
 
 class BusinessSegment(BaseModel):
     """
-    A reportable business segment. Uniquely identified by name.
-    Segment results are typically discussed both in the MD&A narrative/tables
-    and again in a dedicated segment note; both mentions describe the same
-    segment and should consolidate into one node.
+    ONE of the 3-6 REPORTABLE segments named in the segment note (e.g. Software,
+    Consulting, Infrastructure). Geographic regions, products/offerings, revenue
+    sub-lines and other table rows are NOT segments. There are only a handful.
+    Deeper detail: geographies belong in `revenue_by_geography`, offering
+    breakdowns in `revenue_lines`; both segment mentions (MD&A narrative and the
+    dedicated segment note) describe the same segment and consolidate into one
+    node.
     """
 
     model_config = ConfigDict(graph_id_fields=["name"], extra="ignore")
@@ -848,7 +850,9 @@ class Auditor(BaseModel):
     firm_name: str = Field(
         ...,
         description=(
-            "Legal name of the audit firm. "
+            "The firm's FULL legal name exactly as printed in the audit report "
+            "signature — not an abbreviation or nickname (e.g. "
+            "'PricewaterhouseCoopers LLP', never 'PwC'). "
             "LOOK FOR: signature block of the 'Report of Independent Registered "
             "Public Accounting Firm'."
         ),
@@ -876,29 +880,6 @@ class Auditor(BaseModel):
     )
 
 
-class RiskFactor(BaseModel):
-    """
-    A named risk factor. Uniquely identified by title.
-    Omit entirely when the annual report only references a separate filing
-    for risk factors (common in the U.S. 10-K 'Exhibit 13' shareholder report
-    format) rather than stating them directly.
-    """
-
-    model_config = ConfigDict(graph_id_fields=["title"], extra="ignore")
-
-    title: str = Field(
-        ...,
-        description="Short heading of the risk exactly as titled in the document.",
-        examples=["Cybersecurity Risks", "Competition", "Foreign Currency Exposure"],
-    )
-    category: str | None = Field(
-        None,
-        description="Broad category this risk falls under, if the document groups risks that way.",
-        examples=["Operational", "Regulatory", "Market", "Cybersecurity"],
-    )
-    description: str | None = Field(None, description="One to three sentence summary of the risk.")
-
-
 class Partnership(BaseModel):
     """
     A named strategic/technology/ecosystem partner mentioned in the business
@@ -921,13 +902,18 @@ class Partnership(BaseModel):
 
 class BoardMember(BaseModel):
     """
-    A board-of-directors seat, uniquely identified by the member's name (a
-    per-report role record — there is exactly one board seat per named
-    individual in a given report). Deliberately an entity rather than a
-    component: dense extraction then discovers each seat as its own catalog
-    instance and fills it with scoped context, and keeping role fields off
-    the shared Person node avoids the attribute collisions described there
-    when the same person also holds an executive role.
+    ONLY a seat on the board of directors, from the directors list / election
+    slate. Executive officers, named executives in the compensation tables, and
+    former directors are NOT board members unless the report seats them on the
+    current board — the board list and the executive-officer list are disjoint
+    except where one person explicitly holds both roles.
+    Uniquely identified by the member's name (a per-report role record — there
+    is exactly one board seat per named individual in a given report).
+    Deliberately an entity rather than a component: dense extraction then
+    discovers each seat as its own catalog instance and fills it with scoped
+    context, and keeping role fields off the shared Person node avoids the
+    attribute collisions described there when the same person also holds an
+    executive role.
     """
 
     model_config = ConfigDict(graph_id_fields=["full_name"], extra="ignore")
@@ -971,10 +957,13 @@ class BoardMember(BaseModel):
 
 class ExecutiveOfficer(BaseModel):
     """
-    An executive/senior-leadership role, uniquely identified by the
-    officer's name (a per-report role record — there is exactly one
-    executive role per named individual in a given report). Kept separate
-    from Person for the same reasons as BoardMember.
+    EVERY named executive from the "Information about our Executive Officers"
+    item (10-K) or the senior-leadership / proxy leadership table — extract all
+    of them, not just the CEO and CFO. This is a dedicated roster section that
+    lists each officer with a title; each named individual there is one
+    ExecutiveOfficer. Uniquely identified by the officer's name (a per-report
+    role record — there is exactly one executive role per named individual in a
+    given report). Kept separate from Person for the same reasons as BoardMember.
     """
 
     model_config = ConfigDict(graph_id_fields=["full_name"], extra="ignore")
@@ -1283,15 +1272,6 @@ class AnnualReport(BaseModel):
         default_factory=list,
         description="Named ecosystem/technology partners mentioned in the business description.",
     )
-    risk_factors: List[RiskFactor] = edge(
-        label="HAS_RISK_FACTOR",
-        default_factory=list,
-        description=(
-            "Named risk factors, only if the document states them directly. "
-            "Omit entirely when the report instead references a separate filing for risk factors."
-        ),
-    )
-
     # --- Validators ---
 
     @field_validator("fiscal_year", mode="before")

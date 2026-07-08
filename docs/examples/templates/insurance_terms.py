@@ -31,7 +31,7 @@ Key relationships:
   --AOPTION--> Option (canonical detail),
   --AEXCLUSIONCOMMUNE--> Exclusion (common exclusions)
 - Garantie --AEXCLUSION--> Exclusion (specific), --COUVREBIEN--> Bien (by reference)
-- Offre --INCLUTGARANTIE--> / --GARANTIEOPTIONNELLE--> Garantie (both by name only),
+- Offre --INCLUTGARANTIE--> Garantie (by name only),
   --PROPOSEOPTION--> Option (by name only)
 - Option --ETENDGARANTIE--> Garantie, --COUVREBIEN--> Bien (both by reference)
 - Exclusion --EXCLUTBIEN--> Bien (by reference)
@@ -307,16 +307,14 @@ class Bien(BaseModel):
 
 class Exclusion(BaseModel):
     """
-    Clause d'exclusion : un péril ou bien EXCLU. JAMAIS une mesure de
-    prévention, un niveau de sécurité ou une obligation (serrures, ramonage,
-    inoccupation) — celles-ci vont dans Garantie.conditions, pas ici. UNE
-    clause cohérente par Exclusion, jamais un nœud par mot-clé isolé ('usure',
-    'perte', 'travaux'). Les exclusions valables pour toutes les garanties ou
-    listées sous les catégories de biens (Article 1) vont dans
-    exclusions_communes ; celles propres à une garantie dans son
-    exclusions_specifiques. Identity uses short exclusion_id for stable
-    deduplication: choose a meaningful exclusion_id that names the whole
-    clause, not a lone category word.
+    Clause d'exclusion (un péril/bien EXCLU). Une exclusion commune à TOUTES les
+    garanties ou listée sous les catégories de biens (Article 1) va dans
+    exclusions_communes ; une exclusion propre à une garantie va dans son
+    exclusions_specifiques. JAMAIS une mesure de prévention/sécurité (serrures,
+    ramonage) — celles-ci vont dans Garantie.conditions. UNE clause cohérente
+    par Exclusion, jamais un nœud par mot-clé isolé ('usure', 'perte',
+    'travaux'). Identity uses a short exclusion_id naming the whole clause, not
+    a lone category word, for stable deduplication.
     """
 
     model_config = ConfigDict(
@@ -340,7 +338,11 @@ class Exclusion(BaseModel):
     )
     resume: str | None = Field(
         None,
-        description="Résumé court de la clause (affichage, complément).",
+        description=(
+            "Résumé court de la clause (une phrase). Toujours dérivable de "
+            "'texte' : condenser la première phrase de 'texte' quand aucun résumé "
+            "distinct n'est donné — ne JAMAIS laisser vide si 'texte' est renseigné."
+        ),
         examples=[
             "Exclusion vol sans effraction",
             "Exclusion défaut d'entretien",
@@ -668,19 +670,6 @@ class Offre(BaseModel):
         examples=[[{"nom": "Dégâts des eaux"}, {"nom": "Incendie et événements assimilés"}]],
     )
 
-    garanties_optionnelles: list[Garantie] = edge(
-        label="GARANTIEOPTIONNELLE",
-        default_factory=list,
-        reference=True,
-        validation_alias=AliasChoices("garanties_optionnelles", "garantiesoptionnelles"),
-        description=(
-            "Garanties marquées 'En option' dans le tableau. "
-            "Référence par nom UNIQUEMENT (renseigner seulement 'nom') ; "
-            "le détail complet vit dans AssuranceMRH.garanties."
-        ),
-        examples=[[{"nom": "Dommages électriques"}, {"nom": "Piscine"}]],
-    )
-
     options_disponibles: list[Option] = edge(
         label="PROPOSEOPTION",
         default_factory=list,
@@ -709,11 +698,6 @@ class Offre(BaseModel):
     @classmethod
     def filtrer_garanties_incluses(cls, v: Any) -> Any:
         return _filtrer_liste(v, "garanties_incluses", champs_requis=["nom"])
-
-    @field_validator("garanties_optionnelles", mode="before")
-    @classmethod
-    def filtrer_garanties_optionnelles(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "garanties_optionnelles", champs_requis=["nom"])
 
     @field_validator("options_disponibles", mode="before")
     @classmethod
