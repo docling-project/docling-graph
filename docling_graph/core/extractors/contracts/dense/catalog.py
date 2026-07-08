@@ -13,6 +13,10 @@ from typing import Any, get_args, get_origin
 
 from pydantic import BaseModel
 
+from docling_graph.logging_utils import get_component_logger
+
+logger = get_component_logger("DenseExtraction", __name__)
+
 
 def _unwrap_model_from_annotation(annotation: Any) -> type[BaseModel] | None:
     if isinstance(annotation, type) and issubclass(annotation, BaseModel):
@@ -369,16 +373,35 @@ def build_skeleton_semantic_guide(catalog: NodeCatalog) -> str:
     property names are still deliberately absent: Phase 1 must not extract values.
     """
     lines: list[str] = []
+    truncated_paths: list[str] = []
     for spec in catalog.nodes:
         path_label = '""' if spec.path == "" else spec.path
         ids_label = ", ".join(spec.id_fields) if spec.id_fields else "none (use ids={})"
         line = f"- {path_label} ({spec.node_type}) ids=[{ids_label}]"
         description = " ".join((spec.description or "").split())
         if description:
-            line += f" — {description[:_GUIDE_DESCRIPTION_CHARS]}"
+            shown = description[:_GUIDE_DESCRIPTION_CHARS]
+            # A visible marker so it is obvious in the guide (and debug
+            # artifacts) that steering past this point never reached Phase 1.
+            if len(description) > _GUIDE_DESCRIPTION_CHARS:
+                shown = shown.rstrip() + " […]"
+                truncated_paths.append(path_label)
+            line += f" — {shown}"
         if spec.example_hint:
             line += f" ({spec.example_hint.strip()})"
         lines.append(line)
+    if truncated_paths:
+        # Author-facing signal: discovery-time steering (path routing,
+        # cardinality, negative cues) MUST live in the first
+        # ``_GUIDE_DESCRIPTION_CHARS`` chars of the class docstring — anything
+        # past the cut only reaches the fill phase.
+        logger.warning(
+            "Semantic guide: class docstring truncated at %d chars for %s — "
+            "discovery-time steering after the cut is not shown to Phase 1; "
+            "move it into the first sentence.",
+            _GUIDE_DESCRIPTION_CHARS,
+            ", ".join(truncated_paths),
+        )
     return "\n".join(lines)
 
 

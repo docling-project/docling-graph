@@ -76,6 +76,27 @@ _ALREADY_FOUND_WINDOW = 50
 # boilerplate (references, footers) not worth another set of LLM calls.
 _COVERAGE_PASS_MIN_TOKEN_SHARE = 0.10
 
+# The coverage pass exists to rescue paths the first pass MISSED, not to inflate
+# ones it already found. A path already discovered in pass 1 may grow by at most
+# this multiple during the coverage pass; paths with zero pass-1 instances (the
+# genuine misses) are exempt. Guards against pressure-yield row spam on
+# table-dense documents (financial statements) where zero-yield pages re-examined
+# under the empty-response license still emit one "entity" per table row.
+_COVERAGE_PASS_PATH_GROWTH_CAP = 2.0
+
+# Per-path over-discovery warning: a non-root catalog path holding more than this
+# multiple of the median non-root path count is flagged (observability only, no
+# hard cap) — the row-spam signature (e.g. one BusinessSegment per table row).
+_OVER_DISCOVERY_WARN_FACTOR = 5.0
+
+# Skeleton reconciliation batching. One combined id-space call over every path is
+# cheapest and works while the total instance count is small; past this the single
+# prompt exceeds the model's usable attention/output budget and silently returns
+# "no merges" (observed: 0 merges on 1425 report instances). Above the threshold
+# the pass runs one call PER PATH (reconciliation only merges within a path), and
+# splits a single path's instances into sub-batches of this size.
+_RECONCILE_MAX_INSTANCES_PER_CALL = 100
+
 # Id fields whose name promises a numeric/code identifier (document_number, ref_no,
 # invoice number...). On sparse documents a small model, lacking a real number,
 # often grabs a prominent brand/title string for these — a mis-capture the fill
@@ -1105,17 +1126,22 @@ def _log_merge_summary(stats: dict[str, int]) -> None:
         stats["recovered_single_parent"]
         + stats["recovered_fuzzy"]
         + stats["recovered_locality"]
+        + stats["recovered_text_anchor"]
+        + stats["recovered_adjacency"]
         + stats["recovered_placeholder"]
     )
     if recovered or stats["dropped"] or stats["recovered_bucket"]:
         logger.warning(
             "Merge: %s drifted parent link(s) recovered "
-            "(%s unique-parent, %s fuzzy, %s locality, %s placeholder), "
-            "%s bucket parent(s) with %s total attachment(s), %s instance(s) dropped",
+            "(%s unique-parent, %s fuzzy, %s locality, %s text-anchor, %s adjacency, "
+            "%s placeholder), %s bucket parent(s) with %s total attachment(s), "
+            "%s instance(s) dropped",
             recovered,
             stats["recovered_single_parent"],
             stats["recovered_fuzzy"],
             stats["recovered_locality"],
+            stats["recovered_text_anchor"],
+            stats["recovered_adjacency"],
             stats["recovered_placeholder"],
             stats["recovered_bucket"],
             stats["recovered_bucket"] + stats["attached_to_bucket"],
@@ -1335,6 +1361,8 @@ class DenseOrchestrator:
         # legitimately empty chunk; surfaced in run stats so a lossy run cannot
         # hide behind a merge-only retention figure.
         self._dropped_chunk_ids: list[int] = []
+        # Per-path count of nodes kept from the Phase 1 coverage pass (observability).
+        self._coverage_recovered_by_path: dict[str, int] = {}
         self._effective_workers = 1
         self._phase1_elapsed = 0.0
         self._phase2_elapsed = 0.0
@@ -1657,23 +1685,79 @@ class DenseOrchestrator:
         }
         if not instances_by_path:
             return merged_skeleton, 0
-        candidates = propose_containment_groups(instances_by_path)
-        if candidates and self._on_trace:
-            self._on_trace({"contract": "dense", "phase1_containment_proposals": len(candidates)})
-        prompt = get_skeleton_reconciliation_prompt(instances_by_path, candidate_groups=candidates)
-        out = self._llm(
-            prompt=prompt,
-            schema_json=json.dumps(reconciliation_output_schema()),
-            context=f"{context}_dense_reconcile",
-            response_top_level="object",
-            response_schema_name="dense_reconcile",
-        )
-        merges = out.get("merges") if isinstance(out, dict) else None
-        if not isinstance(merges, list) or not merges:
+
+        total_instances = sum(len(v) for v in instances_by_path.values())
+        # One combined call while small (cheapest); past the threshold the single
+        # prompt silently returns nothing, so split by path (reconciliation never
+        # merges across paths) and sub-batch a large path. Merge-group indices are
+        # per-path over the FULL skeleton, so each sub-call's response indices are
+        # rebased by the sub-batch's offset before being applied together.
+        call_specs: list[tuple[dict[str, list[dict[str, Any]]], dict[str, int]]]
+        if total_instances <= _RECONCILE_MAX_INSTANCES_PER_CALL:
+            call_specs = [(instances_by_path, dict.fromkeys(instances_by_path, 0))]
+        else:
+            call_specs = []
+            for path, ids_list in instances_by_path.items():
+                for offset in range(0, len(ids_list), _RECONCILE_MAX_INSTANCES_PER_CALL):
+                    sub = ids_list[offset : offset + _RECONCILE_MAX_INSTANCES_PER_CALL]
+                    if len(sub) >= 2:
+                        call_specs.append(({path: sub}, {path: offset}))
+
+        all_merges: list[dict[str, Any]] = []
+        candidate_total = 0
+        empty_large: list[tuple[str, int]] = []
+        for subset, offsets in call_specs:
+            candidates = propose_containment_groups(subset)
+            candidate_total += len(candidates)
+            prompt = get_skeleton_reconciliation_prompt(subset, candidate_groups=candidates)
+            out = self._llm(
+                prompt=prompt,
+                schema_json=json.dumps(reconciliation_output_schema()),
+                context=f"{context}_dense_reconcile",
+                response_top_level="object",
+                response_schema_name="dense_reconcile",
+            )
+            merges = out.get("merges") if isinstance(out, dict) else None
+            if not isinstance(merges, list) or not merges:
+                # A large id list returning zero merges is suspicious (likely a
+                # dropped/over-long response), not necessarily "nothing to merge".
+                for path, ids_list in subset.items():
+                    if len(ids_list) >= _RECONCILE_MAX_INSTANCES_PER_CALL:
+                        empty_large.append((path, len(ids_list)))
+                continue
+            # Rebase the response's per-subset indices to per-path skeleton order.
+            for merge in merges:
+                if not isinstance(merge, dict):
+                    continue
+                path = merge.get("path")
+                off = offsets.get(path, 0) if isinstance(path, str) else 0
+                keep = merge.get("keep")
+                members = merge.get("merge")
+                if not isinstance(keep, int) or not isinstance(members, list):
+                    continue
+                all_merges.append(
+                    {
+                        "path": path,
+                        "keep": keep + off,
+                        "merge": [m + off for m in members if isinstance(m, int)],
+                    }
+                )
+
+        if candidate_total and self._on_trace:
+            self._on_trace({"contract": "dense", "phase1_containment_proposals": candidate_total})
+        if empty_large:
+            logger.warning(
+                "Reconciliation: %s large id list(s) returned no merges (%s) — a "
+                "dropped/over-long response is possible; large near-duplicate sets "
+                "may have gone un-deduplicated.",
+                len(empty_large),
+                ", ".join(f"{p}={n}" for p, n in empty_large),
+            )
+        if not all_merges:
             return merged_skeleton, 0
         events: list[dict[str, Any]] = []
         reconciled, merged_count = apply_skeleton_reconciliation(
-            merged_skeleton, merges, spec_by_path, events_out=events
+            merged_skeleton, all_merges, spec_by_path, events_out=events
         )
         # Forensics artifact: without it, merge decisions only survive as
         # _merged_from breadcrumbs inside the skeleton dump.
@@ -1681,15 +1765,17 @@ class DenseOrchestrator:
             "dense_reconciliation.json",
             {
                 "instances_by_path": instances_by_path,
-                "containment_candidates": candidates,
-                "llm_merges": merges,
+                "calls": len(call_specs),
+                "containment_candidates": candidate_total,
+                "llm_merges": all_merges,
                 "events": events,
             },
         )
         if merged_count:
             logger.info(
-                "Reconciliation: merged %s alias instance(s) into more specific ones",
+                "Reconciliation: merged %s alias instance(s) into more specific ones (%s call(s))",
                 merged_count,
+                len(call_specs),
             )
         return reconciled, merged_count
 
@@ -1723,6 +1809,33 @@ class DenseOrchestrator:
             )
         return merged_skeleton, reconciliation_merged
 
+    def _warn_over_discovery(self, path_counts: dict[str, int]) -> None:
+        """Flag any non-root path holding a suspicious multiple of the median.
+
+        Observability only (no hard cap): the row-spam signature is one catalog
+        path swelling far past its siblings (e.g. a BusinessSegment per table
+        row). Surfaces the path so a reviewer sees it without digging through
+        the graph. Needs at least 3 non-root paths for a meaningful median.
+        """
+        non_root = sorted(v for p, v in path_counts.items() if p and v > 0)
+        if len(non_root) < 3:
+            return
+        median = non_root[len(non_root) // 2]
+        if median <= 0:
+            return
+        flagged = {
+            p: v for p, v in path_counts.items() if p and v > _OVER_DISCOVERY_WARN_FACTOR * median
+        }
+        if flagged:
+            logger.warning(
+                "Phase 1 (skeleton): possible over-discovery — %s hold(s) far more "
+                "instances than the median path count (%s). If these are table rows "
+                "rather than distinct entities, tighten the class docstring "
+                "(cardinality / negative discrimination in the first sentence).",
+                flagged,
+                median,
+            )
+
     def _finalize_run_stats(
         self,
         skeleton_nodes: int,
@@ -1732,6 +1845,7 @@ class DenseOrchestrator:
         total_chunks: int = 0,
         covered_chunks: int = 0,
         gate_failure: str | None = None,
+        path_counts: dict[str, int] | None = None,
     ) -> None:
         """Publish per-run observability counters as last_run_stats.
 
@@ -1754,6 +1868,9 @@ class DenseOrchestrator:
             "skeleton_batches_failed": self._counters.get("failed_batch_count", 0),
             "parents_from_already_found": self._counters.get("parents_from_already_found", 0),
             "coverage_pass_recovered": self._counters.get("coverage_pass_recovered", 0),
+            "coverage_pass_recovered_by_path": dict(self._coverage_recovered_by_path),
+            "coverage_pass_capped": self._counters.get("coverage_pass_capped", 0),
+            "skeleton_path_counts": dict(path_counts or {}),
             "dropped_chunk_ids": dropped_chunk_ids,
             "chunk_coverage_pct": (
                 round(100.0 * covered_chunks / total_chunks, 1) if total_chunks else 0.0
@@ -2296,8 +2413,7 @@ class DenseOrchestrator:
             len(coverage_batches),
         )
         base_index = len(batches)
-        results: list[list[dict[str, Any]]] = []
-        recovered = 0
+        raw_results: list[list[dict[str, Any]]] = []
         for i, coverage_batch in enumerate(coverage_batches):
             _, nodes = self._run_one_skeleton_batch(
                 batch_idx=base_index + i,
@@ -2314,11 +2430,48 @@ class DenseOrchestrator:
                 known_handles=known_handles,
                 coverage_retry=True,
             )
-            results.append(nodes)
-            recovered += len(nodes)
+            raw_results.append(nodes)
+
+        # Yield discipline: a path already discovered in pass 1 may grow by at
+        # most _COVERAGE_PASS_PATH_GROWTH_CAP; paths missed entirely (pre-count 0)
+        # stay uncapped — they are the whole point of the pass. Bounds pressure-
+        # yield row spam on table-dense pages without touching genuine recall.
+        pre_counts: dict[str, int] = {}
+        for node in merged_skeleton:
+            path = node.get("path") or ""
+            pre_counts[path] = pre_counts.get(path, 0) + 1
+        running = dict(pre_counts)
+        recovered_by_path: dict[str, int] = {}
+        discarded_by_path: dict[str, int] = {}
+        results: list[list[dict[str, Any]]] = []
+        for nodes in raw_results:
+            kept: list[dict[str, Any]] = []
+            for node in nodes:
+                path = node.get("path") or ""
+                pre = pre_counts.get(path, 0)
+                if pre and running.get(path, 0) >= _COVERAGE_PASS_PATH_GROWTH_CAP * pre:
+                    discarded_by_path[path] = discarded_by_path.get(path, 0) + 1
+                    continue
+                kept.append(node)
+                running[path] = running.get(path, 0) + 1
+                recovered_by_path[path] = recovered_by_path.get(path, 0) + 1
+            results.append(kept)
+
+        recovered = sum(recovered_by_path.values())
+        discarded = sum(discarded_by_path.values())
         if recovered:
             self._bump("coverage_pass_recovered", recovered)
-        logger.info("Phase 1 coverage pass: recovered %s node(s)", recovered)
+        if discarded:
+            self._bump("coverage_pass_capped", discarded)
+        self._coverage_recovered_by_path = recovered_by_path
+        logger.info(
+            "Phase 1 coverage pass: recovered %s node(s)%s%s",
+            recovered,
+            f" (by path: {recovered_by_path})" if recovered_by_path else "",
+            f"; capped {discarded} over-growth instance(s) at {discarded_by_path}"
+            if discarded
+            else "",
+        )
         return coverage_batches, results
 
     def run(
@@ -2331,6 +2484,7 @@ class DenseOrchestrator:
     ) -> dict[str, Any] | None:
         self._counters = {}
         self._dropped_chunk_ids = []
+        self._coverage_recovered_by_path = {}
         self._phase1_elapsed = 0.0
         self._phase2_elapsed = 0.0
         self.last_run_stats = {}
@@ -2420,6 +2574,7 @@ class DenseOrchestrator:
         for n in merged_skeleton:
             p = n.get("path") or ""
             path_counts[p] = path_counts.get(p, 0) + 1
+        self._warn_over_discovery(path_counts)
         total = len(merged_skeleton)
         # Quality gate (invariant): a usable skeleton needs a root instance.
         # Without one there is nothing to attach the graph to, and the direct
@@ -2434,6 +2589,7 @@ class DenseOrchestrator:
                 total_chunks=len(chunks),
                 covered_chunks=self._covered_chunk_count(merged_skeleton),
                 gate_failure=reason,
+                path_counts=path_counts,
             )
             if ledger is not None and self._debug_dir:
                 # Partial ledger for audit; last_provenance stays None because
@@ -2579,6 +2735,7 @@ class DenseOrchestrator:
             merge_stats,
             total_chunks=len(chunks),
             covered_chunks=self._covered_chunk_count(merged_skeleton),
+            path_counts=path_counts,
         )
         if self._debug_dir:
             self._write_debug("dense_merge_stats.json", merge_stats)

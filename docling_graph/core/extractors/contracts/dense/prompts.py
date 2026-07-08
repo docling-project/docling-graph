@@ -80,7 +80,7 @@ def get_skeleton_batch_prompt(
         "(1) Localized entities: items tied to distinct identifiers in the text (e.g. specific section headers, figures, tables, or line items). Create separate, distinct instances for each identifier found. "
         "(2) Global / shared entities: singleton items that apply broadly across the document or serve as shared references for other nodes (e.g. overarching policies, global configurations, or general methodologies). Extract these global entities even if they lack a specific localized identifier or label. "
         "Do not ignore an entity just because it lacks a distinct sub-label; if the schema defines it and the text describes it, it must be included in the skeleton. "
-        "Each data row of a table is a separate entity instance; document-level metadata (titles, dates, totals, summary rows) is not.\n\n"
+        "A data row of a table becomes a separate entity instance ONLY when that row names a distinct instance of a catalog entity (e.g. a line item, a person, a segment the schema lists). Rows that are numeric breakdowns, sub-lines, per-period or per-geography figures, or components of a larger record are NOT their own entities — they are attributes of the entity the table describes. Document-level metadata (titles, dates, totals, summary rows) is never an entity. When unsure, prefer FEWER instances: a table with N rows is not automatically N entities.\n\n"
         "Rules:\n"
         '1. Use ONLY the catalog paths listed. Each node has exactly: "i" (its handle: a sequential integer starting at 1, unique in this response), "path", "ids" (identifier values from the document), "p" (the handle of its parent node in this response; omit or null for the root), and optionally "c" (the number N of the "--- CHUNK N ---" marker the entity was found under).\n'
         '2. Emit the root (path "", no parent) exactly once, first. Every other node\'s "p" must reference the handle of a node in this same response whose path is its parent path in the catalog'
@@ -259,7 +259,8 @@ def get_fill_batch_prompt(
         "Assign each value to the exact schema field it belongs to; never place fragments of one field into another (e.g. address parts into a name field). "
         "Copy numeric values digit-for-digit from the document; never compute, round, or aggregate them. "
         "Values from table summary rows (totals, subtotals) belong to document-level fields, never to row-level instances. "
-        "Omit values that are not present in the document rather than guessing."
+        "Omit values that are not present in the document rather than guessing. "
+        "When a short summary field (a résumé, summary, or label) is derivable from a longer sibling field you are filling (its full text or description), derive it from that text rather than leaving it empty — a one-line condensation of the long field is a valid fill, not an invention."
         f"{membership_rule}"
     )
     user_prompt = (
