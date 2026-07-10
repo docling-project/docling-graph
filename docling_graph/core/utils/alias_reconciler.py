@@ -224,6 +224,29 @@ def _attr_richness(node_data: dict[str, Any]) -> int:
     return count
 
 
+def _sibling_co_occurrence(graph: nx.DiGraph, node_a: str, node_b: str) -> bool:
+    """True when a shared neighbor links to both nodes with the same edge label.
+
+    Two same-class nodes hanging off one neighbor under one label (root
+    -AOFFRE-> both, or both -INCLUT-> the same child) are members of a list the
+    document enumerates side by side — sibling instances, never aliases. This
+    is the graph-level twin of the dense skeleton reconciliation's co-occurrence
+    veto: there the evidence is a shared first-emission chunk, here it is a
+    shared same-label edge. It exists because instruction-level guards are not
+    enough — the confirm LLM has been observed approving a tier pair its own
+    prompt names as the forbidden example.
+    """
+    shared_parents = set(graph.predecessors(node_a)) & set(graph.predecessors(node_b))
+    for parent in shared_parents:
+        if graph[parent][node_a].get("label") == graph[parent][node_b].get("label"):
+            return True
+    shared_children = set(graph.successors(node_a)) & set(graph.successors(node_b))
+    for child in shared_children:
+        if graph[node_a][child].get("label") == graph[node_b][child].get("label"):
+            return True
+    return False
+
+
 def _merge_nodes(graph: nx.DiGraph, survivor: str, merged: str) -> None:
     """Fold ``merged`` into ``survivor``: fill empty attributes, union
     provenance, record the alias, redirect edges, remove the node."""
@@ -272,7 +295,7 @@ def reconcile_graph_aliases(
     guards cannot see. The attribute-richer node survives; the merged node's
     identity is recorded on the survivor under ``merged_aliases``.
     """
-    stats = {"candidates": 0, "confirmed": 0, "merged": 0}
+    stats = {"candidates": 0, "confirmed": 0, "merged": 0, "vetoed_sibling": 0}
     node_ids_by_class, display_by_class, groups = propose_alias_candidates(graph, id_fields_map)
     stats["candidates"] = sum(len(g["merge"]) for g in groups)
     if not groups:
@@ -335,6 +358,15 @@ def reconcile_graph_aliases(
             if node_a in removed or node_b in removed or node_a == node_b:
                 continue
             if node_a not in graph or node_b not in graph:
+                continue
+            if _sibling_co_occurrence(graph, node_a, node_b):
+                stats["vetoed_sibling"] += 1
+                logger.info(
+                    "Alias merge vetoed (sibling co-occurrence): %s ~ %s share a "
+                    "same-label neighbor — enumerated siblings, not aliases",
+                    node_a,
+                    node_b,
+                )
                 continue
             richness_a = _attr_richness(graph.nodes[node_a])
             richness_b = _attr_richness(graph.nodes[node_b])
