@@ -1,4 +1,4 @@
-"""Dense extraction prompts: skeleton (Phase 1) and fill (Phase 2)."""
+"""Dense extraction prompts: skeleton (Phase 1) and flesh (Phase 2)."""
 
 from __future__ import annotations
 
@@ -260,7 +260,7 @@ def get_fill_batch_prompt(
         "Copy numeric values digit-for-digit from the document; never compute, round, or aggregate them. "
         "Values from table summary rows (totals, subtotals) belong to document-level fields, never to row-level instances. "
         "Omit values that are not present in the document rather than guessing. "
-        "When a short summary field (a résumé, summary, or label) is derivable from a longer sibling field you are filling (its full text or description), derive it from that text rather than leaving it empty — a one-line condensation of the long field is a valid fill, not an invention."
+        "When a short summary field (a résumé, summary, or label) is derivable from a longer sibling field you are filling (its full text or description), derive it from that text rather than leaving it empty — a one-line condensation of the long field is a valid fill, not an invention. This applies ONLY to the short summary field: the long source field it is derived from must still be copied VERBATIM from the document, never paraphrased or shortened."
         f"{membership_rule}"
     )
     user_prompt = (
