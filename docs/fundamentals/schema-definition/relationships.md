@@ -109,6 +109,35 @@ use it on the one field that is the target's canonical home — the node would
 end up with nothing but its name. Decision guidance:
 [Best Practices — Reference edges vs nested full entities](best-practices.md#reference-edges-vs-nested-full-entities).
 
+### Closed-Catalog Reference Edges (`closed_catalog=True`)
+
+When the reference targets form a **fixed catalog** whose members are all
+defined at the target class's canonical home (excluded property must be one of
+the Article-1 covered-property names), add `reference_closed_catalog` to the
+field's `json_schema_extra` (exposed as `closed_catalog=True` by the `edge()`
+helper pattern):
+
+```python
+biens_exclus: List[Bien] = edge(
+    label="EXCLUTBIEN",
+    default_factory=list,
+    reference=True,
+    closed_catalog=True,
+)
+```
+
+Small models routinely invent catalog members for such fields (excluded
+*vehicles, boats, trailers…* emitted as new `Bien` nodes when the document
+models them as clause text). At graph-assembly time, a target that exists
+**only** through closed-catalog references — every in-edge carries the marker
+— is dropped together with those edges (and removed entirely when it ends up
+disconnected); per-label counts land in `graph.graph["closed_catalog_drops"]`.
+A target that any *other* field instantiated or referenced keeps everything.
+Guard: when every member of the class is closed-catalog-only, the canonical
+catalog was not extracted and enforcement skips the class with a warning
+rather than wiping it. Only declare it where another field is genuinely the
+catalog's canonical home.
+
 ---
 
 ## Edge Label Conventions

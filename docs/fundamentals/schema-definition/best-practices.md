@@ -91,7 +91,7 @@ Identity fields feed three deterministic mechanisms: cross-batch deduplication, 
 
 ## Graph assembly mechanics
 
-Four converter behaviors the schema should be designed around:
+Six converter behaviors the schema should be designed around:
 
 1. **Duplicate instances merge fill-missing-only.** When the same entity is discovered at several paths (e.g. one person in both the board list and the executive list), all instances collapse into one node: later instances fill attributes the first left empty, but **conflicting non-empty values keep the first-seen value**. So when one real-world thing plays several roles with role-specific data, keep the shared entity **identity-minimal** (its id field and nothing else) and model each role as its own entity — identified by the same name, holding that role's fields, linking to the shared node via an edge:
 
@@ -115,7 +115,17 @@ Four converter behaviors the schema should be designed around:
 
 3. **Entities nested inside components attach to the nearest entity ancestor.** Component subtrees are traversed: an entity below a component still becomes a node, and its edge comes from the closest enclosing *entity* (the component itself never gets a node — its scalar fields embed in that ancestor, with nested-entity fields nulled). This mirrors how the dense catalog parents such entities. It works, but prefer nesting entities directly under entities: the wrapper component adds a level of indirection without adding a graph node.
 
-4. **Verify the graph shape, not just validation.** `Model(**sample)` proves the schema validates; it says nothing about what the graph looks like. Convert a hand-built instance and inspect nodes and edges before running extraction:
+4. **Cardinality bounds demote discovery spam structurally.** A class whose real-world instance count is documented ("the 3–6 reportable segments") can declare `graph_max_instances` in its `model_config`; past the bound, the converter keeps the best-supported instances (ranked by filled-attribute count, then provenance-chunk support, then non-root in-degree) and demotes the rest — removed with their incident edges and recorded under `graph.graph["demoted_nodes"]` for audit. This is the structural backstop for spam that discovery-time steering cannot eliminate on small models (hundreds of financial-table row labels promoted to a `segments[]` class). Set the bound to roughly **2× the documented maximum** so genuine instances keep a safety margin, and only on classes whose docstring states a cardinality; measured on the report benchmark, a bound of 10 on a 4-segment class lifted the class F1 from 0.05 to 0.57 with zero true instances lost. The ranking is deliberately *filled-first*: chunk-support-first buries true instances under alias-merged junk rows ("Total"/"Other") that accumulate hundreds of chunks.
+
+    ```python
+    class BusinessSegment(BaseModel):
+        """ONE of the 3-6 REPORTABLE segments named in the segment note..."""
+        model_config = ConfigDict(graph_id_fields=["name"], graph_max_instances=10)
+    ```
+
+5. **Closed catalogs drop hallucinated reference targets.** A reference field whose targets form a FIXED catalog defined elsewhere in the schema (excluded property must be one of the Article-1 covered-property names) can declare `closed_catalog=True` alongside `reference=True`: a target that exists *only* through such references — never instantiated or referenced by any other field — is a hallucinated catalog member, and the converter drops those edges (and the orphaned target), recording counts under `graph.graph["closed_catalog_drops"]`. A target independently anchored by any other edge keeps everything. When **every** member of the class is closed-catalog-only, the canonical catalog was not extracted at all and enforcement refuses to wipe the class (logged warning instead). Declare it only where the document genuinely defines the catalog in another field's canonical home.
+
+6. **Verify the graph shape, not just validation.** `Model(**sample)` proves the schema validates; it says nothing about what the graph looks like. Convert a hand-built instance and inspect nodes and edges before running extraction:
 
     ```python
     from docling_graph.core.converters.graph_converter import GraphConverter
