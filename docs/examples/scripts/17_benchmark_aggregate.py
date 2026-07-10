@@ -6,8 +6,10 @@ Description:
     formats, optionally x repeats) and aggregates each run's `eval.json`
     (produced by Example 16), `metadata.json`, and dense debug stats into one
     machine-readable matrix plus a human-readable synthesis report. Micro
-    P/R/F1 is computed separately for nodes and edges (strict and relaxed) —
-    never averaged together — and dense merge retention / chunk coverage are
+    P/R/F1 is computed separately for nodes and edges (strict, relaxed, and —
+    when alignment was active — the aligned rung, which folds structural and
+    singleton-root pairings and is the fair rung under identity drift) — never
+    averaged together — and dense merge retention / chunk coverage are
     surfaced next to the quality numbers so a lossy run cannot hide behind a
     good-looking F1.
 
@@ -99,6 +101,16 @@ def run_record(run_dir: Path, doc: str, contract: str, fmt: str, rep: int) -> di
         row["node_relaxed"] = micro(ev["nodes"], "relaxed")
         row["edge_strict"] = micro(ev["edges"], "strict")
         row["edge_relaxed"] = micro(ev["edges"], "relaxed")
+        # The aligned rung is conditional (only present when alignment was
+        # active), and not every per-class section carries it — read the eval's
+        # own micro block instead of re-summing per-label sections.
+        ev_micro = ev.get("micro", {})
+        node_aligned = ev_micro.get("nodes", {}).get("aligned")
+        edge_aligned = ev_micro.get("edges", {}).get("aligned")
+        if isinstance(node_aligned, dict):
+            row["node_aligned"] = node_aligned
+        if isinstance(edge_aligned, dict):
+            row["edge_aligned"] = edge_aligned
         comp, comp_n = completeness_rate(ev.get("attribute_completeness", {}))
         row["completeness"] = comp
         row["completeness_n"] = comp_n
@@ -180,7 +192,7 @@ def _failed_record(
         "format": fmt,
         "rep": rep,
         "run": None,
-        "status": "failed",
+        "status": status.get("status", "failed"),
         "failure_reason": status.get("reason", "unknown"),
     }
 
@@ -196,19 +208,37 @@ def _cell_summary(runs: list[dict[str, Any]]) -> dict[str, Any]:
     def f1_mean(key: str) -> float | None:
         return _mean([r.get(key, {}).get("f1") for r in runs if isinstance(r.get(key), dict)])
 
+    skeleton_sizes = [r.get("skeleton_nodes") for r in runs if r.get("skeleton_nodes") is not None]
     return {
         "runs": len(runs),
         "node_f1_strict": f1_mean("node_strict"),
         "node_f1_relaxed": f1_mean("node_relaxed"),
+        "node_f1_aligned": f1_mean("node_aligned"),
         "edge_f1_strict": f1_mean("edge_strict"),
         "edge_f1_relaxed": f1_mean("edge_relaxed"),
+        "edge_f1_aligned": f1_mean("edge_aligned"),
         "completeness": _mean([r.get("completeness") for r in runs]),
         "time_s": _mean([r.get("time_s") for r in runs]),
         "retention_pct": _mean([r.get("retention_pct") for r in runs]),
         "chunk_coverage_pct": _mean([r.get("chunk_coverage_pct") for r in runs]),
         "empty_identity": sum(r.get("empty_identity") or 0 for r in runs),
         "orphans": sum(r.get("orphans") or 0 for r in runs),
+        # Per-rep skeleton sizes, so bimodal discovery instability (e.g. 299 vs
+        # 657/765 nodes across reps) is visible without digging into metadata.
+        "skeleton_nodes": skeleton_sizes or None,
     }
+
+
+def _rungs(summary: dict[str, Any], prefix: str) -> str:
+    """One table cell: `strict (relaxed / aligned)`, em-dash when unscored."""
+    strict = summary[f"{prefix}_f1_strict"]
+    if strict is None:
+        return "—"
+    relaxed = summary[f"{prefix}_f1_relaxed"]
+    aligned = summary[f"{prefix}_f1_aligned"]
+    relaxed_s = f"{relaxed}" if relaxed is not None else "—"
+    aligned_s = f"{aligned}" if aligned is not None else "—"
+    return f"{strict} ({relaxed_s} / {aligned_s})"
 
 
 def render_markdown(records: list[dict[str, Any]]) -> str:
@@ -225,41 +255,39 @@ def render_markdown(records: list[dict[str, Any]]) -> str:
         "",
         "Aggregated by `docs/examples/scripts/17_benchmark_aggregate.py`; one row per",
         "(document, contract, format) cell, numeric metrics are the mean over repeats.",
-        "Micro F1 (strict, relaxed in parens) is reported separately for nodes and",
-        "edges. `ret%` = dense merge retention, `cov%` = skeleton chunk coverage —",
-        "quality numbers are only comparable between runs with similar retention.",
+        "Micro F1 is reported separately for nodes and edges as `strict (relaxed / aligned)`;",
+        "the aligned rung folds structural/singleton-root pairings and is the fair",
+        "comparison when identities drift (— when alignment was inactive). `ret%` =",
+        "dense merge retention, `cov%` = skeleton chunk coverage, `Skel` = per-rep",
+        "skeleton sizes (discovery instability shows as spread) — quality numbers are",
+        "only comparable between runs with similar retention.",
         "",
-        "| Doc | Contract | Format | Runs | Node F1 | Edge F1 | Compl. | Time s | ret% | cov% | Empty-id | Orphans |",
-        "| :-- | :-- | :-- | --: | :-- | :-- | --: | --: | --: | --: | --: | --: |",
+        "| Doc | Contract | Format | Runs | Node F1 | Edge F1 | Compl. | Time s | ret% | cov% | Skel | Empty-id | Orphans |",
+        "| :-- | :-- | :-- | --: | :-- | :-- | --: | --: | --: | --: | :-- | --: | --: |",
     ]
     for (doc, contract, fmt), runs in sorted(cells.items()):
-        scored = [r for r in runs if r.get("status") != "failed"]
-        failed = [r for r in runs if r.get("status") == "failed"]
+        # Real runs carry a run-dir name; failure/skip markers do not.
+        scored = [r for r in runs if r.get("run")]
+        failed = [r for r in runs if not r.get("run")]
         if not scored:
-            # Every attempt in this cell failed — show it explicitly.
+            # Every attempt in this cell failed or was skipped — show it explicitly.
+            status = failed[0].get("status", "failed") if failed else "failed"
             reason = failed[0].get("failure_reason", "failed") if failed else "failed"
+            label = "SKIPPED" if status == "skipped" else "FAILED"
             lines.append(
-                f"| {doc} | {contract} | {fmt} | {len(failed)} | FAILED ({reason}) | — "
-                f"| — | — | — | — | — | — |"
+                f"| {doc} | {contract} | {fmt} | {len(failed)} | {label} ({reason}) | — "
+                f"| — | — | — | — | — | — | — |"
             )
             continue
         s = _cell_summary(scored)
-        node = (
-            f"{fmt_num(s['node_f1_strict'])} ({fmt_num(s['node_f1_relaxed'])})"
-            if s["node_f1_strict"] is not None
-            else "—"
-        )
-        edge = (
-            f"{fmt_num(s['edge_f1_strict'])} ({fmt_num(s['edge_f1_relaxed'])})"
-            if s["edge_f1_strict"] is not None
-            else "—"
-        )
+        skel = "/".join(str(int(v)) for v in s["skeleton_nodes"]) if s["skeleton_nodes"] else "—"
         runs_label = str(s["runs"]) if not failed else f"{s['runs']}+{len(failed)}✗"
         lines.append(
-            f"| {doc} | {contract} | {fmt} | {runs_label} | {node} | {edge} "
+            f"| {doc} | {contract} | {fmt} | {runs_label} "
+            f"| {_rungs(s, 'node')} | {_rungs(s, 'edge')} "
             f"| {fmt_num(s['completeness'])} | {fmt_num(s['time_s'])} "
             f"| {fmt_num(s['retention_pct'])} | {fmt_num(s['chunk_coverage_pct'])} "
-            f"| {s['empty_identity']} | {s['orphans']} |"
+            f"| {skel} | {s['empty_identity']} | {s['orphans']} |"
         )
     lines += [
         "",
