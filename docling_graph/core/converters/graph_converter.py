@@ -20,7 +20,9 @@ import networkx as nx
 from pydantic import BaseModel
 
 from ...logging_utils import get_component_logger
-from ..utils.alias_reconciler import id_fields_by_class, reconcile_graph_aliases
+from ..provenance.identity import PROVENANCE_NODE_ATTR
+from ..utils.alias_reconciler import _attr_richness, id_fields_by_class, reconcile_graph_aliases
+from ..utils.entity_name_normalizer import canonicalize_identity_for_dedup
 from ..utils.graph_cleaner import GraphCleaner, validate_graph_structure
 from ..utils.stats_calculator import calculate_graph_stats
 from .config import GraphConfig
@@ -84,6 +86,51 @@ def _is_empty_value(value: Any) -> bool:
     return False
 
 
+def _collect_cardinality_bounds(model_instances: List[BaseModel]) -> dict[str, int]:
+    """{class name: graph_max_instances} for every model class reachable below
+    the instances. The bound is a template-declared safety rail against
+    discovery spam (e.g. hundreds of financial-table rows promoted to a
+    segments[] class whose docstring documents 3-6 real instances); classes
+    without the key are unbounded."""
+    bounds: dict[str, int] = {}
+    seen: set[int] = set()
+
+    def _visit(instance: BaseModel) -> None:
+        if id(instance) in seen:
+            return
+        seen.add(id(instance))
+        raw = get_model_config_value(instance, "graph_max_instances", None)
+        cls = instance.__class__.__name__
+        if isinstance(raw, int) and not isinstance(raw, bool) and raw >= 1:
+            bounds[cls] = raw
+        elif raw is not None and cls not in bounds:
+            logger.warning("Ignoring invalid graph_max_instances=%r on %s", raw, cls)
+        for _name, value in instance:
+            if isinstance(value, BaseModel):
+                _visit(value)
+            elif isinstance(value, list):
+                for item in value:
+                    if isinstance(item, BaseModel):
+                        _visit(item)
+
+    for model in model_instances:
+        _visit(model)
+    return bounds
+
+
+def _provenance_weight(node_data: dict[str, Any]) -> int:
+    """Distinct-chunk support recorded by the grounding binder (0 when off)."""
+    prov = node_data.get(PROVENANCE_NODE_ATTR)
+    if not isinstance(prov, dict):
+        return 0
+    chunks = prov.get("chunks")
+    weight = len(chunks) if isinstance(chunks, list) else 0
+    omitted = prov.get("chunks_omitted")
+    if isinstance(omitted, int) and omitted > 0:
+        weight += omitted
+    return weight
+
+
 class GraphConverter:
     """Converts Pydantic models to NetworkX graphs with enhanced features.
 
@@ -106,6 +153,7 @@ class GraphConverter:
         registry: NodeIDRegistry | None = None,
         auto_cleanup: bool = True,
         alias_llm_fn: Any | None = None,
+        enforce_cardinality_bounds: bool = True,
     ) -> None:
         """
         Initialize the graph converter.
@@ -124,6 +172,10 @@ class GraphConverter:
                 deterministic same-class alias candidates (short table label vs
                 full section title). Without it the alias pass is propose-only:
                 candidates are logged, nothing is merged.
+            enforce_cardinality_bounds: Enforce template-declared
+                ``graph_max_instances`` class bounds after cleanup, demoting the
+                least-supported surplus instances (default: True). Templates
+                without the marker are unaffected either way.
         """
         self.config = config or GraphConfig()
         # Use parameter value directly (don't use 'or' which would make False use config default)
@@ -137,6 +189,7 @@ class GraphConverter:
         self.auto_cleanup = auto_cleanup
         self.cleaner = GraphCleaner(verbose=True) if auto_cleanup else None
         self.alias_llm_fn = alias_llm_fn
+        self.enforce_cardinality_bounds = enforce_cardinality_bounds
 
     def pydantic_list_to_graph(
         self,
@@ -212,6 +265,8 @@ class GraphConverter:
                 # Grounding must never break graph conversion.
                 logger.warning("Provenance binding failed: %s", e)
 
+        id_fields_map = id_fields_by_class(model_instances)
+
         # Auto-cleanup if enabled
         if self.auto_cleanup and self.cleaner:
             logger.info("Running automatic graph cleanup...")
@@ -221,16 +276,31 @@ class GraphConverter:
             # section title), subject to LLM confirmation via alias_llm_fn.
             alias_stats = reconcile_graph_aliases(
                 graph,
-                id_fields_by_class(model_instances),
+                id_fields_map,
                 llm_call_fn=self.alias_llm_fn,
             )
             if alias_stats.get("candidates"):
                 graph.graph["alias_reconciliation"] = alias_stats
 
+        # Closed-catalog reference enforcement (template-declared): drop
+        # reference edges whose target exists ONLY through closed-catalog
+        # reference fields — hallucinated members of a fixed catalog.
+        self._enforce_closed_catalogs(graph)
+
+        # Template-declared per-class cardinality bounds: demote surplus
+        # instances of spam-prone classes, keeping the best-supported ones.
+        # Runs after alias reconciliation so the filled/provenance ranking
+        # signals reflect the final merged state.
+        if self.enforce_cardinality_bounds:
+            bounds = _collect_cardinality_bounds(model_instances)
+            if bounds:
+                root_classes = {m.__class__.__name__ for m in model_instances}
+                self._enforce_cardinality_bounds(graph, bounds, root_classes, id_fields_map)
+
         # Integrity: a node whose class declares identity fields but carries no
         # identity value can never be matched, deduplicated, or evaluated —
         # surface it loudly instead of letting it reach the export silently.
-        empty_identity = _empty_identity_node_ids(graph, id_fields_by_class(model_instances))
+        empty_identity = _empty_identity_node_ids(graph, id_fields_map)
         if empty_identity:
             graph.graph["empty_identity_nodes"] = empty_identity
             logger.warning(
@@ -260,6 +330,142 @@ class GraphConverter:
 
         metadata = calculate_graph_stats(graph, len(model_instances))
         return graph, metadata
+
+    def _enforce_cardinality_bounds(
+        self,
+        graph: nx.DiGraph,
+        bounds: dict[str, int],
+        root_classes: Set[str],
+        id_fields_map: dict[str, list[str]],
+    ) -> None:
+        """Demote instances of a bounded class past its ``graph_max_instances``.
+
+        Instances are ranked best-first by filled-attribute count, then
+        distinct-chunk provenance support, then in-degree from non-root nodes,
+        then canonical identity as the stable tiebreak. Filled-first is
+        deliberate and load-bearing: provenance-chunk-first buries true
+        instances under alias-merged junk ("Total"/"Other" rows accumulate
+        hundreds of chunks while a true segment can carry one). Demoted nodes
+        are removed with their incident edges and recorded under
+        ``graph.graph["demoted_nodes"]`` for audit.
+        """
+        demoted: list[dict[str, Any]] = []
+        for cls in sorted(bounds):
+            bound = bounds[cls]
+            scored: list[tuple[Any, ...]] = []
+            for node_id, data in graph.nodes(data=True):
+                if str(data.get("__class__") or "") != cls:
+                    continue
+                ext_in = sum(
+                    1
+                    for source, _ in graph.in_edges(node_id)
+                    if str(graph.nodes[source].get("__class__") or "") not in root_classes
+                )
+                identity = "".join(
+                    canonicalize_identity_for_dedup(field, data.get(field))
+                    for field in id_fields_map.get(cls, [])
+                    if data.get(field) is not None
+                )
+                scored.append(
+                    (
+                        node_id,
+                        data,
+                        _attr_richness(data),
+                        _provenance_weight(data),
+                        ext_in,
+                        identity,
+                    )
+                )
+            if len(scored) <= bound:
+                continue
+            scored.sort(key=lambda s: (-s[2], -s[3], -s[4], s[5], str(s[0])))
+            for node_id, data, filled, chunks, ext_in, _identity in scored[bound:]:
+                demoted.append(
+                    {
+                        "id": str(node_id),
+                        "class": cls,
+                        "identity": {f: data.get(f) for f in id_fields_map.get(cls, [])},
+                        "filled": filled,
+                        "chunks": chunks,
+                        "ext_in": ext_in,
+                        "reason": "cardinality_bound",
+                    }
+                )
+                graph.remove_node(node_id)
+            logger.warning(
+                "Cardinality bound: demoted %s of %s %s node(s) past graph_max_instances=%s",
+                len(scored) - bound,
+                len(scored),
+                cls,
+                bound,
+            )
+        if demoted:
+            graph.graph["demoted_nodes"] = demoted
+
+    def _enforce_closed_catalogs(self, graph: nx.DiGraph) -> None:
+        """Drop reference edges to targets instantiated ONLY by closed-catalog
+        reference fields (every in-edge carries the marker), removing targets
+        that end up fully disconnected. A target that also exists through any
+        other edge keeps everything — the catalog member is real, the marked
+        edge just references it. Guard: enforcement requires at least one
+        independently anchored member of the target class in the graph; when
+        EVERY member is closed-catalog-only, the canonical catalog was not
+        extracted at all and dropping would wipe the class — skip and warn
+        instead. The transient edge marker is stripped before export either way.
+        """
+
+        def _marked(edge_data: dict[str, Any]) -> bool:
+            # Label-scoped: a stale marker left by nx.DiGraph attr-merging of a
+            # re-added (source, target) pair no longer matches the surviving
+            # label and must not count.
+            marker = edge_data.get("_closed_catalog")
+            return bool(marker) and marker == edge_data.get("label")
+
+        total_by_class: dict[str, int] = {}
+        candidates_by_class: dict[str, list[str]] = {}
+        any_marker = False
+        for node_id, data in graph.nodes(data=True):
+            cls = str(data.get("__class__") or "")
+            total_by_class[cls] = total_by_class.get(cls, 0) + 1
+            in_edges = list(graph.in_edges(node_id, data=True))
+            if not in_edges:
+                continue
+            if any(_marked(d) for _, _, d in in_edges):
+                any_marker = True
+                if all(_marked(d) for _, _, d in in_edges):
+                    candidates_by_class.setdefault(cls, []).append(node_id)
+        if any_marker:
+            drops: dict[str, int] = {}
+            removed_nodes = 0
+            for cls, candidates in candidates_by_class.items():
+                if len(candidates) >= total_by_class.get(cls, 0):
+                    logger.warning(
+                        "Closed-catalog guard skipped for %s: all %s node(s) are "
+                        "closed-catalog-only — the canonical catalog was not "
+                        "extracted, refusing to wipe the class",
+                        cls,
+                        total_by_class.get(cls, 0),
+                    )
+                    continue
+                for node_id in candidates:
+                    for source, _, data in list(graph.in_edges(node_id, data=True)):
+                        label = str(data.get("label") or "")
+                        drops[label] = drops.get(label, 0) + 1
+                        graph.remove_edge(source, node_id)
+                    if graph.degree(node_id) == 0:
+                        graph.remove_node(node_id)
+                        removed_nodes += 1
+            if drops:
+                graph.graph["closed_catalog_drops"] = drops
+                logger.warning(
+                    "Closed catalog: dropped %s reference edge(s) to unanchored targets "
+                    "(%s node(s) removed): %s",
+                    sum(drops.values()),
+                    removed_nodes,
+                    drops,
+                )
+        for _, _, data in graph.edges(data=True):
+            data.pop("_closed_catalog", None)
 
     def _create_nodes_pass(
         self,
@@ -485,6 +691,7 @@ class GraphConverter:
         for field_name, field_value in model:
             # Check for explicit edge label in field metadata
             edge_label = self._get_edge_label(model, field_name)
+            edge_props = self._edge_properties(model, field_name, edge_label)
 
             if isinstance(field_value, BaseModel):
                 is_nested_entity = get_model_config_value(field_value, "is_entity", True)
@@ -496,7 +703,7 @@ class GraphConverter:
                             source=source_id,
                             target=target_id,
                             label=edge_label or field_name,
-                            properties={},
+                            properties=edge_props,
                         )
                     )
                     # Recursively process nested entity
@@ -519,7 +726,7 @@ class GraphConverter:
                                     source=source_id,
                                     target=target_id,
                                     label=edge_label or field_name,
-                                    properties={},
+                                    properties=edge_props,
                                 )
                             )
                             # Recursively process nested entity
@@ -547,6 +754,7 @@ class GraphConverter:
         edges: List[Edge] = []
         for field_name, field_value in component:
             edge_label = self._get_edge_label(component, field_name)
+            edge_props = self._edge_properties(component, field_name, edge_label)
 
             if isinstance(field_value, BaseModel):
                 if get_model_config_value(field_value, "is_entity", True):
@@ -556,7 +764,7 @@ class GraphConverter:
                             source=source_id,
                             target=target_id,
                             label=edge_label or field_name,
-                            properties={},
+                            properties=edge_props,
                         )
                     )
                     edges.extend(self._create_edges_pass(field_value, visited_ids))
@@ -574,7 +782,7 @@ class GraphConverter:
                                 source=source_id,
                                 target=target_id,
                                 label=edge_label or field_name,
-                                properties={},
+                                properties=edge_props,
                             )
                         )
                         edges.extend(self._create_edges_pass(item, visited_ids))
@@ -599,6 +807,24 @@ class GraphConverter:
             if isinstance(value, str):
                 return value
         return None
+
+    def _edge_properties(
+        self, model: BaseModel, field_name: str, edge_label: str | None
+    ) -> dict[str, Any]:
+        """Edge properties derived from field metadata.
+
+        ``reference_closed_catalog`` fields stamp a transient ``_closed_catalog``
+        marker holding the edge's label, consumed (and stripped) by
+        ``_enforce_closed_catalogs``. The marker is label-scoped because
+        nx.DiGraph MERGES attribute dicts when the same (source, target) pair is
+        added under a second label — a boolean marker would contaminate the
+        surviving edge; a label-scoped one only counts when it still matches.
+        """
+        field_info = type(model).model_fields.get(field_name)
+        if field_info and isinstance(field_info.json_schema_extra, Mapping):
+            if field_info.json_schema_extra.get("reference_closed_catalog"):
+                return {"_closed_catalog": edge_label or field_name}
+        return {}
 
     def set_registry(self, registry: NodeIDRegistry) -> None:
         """Update the registry (for sharing across multiple conversions)."""
