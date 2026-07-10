@@ -902,11 +902,12 @@ class Partnership(BaseModel):
 
 class BoardMember(BaseModel):
     """
-    ONLY a seat on the board of directors, from the directors list / election
-    slate. Executive officers, named executives in the compensation tables, and
-    former directors are NOT board members unless the report seats them on the
-    current board — the board list and the executive-officer list are disjoint
-    except where one person explicitly holds both roles.
+    ONE seat on the Board of Directors — extract EVERY director from the
+    board-of-directors / director-nominees section (each is listed with an
+    outside affiliation or committee membership). Executive officers and named
+    executives in the compensation tables are NOT board members unless the
+    report seats them on the board; the board list and the executive-officer
+    list are disjoint except where one person explicitly holds both roles.
     Uniquely identified by the member's name (a per-report role record — there
     is exactly one board seat per named individual in a given report).
     Deliberately an entity rather than a component: dense extraction then
@@ -957,13 +958,13 @@ class BoardMember(BaseModel):
 
 class ExecutiveOfficer(BaseModel):
     """
-    EVERY named executive from the "Information about our Executive Officers"
-    item (10-K) or the senior-leadership / proxy leadership table — extract all
-    of them, not just the CEO and CFO. This is a dedicated roster section that
-    lists each officer with a title; each named individual there is one
-    ExecutiveOfficer. Uniquely identified by the officer's name (a per-report
-    role record — there is exactly one executive role per named individual in a
-    given report). Kept separate from Person for the same reasons as BoardMember.
+    A management officer from the 10-K "Information about our Executive Officers"
+    item. Do NOT pull names from the board-of-directors list or proxy leadership
+    table — a director with no management title is a BoardMember, NOT an
+    executive officer. Extract EVERY officer in that roster, not just CEO/CFO.
+    Uniquely identified by the officer's name (a per-report role record — one
+    executive role per named individual). Kept separate from Person like
+    BoardMember.
     """
 
     model_config = ConfigDict(graph_id_fields=["full_name"], extra="ignore")

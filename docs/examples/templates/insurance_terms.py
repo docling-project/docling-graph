@@ -341,7 +341,9 @@ class Exclusion(BaseModel):
         description=(
             "Résumé court de la clause (une phrase). Toujours dérivable de "
             "'texte' : condenser la première phrase de 'texte' quand aucun résumé "
-            "distinct n'est donné — ne JAMAIS laisser vide si 'texte' est renseigné."
+            "distinct n'est donné — ne JAMAIS laisser vide si 'texte' est "
+            "renseigné. C'est le SEUL champ qui peut paraphraser ; 'texte' reste "
+            "verbatim."
         ),
         examples=[
             "Exclusion vol sans effraction",
@@ -350,7 +352,10 @@ class Exclusion(BaseModel):
     )
     texte: str | None = Field(
         None,
-        description="Texte de l'exclusion (si possible proche/verbatim).",
+        description=(
+            "Texte de la clause d'exclusion, copié VERBATIM depuis le document "
+            "(ne pas paraphraser, résumer ni raccourcir)."
+        ),
         examples=[
             "Sont exclus les vols commis sans effraction ni violence.",
             "Sont exclus les dommages résultant d'un défaut d'entretien notoire.",
