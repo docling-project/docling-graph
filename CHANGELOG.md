@@ -2,6 +2,152 @@
 
 <!-- version list -->
 
+## v1.7.1 (2026-07-10)
+
+### Bug Fixes
+
+- **alias**: Veto merges of same-label co-children, sibling lists are never aliases
+  ([`0679e98`](https://github.com/docling-project/docling-graph/commit/0679e984c33df34ed860634eccdc8d7179d7976b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Rescue orphaned children via text anchors, chunk attribution, and emission adjacency
+  ([`81e202a`](https://github.com/docling-project/docling-graph/commit/81e202a8d88b963d90bc50e194f868eb9b56eb60))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Restrict derivable-summary license to short fields, long source stays verbatim
+  ([`14fe1c0`](https://github.com/docling-project/docling-graph/commit/14fe1c0f25e68ec36966b2fd6a16078a94598919))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Root-identity resolution over page furniture, per-batch emission adjacency rescue
+  ([`b39aaee`](https://github.com/docling-project/docling-graph/commit/b39aaee1da79fa207017e52b8c6e196435b6e4f6))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Scope discovery to entity-naming rows, batch reconciliation at scale, cap coverage-pass
+  growth
+  ([`a3e0c91`](https://github.com/docling-project/docling-graph/commit/a3e0c91588ca779d7b644e287257fcf462b614f2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **salvage**: Coerce bare-string references into identity-only instances
+  ([`d264ef6`](https://github.com/docling-project/docling-graph/commit/d264ef6ad3f27b69e32bad77a3ef79f9640fc2a2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templates**: Align schemas with ground truth, front-load discovery steering
+  ([`6c2b1d8`](https://github.com/docling-project/docling-graph/commit/6c2b1d889f59e5b79ebdc3409a83d7110d214491))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templates**: Businesssegment cardinality bound, closed-catalog biens_exclus
+  ([`c7a0893`](https://github.com/docling-project/docling-graph/commit/c7a0893f115e62919f7c0ae5d20fd02539b39b03))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templates**: Split board/officer cues, one dataset per rheometry run, verbatim texte
+  ([`8ac8eb4`](https://github.com/docling-project/docling-graph/commit/8ac8eb441c4fb2baa4084ff6866871a026064b03))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **deps**: Sync lockfile with types-setuptools constraint bump
+  ([`27f3ab5`](https://github.com/docling-project/docling-graph/commit/27f3ab523c39a2c2a3738cf6a6ddea08f9253a5f))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Update types-setuptools requirement
+  ([`a80f002`](https://github.com/docling-project/docling-graph/commit/a80f002e4cb32ef703699ab02d4b218ceedafca1))
+
+Updates the requirements on [types-setuptools](https://github.com/python/typeshed) to permit the
+  latest version.
+
+Updates `types-setuptools` to 83.0.0.20260706 -
+  [Commits](https://github.com/python/typeshed/commits)
+
+--- updated-dependencies: - dependency-name: types-setuptools dependency-version: 83.0.0.20260706
+
+dependency-type: direct:development
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+### Documentation
+
+- **config**: Document new default auto setting for llm_input_format
+  ([`f38fef7`](https://github.com/docling-project/docling-graph/commit/f38fef7fcb5130480bfbb731d48d0fb1be51dbe1))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **fundamentals**: Cardinality bounds, closed catalogs, root-identity pass, full rescue ladder
+  ([`875be9d`](https://github.com/docling-project/docling-graph/commit/875be9dfe495d82c906960df3280e25f18936f15))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Refactoring
+
+- **bench**: Surface aligned micro in aggregation, stage-aware failure labels, SKIP_CELLS
+  ([`c96fef4`](https://github.com/docling-project/docling-graph/commit/c96fef4f5bb8c299146b355b942e56c168cbfd63))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **config**: Default llm_input_format to auto
+  ([`68ea0ce`](https://github.com/docling-project/docling-graph/commit/68ea0ce23d616cf3c41968e8903328c5d5f6149c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **converter**: Enforce graph_max_instances bounds and closed-catalog reference guard
+  ([`7c6777b`](https://github.com/docling-project/docling-graph/commit/7c6777ba4ccd59ff210cfefa8f108f782ded5f8c))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Testing
+
+- **alias**: Sibling co-occurrence veto and edge-union invariant
+  ([`1e3f9dc`](https://github.com/docling-project/docling-graph/commit/1e3f9dc2ff8b6fc8d763f30c0d39bfbde36f6299))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **bench**: Aggregation aligned rung, skeleton sizes, and skipped-cell rendering
+  ([`7c2ca6c`](https://github.com/docling-project/docling-graph/commit/7c2ca6c21b8497d2bc68282373a55c8e0e84a6fb))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **cli**: Cover invalid-enum fallbacks, dense tuning log, and llm overrides in convert
+  ([`cc60acc`](https://github.com/docling-project/docling-graph/commit/cc60acc1e95fd4c76cb60c0ef2cbc321fe4a7c64))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **config**: Update unit and integration tests for auto llm_input_format
+  ([`08ae15f`](https://github.com/docling-project/docling-graph/commit/08ae15fbf2f9e82a2732e9258ad9b9cecc8a2792))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **converter**: Cardinality bound and closed-catalog guard coverage
+  ([`cb2704e`](https://github.com/docling-project/docling-graph/commit/cb2704e7bd5728a3dd9218536c46b91762023889))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Add test coverage for orphaned children rescue logic
+  ([`b2d5121`](https://github.com/docling-project/docling-graph/commit/b2d51215067d828f5b86cd73435a05dd464555e2))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Cover reconciliation chunking, over-discovery warning, and eval relaxations
+  ([`ba6657c`](https://github.com/docling-project/docling-graph/commit/ba6657c73db4c2dcae3f16a8439d5abb179cbd43))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **dense**: Per-batch emission adjacency and root-identity micro-pass coverage
+  ([`0833c8d`](https://github.com/docling-project/docling-graph/commit/0833c8d4434f34f76a64f36d7ed07da30441cc21))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.7.0 (2026-07-06)
 
 ### Bug Fixes
