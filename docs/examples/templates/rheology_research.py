@@ -1182,8 +1182,10 @@ class ModelFit(BaseModel):
 
 class RheologyDataset(BaseModel):
     """
-    Container for results.
-    Uniquely identified by dataset_id.
+    ONE results container per rheometry run — its derived quantities and model
+    fits. Individual figures, tables, and measured curves are NOT separate
+    datasets; they are data reported WITHIN one dataset. Expect roughly one
+    dataset per test run, not one per figure. Uniquely identified by dataset_id.
     """
 
     model_config = ConfigDict(graph_id_fields=["dataset_id"])
@@ -1191,7 +1193,8 @@ class RheologyDataset(BaseModel):
     dataset_id: str = Field(
         description=(
             "Unique ID for the dataset. "
-            "EXTRACT: Prefer sample/figure reference from document; else 'DATASET-[sample]'. "
+            "EXTRACT: Prefer the sample or test-run label this dataset belongs to; "
+            "do NOT mint a separate dataset per figure. Else 'DATASET-[sample]'. "
             "EXAMPLES: 'Sample-A', 'DATASET-SAMPLE-A'"
         ),
         examples=["Sample-A", "DATASET-SAMPLE-A"],
