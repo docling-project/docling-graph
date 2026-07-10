@@ -3186,3 +3186,129 @@ def test_reconciliation_writes_debug_artifact(tmp_path):
     artifact = _json.loads((tmp_path / "debug" / "dense_reconciliation.json").read_text())
     assert artifact["llm_merges"] == [{"path": "employees[]", "keep": 1, "merge": [0]}]
     assert artifact["events"][0]["action"] == "merged"
+
+
+def test_merge_skeleton_batches_records_per_batch_emissions() -> None:
+    """Re-emissions keep their in-batch position in _emission_by_batch (first
+    sighting per batch wins); _source_chunk_ids still stays first-batch-only."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import (
+        merge_skeleton_batches,
+        skeleton_to_descriptors,
+    )
+
+    catalog = _singular_child_catalog()
+    node_b0 = {
+        "path": "line_items[]",
+        "ids": {"line_number": "1"},
+        "parent": {"path": "", "ids": {}},
+        "_source_batch_index": 0,
+        "_source_chunk_ids": [0],
+        "_emission_index": 2,
+    }
+    node_b0_relisted = dict(node_b0, _emission_index=5)
+    node_b1 = dict(node_b0, _source_batch_index=1, _source_chunk_ids=[3], _emission_index=7)
+    merged = merge_skeleton_batches([[node_b0, node_b0_relisted], [node_b1]], catalog)
+    items = [n for n in merged if n["path"] == "line_items[]"]
+    assert len(items) == 1
+    assert items[0]["_source_batch_indexes"] == [0, 1]
+    assert items[0]["_emission_by_batch"] == {0: 2, 1: 7}
+    assert items[0]["_source_chunk_ids"] == [0]  # first emission's chunks only
+
+    descs = skeleton_to_descriptors(merged, catalog)
+    assert descs["line_items[]"][0]["_emission_by_batch"] == {0: 2, 1: 7}
+
+
+def test_merge_filled_adjacency_rescues_reemitted_parent_in_child_batch() -> None:
+    """A parent FIRST emitted in an earlier batch but re-emitted in the child's
+    batch qualifies for the adjacency rescue via its per-batch emission position
+    (the old first-batch-only gate made the rung dead for every child discovered
+    after its parent's debut batch — the rheology dataset/protocol drop shape)."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _singular_child_catalog()
+    path_filled = {
+        "": [{"number": "3139"}],
+        "line_items[]": [{"line_number": "1"}, {"line_number": "2"}],
+        "line_items[].item": [{"name": "Steady state dataset"}],
+    }
+    # BOTH parents are re-emitted in the child's batch (so the locality rung
+    # cannot pick a unique one), but only parent 1 PRECEDES the child there.
+    parent_preceding = {
+        "path": "line_items[]",
+        "ids": {"line_number": "1"},
+        "parent": {"path": "", "ids": {}},
+        "_source_batch_indexes": [0, 1],
+        "_emission_index": 3,
+        "_emission_by_batch": {0: 3, 1: 2},
+    }
+    parent_following = {
+        "path": "line_items[]",
+        "ids": {"line_number": "2"},
+        "parent": {"path": "", "ids": {}},
+        "_source_batch_indexes": [0, 1],
+        "_emission_index": 4,
+        "_emission_by_batch": {0: 4, 1: 9},
+    }
+    child = {
+        "path": "line_items[].item",
+        "ids": {"name": "Steady state dataset"},
+        "parent": {"path": "line_items[]", "ids": {}},
+        "_source_batch_indexes": [1],
+        "_emission_index": 6,
+    }
+    path_descriptors = {
+        "": [_desc("", {"number": "3139"}, None)],
+        "line_items[]": [parent_preceding, parent_following],
+        "line_items[].item": [child],
+    }
+    stats: dict[str, int] = {}
+    root = merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    assert stats["recovered_adjacency"] == 1
+    assert root["line_items"][0]["item"]["name"] == "Steady state dataset"
+    assert "item" not in root["line_items"][1]
+
+
+def test_merge_filled_adjacency_requires_preceding_emission_in_that_batch() -> None:
+    """A parent re-emitted AFTER the child in the child's batch is no adjacency
+    evidence; the legacy first-emission index must not leak into the comparison."""
+    from docling_graph.core.extractors.contracts.dense.orchestrator import merge_filled_into_root
+
+    catalog = _singular_child_catalog()
+    path_filled = {
+        "": [{"number": "3139"}],
+        "line_items[]": [{"line_number": "1"}, {"line_number": "2"}],
+        "line_items[].item": [{"name": "Orphaned dataset"}],
+    }
+    # Two candidates (locality cannot pick one), both re-emitted AFTER the
+    # child in its batch: the rung must find no preceding parent.
+    parent_a = {
+        "path": "line_items[]",
+        "ids": {"line_number": "1"},
+        "parent": {"path": "", "ids": {}},
+        "_source_batch_indexes": [0, 1],
+        "_emission_index": 0,
+        "_emission_by_batch": {0: 0, 1: 9},
+    }
+    parent_b = {
+        "path": "line_items[]",
+        "ids": {"line_number": "2"},
+        "parent": {"path": "", "ids": {}},
+        "_source_batch_indexes": [0, 1],
+        "_emission_index": 1,
+        "_emission_by_batch": {0: 1, 1: 8},
+    }
+    child = {
+        "path": "line_items[].item",
+        "ids": {"name": "Orphaned dataset"},
+        "parent": {"path": "line_items[]", "ids": {}},
+        "_source_batch_indexes": [1],
+        "_emission_index": 4,
+    }
+    path_descriptors = {
+        "": [_desc("", {"number": "3139"}, None)],
+        "line_items[]": [parent_a, parent_b],
+        "line_items[].item": [child],
+    }
+    stats: dict[str, int] = {}
+    merge_filled_into_root(path_filled, path_descriptors, catalog, stats_out=stats)
+    assert stats["recovered_adjacency"] == 0
