@@ -5541,7 +5541,7 @@
 </code></pre></div>
 <hr />
 <h2 id="llm-input-serialization">LLM Input Serialization<a class="headerlink" href="#llm-input-serialization" title="Permanent link">&para;</a></h2>
-<p>By default the document text sent to the LLM during extraction is <strong>markdown</strong>. You can switch to <a href="https://github.com/doclang-project/doclang">DocLang</a> — an XML markup that preserves structure and (optionally) page geometry — with the <code>llm_input_format</code> setting. This changes only what the LLM reads; the exported <code>document.md</code> and <code>document.json</code> are unaffected.</p>
+<p>The <code>llm_input_format</code> setting controls how the document text is serialized for the LLM during extraction. The default is <strong><code>auto</code></strong>, which pairs the serialization to the resolved extraction contract per document; fixed values pin plain markdown or <a href="https://github.com/doclang-project/doclang">DocLang</a> — an XML markup that preserves structure and (optionally) page geometry. This changes only what the LLM reads; the exported <code>document.md</code> and <code>document.json</code> are unaffected.</p>
 <table>
 <thead>
 <tr>
@@ -5553,10 +5553,16 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>markdown</code> (default)</td>
+<td style="text-align: left;"><code>auto</code> (default)</td>
+<td style="text-align: left;">Paired to the resolved contract</td>
+<td style="text-align: left;">varies</td>
+<td style="text-align: left;">Benchmark-driven pairing: <code>direct</code> → <code>doclang-geo</code> (geometry recovers footers/table matrices in one call), <code>dense</code> → <code>doclang</code> (keeps chunk batches content-dense), raw text → <code>markdown</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>markdown</code></td>
 <td style="text-align: left;">Plain markdown</td>
 <td style="text-align: left;">1× (baseline)</td>
-<td style="text-align: left;">Almost always; best for markdown-trained and smaller local models</td>
+<td style="text-align: left;">Cheapest; best for markdown-trained and smaller local models</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>doclang</code></td>
@@ -5570,27 +5576,21 @@
 <td style="text-align: left;">~2.5–5×</td>
 <td style="text-align: left;">Forms/invoices where spatial position disambiguates fields</td>
 </tr>
-<tr>
-<td style="text-align: left;"><code>auto</code></td>
-<td style="text-align: left;">Paired to the resolved contract</td>
-<td style="text-align: left;">varies</td>
-<td style="text-align: left;">Benchmark-driven pairing: <code>direct</code> → <code>doclang-geo</code> (geometry recovers footers/table matrices in one call), <code>dense</code> → <code>doclang</code> (keeps chunk batches content-dense), raw text → <code>markdown</code></td>
-</tr>
 </tbody>
 </table>
 <p>With <code>auto</code>, the direct-vs-dense contract decision itself measures <strong>content</strong> characters (DocLang markup stripped), so the chosen serialization never flips the contract for the same document.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice.pdf&quot;</span><span class="p">,</span>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">llm_input_format</span><span class="o">=</span><span class="s2">&quot;doclang&quot;</span><span class="p">,</span>   <span class="c1"># or &quot;doclang-geo&quot;, default &quot;markdown&quot;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">llm_input_format</span><span class="o">=</span><span class="s2">&quot;doclang&quot;</span><span class="p">,</span>   <span class="c1"># or &quot;doclang-geo&quot; / &quot;markdown&quot;, default &quot;auto&quot;</span>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">chunk_max_tokens</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span>          <span class="c1"># raise the budget: DocLang chunks hold less content</span>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">)</span>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.pdf<span class="w"> </span>-t<span class="w"> </span>templates.BillingDocument<span class="w"> </span>--llm-format<span class="w"> </span>doclang-geo
 </code></pre></div>
 <div class="admonition warning">
-<p class="admonition-title">Higher token cost — benchmark before switching the default</p>
-<p>DocLang carries more tokens than markdown (geometry especially), so each chunk holds ~25–45% less document content — expect more chunks and more LLM calls in dense mode. Raise <code>chunk_max_tokens</code> (e.g. 512 → 768) alongside the switch, and A/B against markdown on your corpus before adopting it broadly. Small markdown-native models (like the default local <code>granite</code>) often do best on plain markdown.</p>
+<p class="admonition-title">Higher token cost — benchmark before pinning a DocLang format</p>
+<p>DocLang carries more tokens than markdown (geometry especially), so each chunk holds ~25–45% less document content — expect more chunks and more LLM calls in dense mode. Raise <code>chunk_max_tokens</code> (e.g. 512 → 768) alongside a pinned DocLang format, and A/B against markdown on your corpus before adopting it broadly. Small markdown-native models (like the default local <code>granite</code>) often do best on plain <code>markdown</code>, which is also the cheapest setting.</p>
 </div>
 <p>When a DocLang format is active, the extraction prompts gain a one-line orientation telling the model the text is DocLang XML, and the structure-aware chunker emits DocLang chunks so the chunk text matches what the model is told.</p>
 <hr />

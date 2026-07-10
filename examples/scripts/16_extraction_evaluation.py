@@ -87,6 +87,10 @@ _DIGIT_RUNS = re.compile(r"\d+")
 # ("- -les murs" vs "-les murs") stop failing the verbatim containment check.
 _LOOSE_BULLETS = re.compile(r"(?:(?<=\s)|^)[-•*+]+(?=\S)", re.MULTILINE)
 _NON_ALNUM = re.compile(r"[^a-z0-9]+")
+# A shared verbatim span at least this long counts as strong identity evidence in
+# structural alignment (a quoted clause), scoring a full point like an exact
+# field; shorter overlaps (category words) stay at the weak 0.5.
+_STRONG_CONTAINMENT_CHARS = 40
 
 
 def load_template(dotted: str) -> type[BaseModel]:
@@ -185,6 +189,7 @@ def relaxed_match(
     used_b: set[int] = set()
     for key_a in unmatched_a:
         text_a = "".join(key_a[1])
+        squash_a = _squash(text_a)
         candidates = []
         for i, key_b in enumerate(unmatched_b):
             if i in used_b or key_b[0] != key_a[0]:
@@ -194,7 +199,17 @@ def relaxed_match(
                 continue
             if _digit_signature(text_a) != _digit_signature(text_b):
                 continue
-            if text_a in text_b or text_b in text_a:
+            # Canonical containment first; then a squashed-form ([a-z0-9]-only)
+            # containment fallback so OCR word-glue survives ('Garden work' vs
+            # 'Gardenwork' -> 'gardenwork' both ways). The digit-signature guard
+            # above and the unique-candidate gate below keep this from
+            # over-merging distinct entities.
+            squash_b = _squash(text_b)
+            if (
+                text_a in text_b
+                or text_b in text_a
+                or (squash_a and squash_b and (squash_a in squash_b or squash_b in squash_a))
+            ):
                 candidates.append(i)
         if len(candidates) == 1:
             used_b.add(candidates[0])
@@ -271,9 +286,12 @@ def detect_synthetic_classes(
 def _pair_similarity(gt_node: dict[str, Any], got_node: dict[str, Any]) -> float:
     """Attribute-overlap score between two same-class nodes (ids excluded implicitly).
 
-    +1 per exact-equal filled scalar field, +0.5 per containment match or
-    overlapping list field. Identity fields participate like any other field:
-    when slugs are invented they simply never match, which is the point.
+    +1 per exact-equal filled scalar field, +1 per LONG shared verbatim span
+    (>= _STRONG_CONTAINMENT_CHARS chars — a near-certain identity signal for
+    text-heavy classes like an exclusion clause whose `texte` is quoted with
+    minor drift), +0.5 per short containment match or overlapping list field.
+    Identity fields participate like any other field: when slugs are invented
+    they simply never match, which is the point.
     """
     score = 0.0
     for field, gt_value in gt_node.items():
@@ -289,7 +307,9 @@ def _pair_similarity(gt_node: dict[str, Any], got_node: dict[str, Any]) -> float
             if a == b:
                 score += 1.0
             elif len(a) >= 4 and len(b) >= 4 and (a in b or b in a):
-                score += 0.5
+                # A long shared span (a quoted clause) is strong identity
+                # evidence on its own; a short one (a category word) is weak.
+                score += 1.0 if min(len(a), len(b)) >= _STRONG_CONTAINMENT_CHARS else 0.5
         elif isinstance(gt_value, list) and isinstance(got_value, list):
             a_set = {_normalize_text(str(x)) for x in gt_value if isinstance(x, str | int | float)}
             b_set = {_normalize_text(str(x)) for x in got_value if isinstance(x, str | int | float)}

@@ -31,7 +31,7 @@ Key relationships:
   --AOPTION--> Option (canonical detail),
   --AEXCLUSIONCOMMUNE--> Exclusion (common exclusions)
 - Garantie --AEXCLUSION--> Exclusion (specific), --COUVREBIEN--> Bien (by reference)
-- Offre --INCLUTGARANTIE--> / --GARANTIEOPTIONNELLE--> Garantie (both by name only),
+- Offre --INCLUTGARANTIE--> Garantie (by name only),
   --PROPOSEOPTION--> Option (by name only)
 - Option --ETENDGARANTIE--> Garantie, --COUVREBIEN--> Bien (both by reference)
 - Exclusion --EXCLUTBIEN--> Bien (by reference)
@@ -68,7 +68,14 @@ logger = logging.getLogger(__name__)
 # ----------------------------
 # Docling Graph helper
 # ----------------------------
-def edge(label: str, default: Any = None, *, reference: bool = False, **kwargs: Any) -> Any:
+def edge(
+    label: str,
+    default: Any = None,
+    *,
+    reference: bool = False,
+    closed_catalog: bool = False,
+    **kwargs: Any,
+) -> Any:
     """
     Déclare un champ comme 'edge' pour Docling-Graph via json_schema_extra.
 
@@ -77,11 +84,20 @@ def edge(label: str, default: Any = None, *, reference: bool = False, **kwargs: 
     ailleurs dans le schéma. En extraction dense, ces références sont remplies
     par l'appel de fill du PARENT (jamais découvertes séparément), ce qui
     préserve les listes d'appartenance par parent et évite les parents fantômes.
+
+    ``closed_catalog=True`` (reference_closed_catalog) déclare que les cibles
+    forment un catalogue FERMÉ défini ailleurs dans le document : une cible qui
+    n'existe QUE via ce champ (jamais instanciée ni référencée autrement) est
+    une hallucination de membre — le convertisseur supprime alors l'arête (et
+    la cible devenue orpheline), sauf si cela toucherait plus de la moitié de
+    la classe cible.
     """
     json_schema_extra = dict(kwargs.pop("json_schema_extra", {}) or {})
     json_schema_extra["edge_label"] = label
     if reference:
         json_schema_extra["graph_reference"] = True
+    if closed_catalog:
+        json_schema_extra["reference_closed_catalog"] = True
 
     if "default_factory" in kwargs:
         default_factory = kwargs.pop("default_factory")
@@ -307,16 +323,14 @@ class Bien(BaseModel):
 
 class Exclusion(BaseModel):
     """
-    Clause d'exclusion : un péril ou bien EXCLU. JAMAIS une mesure de
-    prévention, un niveau de sécurité ou une obligation (serrures, ramonage,
-    inoccupation) — celles-ci vont dans Garantie.conditions, pas ici. UNE
-    clause cohérente par Exclusion, jamais un nœud par mot-clé isolé ('usure',
-    'perte', 'travaux'). Les exclusions valables pour toutes les garanties ou
-    listées sous les catégories de biens (Article 1) vont dans
-    exclusions_communes ; celles propres à une garantie dans son
-    exclusions_specifiques. Identity uses short exclusion_id for stable
-    deduplication: choose a meaningful exclusion_id that names the whole
-    clause, not a lone category word.
+    Clause d'exclusion (un péril/bien EXCLU). Une exclusion commune à TOUTES les
+    garanties ou listée sous les catégories de biens (Article 1) va dans
+    exclusions_communes ; une exclusion propre à une garantie va dans son
+    exclusions_specifiques. JAMAIS une mesure de prévention/sécurité (serrures,
+    ramonage) — celles-ci vont dans Garantie.conditions. UNE clause cohérente
+    par Exclusion, jamais un nœud par mot-clé isolé ('usure', 'perte',
+    'travaux'). Identity uses a short exclusion_id naming the whole clause, not
+    a lone category word, for stable deduplication.
     """
 
     model_config = ConfigDict(
@@ -340,7 +354,13 @@ class Exclusion(BaseModel):
     )
     resume: str | None = Field(
         None,
-        description="Résumé court de la clause (affichage, complément).",
+        description=(
+            "Résumé court de la clause (une phrase). Toujours dérivable de "
+            "'texte' : condenser la première phrase de 'texte' quand aucun résumé "
+            "distinct n'est donné — ne JAMAIS laisser vide si 'texte' est "
+            "renseigné. C'est le SEUL champ qui peut paraphraser ; 'texte' reste "
+            "verbatim."
+        ),
         examples=[
             "Exclusion vol sans effraction",
             "Exclusion défaut d'entretien",
@@ -348,7 +368,10 @@ class Exclusion(BaseModel):
     )
     texte: str | None = Field(
         None,
-        description="Texte de l'exclusion (si possible proche/verbatim).",
+        description=(
+            "Texte de la clause d'exclusion, copié VERBATIM depuis le document "
+            "(ne pas paraphraser, résumer ni raccourcir)."
+        ),
         examples=[
             "Sont exclus les vols commis sans effraction ni violence.",
             "Sont exclus les dommages résultant d'un défaut d'entretien notoire.",
@@ -358,10 +381,12 @@ class Exclusion(BaseModel):
         label="EXCLUTBIEN",
         default_factory=list,
         reference=True,
+        closed_catalog=True,
         validation_alias=AliasChoices("biens_exclus", "biensexclus"),
         description=(
             "Biens explicitement exclus par cette clause (si la clause cite des biens). "
-            "Renseigner au minimum le 'nom' (référence vers les biens définis à l'Article 1)."
+            "Renseigner au minimum le 'nom' (référence vers les biens définis à l'Article 1 "
+            "UNIQUEMENT — ne pas créer de nouveaux biens ici)."
         ),
         examples=[[{"nom": "Piscine"}, {"nom": "Objets de valeur"}], ["Piscine"]],
     )
@@ -480,6 +505,14 @@ class Garantie(BaseModel):
         ],
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def accepter_chaine(cls, v: Any) -> Any:
+        """Une référence nue "Dégâts des eaux" équivaut à {"nom": ...} (listes id-only)."""
+        if isinstance(v, str):
+            return {"nom": v}
+        return v
+
     @field_validator("biens_couverts", mode="before")
     @classmethod
     def filtrer_biens_couverts(cls, v: Any) -> Any:
@@ -569,6 +602,14 @@ class Option(BaseModel):
         examples=[[{"nom": "Incendie et événements assimilés"}]],
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def accepter_chaine(cls, v: Any) -> Any:
+        """Une référence nue "Jardin" équivaut à {"nom": ...} (listes id-only)."""
+        if isinstance(v, str):
+            return {"nom": v}
+        return v
+
     @field_validator("biens_couverts", mode="before")
     @classmethod
     def filtrer_biens_couverts(cls, v: Any) -> Any:
@@ -652,19 +693,6 @@ class Offre(BaseModel):
         examples=[[{"nom": "Dégâts des eaux"}, {"nom": "Incendie et événements assimilés"}]],
     )
 
-    garanties_optionnelles: list[Garantie] = edge(
-        label="GARANTIEOPTIONNELLE",
-        default_factory=list,
-        reference=True,
-        validation_alias=AliasChoices("garanties_optionnelles", "garantiesoptionnelles"),
-        description=(
-            "Garanties marquées 'En option' dans le tableau. "
-            "Référence par nom UNIQUEMENT (renseigner seulement 'nom') ; "
-            "le détail complet vit dans AssuranceMRH.garanties."
-        ),
-        examples=[[{"nom": "Dommages électriques"}, {"nom": "Piscine"}]],
-    )
-
     options_disponibles: list[Option] = edge(
         label="PROPOSEOPTION",
         default_factory=list,
@@ -693,11 +721,6 @@ class Offre(BaseModel):
     @classmethod
     def filtrer_garanties_incluses(cls, v: Any) -> Any:
         return _filtrer_liste(v, "garanties_incluses", champs_requis=["nom"])
-
-    @field_validator("garanties_optionnelles", mode="before")
-    @classmethod
-    def filtrer_garanties_optionnelles(cls, v: Any) -> Any:
-        return _filtrer_liste(v, "garanties_optionnelles", champs_requis=["nom"])
 
     @field_validator("options_disponibles", mode="before")
     @classmethod

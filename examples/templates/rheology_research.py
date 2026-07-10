@@ -25,8 +25,11 @@ Key entities:
 - SlurryFormulation / SlurryComponent: the recipe and its constituent materials.
 - PreparationStep: a step in preparing a batch.
 - RheometerSetup / TestProtocol: the instrument configuration and measurement protocol.
-- RheologyTestRun / RheologyDataset / RheologyCurve: a measurement run and the
-  data it produces.
+- RheologyTestRun / RheologyDataset: a measurement run and the results it produces
+  (derived scalar quantities and model fits — the raw X-Y curve traces are not
+  modeled as entities: a paper reports figures, not digitized curve arrays, so a
+  per-curve entity carried a free-text id the model had to invent and never
+  matched; curve-level facts live in the dataset's derived quantities and notes).
 
 Key relationships:
 - ScholarlyRheologyPaper --HAS_STUDY--> SlurryRheologyStudy --HAS_EXPERIMENT--> SlurryRheologyExperiment
@@ -35,7 +38,7 @@ Key relationships:
 - BatterySlurryBatch --HAS_PREPARATION_STEP--> PreparationStep
 - SlurryRheologyExperiment --HAS_TEST_RUN--> RheologyTestRun
 - RheologyTestRun --USES_RHEOMETER--> RheometerSetup, --FOLLOWS_PROTOCOL-->
-  TestProtocol, --PRODUCES_DATASET--> RheologyDataset --HAS_CURVE--> RheologyCurve
+  TestProtocol, --PRODUCES_DATASET--> RheologyDataset
 """
 
 import re
@@ -1116,74 +1119,6 @@ class TestProtocol(BaseModel):
 # ============================================================================
 
 
-class RheologyCurve(BaseModel):
-    """
-    X-Y Data series.
-    Uniquely identified by curve_id.
-    """
-
-    model_config = ConfigDict(graph_id_fields=["curve_id"])
-
-    curve_id: str = Field(
-        description=(
-            "Unique ID for the curve. "
-            "EXTRACT: Prefer figure/legend label (e.g. 'Fig-2a', 'Sample A'). "
-            "Else 'CURVE-[type]-[sample]'. "
-            "Look in figure captions and data tables for curve identifiers. "
-            "EXAMPLES: 'Fig-2a', 'CURVE-VISCOSITY-SAMPLE-A'"
-        ),
-        examples=["Fig-2a", "CURVE-VISCOSITY-SAMPLE-A"],
-    )
-
-    x_quantity: str | None = Field(
-        None,
-        description=(
-            "X-axis label (e.g., Shear rate). "
-            "Look in figure captions and axis labels for the quantity name."
-        ),
-        examples=["Shear rate", "Frequency"],
-    )
-
-    y_quantity: str | None = Field(
-        None,
-        description=(
-            "Y-axis label (e.g., Viscosity). "
-            "Look in figure captions and axis labels for the quantity name."
-        ),
-        examples=["Viscosity", "Storage modulus"],
-    )
-
-    x_unit: str | None = Field(
-        None,
-        description="Unit for X-axis.",
-        examples=["1/s", "Hz"],
-    )
-
-    y_unit: str | None = Field(
-        None,
-        description="Unit for Y-axis.",
-        examples=["Pa.s", "Pa"],
-    )
-
-    x_values: List[float] | None = Field(
-        None,
-        description="List of X numerical values.",
-        examples=[[0.1, 1.0, 10.0]],
-    )
-
-    y_values: List[float] | None = Field(
-        None,
-        description="List of Y numerical values (must match X length).",
-        examples=[[10.0, 5.0, 2.0]],
-    )
-
-    description: str | None = Field(
-        None,
-        description="Brief description of the curve.",
-        examples=["Viscosity flow curve at 25C"],
-    )
-
-
 class DerivedQuantity(BaseModel):
     """
     Computed scalar (e.g., Yield Stress).
@@ -1247,8 +1182,10 @@ class ModelFit(BaseModel):
 
 class RheologyDataset(BaseModel):
     """
-    Container for results.
-    Uniquely identified by dataset_id.
+    ONE results container per rheometry run — its derived quantities and model
+    fits. Individual figures, tables, and measured curves are NOT separate
+    datasets; they are data reported WITHIN one dataset. Expect roughly one
+    dataset per test run, not one per figure. Uniquely identified by dataset_id.
     """
 
     model_config = ConfigDict(graph_id_fields=["dataset_id"])
@@ -1256,7 +1193,8 @@ class RheologyDataset(BaseModel):
     dataset_id: str = Field(
         description=(
             "Unique ID for the dataset. "
-            "EXTRACT: Prefer sample/figure reference from document; else 'DATASET-[sample]'. "
+            "EXTRACT: Prefer the sample or test-run label this dataset belongs to; "
+            "do NOT mint a separate dataset per figure. Else 'DATASET-[sample]'. "
             "EXAMPLES: 'Sample-A', 'DATASET-SAMPLE-A'"
         ),
         examples=["Sample-A", "DATASET-SAMPLE-A"],
@@ -1267,15 +1205,14 @@ class RheologyDataset(BaseModel):
         description="Description of dataset contents.",
     )
 
-    curves: List[RheologyCurve] = edge(
-        label="HAS_CURVE",
-        default_factory=list,
-        description="Measured curves.",
-    )
-
     derived_quantities: List[DerivedQuantity] = Field(
         default_factory=list,
-        description="Scalar results derived from data.",
+        description=(
+            "Scalar results derived from the data (yield stress, zero-shear "
+            "viscosity, crossover point, etc.). This is where per-curve findings "
+            "belong — one entry per reported quantity, with the figure/curve it "
+            "came from noted in its method field when relevant."
+        ),
     )
 
     model_fits: List[ModelFit] = Field(
