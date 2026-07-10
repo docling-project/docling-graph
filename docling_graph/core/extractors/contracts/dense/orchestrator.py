@@ -52,6 +52,7 @@ from .prompts import (
     build_skeleton_catalog_block,
     format_batch_markdown,
     get_fill_batch_prompt,
+    get_root_identity_prompt,
     get_skeleton_batch_prompt,
     get_skeleton_reconciliation_prompt,
     reconciliation_output_schema,
@@ -103,6 +104,44 @@ _RECONCILE_MAX_INSTANCES_PER_CALL = 100
 # phase then locks in via id restoration. Cleared as an invariant so fill can
 # leave the field empty instead.
 _NUMERIC_ID_FIELD = re.compile(r"(^|_)(number|no|num|ref|reference)(_|$)", re.IGNORECASE)
+
+# Root-identity resolution micro-pass: excerpt budget per end (document head +
+# tail, where cover-page titles and footer reference codes live) and the longest
+# value accepted as a plausible identity code. A root fill against the FULL
+# document routinely returns prominent brand strings instead of the one-occurrence
+# footer code; the micro-pass narrows the context to where such codes actually are.
+_ROOT_ID_EXCERPT_CHARS = 2500
+_ROOT_ID_MAX_VALUE_CHARS = 80
+_ROOT_ID_FURNITURE_CHARS = 1500
+_NON_ALNUM = re.compile(r"[^a-z0-9]+")
+_PAGE_FURNITURE = re.compile(r"<page_(?:header|footer)>(.*?)</page_(?:header|footer)>", re.DOTALL)
+_MARKUP_TAG = re.compile(r"<[^>]+>")
+
+
+def _squash_anchor(text: str) -> str:
+    """Lowercased [a-z0-9]-only projection for verbatim-anchoring checks
+    (tolerates OCR spacing, ligatures, and PUA punctuation glyphs)."""
+    return _NON_ALNUM.sub("", unicodedata.normalize("NFKD", text).casefold())
+
+
+def _page_furniture_lines(full_text: str) -> str:
+    """Unique page header/footer texts from a doclang serialization.
+
+    Page furniture is where a document's own reference codes live, and the
+    chunker never feeds it to skeleton/fill batches (docling marks it as
+    furniture content) — the full serialization is its only carrier. Markdown
+    exports carry no furniture, so this returns "" there and the caller falls
+    back to head/tail only.
+    """
+    seen: list[str] = []
+    for match in _PAGE_FURNITURE.finditer(full_text):
+        inner = _MARKUP_TAG.sub(" ", match.group(1))
+        inner = re.sub(r"\s+", " ", inner).strip()
+        if inner and inner not in seen:
+            seen.append(inner)
+        if sum(len(s) for s in seen) > _ROOT_ID_FURNITURE_CHARS:
+            break
+    return "\n".join(seen)
 
 
 def strip_mislabeled_root_ids(
@@ -361,6 +400,16 @@ def merge_skeleton_batches(
                 by_key[key] = merged
             if isinstance(source_idx, int) and source_idx not in merged["_source_batch_indexes"]:
                 merged["_source_batch_indexes"].append(source_idx)
+            # Per-batch emission positions, for the adjacency rescue: a parent
+            # re-emitted in a LATER batch still precedes its children within
+            # that batch's response, and that ordering is lost if only the
+            # first emission's index survives the merge. First sighting within
+            # a batch wins (a response may re-list a node further down).
+            emission = node.get("_emission_index")
+            if isinstance(source_idx, int) and isinstance(emission, int):
+                by_batch = merged.setdefault("_emission_by_batch", {})
+                if source_idx not in by_batch:
+                    by_batch[source_idx] = emission
     merged_nodes = list(by_key.values())
 
     roots = [n for n in merged_nodes if (n.get("path") or "") == ""]
@@ -400,8 +449,13 @@ def skeleton_to_descriptors(
         emission_index = node.get("_emission_index")
         if isinstance(emission_index, int):
             # Kept for the emission-order adjacency rescue (first emission's
-            # position; compared only within the same first-emission batch).
+            # position within the node's first-emission batch).
             desc["_emission_index"] = emission_index
+        emission_by_batch = node.get("_emission_by_batch")
+        if isinstance(emission_by_batch, dict) and emission_by_batch:
+            # Per-batch positions so the adjacency rescue can order a parent
+            # re-emitted in the child's batch against the child.
+            desc["_emission_by_batch"] = dict(emission_by_batch)
         path_descriptors.setdefault(path, []).append(desc)
     return path_descriptors
 
@@ -849,7 +903,12 @@ class _ParentResolver:
         item), so for a fully dangling handle on a SINGULAR child path the
         nearest preceding same-batch parent is the emitter's intent. List
         children stay out: order is no evidence when several siblings follow
-        one parent."""
+        one parent. A parent qualifies when the child's first-emission batch is
+        among the parent's source batches — including re-emissions in later
+        batches, whose in-response position ``_emission_by_batch`` retains
+        (gating on the parent's FIRST batch alone made the rung dead for every
+        child discovered after its parent's debut batch, the normal case for
+        section-spanning parents)."""
         if any(v not in (None, "") for v in parent_ids.values()):
             return None
         child_spec = self._spec_by_path.get(str(child_desc.get("path") or ""))
@@ -868,8 +927,15 @@ class _ParentResolver:
             if i >= len(filled) or not isinstance(filled[i], dict):
                 continue
             batches = desc.get("_source_batch_indexes") or []
-            emission = desc.get("_emission_index")
-            if not batches or batches[0] != first_batch or not isinstance(emission, int):
+            if not batches or first_batch not in batches:
+                continue
+            by_batch = desc.get("_emission_by_batch") or {}
+            emission = by_batch.get(first_batch)
+            if not isinstance(emission, int) and batches[0] == first_batch:
+                # Legacy descriptors (older saved artifacts) only carry the
+                # first emission's index.
+                emission = desc.get("_emission_index")
+            if not isinstance(emission, int):
                 continue
             if best_emission < emission < child_emission:
                 best_emission = emission
@@ -1778,6 +1844,92 @@ class DenseOrchestrator:
                 len(call_specs),
             )
         return reconciled, merged_count
+
+    def _resolve_root_identity(
+        self,
+        root: Any,
+        spec_by_path: dict[str, NodeSpec],
+        full_markdown: str,
+        context: str,
+    ) -> dict[str, str]:
+        """Fill the assembled root's identity fields from head/tail/furniture excerpts.
+
+        Runs only when EVERY declared root id field is still empty after fill
+        and merge (the skeleton root arrived with no ids and the full-document
+        root fill found none — or found only values other passes stripped). One
+        cheap call scoped to the serialized document's head, tail, and page
+        header/footer furniture asks for the document's own identity codes —
+        furniture is the natural home of reference codes and the chunker never
+        feeds it to batches, so the full serialization is the only carrier.
+        Accepted values must be non-empty, short, and verbatim-anchored in the
+        excerpt (squash containment) — anything else keeps the field empty so
+        the strategy's source-stem fallback stays the last resort. Fail-empty,
+        never fail-wrong; failures never break the run.
+        """
+        spec = spec_by_path.get("")
+        if spec is None or not spec.id_fields or not full_markdown or not isinstance(root, dict):
+            return {}
+
+        def _empty(value: Any) -> bool:
+            return value is None or (isinstance(value, str) and not value.strip())
+
+        if not all(_empty(root.get(f)) for f in spec.id_fields):
+            return {}
+        head = full_markdown[:_ROOT_ID_EXCERPT_CHARS]
+        tail = (
+            full_markdown[-_ROOT_ID_EXCERPT_CHARS:]
+            if len(full_markdown) > _ROOT_ID_EXCERPT_CHARS
+            else ""
+        )
+        furniture = _page_furniture_lines(full_markdown)
+        parts = [head]
+        if furniture:
+            parts.append("=== PAGE HEADERS/FOOTERS ===\n" + furniture)
+        if tail:
+            parts.append(tail)
+        excerpt = "\n[...]\n".join(parts)
+        schema = {
+            "type": "object",
+            "properties": {f: {"type": "string"} for f in spec.id_fields},
+            "required": list(spec.id_fields),
+        }
+        prompt = get_root_identity_prompt(self._template.__name__, list(spec.id_fields), excerpt)
+        try:
+            out = self._llm(
+                prompt=prompt,
+                schema_json=json.dumps(schema),
+                context=f"{context}_dense_root_identity",
+                response_top_level="object",
+                response_schema_name="dense_root_identity",
+            )
+        except Exception as e:  # the micro-pass must never break the run
+            logger.warning("Root-identity resolution call failed: %s", e)
+            return {}
+        if not isinstance(out, dict):
+            return {}
+        excerpt_squashed = _squash_anchor(excerpt)
+        resolved: dict[str, str] = {}
+        for field_name in spec.id_fields:
+            value = out.get(field_name)
+            if not isinstance(value, str):
+                continue
+            value = value.strip()
+            if not value or len(value) > _ROOT_ID_MAX_VALUE_CHARS:
+                continue
+            squashed = _squash_anchor(value)
+            if not squashed or squashed not in excerpt_squashed:
+                # Not verbatim-anchored in the excerpt: refuse it.
+                continue
+            root[field_name] = value
+            resolved[field_name] = value
+        if resolved:
+            logger.info("Root identity resolved from head/tail excerpts: %s", resolved)
+        else:
+            logger.info(
+                "Root identity unresolved (no verbatim-anchored value in head/tail "
+                "excerpts); fields stay empty for the stem fallback"
+            )
+        return resolved
 
     def _dedupe_skeleton(
         self,
@@ -2725,6 +2877,13 @@ class DenseOrchestrator:
         # fill could not substantiate; they are always pruned. Rescue buckets
         # and placeholders keep their children and therefore always survive.
         root = prune_barren_branches(root, self._catalog, events_out=merge_events)
+        # Invariant: a root that reaches this point with every identity field
+        # empty gets one dedicated resolution call over the document's head,
+        # tail, and page furniture — a full-document root fill misses
+        # one-occurrence footer codes, and chunk batches never carry furniture.
+        root_identity_resolved = self._resolve_root_identity(
+            root, spec_by_path, full_markdown, context
+        )
         if ledger is not None and merge_events is not None:
             self._finalize_provenance(
                 ledger, merge_events, spec_by_path, path_descriptors, path_filled
@@ -2737,6 +2896,8 @@ class DenseOrchestrator:
             covered_chunks=self._covered_chunk_count(merged_skeleton),
             path_counts=path_counts,
         )
+        if root_identity_resolved:
+            self.last_run_stats["root_identity_resolved"] = root_identity_resolved
         if self._debug_dir:
             self._write_debug("dense_merge_stats.json", merge_stats)
             self._write_debug("dense_run_stats.json", self.last_run_stats)
