@@ -276,3 +276,40 @@ def get_fill_batch_prompt(
         'Return JSON: {"items": [<filled object 1>, <filled object 2>, ...]} with one object per instance in the exact order listed above.'
     )
     return {"system": system_prompt, "user": user_prompt}
+
+
+def get_root_identity_prompt(
+    class_name: str,
+    id_fields: list[str],
+    excerpt: str,
+) -> dict[str, str]:
+    """Root-identity resolution micro-pass prompt (Phase 2 follow-up).
+
+    Used when the assembled root reaches the end of the run with EVERY declared
+    identity field empty: a full-document root fill routinely grabs prominent
+    brand strings instead of the document's own reference code, so this
+    dedicated call sees ONLY the document's head and tail (cover page + footer,
+    where such codes live) and is instructed to copy verbatim or return empty.
+    """
+    fields_list = ", ".join(f'"{f}"' for f in id_fields)
+    system_prompt = (
+        "You identify a document's own identity codes from excerpts of its first page, last "
+        f"page, and repeated page headers/footers. The document is a {class_name}. For each "
+        "requested field, return the value EXACTLY as printed in the excerpt — copied "
+        "verbatim, character for character. "
+        "The document's own reference/identity code is typically short and printed on the "
+        "cover page or repeated in the page header/footer. Do NOT return the name of a "
+        "company, brand, or product merely mentioned in the text unless the field asks for "
+        "it and the excerpt states it as this document's own identity. "
+        'Return an empty string "" for any field whose value is not printed in the excerpt — '
+        "never guess, never summarize, never compose a value from fragments. "
+        f"Return a single JSON object with exactly these keys: {fields_list}."
+    )
+    user_prompt = (
+        "=== DOCUMENT HEAD / PAGE FURNITURE / TAIL EXCERPTS ===\n"
+        f"{excerpt}\n"
+        "=== END ===\n\n"
+        f"Return JSON with keys {fields_list} — each value copied verbatim from the excerpt, "
+        'or "" if absent.'
+    )
+    return {"system": system_prompt, "user": user_prompt}
