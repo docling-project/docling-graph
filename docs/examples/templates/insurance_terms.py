@@ -68,7 +68,14 @@ logger = logging.getLogger(__name__)
 # ----------------------------
 # Docling Graph helper
 # ----------------------------
-def edge(label: str, default: Any = None, *, reference: bool = False, **kwargs: Any) -> Any:
+def edge(
+    label: str,
+    default: Any = None,
+    *,
+    reference: bool = False,
+    closed_catalog: bool = False,
+    **kwargs: Any,
+) -> Any:
     """
     Déclare un champ comme 'edge' pour Docling-Graph via json_schema_extra.
 
@@ -77,11 +84,20 @@ def edge(label: str, default: Any = None, *, reference: bool = False, **kwargs: 
     ailleurs dans le schéma. En extraction dense, ces références sont remplies
     par l'appel de fill du PARENT (jamais découvertes séparément), ce qui
     préserve les listes d'appartenance par parent et évite les parents fantômes.
+
+    ``closed_catalog=True`` (reference_closed_catalog) déclare que les cibles
+    forment un catalogue FERMÉ défini ailleurs dans le document : une cible qui
+    n'existe QUE via ce champ (jamais instanciée ni référencée autrement) est
+    une hallucination de membre — le convertisseur supprime alors l'arête (et
+    la cible devenue orpheline), sauf si cela toucherait plus de la moitié de
+    la classe cible.
     """
     json_schema_extra = dict(kwargs.pop("json_schema_extra", {}) or {})
     json_schema_extra["edge_label"] = label
     if reference:
         json_schema_extra["graph_reference"] = True
+    if closed_catalog:
+        json_schema_extra["reference_closed_catalog"] = True
 
     if "default_factory" in kwargs:
         default_factory = kwargs.pop("default_factory")
@@ -365,10 +381,12 @@ class Exclusion(BaseModel):
         label="EXCLUTBIEN",
         default_factory=list,
         reference=True,
+        closed_catalog=True,
         validation_alias=AliasChoices("biens_exclus", "biensexclus"),
         description=(
             "Biens explicitement exclus par cette clause (si la clause cite des biens). "
-            "Renseigner au minimum le 'nom' (référence vers les biens définis à l'Article 1)."
+            "Renseigner au minimum le 'nom' (référence vers les biens définis à l'Article 1 "
+            "UNIQUEMENT — ne pas créer de nouveaux biens ici)."
         ),
         examples=[[{"nom": "Piscine"}, {"nom": "Objets de valeur"}], ["Piscine"]],
     )
