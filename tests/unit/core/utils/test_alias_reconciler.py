@@ -178,3 +178,73 @@ def test_converter_runs_alias_pass_with_llm_fn() -> None:
     assert survivor["nom"] == "Attentat et actes de terrorisme"
     offre = next(n for n, d in graph.nodes(data=True) if d.get("__class__") == "Offre")
     assert graph.has_edge(offre, garanties[0])
+
+
+def test_reconcile_vetoes_sibling_co_occurrence_shared_parent() -> None:
+    """Two same-class nodes hanging off one neighbor under one label are
+    enumerated siblings (root -AOFFRE-> CONFORT and CONFORT PLUS) — the merge
+    is vetoed even when the confirm LLM approves it."""
+    graph = nx.DiGraph()
+    graph.add_node("r", __class__="Root", id="r", label="Root", rid="R")
+    graph.add_node("a", __class__="Offre", id="a", label="Offre", nom="CONFORT")
+    graph.add_node("b", __class__="Offre", id="b", label="Offre", nom="CONFORT PLUS")
+    graph.add_edge("r", "a", label="AOFFRE")
+    graph.add_edge("r", "b", label="AOFFRE")
+    stats = reconcile_graph_aliases(
+        graph,
+        {"Offre": ["nom"]},
+        llm_call_fn=lambda **kw: {"merges": [{"class": "Offre", "keep": 0, "merge": [1]}]},
+    )
+    assert stats["vetoed_sibling"] == 1
+    assert stats["merged"] == 0
+    assert graph.number_of_nodes() == 3
+
+
+def test_reconcile_vetoes_sibling_co_occurrence_shared_child() -> None:
+    """The veto also fires on a shared same-label CHILD (both nodes -INCLUT->
+    the same target)."""
+    graph = nx.DiGraph()
+    graph.add_node("a", __class__="Offre", id="a", label="Offre", nom="CONFORT")
+    graph.add_node("b", __class__="Offre", id="b", label="Offre", nom="CONFORT PLUS")
+    graph.add_node("g", __class__="Garantie", id="g", label="Garantie", nom="Incendie")
+    graph.add_edge("a", "g", label="INCLUT")
+    graph.add_edge("b", "g", label="INCLUT")
+    stats = reconcile_graph_aliases(
+        graph,
+        {"Offre": ["nom"]},
+        llm_call_fn=lambda **kw: {"merges": [{"class": "Offre", "keep": 0, "merge": [1]}]},
+    )
+    assert stats["vetoed_sibling"] == 1
+    assert stats["merged"] == 0
+
+
+def test_reconcile_merges_non_sibling_alias_and_repoints_all_edges() -> None:
+    """A true alias pair with disjoint neighbors still merges, and the absorbed
+    node's in AND out edges land on the survivor with labels preserved (the
+    edge-union invariant)."""
+    graph = nx.DiGraph()
+    graph.add_node("short", __class__="Garantie", id="short", label="Garantie", nom="Attentat")
+    graph.add_node(
+        "long",
+        __class__="Garantie",
+        id="long",
+        label="Garantie",
+        nom="Attentat et actes de terrorisme",
+        texte="detail",
+    )
+    graph.add_node("o", __class__="Offre", id="o", label="Offre", nom="ESSENTIELLE")
+    graph.add_node("e", __class__="Exclusion", id="e", label="Exclusion", cid="E1")
+    graph.add_edge("o", "short", label="INCLUT")
+    graph.add_edge("long", "e", label="AEXCLUSION")
+    stats = reconcile_graph_aliases(
+        graph,
+        {"Garantie": ["nom"]},
+        llm_call_fn=lambda **kw: {"merges": [{"class": "Garantie", "keep": 0, "merge": [1]}]},
+    )
+    assert stats["merged"] == 1
+    assert stats["vetoed_sibling"] == 0
+    survivor = "long" if "long" in graph else "short"
+    assert graph.has_edge("o", survivor)
+    assert graph["o"][survivor]["label"] == "INCLUT"
+    assert graph.has_edge(survivor, "e")
+    assert graph[survivor]["e"]["label"] == "AEXCLUSION"
