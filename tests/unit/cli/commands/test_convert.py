@@ -421,3 +421,92 @@ def test_generic_exception_handler_exit_one(mock_load_config, mock_run_pipeline)
                 output_dir=Path("out"),
             )
         assert exc_info.value.exit_code == 1
+
+
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_invalid_enum_values_fall_back_to_defaults(mock_load_config, mock_run_pipeline):
+    """Unrecognized enum-like flags fall back to their safe defaults instead of
+    propagating (covers the four validation fallbacks in _resolve_cli_settings,
+    incl. llm_input_format -> 'auto', the flipped default this branch introduced)."""
+    mock_load_config.return_value = _base_config()
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        mock_detector.detect.return_value = MagicMock(value="file")
+        try:
+            convert_command(
+                source="doc.pdf",
+                template="templates.Foo",
+                output_dir=Path("out"),
+                llm_input_format="nonsense",
+                dense_dedupe="nonsense",
+                dense_fill_context="nonsense",
+                provenance="nonsense",
+            )
+        except typer.Exit:
+            pass
+    cfg = mock_run_pipeline.call_args[0][0]
+    assert cfg.llm_input_format == "auto"
+    assert cfg.dense_dedupe == "standard"
+    assert cfg.dense_fill_context == "scoped"
+    assert cfg.provenance == "standard"
+
+
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_dense_contract_logs_dense_tuning(mock_load_config, mock_run_pipeline, caplog):
+    """A dense/auto contract emits the DenseTuning summary line (dense-only block)."""
+    import logging
+
+    mock_load_config.return_value = _base_config()
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        mock_detector.detect.return_value = MagicMock(value="file")
+        with caplog.at_level(logging.INFO, logger="docling_graph"):
+            try:
+                convert_command(
+                    source="doc.pdf",
+                    template="templates.Foo",
+                    output_dir=Path("out"),
+                    extraction_contract="dense",
+                )
+            except typer.Exit:
+                pass
+    cfg = mock_run_pipeline.call_args[0][0]
+    assert cfg.extraction_contract == "dense"
+    assert any("skeleton_batch_tokens=" in r.getMessage() for r in caplog.records)
+
+
+@patch("docling_graph.cli.commands.convert.run_pipeline")
+@patch("docling_graph.cli.commands.convert.load_config")
+def test_llm_generation_reliability_and_toplevel_overrides_merged(
+    mock_load_config, mock_run_pipeline
+):
+    """Every --llm-* generation/reliability/top-level override lands on the
+    resolved config (covers the per-flag merge block in convert_command)."""
+    mock_load_config.return_value = _base_config()
+    with patch("docling_graph.core.input.types.InputTypeDetector") as mock_detector:
+        mock_detector.detect.return_value = MagicMock(value="file")
+        try:
+            convert_command(
+                source="doc.pdf",
+                template="templates.Foo",
+                output_dir=Path("out"),
+                llm_temperature=0.3,
+                llm_max_tokens=1024,
+                llm_top_p=0.9,
+                llm_timeout=42,
+                llm_retries=7,
+                llm_context_limit=16000,
+                llm_max_output_tokens=2048,
+                llm_streaming=True,
+            )
+        except typer.Exit:
+            pass
+    overrides = mock_run_pipeline.call_args[0][0].llm_overrides
+    assert overrides.generation.temperature == 0.3
+    assert overrides.generation.max_tokens == 1024
+    assert overrides.generation.top_p == 0.9
+    assert overrides.reliability.timeout_s == 42
+    assert overrides.reliability.max_retries == 7
+    assert overrides.context_limit == 16000
+    assert overrides.max_output_tokens == 2048
+    assert overrides.streaming is True
