@@ -776,7 +776,11 @@ class BusinessSegment(BaseModel):
     node.
     """
 
-    model_config = ConfigDict(graph_id_fields=["name"], extra="ignore")
+    # graph_max_instances: structural safety rail — the graph keeps at most the
+    # 10 best-supported segments (docstring documents 3-6 real ones; bound ~2x
+    # the documented max). Discovery-time steering alone leaves hundreds of
+    # financial-table rows in this class on small models.
+    model_config = ConfigDict(graph_id_fields=["name"], extra="ignore", graph_max_instances=10)
 
     name: str = Field(
         ...,
