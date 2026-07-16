@@ -26,15 +26,16 @@ Uses the same injected ``llm_call_fn`` contract as ``documents.py``.
 from __future__ import annotations
 
 import json
-import logging
 from typing import Any
+
+from docling_graph.logging_utils import get_component_logger
 
 from ..spec import MAX_FIELD_EXAMPLES, FieldSpec, ModelSpec, SpecGap, TemplateSpec
 from .documents import LlmCallFn
 from .prompts import get_gapfill_prompt
 from .schemas import gapfill_schema
 
-logger = logging.getLogger(__name__)
+logger = get_component_logger("GapFill", __name__)
 
 __all__ = ["fill_gaps"]
 

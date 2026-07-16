@@ -24,6 +24,7 @@ from docling_graph.cli.commands.template import _rename_root_model
 from docling_graph.cli.main import app
 from docling_graph.core.converters.graph_converter import GraphConverter
 from docling_graph.core.extractors.contracts.dense.catalog import build_node_catalog
+from docling_graph.exceptions import ClientError
 from docling_graph.pipeline.stages import TemplateLoadingStage
 from docling_graph.templategen import SpecGap, TemplateSpec, synthesize_sample
 from tests.unit.templategen.test_induce import ScriptedLLM, invoice_script
@@ -87,7 +88,9 @@ class ScriptedClient:
 
 
 def _stub_effective_config(*_args: Any, **_kwargs: Any) -> SimpleNamespace:
-    return SimpleNamespace(context_limit=32_000, max_output_tokens=4_096, model_id="stub")
+    # max_output_tokens keeps the adaptive pass-2 batch at the full 6 classes
+    # (9000 // 1500); the context window keeps the input budget at the cap.
+    return SimpleNamespace(context_limit=131_072, max_output_tokens=9_000, model_id="stub")
 
 
 def _stub_pipeline_context() -> SimpleNamespace:
@@ -376,6 +379,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--workers",
+                "1",
                 "-o",
                 "gen_docs/invoice.py",
             ],
@@ -403,9 +408,10 @@ class TestFromDocs:
         node_classes = {data.get("__class__") for _, data in graph.nodes(data=True)}
         assert {"Invoice", "Party", "LineItem"} <= node_classes
 
-    def test_trial_run_is_advisory(self, cli_runner, tmp_path, monkeypatch):
+    def test_trial_run_is_advisory(self, cli_runner, tmp_path, monkeypatch, caplog):
         """--trial-run drives evaluate_template through a patched run_pipeline."""
         monkeypatch.chdir(tmp_path)
+        caplog.set_level("INFO", logger="docling_graph")
         client = ScriptedClient(invoice_script())
         monkeypatch.setattr(
             "docling_graph.llm_clients.get_client", lambda provider: lambda effective: client
@@ -428,13 +434,15 @@ class TestFromDocs:
                     "mistral",
                     "--model",
                     "mistral-small-latest",
+                    "--workers",
+                    "1",
                     "-o",
                     "gen_trial/invoice.py",
                     "--trial-run",
                 ],
             )
         assert result.exit_code == 0, result.output
-        assert "Trial run (advisory)" in result.output
+        assert "Trial run (advisory)" in caplog.text  # logged, not printed
         assert "# Template evaluation" in result.output
         mock_run.assert_called_once()
         config = mock_run.call_args[0][0]
@@ -448,6 +456,66 @@ class TestFromDocs:
         assert result.exit_code == 1
         assert "docling-graph init" in result.output
         assert "--provider/--model" in result.output
+
+    def test_missing_file_source_fails_before_any_spend(self, cli_runner, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        result = cli_runner.invoke(app, ["template", "from-docs", "no_such_doc.pdf"])
+        assert result.exit_code == 1
+        assert "Source not found" in result.output
+        assert "http(s) URL" in result.output
+
+    def test_url_source_converts_through_processor(self, cli_runner, tmp_path, monkeypatch):
+        """An http(s) source is accepted and reaches the DocumentProcessor verbatim."""
+        monkeypatch.chdir(tmp_path)
+        markdown = (DOCS / "invoice_1.md").read_text(encoding="utf-8")
+        url = "https://example.com/docs/invoice_1.pdf"
+        converted: list[str] = []
+
+        class StubDoclingDocument:
+            def export_to_dict(self) -> dict:
+                return {"schema_name": "DoclingDocument"}
+
+        class StubProcessor:
+            def __init__(self, **_kwargs: Any) -> None:
+                pass
+
+            def convert_to_docling_doc(self, src: str) -> "StubDoclingDocument":
+                converted.append(src)
+                return StubDoclingDocument()
+
+            def extract_full_markdown(self, _document: Any) -> str:
+                return markdown
+
+        monkeypatch.setattr(
+            "docling_graph.core.extractors.document_processor.DocumentProcessor",
+            StubProcessor,
+        )
+        client = ScriptedClient(invoice_script())
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.get_client", lambda provider: lambda effective: client
+        )
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.config.resolve_effective_model_config",
+            _stub_effective_config,
+        )
+
+        result = cli_runner.invoke(
+            app,
+            [
+                "template",
+                "from-docs",
+                url,
+                "--provider",
+                "mistral",
+                "--model",
+                "mistral-small-latest",
+                "-o",
+                "gen_url/invoice.py",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert converted == [url]  # never mangled through Path
+        assert (tmp_path / "gen_url" / "invoice.py").is_file()
 
     def test_trial_run_consumes_cached_document_json(self, cli_runner, tmp_path, monkeypatch):
         """A converted (non-text) source re-enters --trial-run through the
@@ -540,6 +608,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--workers",
+                "1",
             ],
             input="n\n",
         )
@@ -583,6 +653,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--workers",
+                "1",
             ],
             input="n\n",
         )
@@ -623,6 +695,55 @@ class TestFromDocs:
         assert result.exit_code == 1
         assert "context window too small" in result.output
         assert script.calls == []  # exits before a single token is spent
+
+
+@pytest.mark.integration
+class TestTruncationEscalation:
+    """_build_llm_call: the max_tokens escalation retry (small-model rescue)."""
+
+    class TruncatingClient:
+        """First call truncates unrecoverably (raises); the retry succeeds."""
+
+        def __init__(self) -> None:
+            self._generation = SimpleNamespace(max_tokens=1_000)
+            self.context_limit = 32_000
+            self.last_call_diagnostics: dict[str, Any] = {}
+            self.max_tokens_seen: list[int] = []
+
+        @property
+        def max_tokens(self) -> int:
+            return self._generation.max_tokens
+
+        def get_json_response(self, prompt: Any, schema_json: str, **_kwargs: Any) -> Any:
+            self.max_tokens_seen.append(self._generation.max_tokens)
+            if len(self.max_tokens_seen) == 1:
+                self.last_call_diagnostics = {"truncated": True}
+                raise ClientError("Invalid JSON response", details={"truncated": True})
+            self.last_call_diagnostics = {"truncated": False}
+            return {"classes": []}
+
+    def test_escalation_fires_when_truncated_call_raises(self, monkeypatch):
+        """Unrecoverable truncation surfaces as ClientError but must still get
+        the doubled-max_tokens retry — that case needs it the most."""
+        client = self.TruncatingClient()
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.get_client", lambda provider: lambda effective: client
+        )
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.config.resolve_effective_model_config",
+            _stub_effective_config,
+        )
+        from docling_graph.cli.commands.template import _build_llm_call
+
+        llm_call_fn, _effective = _build_llm_call("mistral", "stub-model", None)
+        out = llm_call_fn(
+            prompt={"system": "s", "user": "u"},
+            schema_json="{}",
+            context="templategen_pass1_classes:doc.md",
+        )
+        assert out == {"classes": []}
+        assert client.max_tokens_seen == [1_000, 2_000]  # doubled on the retry
+        assert client._generation.max_tokens == 1_000  # restored afterwards
 
 
 @pytest.mark.integration

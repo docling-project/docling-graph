@@ -37,7 +37,7 @@ Merge rules (design §4.4):
 from __future__ import annotations
 
 from collections import Counter
-from typing import Any, Literal, Sequence
+from typing import Any, Literal, Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -489,7 +489,8 @@ def _merge_field(
     display: dict[str, str],
     enum_registry: _EnumRegistry,
     decisions: list[MergeDecision],
-    class_doc_count: int,
+    class_group_count: int,
+    group_of: Sequence[int],
 ) -> dict[str, Any] | None:
     del fkey  # keyed by the caller; the merged field keeps the first-seen name
     name = occ[0][1].name
@@ -577,9 +578,11 @@ def _merge_field(
             )
         )
 
-    docs_seen = {doc_index for doc_index, _ in occ}
-    if class_doc_count >= _RARE_FIELD_MIN_DOCS and len(docs_seen) == 1:
-        base = field_dict["description"] or (f"Seen in 1 of {class_doc_count} sample documents.")
+    # Document counts are per physical document: windows of one oversized
+    # document never make a mid-document field look "rare".
+    groups_seen = {group_of[doc_index] for doc_index, _ in occ}
+    if class_group_count >= _RARE_FIELD_MIN_DOCS and len(groups_seen) == 1:
+        base = field_dict["description"] or (f"Seen in 1 of {class_group_count} sample documents.")
         field_dict["description"] = f"Rare: {base}"
         decisions.append(
             MergeDecision(
@@ -587,7 +590,7 @@ def _merge_field(
                 model=model_name,
                 field=name,
                 message=(
-                    f"field seen in only 1 of {class_doc_count} documents — flagged 'Rare:'; "
+                    f"field seen in only 1 of {class_group_count} documents — flagged 'Rare:'; "
                     "prune via the SPEC YAML if spurious"
                 ),
             )
@@ -603,6 +606,7 @@ def _merge_fields(
     display: dict[str, str],
     enum_registry: _EnumRegistry,
     decisions: list[MergeDecision],
+    group_of: Sequence[int],
 ) -> list[dict[str, Any]]:
     groups: dict[str, list[tuple[int, FieldCandidate]]] = {}
     order: list[str] = []
@@ -617,6 +621,7 @@ def _merge_fields(
             groups[fkey].append((doc_index, field))
     # Identity fields first (stable within each bucket).
     order.sort(key=lambda k: 0 if any(f.role == "identity" for _, f in groups[k]) else 1)
+    class_group_count = len({group_of[doc_index] for doc_index, _ in occurrences})
     merged: list[dict[str, Any]] = []
     for fkey in order:
         field_dict = _merge_field(
@@ -627,7 +632,8 @@ def _merge_fields(
             display=display,
             enum_registry=enum_registry,
             decisions=decisions,
-            class_doc_count=len(occurrences),
+            class_group_count=class_group_count,
+            group_of=group_of,
         )
         if field_dict is not None:
             merged.append(field_dict)
@@ -644,7 +650,8 @@ def _merge_class(
     enum_registry: _EnumRegistry,
     decisions: list[MergeDecision],
     gaps: list[SpecGap],
-    doc_names: Sequence[str],
+    group_labels: Mapping[int, str],
+    group_of: Sequence[int],
 ) -> dict[str, Any]:
     name = display[key]
     kind = "root" if is_root else _vote_kind(occurrences, name, decisions, gaps)
@@ -657,6 +664,7 @@ def _merge_class(
         display=display,
         enum_registry=enum_registry,
         decisions=decisions,
+        group_of=group_of,
     )
     if kind == "component":
         for field in fields:
@@ -673,7 +681,7 @@ def _merge_class(
         "fields": fields,
         "provenance": "induced",
         "source_ref": "induced from: "
-        + ", ".join(doc_names[i] for i in sorted({i for i, _ in occurrences})),
+        + ", ".join(group_labels[g] for g in sorted({group_of[i] for i, _ in occurrences})),
     }
     if kind != "component":
         documented = max(
@@ -697,6 +705,8 @@ def merge_documents(
     root_name: str | None = None,
     max_models: int = 30,
     max_enum_members: int = MAX_ENUM_MEMBERS,
+    doc_groups: Sequence[int] | None = None,
+    group_names: Sequence[str] | None = None,
 ) -> tuple[dict[str, Any], MergeReport, list[SpecGap]]:
     """Merge per-document candidates into one loose draft dict.
 
@@ -706,18 +716,41 @@ def merge_documents(
     ``repair_draft`` cascades renames.
 
     Args:
-        docs: One gated candidate set per source document, in source order.
+        docs: One gated candidate set per induction unit (a document, or one
+            window of an oversized document), in source order.
         root_name: Optional root class name; overrides the ``is_root`` vote
             and renames the elected root.
         max_models: Cap on merged models; overflow classes (and edges into
             them) are dropped with loud ``overflow_drop`` decisions.
         max_enum_members: Enum unions wider than this demote to ``str``.
+        doc_groups: Physical-document group index per entry of ``docs``
+            (windows of one oversized document share a group). Document-count
+            semantics — the rare-field flag and ``source_ref`` labels — use
+            distinct groups, so one long document never counts as many.
+            Defaults to every unit being its own document. Example variety
+            (round-robin) deliberately still treats windows as distinct
+            sources.
+        group_names: Display label per group index (the physical document
+            name); defaults to the first unit name of each group.
     """
     if not docs:
         raise ValueError("merge_documents requires at least one DocumentCandidates")
+    if doc_groups is None:
+        doc_groups = list(range(len(docs)))
+    if len(doc_groups) != len(docs):
+        raise ValueError("merge_documents: doc_groups must align 1:1 with docs")
     decisions: list[MergeDecision] = []
     gaps: list[SpecGap] = []
     doc_names = [doc.name for doc in docs]
+    group_labels: dict[int, str] = {}
+    for doc_index, group in enumerate(doc_groups):
+        if group not in group_labels:
+            named = (
+                group_names[group]
+                if group_names is not None and 0 <= group < len(group_names)
+                else doc_names[doc_index]
+            )
+            group_labels[group] = named
 
     groups, order = _group_classes(docs)
     if not groups:
@@ -751,7 +784,8 @@ def merge_documents(
             enum_registry=enum_registry,
             decisions=decisions,
             gaps=gaps,
-            doc_names=doc_names,
+            group_labels=group_labels,
+            group_of=doc_groups,
         )
         for key in kept_order
     ]

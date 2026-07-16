@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import tempfile
+import threading
 import types
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Sequence
@@ -74,15 +75,45 @@ template_app = typer.Typer(
 
 DEFAULT_OUTPUT_DIR = Path("templates")
 
-# Sources read directly as text by the induction sampler; anything else needs
-# a DocumentProcessor (mirrors templategen.induce.documents._TEXT_SUFFIXES).
+# Sources read directly as text by the induction sampler; anything else —
+# http(s) URLs included — needs a DocumentProcessor (mirrors
+# templategen.induce.documents._TEXT_SUFFIXES).
 _TEXT_SUFFIXES = frozenset({".md", ".markdown", ".txt"})
+
+
+def _is_url(source: str) -> bool:
+    """Mirror of ``InputTypeDetector._is_url``: http(s) schemes only."""
+    return source.startswith(("http://", "https://"))
+
+
+def _validate_doc_sources(sources: Sequence[str]) -> None:
+    """Each from-docs source must be an existing file or an http(s) URL.
+
+    Typer's ``exists=True`` cannot express "path or URL", so the check lives
+    here — before any config resolution or LLM spend.
+    """
+    for source in sources:
+        if _is_url(source):
+            continue
+        path = Path(source)
+        if not path.exists():
+            raise _fail(
+                f"Source not found: '{source}' (expected an existing file or an http(s) URL)."
+            )
+        if not path.is_file():
+            raise _fail(f"Source is not a file: '{source}'.")
+
 
 # Input-budget heuristic (design §4.1): chars ~ tokens x 4, reserving the
 # model's output budget plus a flat prompt overhead (system prompt + condensed
 # rulebook + schema) against its context window.
 _CHARS_PER_TOKEN = 4
 _PROMPT_OVERHEAD_TOKENS = 2_000
+
+# Observed pass-2 output volume per class (fields + verbatim examples + enum
+# synonyms) on verbose models; sizes the batch so one call fits the model's
+# output budget instead of truncating and burning an escalation retry.
+_PASS2_TOKENS_PER_CLASS = 1_500
 
 LlmCallFn = Callable[..., Any]
 
@@ -164,9 +195,20 @@ def _build_llm_call(
 
     The callable follows the ``templategen.induce.documents`` contract and owns
     truncation handling: one retry with escalated ``max_tokens`` (doubled,
-    capped at half the model's context window), then the retry result is
-    returned either way.
+    capped at half the model's context window). The retry fires whether the
+    truncated response was salvaged into JSON or failed to parse outright —
+    the unrecoverable case surfaces as a ``ClientError`` and needs the
+    escalation the most. The retry's result is returned (or its error raised)
+    either way.
+
+    Thread-safe by construction: induction runs calls concurrently
+    (``templategen.workers``), and one shared client would race on
+    ``last_call_diagnostics`` and the escalation's ``max_tokens`` swap — so
+    every thread gets its own client instance (the one built eagerly here
+    doubles as the fail-fast credential check and the building thread's
+    client).
     """
+    from docling_graph.exceptions import ClientError
     from docling_graph.llm_clients import get_client
     from docling_graph.llm_clients.config import resolve_effective_model_config
 
@@ -174,20 +216,48 @@ def _build_llm_call(
     effective = resolve_effective_model_config(
         provider, model, overrides=overrides if isinstance(overrides, dict) else None
     )
-    client = get_client(provider)(effective)
+    client_factory = get_client(provider)
+    thread_clients = threading.local()
+    thread_clients.client = client_factory(effective)  # fail fast, pre-spend
 
     def llm_call_fn(*, prompt: dict[str, str], schema_json: str, context: str) -> Any:
+        client = getattr(thread_clients, "client", None)
+        if client is None:
+            client = thread_clients.client = client_factory(effective)
         # OpenAI-family providers require response_format schema names to match
         # ^[a-zA-Z0-9_-]+$ (<=64 chars); the context tag carries ':' and the
         # source filename's '.', so sanitize before it reaches the provider.
         schema_name = re.sub(r"[^a-zA-Z0-9_-]", "_", context)[:40]
-        out = client.get_json_response(
-            prompt,
-            schema_json,
-            structured_output=True,
-            response_top_level="object",
-            response_schema_name=schema_name,
-        )
+
+        def call() -> Any:
+            return client.get_json_response(
+                prompt,
+                schema_json,
+                structured_output=True,
+                response_top_level="object",
+                response_schema_name=schema_name,
+            )
+
+        def warn_still_truncated(max_tokens: int) -> None:
+            logger.warning(
+                "Induction call '%s' is still truncated at max_tokens=%d — the model "
+                "cannot fit this pass's output; raise llm_overrides.max_output_tokens "
+                "in config.yaml or use a larger model",
+                context,
+                max_tokens,
+                extra={"component": "TemplateInduction"},
+            )
+
+        out: Any = None
+        error: ClientError | None = None
+        try:
+            out = call()
+        except ClientError as e:
+            # Truncated output that could not be repaired into JSON raises,
+            # but the client diagnostics still flag the truncation.
+            if not client.last_call_diagnostics.get("truncated"):
+                raise
+            error = e
         if not client.last_call_diagnostics.get("truncated"):
             return out
         generation = getattr(client, "_generation", None)
@@ -197,24 +267,29 @@ def _build_llm_call(
         if context_limit > 0:
             escalated = min(escalated, max(current, context_limit // 2))
         if generation is None or current <= 0 or escalated <= current:
+            if error is not None:
+                warn_still_truncated(current)
+                raise error
             return out
         logger.warning(
             "Induction call '%s' was truncated; retrying once with max_tokens=%d",
             context,
             escalated,
+            extra={"component": "TemplateInduction"},
         )
         original = getattr(generation, "max_tokens", None)
         try:
             generation.max_tokens = escalated
-            return client.get_json_response(
-                prompt,
-                schema_json,
-                structured_output=True,
-                response_top_level="object",
-                response_schema_name=schema_name,
-            )
+            out = call()
+        except ClientError:
+            if client.last_call_diagnostics.get("truncated"):
+                warn_still_truncated(escalated)
+            raise
         finally:
             generation.max_tokens = original
+        if client.last_call_diagnostics.get("truncated"):
+            warn_still_truncated(escalated)
+        return out
 
     return llm_call_fn, effective
 
@@ -244,9 +319,31 @@ def _effective_budget_chars(settings: TemplateGenSettings, effective: Any) -> in
     return min(settings.input_budget_chars, input_tokens * _CHARS_PER_TOKEN)
 
 
-def _build_doc_processor(config: dict[str, Any] | None, sources: Sequence[Path]) -> Any | None:
-    """DocumentProcessor for non-text sources, honoring docling config/serve."""
-    if all(source.suffix.lower() in _TEXT_SUFFIXES for source in sources):
+def _pass2_batch_size(effective: Any) -> int:
+    """Classes per pass-2 call, sized against the model's output budget.
+
+    A fixed batch of :data:`MAX_PASS2_BATCH` overflows small output budgets
+    (~4k tokens): every call truncates, burns an escalation retry, and comes
+    back salvage-lossy. Sizing at ~:data:`_PASS2_TOKENS_PER_CLASS` output
+    tokens per class trades more (parallelizable) calls for zero truncation
+    churn. An unknown budget keeps the full batch.
+    """
+    from docling_graph.templategen.induce.documents import MAX_PASS2_BATCH
+
+    generation = getattr(effective, "generation", None)
+    max_tokens = int(getattr(generation, "max_tokens", 0) or 0) or int(
+        getattr(effective, "max_output_tokens", 0) or 0
+    )
+    if max_tokens <= 0:
+        return MAX_PASS2_BATCH
+    return max(1, min(MAX_PASS2_BATCH, max_tokens // _PASS2_TOKENS_PER_CLASS))
+
+
+def _build_doc_processor(config: dict[str, Any] | None, sources: Sequence[str]) -> Any | None:
+    """DocumentProcessor for non-text sources (URLs included), honoring docling config/serve."""
+    if all(
+        not _is_url(source) and Path(source).suffix.lower() in _TEXT_SUFFIXES for source in sources
+    ):
         return None
     from docling_graph.core.extractors.document_processor import DocumentProcessor
 
@@ -403,10 +500,11 @@ def _print_induction_report(report: "InductionReport") -> None:
     rich_print("\n[bold]Induction report:[/bold]")
     for stats in report.documents:
         sampled = " (sampled)" if stats.sampled else ""
+        splits = f", {stats.pass2_splits} truncation split(s)" if stats.pass2_splits else ""
         typer.echo(
             f"  {stats.name}{sampled}: {stats.classes_kept}/{stats.classes_proposed} "
             f"classes kept, {stats.examples_dropped_by_gate} example(s) dropped by the "
-            f"verbatim gate, {stats.retries} retry(ies)"
+            f"verbatim gate, {stats.retries} retry(ies){splits}"
         )
         if stats.overflow_classes:
             typer.echo(f"    overflow classes (max_models): {', '.join(stats.overflow_classes)}")
@@ -424,6 +522,17 @@ def _print_induction_report(report: "InductionReport") -> None:
             typer.echo(f"    edges dropped: {', '.join(stats.edges_dropped)}")
     for skipped in report.skipped_sources:
         rich_print(f"  [yellow]Skipped {skipped}: near-empty text (check OCR settings)[/yellow]")
+    if report.skipped_capped:
+        rich_print(
+            f"  [yellow]{len(report.skipped_capped)} of {report.units_total} unit(s) skipped "
+            "by the templategen.max_units cap (pass --exhaustive to induce everything)[/yellow]"
+        )
+    if report.skipped_saturated:
+        rich_print(
+            f"  Saturation stop: {len(report.skipped_saturated)} of {report.units_total} "
+            "unit(s) skipped — the schema stopped changing "
+            "(pass --exhaustive to induce everything)"
+        )
     if report.merge.decisions:
         rich_print("\n[bold]Merge decisions:[/bold]")
         for decision in report.merge.decisions:
@@ -539,7 +648,7 @@ def _confirm_derived_paths(paths: Sequence[Path], force: bool, *, spec_path: Pat
 def _trial_run(
     spec: TemplateSpec,
     output: Path,
-    first_source: Path,
+    first_source: str,
     config: dict[str, Any] | None,
     provider: str,
     model: str,
@@ -552,7 +661,11 @@ def _trial_run(
     class is handed to ``evaluate_template`` — trial failures warn and never
     change the exit code (the template is already V1-V6-verified).
     """
-    rich_print(f"\n[bold]Trial run (advisory):[/bold] extracting from {first_source}")
+    logger.info(
+        "Trial run (advisory): extracting from %s",
+        first_source,
+        extra={"component": "TrialRun"},
+    )
     module_name = "docling_graph_template_trial"
     module = types.ModuleType(module_name)
     module.__file__ = str(output)
@@ -568,14 +681,16 @@ def _trial_run(
         root_cls = module.__dict__[spec.root]
         report = evaluate_template(
             root_cls,
-            [str(first_source)],
+            [first_source],
             config_overrides=_pipeline_config_overrides(config, provider, model, inference),
         )
         typer.echo(report.render_markdown())
     except Exception as e:  # advisory by design: never fail the command
-        rich_print(
-            f"[yellow]Trial run failed (advisory, template already verified): "
-            f"{type(e).__name__}: {e}[/yellow]"
+        logger.warning(
+            "Trial run failed (advisory, template already verified): %s: %s",
+            type(e).__name__,
+            e,
+            extra={"component": "TrialRun"},
         )
     finally:
         sys.modules.pop(module_name, None)
@@ -613,20 +728,29 @@ def _rename_root_model(
             gap.model = new_name
 
 
-def _cached_trial_source(report: "InductionReport", first_source: Path) -> Path:
+def _cached_trial_source(report: "InductionReport", first_source: str) -> str:
     """The --trial-run source: the cached DoclingDocument JSON when one exists.
 
-    ``prepare_document_text`` exports converted sources as
+    ``prepare_document_text`` exports converted sources (files and URLs) as
     ``<stem>.document.json`` (design §4.1/§7.2); the pipeline detects that as
     ``DOCLING_DOCUMENT`` input and skips conversion entirely, so the trial run
-    never re-OCRs the source induction just converted. Text sources were never
-    converted and pass through unchanged.
+    never re-OCRs (or re-fetches) the source induction just converted. Text
+    sources were never converted and pass through unchanged.
     """
+    from docling_graph.templategen.induce.documents import source_display_name
+
+    name = source_display_name(first_source)
     cached = next(
-        (stats.cache_path for stats in report.documents if stats.name == first_source.name),
+        (
+            stats.cache_path
+            for stats in report.documents
+            # Windows of an oversized source are named "<name> [i/k]"; the
+            # conversion cache rides on the first window.
+            if stats.cache_path and (stats.name == name or stats.name.startswith(f"{name} ["))
+        ),
         None,
     )
-    return Path(cached) if cached else first_source
+    return str(cached) if cached else first_source
 
 
 # ---------------------------------------------------------------------------
@@ -637,11 +761,10 @@ def _cached_trial_source(report: "InductionReport", first_source: Path) -> Path:
 @template_app.command(name="from-docs")
 def from_docs_command(
     sources: Annotated[
-        list[Path],
+        list[str],
         typer.Argument(
-            exists=True,
-            dir_okay=False,
-            help="Example documents (PDF, markdown, Office, ...) to induce the template from.",
+            help="Example documents to induce the template from: file paths "
+            "(PDF, markdown, Office, ...) or http(s) URLs.",
         ),
     ],
     output: Annotated[
@@ -695,6 +818,25 @@ def from_docs_command(
             "(default: templategen.strict in config.yaml).",
         ),
     ] = None,
+    workers: Annotated[
+        int | None,
+        typer.Option(
+            "--workers",
+            "-w",
+            min=1,
+            help="Concurrent induction LLM calls: documents in parallel, field "
+            "batches in parallel within each (results are deterministic either "
+            "way). Default: templategen.workers in config.yaml (4).",
+        ),
+    ] = None,
+    exhaustive: Annotated[
+        bool,
+        typer.Option(
+            "--exhaustive",
+            help="Induce from every document and window: disables the "
+            "saturation stop and the templategen.max_units cap.",
+        ),
+    ] = False,
     force: Annotated[
         bool,
         typer.Option("--force", help="Overwrite existing outputs without prompting (CI)."),
@@ -706,21 +848,36 @@ def from_docs_command(
     plus deterministic anti-hallucination gates produce a SPEC; a deterministic
     renderer then emits the template — no LLM ever writes code.
     """
+    _validate_doc_sources(sources)
     config, settings = _load_config_and_settings()
     strict_val = settings.strict if strict is None else strict
     gap_fill_val = settings.llm_gap_fill if llm_gap_fill is None else llm_gap_fill
+    workers_val = settings.workers if workers is None else workers
+    saturation_val = settings.saturation_stop and not exhaustive
+    max_units_val = 0 if exhaustive else settings.max_units
     provider_val, model_val, inference_val = _resolve_provider_model(config, provider, model)
     try:
         llm_call_fn, effective = _build_llm_call(provider_val, model_val, config)
     except (ConfigurationError, ImportError, ValueError) as e:
         raise _fail_from(e) from e
     budget_chars = _effective_budget_chars(settings, effective)
+    batch_size = _pass2_batch_size(effective)
 
-    rich_print("--- [blue]Docling-Graph Template Generation (from-docs)[/blue] ---")
-    rich_print(f"  Sources: [cyan]{', '.join(str(s) for s in sources)}[/cyan]")
-    rich_print(
-        f"  LLM: [cyan]{provider_val}/{model_val}[/cyan] | "
-        f"Input budget: [cyan]{budget_chars}[/cyan] chars/document"
+    logger.info(
+        "Starting template generation (from-docs)", extra={"component": "TemplateGeneration"}
+    )
+    logger.info(
+        "sources=%s, llm=%s/%s, input_budget=%s chars/unit, workers=%s, "
+        "pass2_batch=%s classes/call, max_units=%s, saturation_stop=%s",
+        ", ".join(sources),
+        provider_val,
+        model_val,
+        budget_chars,
+        workers_val,
+        batch_size,
+        max_units_val or "unlimited",
+        saturation_val,
+        extra={"component": "TemplateConfiguration"},
     )
 
     # Confirm explicit output paths before any LLM tokens are spent; paths
@@ -742,7 +899,7 @@ def from_docs_command(
 
         try:
             spec, report = induce_spec_from_documents(
-                [str(source) for source in sources],
+                list(sources),
                 llm_call_fn,
                 root_name=name,
                 strict=strict_val,
@@ -751,6 +908,11 @@ def from_docs_command(
                 max_models=settings.max_models,
                 max_enum_members=settings.max_enum_members,
                 cache_dir=Path(cache_tmp.name) if cache_tmp is not None else None,
+                workers=workers_val,
+                pass2_batch_size=batch_size,
+                max_windows_per_doc=settings.max_windows_per_doc,
+                max_units=max_units_val,
+                saturation=saturation_val,
             )
         except TemplateLintError as e:
             raise _handle_strict_failure(e) from e
@@ -765,7 +927,12 @@ def from_docs_command(
 
             before = len(gaps)
             spec, gaps = fill_gaps(spec, gaps, llm_call_fn)
-            rich_print(f"\nGap-fill: closed {before - len(gaps)} of {before} gap(s)")
+            logger.info(
+                "Gap-fill: closed %d of %d gap(s)",
+                before - len(gaps),
+                before,
+                extra={"component": "GapFill"},
+            )
 
         output_val = output or _default_output_path(spec.root)
         spec_out_val = spec_out or _default_spec_out(output_val)
@@ -803,7 +970,9 @@ def from_docs_command(
         f"\n[blue]Tip:[/blue] convert a document with: docling-graph convert <source> "
         f"--template {_dotted_hint(output_val, spec.root)}"
     )
-    rich_print("--- [blue]Docling-Graph Template Generation Finished[/blue] ---")
+    logger.info(
+        "Template generation completed successfully", extra={"component": "TemplateGeneration"}
+    )
 
 
 def _dotted_hint(output: Path, root: str) -> str:
@@ -915,8 +1084,16 @@ def from_ontology_command(
     gap_fill_val = settings.llm_gap_fill if llm_gap_fill is None else llm_gap_fill
     depth_val = depth if depth is not None else settings.ontology_depth
 
-    rich_print("--- [blue]Docling-Graph Template Generation (from-ontology)[/blue] ---")
-    rich_print(f"  Source: [cyan]{source}[/cyan] | Format: [cyan]{fmt_val}[/cyan]")
+    logger.info(
+        "Starting template generation (from-ontology)", extra={"component": "TemplateGeneration"}
+    )
+    logger.info(
+        "source=%s, format=%s, depth=%s",
+        source,
+        fmt_val,
+        depth_val,
+        extra={"component": "TemplateConfiguration"},
+    )
 
     early_paths = [p for p in (output, spec_out) if p is not None]
     _confirm_overwrite(early_paths, force)
@@ -980,8 +1157,13 @@ def from_ontology_command(
 
         before = len(gaps)
         spec, gaps = fill_gaps(spec, gaps, llm_call_fn)
-        rich_print(
-            f"\nGap-fill ({provider_val}/{model_val}): closed {before - len(gaps)} of {before} gap(s)"
+        logger.info(
+            "Gap-fill (%s/%s): closed %d of %d gap(s)",
+            provider_val,
+            model_val,
+            before - len(gaps),
+            before,
+            extra={"component": "GapFill"},
         )
 
     output_val = output or _default_output_path(spec.root)
@@ -1001,7 +1183,9 @@ def from_ontology_command(
     rich_print(f"\nTemplate written to [cyan]{output_val}[/cyan]")
     _print_gaps(gaps)
     _print_semantic_guide(verify_report.semantic_guide_preview)
-    rich_print("--- [blue]Docling-Graph Template Generation Finished[/blue] ---")
+    logger.info(
+        "Template generation completed successfully", extra={"component": "TemplateGeneration"}
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1051,8 +1235,10 @@ def from_spec_command(
     _config, settings = _load_config_and_settings()
     strict_val = settings.strict if strict is None else strict
 
-    rich_print("--- [blue]Docling-Graph Template Generation (from-spec)[/blue] ---")
-    rich_print(f"  Spec: [cyan]{spec_file}[/cyan]")
+    logger.info(
+        "Starting template generation (from-spec)", extra={"component": "TemplateGeneration"}
+    )
+    logger.info("spec=%s", spec_file, extra={"component": "TemplateConfiguration"})
 
     try:
         spec = TemplateSpec.from_yaml(spec_file.read_text(encoding="utf-8"))
@@ -1074,7 +1260,9 @@ def from_spec_command(
     rich_print(f"\nTemplate written to [cyan]{output_val}[/cyan]")
     _print_gaps(lint_report.gaps)
     _print_semantic_guide(verify_report.semantic_guide_preview)
-    rich_print("--- [blue]Docling-Graph Template Generation Finished[/blue] ---")
+    logger.info(
+        "Template generation completed successfully", extra={"component": "TemplateGeneration"}
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1207,10 +1395,14 @@ def evaluate_command(
     provider_val, model_val, inference_val = _resolve_provider_model(
         config, provider, model, inference
     )
-    rich_print("--- [blue]Docling-Graph Template Evaluation[/blue] ---")
-    rich_print(
-        f"  Template: [cyan]{template}[/cyan] | "
-        f"LLM: [cyan]{provider_val}/{model_val}[/cyan] ({inference_val})"
+    logger.info("Starting template evaluation", extra={"component": "TemplateEvaluation"})
+    logger.info(
+        "template=%s, llm=%s/%s, inference=%s",
+        template,
+        provider_val,
+        model_val,
+        inference_val,
+        extra={"component": "TemplateConfiguration"},
     )
 
     from docling_graph.templategen import evaluate_template

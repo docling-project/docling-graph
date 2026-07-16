@@ -18,6 +18,10 @@ valid keys (silent typos would silently un-configure a run).
       ontology_depth: 4
       llm_gap_fill: false
       strict: false
+      workers: 4                  # concurrent induction LLM calls (documents x pass-2 batches)
+      max_units: 24               # hard cap on induction units (documents/windows); 0 = unlimited
+      max_windows_per_doc: 6      # windows an oversized document may split into
+      saturation_stop: true       # stop inducing once the schema stops changing (large corpora)
 """
 
 from __future__ import annotations
@@ -64,6 +68,33 @@ class TemplateGenSettings(BaseModel):
         default=False,
         description="Fail instead of auto-repairing lint violations (repairs are "
         "printed either way).",
+    )
+    workers: int = Field(
+        default=4,
+        ge=1,
+        description="Concurrent LLM calls during from-docs induction (documents in "
+        "parallel, pass-2 field batches in parallel within each). 1 disables "
+        "concurrency; results are deterministic either way.",
+    )
+    max_units: int = Field(
+        default=24,
+        ge=0,
+        description="Hard cap on from-docs induction units (a document = 1 unit; an "
+        "oversized document splits into up to max_windows_per_doc units). Excess "
+        "units are skipped and reported. 0 = unlimited.",
+    )
+    max_windows_per_doc: int = Field(
+        default=6,
+        ge=1,
+        description="Windows an oversized document (text beyond input_budget_chars) "
+        "splits into — evenly spread slices, each inducted as its own unit and "
+        "merged back as one document.",
+    )
+    saturation_stop: bool = Field(
+        default=True,
+        description="Stop inducing a large corpus (> 10 units) once 6 consecutive "
+        "units add no new classes and ~no new fields; skipped units are reported. "
+        "The from-docs --exhaustive flag disables this and the max_units cap.",
     )
 
 

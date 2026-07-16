@@ -12,6 +12,10 @@ EXPECTED_DEFAULTS = {
     "ontology_depth": 4,
     "llm_gap_fill": False,
     "strict": False,
+    "workers": 4,
+    "max_units": 24,
+    "max_windows_per_doc": 6,
+    "saturation_stop": True,
 }
 
 
@@ -50,6 +54,10 @@ class TestPartialBlock:
             "ontology_depth": 2,
             "llm_gap_fill": True,
             "strict": True,
+            "workers": 2,
+            "max_units": 10,
+            "max_windows_per_doc": 3,
+            "saturation_stop": False,
         }
         assert load_templategen_settings({"templategen": block}).model_dump() == block
 

@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Callable, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -26,6 +26,9 @@ from .linter import LintReport, lint_spec, repair_draft
 from .renderer import render_template
 from .spec import SpecGap, TemplateSpec
 from .verify import VerificationReport, verify_template_source
+
+if TYPE_CHECKING:
+    from .induce.documents import SourceInput
 
 __all__ = ["GenerationResult", "generate_template"]
 
@@ -48,7 +51,7 @@ class GenerationResult(BaseModel):
     verification failed (the requested path is then never touched)."""
 
 
-def _single_path(source: str | Path | Sequence[str | Path], kind: str) -> Path:
+def _single_path(source: SourceInput | Sequence[SourceInput], kind: str) -> Path:
     if isinstance(source, str | Path):
         return Path(source)
     raise TypeError(f"generate_template(kind={kind!r}) takes a single source path")
@@ -82,7 +85,7 @@ def _atomic_write(path: Path, text: str) -> None:
 
 
 def generate_template(
-    source: str | Path | Sequence[str | Path],
+    source: SourceInput | Sequence[SourceInput],
     *,
     kind: Literal["ontology", "spec", "docs"] = "ontology",
     output: str | Path | None = None,
@@ -99,7 +102,10 @@ def generate_template(
     Args:
         source: The input — an ontology file (``kind="ontology"``), a SPEC
             YAML (``kind="spec"``), or one/many example documents
-            (``kind="docs"``, the only kind accepting a sequence).
+            (``kind="docs"``, the only kind accepting a sequence): file
+            paths, ``http(s)://`` URLs, or
+            :class:`~docling_graph.templategen.DocumentContent` objects
+            carrying the document text directly.
         kind: Which front-end produces the SPEC.
         output: Optional path for the rendered module; written atomically and
             **only** when verification passes. No overwrite prompt — pass a
@@ -152,7 +158,11 @@ def generate_template(
             )
         from .induce.documents import induce_spec_from_documents
 
-        sources = [source] if isinstance(source, str | Path) else list(source)
+        # A single DocumentContent is not a Sequence, so it wraps like a path.
+        if isinstance(source, str | Path) or not isinstance(source, Sequence):
+            sources = [source]
+        else:
+            sources = list(source)
         spec, report = induce_spec_from_documents(
             sources, llm_call_fn, root_name=root, strict=strict
         )

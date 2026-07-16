@@ -602,6 +602,7 @@ class TestPublicApi:
         "synthesize_sample",
         "spec_draft_from_ontology",
         "induce_spec_from_documents",
+        "DocumentContent",
         "fill_gaps",
         "reverse_draft",
         "spec_from_template",
