@@ -123,6 +123,11 @@ class ManyToOneStrategy(BaseExtractor):
                     f"Backend '{backend_class}' does not implement a recognized extraction protocol"
                 )
 
+        except ExtractionError:
+            # Conversion/extraction failures carry a precise cause (auth,
+            # timeout, HTTP status, ...) — let the pipeline surface it instead
+            # of laundering it into an empty result.
+            raise
         except Exception as e:
             logger.error(f"Extraction error: {e}")
             import traceback
@@ -200,6 +205,10 @@ class ManyToOneStrategy(BaseExtractor):
                 template,
                 conversion_runtime_seconds=conversion_runtime_seconds,
             )
+        except ExtractionError:
+            # Conversion failures (docling-serve auth/timeout/HTTP errors,
+            # parse failures) carry a precise cause — let them propagate.
+            raise
         except Exception as e:
             logger.error(f"LLM extraction failed: {e}")
             import traceback

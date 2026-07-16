@@ -122,6 +122,50 @@ class TestOneToOneStrategyExtract:
         assert len(models) > 0
 
 
+class TestExtractionErrorPropagation:
+    """ExtractionError must surface; generic errors keep the [], None contract."""
+
+    @patch("docling_graph.core.extractors.strategies.one_to_one.is_vlm_backend")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.is_llm_backend")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.DocumentProcessor")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.get_backend_type")
+    def test_extraction_error_propagates(
+        self, mock_get_type, mock_doc_proc, mock_is_llm, mock_is_vlm, mock_llm_backend
+    ):
+        """ExtractionError (e.g. a docling-serve failure) is re-raised, not swallowed."""
+        from docling_graph.exceptions import ExtractionError
+
+        mock_get_type.return_value = "llm"
+        mock_is_llm.return_value = True
+        mock_is_vlm.return_value = False
+        mock_doc_proc.return_value.convert_to_docling_doc.side_effect = ExtractionError(
+            "docling-serve returned HTTP 401"
+        )
+
+        strategy = OneToOneStrategy(backend=mock_llm_backend)
+        with pytest.raises(ExtractionError, match="HTTP 401"):
+            strategy.extract("test.pdf", SampleModel)
+
+    @patch("docling_graph.core.extractors.strategies.one_to_one.is_vlm_backend")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.is_llm_backend")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.DocumentProcessor")
+    @patch("docling_graph.core.extractors.strategies.one_to_one.get_backend_type")
+    def test_generic_error_still_swallowed(
+        self, mock_get_type, mock_doc_proc, mock_is_llm, mock_is_vlm, mock_llm_backend
+    ):
+        """Non-ExtractionError failures keep the resilient [], None contract."""
+        mock_get_type.return_value = "llm"
+        mock_is_llm.return_value = True
+        mock_is_vlm.return_value = False
+        mock_doc_proc.return_value.convert_to_docling_doc.side_effect = RuntimeError("boom")
+
+        strategy = OneToOneStrategy(backend=mock_llm_backend)
+        models, doc = strategy.extract("test.pdf", SampleModel)
+
+        assert models == []
+        assert doc is None
+
+
 class TestExtractFromDocument:
     """Test page-by-page extraction from a pre-converted DoclingDocument."""
 
