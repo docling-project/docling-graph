@@ -121,8 +121,10 @@ def _resolve_cli_settings(
         "chunk_max_tokens": (
             chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
         ),
-        "parallel_workers": (
-            parallel_workers if parallel_workers is not None else defaults.get("parallel_workers")
+        "parallel_workers": int(
+            parallel_workers
+            if parallel_workers is not None
+            else defaults.get("parallel_workers", 4) or 4
         ),
         "dense_skeleton_batch_tokens": int(
             dense_skeleton_batch_tokens
@@ -286,7 +288,7 @@ def convert_command(
         int | None,
         typer.Option(
             "--parallel-workers",
-            help="Parallel workers for extraction.",
+            help="Parallel workers for extraction (default: 4; use 1 for sequential).",
         ),
     ] = None,
     dense_skeleton_batch_tokens: Annotated[

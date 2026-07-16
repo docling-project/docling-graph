@@ -1593,7 +1593,7 @@ def test_run_stats_published_after_run():
     assert stats["skeleton_batches_failed"] == 0
     assert stats["dropped_chunk_ids"] == []
     assert stats["chunk_coverage_pct"] == 100.0
-    assert stats["parallel_workers"] == 1
+    assert stats["parallel_workers"] == 4
     assert "phase1_seconds" in stats and "phase2_seconds" in stats
 
 
@@ -2598,8 +2598,10 @@ def test_run_one_fill_batch_bumps_truncation_counter():
     assert orch._counters.get("truncation_count") == 1
 
 
-def test_run_skeleton_phase_parallel_records_empty_on_batch_exception():
+def test_run_skeleton_phase_parallel_records_empty_on_batch_exception(caplog):
     """A batch whose worker raises is recorded as an empty result, not crashing the run."""
+    import logging
+
     from tests.fixtures.sample_templates.test_template import SampleCompany
 
     def mock_llm(*, prompt: Any, schema_json: str, context: str, **kwargs: Any) -> dict[str, Any]:
@@ -2618,20 +2620,53 @@ def test_run_skeleton_phase_parallel_records_empty_on_batch_exception():
         [(0, "chunk a", 10)],
         [(1, "chunk b", 10)],
     ]
-    results = orch._run_skeleton_phase(
-        batches=batches,
-        workers=2,
-        catalog_block="",
-        allowed_paths=set(catalog.paths()),
-        global_context=None,
-        semantic_guide=None,
-        schema_json="{}",
-        context="t",
-        spec_by_path=spec_by_path,
-    )
+    with caplog.at_level(logging.WARNING):
+        results = orch._run_skeleton_phase(
+            batches=batches,
+            workers=2,
+            catalog_block="",
+            allowed_paths=set(catalog.paths()),
+            global_context=None,
+            semantic_guide=None,
+            schema_json="{}",
+            context="t",
+            spec_by_path=spec_by_path,
+        )
     assert len(results) == 2
     # One batch failed outright (exception path) -> empty list, not a crash.
     assert any(r == [] for r in results)
+    # The failure carries the concurrency hint, since workers are the usual cause.
+    assert "--parallel-workers" in caplog.text
+
+
+def test_parallel_workers_hint_is_emitted_once_per_run(caplog):
+    """Every batch failing emits the hint once, not once per failure."""
+    import logging
+
+    from tests.fixtures.sample_templates.test_template import SampleCompany
+
+    def mock_llm(*, prompt: Any, schema_json: str, context: str, **kwargs: Any) -> dict[str, Any]:
+        raise RuntimeError("boom")
+
+    orch = DenseOrchestrator(
+        llm_call_fn=mock_llm,
+        template=SampleCompany,
+        config=DenseOrchestratorConfig(parallel_workers=2),
+    )
+    spec_by_path = {s.path: s for s in orch._catalog.nodes}
+    with caplog.at_level(logging.WARNING):
+        orch._run_skeleton_phase(
+            batches=[[(0, "chunk a", 10)], [(1, "chunk b", 10)], [(2, "chunk c", 10)]],
+            workers=2,
+            catalog_block="",
+            allowed_paths=set(orch._catalog.paths()),
+            global_context=None,
+            semantic_guide=None,
+            schema_json="{}",
+            context="t",
+            spec_by_path=spec_by_path,
+        )
+    assert caplog.text.count("--parallel-workers") == 1
 
 
 def test_run_emits_parallel_workers_warning_with_single_batch(caplog):

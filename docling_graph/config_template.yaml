@@ -15,8 +15,9 @@ defaults:
   structured_sparse_check: true # true | false (auto-fallback when structured result looks sparse)
   # Max tokens per chunk when chunking is used (null = use default 512)
   chunk_max_tokens: null
-  # Parallel workers for extraction (null = sequential)
-  parallel_workers: null
+  # Parallel workers for extraction (1 = sequential; lower this if a model
+  # server rejects or times out concurrent requests)
+  parallel_workers: 4
   # Direct contract: one optional "what did you miss?" second pass
   gleaning_enabled: true
   # Dense contract tuning

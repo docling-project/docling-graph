@@ -78,7 +78,7 @@ config = PipelineConfig(
 | `use_chunking` | `bool` | `True` | Enable document chunking |
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking; raise it when using a DocLang `llm_input_format`) |
 | `debug` | `bool` | `False` | Enable debug artifacts |
-| `parallel_workers` | `int` or `None` | `None` | Parallel workers for extraction |
+| `parallel_workers` | `int` or `None` | `4` | Parallel workers for extraction (`1` = sequential; `None` uses the default) |
 
 #### Dense extraction (skeleton-then-flesh)
 
