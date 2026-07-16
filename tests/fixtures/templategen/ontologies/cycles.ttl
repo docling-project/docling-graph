@@ -1,0 +1,39 @@
+@prefix ex: <http://example.org/parts#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Doc a owl:Class ;
+    rdfs:comment "A parts catalog document." .
+
+ex:docNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Doc ;
+    rdfs:range xsd:string .
+
+ex:hasPart a owl:ObjectProperty ;
+    rdfs:domain ex:Doc ;
+    rdfs:range ex:PartA .
+
+ex:PartA a owl:Class ;
+    rdfs:comment "A primary part." .
+
+ex:PartB a owl:Class ;
+    rdfs:comment "A secondary part." .
+
+# Union domain: attached to both members.
+ex:partCode a owl:DatatypeProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( ex:PartA ex:PartB ) ] ;
+    rdfs:range xsd:string .
+
+# Mutual cycle PartA -> PartB -> PartA, plus a self-loop on PartA.
+ex:referencesPart a owl:ObjectProperty ;
+    rdfs:domain ex:PartA ;
+    rdfs:range ex:PartB .
+
+ex:belongsTo a owl:ObjectProperty ;
+    rdfs:domain ex:PartB ;
+    rdfs:range ex:PartA .
+
+ex:extendsPart a owl:ObjectProperty ;
+    rdfs:domain ex:PartA ;
+    rdfs:range ex:PartA .

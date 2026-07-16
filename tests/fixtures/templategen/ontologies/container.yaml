@@ -1,0 +1,56 @@
+id: https://example.org/container
+name: container
+description: Shipping container manifest schema.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  con: https://example.org/container/
+default_prefix: con
+default_range: string
+imports:
+  - linkml:types
+
+classes:
+  Container:
+    tree_root: true
+    description: A shipping container and its declared contents.
+    slots:
+      - container_code
+      - holds
+
+  # Abstract range of the holds slot: the compiler must fan the edge out to
+  # the concrete descendants instead of degrading it to a str field.
+  NamedThing:
+    abstract: true
+    description: Anything with a printed name.
+    slots:
+      - display_name
+
+  Person:
+    is_a: NamedThing
+    description: A natural person named on the manifest.
+    slots:
+      - person_name
+
+  Organization:
+    is_a: NamedThing
+    description: A legal entity named on the manifest.
+    slots:
+      - org_name
+
+slots:
+  container_code:
+    identifier: true
+    description: Container code stenciled on the door.
+    examples:
+      - value: MSKU-110602-0
+      - value: TGHU-771834-5
+  holds:
+    range: NamedThing
+    multivalued: true
+    description: Parties declared on the container manifest.
+  display_name:
+    description: Name as printed.
+  person_name:
+    description: Full name of the person.
+  org_name:
+    description: Registered organization name.

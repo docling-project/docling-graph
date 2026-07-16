@@ -1,0 +1,27 @@
+@prefix ex: <http://example.org/reports#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Report a owl:Class ;
+    rdfs:comment "An inspection report." .
+
+ex:reportNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Report ;
+    rdfs:range xsd:string .
+
+ex:hasRemark a owl:ObjectProperty ;
+    rdfs:domain ex:Report ;
+    rdfs:range ex:Remark .
+
+# No identity-like property anywhere -> demoted to component.
+# No rdfs:comment either -> placeholder docstring + missing_docstring gap.
+ex:Remark a owl:Class .
+
+ex:remarkText a owl:DatatypeProperty ;
+    rdfs:domain ex:Remark ;
+    rdfs:range xsd:string .
+
+# No rdfs:domain -> skipped with a report note.
+ex:orphanProp a owl:DatatypeProperty ;
+    rdfs:range xsd:string .

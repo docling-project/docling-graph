@@ -1,0 +1,177 @@
+# Minimal invoice-like SPEC exercising enums + synonyms, coerce-and-log
+# validators (currency / numeric / string_list), scalar AND list-of-enum
+# normalize validators, reference + closed-catalog edges, and root-list
+# dedup validators.
+module_docstring: >-
+  Invoice extraction template. Extracts a graph-ready structure from invoices
+  and credit notes: header metadata, the parties involved, the billed line
+  items, and the catalog of items they reference.
+root: Invoice
+enums:
+  - name: DocumentType
+    members:
+      - Invoice
+      - Credit Note
+      - Receipt
+    synonyms:
+      Invoice:
+        - Facture
+        - Bill
+      Credit Note:
+        - Avoir
+    include_other: true
+models:
+  - name: Tax
+    kind: component
+    docstring: >-
+      Tax bracket applied at document level. Deduplicated by content, never a
+      standalone node.
+    fields:
+      - name: tax_type
+        type: str
+        description: Type of tax as printed (VAT, GST, Sales Tax).
+        examples: ["VAT", "GST"]
+      - name: tax_amount
+        type: float
+        description: Tax amount for this bracket, numeric value only.
+        examples: ["200.00", "1 500,00"]
+        normalizer: numeric
+        evidence: ["EVIDENCE-SENTINEL-DO-NOT-RENDER | VAT 20% | 200.00 |"]
+  - name: Party
+    kind: entity
+    docstring: >-
+      An organization or person involved in the document (seller or buyer).
+      NOT the item catalog. Identified by its printed name.
+    identity_fields: [name]
+    fields:
+      - name: name
+        type: str
+        role: identity
+        description: Full legal name of the party as printed in the header.
+        examples: ["Acme GmbH", "Beta SARL"]
+        evidence: ["EVIDENCE-SENTINEL-DO-NOT-RENDER Seller: Acme GmbH"]
+      - name: tax_id
+        type: str
+        description: VAT number or tax identifier if printed near the name.
+        examples: ["FR12345678901"]
+  - name: Item
+    kind: entity
+    docstring: >-
+      A product or service billed, identified by its printed name. NOT the
+      billing row (see LineItem); the same Item can recur across several rows.
+    identity_fields: [name]
+    canonical_home: Invoice.items
+    fields:
+      - name: name
+        type: str
+        role: identity
+        description: Item name copied verbatim from the description column.
+        examples: ["USB-C cable", "Dock DS-300"]
+      - name: category
+        type: str
+        description: Item category or classification when stated.
+        examples: ["Electronics"]
+  - name: LineItem
+    kind: entity
+    docstring: >-
+      One row of the billing table, identified by its printed row number. NOT
+      the product itself (see Item).
+    identity_fields: [line_number]
+    fields:
+      - name: line_number
+        type: str
+        role: identity
+        description: Row number printed in the first column of the billing table.
+        examples: ["1", "2"]
+      - name: quantity
+        type: float
+        description: LOOK FOR the Qty column of the row, numeric value only.
+        examples: ["2"]
+        normalizer: numeric
+      - name: item
+        type: Item
+        role: edge
+        edge_label: REFERENCES_ITEM
+        reference: true
+        closed_catalog: true
+        description: >-
+          The catalog item billed on this row, referenced by name only; the
+          full detail of every item lives once in Invoice.items.
+  - name: Invoice
+    kind: root
+    docstring: >-
+      The invoice document, identified by the number printed in the header.
+      One per document.
+    identity_fields: [document_number]
+    fields:
+      - name: document_number
+        type: str
+        role: identity
+        description: Invoice number printed in the header, including prefixes.
+        examples: ["INV-2024-0113", "2024-INV-12345"]
+      - name: document_type
+        type: DocumentType
+        description: The document type printed as the title.
+        examples: ["Invoice"]
+        normalizer: enum
+      - name: issue_date
+        type: date
+        description: Issue date printed in the header, normalized to YYYY-MM-DD.
+        examples: ["2024-01-15"]
+      - name: currency
+        type: str
+        description: Document currency as an ISO 4217 code near the totals.
+        examples: ["EUR", "USD"]
+        normalizer: currency
+      - name: tags
+        type: str
+        is_list: true
+        description: Free-form document tags printed near the footer, one per keyword.
+        examples: ["priority"]
+        normalizer: string_list
+      - name: mentioned_document_types
+        type: DocumentType
+        is_list: true
+        description: Types of other documents mentioned in the footer, one per mention.
+        examples: ["Receipt"]
+      - name: seller
+        type: Party
+        role: edge
+        edge_label: ISSUED_BY
+        description: The party that issued the document (header, 'Seller' or 'From').
+      - name: buyer
+        type: Party
+        role: edge
+        edge_label: BILLED_TO
+        description: The party billed by the document ('Bill To' or 'Buyer').
+      - name: items
+        type: Item
+        is_list: true
+        role: edge
+        edge_label: CONTAINS_ITEM
+        description: >-
+          Catalog of all distinct items billed in the document — the canonical
+          home of each Item's full detail, extracted once.
+      - name: line_items
+        type: LineItem
+        is_list: true
+        role: edge
+        edge_label: CONTAINS_LINE
+        description: Every row of the billing table, in printed order.
+      - name: taxes
+        type: Tax
+        is_list: true
+        role: edge
+        edge_label: HAS_TAX
+        description: Document-level tax brackets from the totals section.
+needs_root_list_dedup:
+  - tags
+  - taxes
+  - mentioned_document_types
+generator:
+  version: 0.1.0
+  sources:
+    - invoice1.pdf
+    - invoice2.pdf
+  created: "2026-07-16"
+  spec: invoice.spec.yaml

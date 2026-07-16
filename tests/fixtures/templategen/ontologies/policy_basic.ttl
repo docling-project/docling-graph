@@ -1,0 +1,78 @@
+@prefix ex: <http://example.org/insurance#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/insurance> a owl:Ontology ;
+    rdfs:comment "Insurance policy extraction ontology." .
+
+ex:Policy a owl:Class ;
+    rdfs:comment "An insurance contract between an insurer and a policyholder." ;
+    rdfs:label "Insurance Policy" .
+
+ex:policyNumber a owl:DatatypeProperty, owl:InverseFunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Unique policy number printed on the schedule." ;
+    skos:example "POL-2024-001", "POL-2024-002" .
+
+ex:premium a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:decimal .
+
+ex:active a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:boolean .
+
+ex:startDate a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:date .
+
+ex:createdAt a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:dateTime .
+
+ex:renewalYear a owl:DatatypeProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:gYear .
+
+ex:note a owl:DatatypeProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:string .
+
+# Not functional, but restricted to at most 1 -> single Optional.
+ex:footnote a owl:DatatypeProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:string .
+
+ex:Policy rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:footnote ;
+    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+] .
+
+ex:covers a owl:ObjectProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range ex:Guarantee ;
+    rdfs:comment "A guarantee granted by the policy." .
+
+ex:Policy rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:covers ;
+    owl:maxQualifiedCardinality "6"^^xsd:nonNegativeInteger ;
+    owl:onClass ex:Guarantee
+] .
+
+ex:Policy rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty ex:policyNumber ;
+    owl:minCardinality "1"^^xsd:nonNegativeInteger
+] .
+
+ex:Guarantee a owl:Class ;
+    rdfs:comment "A single coverage granted by the policy." .
+
+ex:guaranteeName a owl:DatatypeProperty ;
+    rdfs:domain ex:Guarantee ;
+    rdfs:range xsd:string .

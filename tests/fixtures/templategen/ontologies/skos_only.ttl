@@ -1,0 +1,16 @@
+@prefix ex: <http://example.org/countries#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# A pure SKOS vocabulary: no owl:Class / rdfs:Class declarations at all.
+ex:CountryScheme a skos:ConceptScheme ;
+    rdfs:label "Countries" .
+
+ex:fr a skos:Concept ;
+    skos:inScheme ex:CountryScheme ;
+    skos:prefLabel "France" ;
+    skos:altLabel "FR" .
+
+ex:de a skos:Concept ;
+    skos:inScheme ex:CountryScheme ;
+    skos:prefLabel "Germany" .

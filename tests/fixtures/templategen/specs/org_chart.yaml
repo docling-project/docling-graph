@@ -1,0 +1,84 @@
+# Cyclic SPEC: a self-referential entity (Section -> Section) and a mutual
+# cycle (Person <-> Organization). The renderer must break both with quoted
+# forward references + Model.model_rebuild() lines after the classes. The
+# cycle back-edges carry reference=True (linter rule R15): the dense catalog
+# walk skips reference fields, so the graph-level recursion terminates too.
+module_docstring: >-
+  Organizational chart extraction template exercising recursive and mutually
+  referential entities.
+root: OrgChart
+models:
+  - name: Section
+    kind: entity
+    docstring: >-
+      A numbered section of the chart document. Sections nest recursively into
+      subsections.
+    identity_fields: [section_number]
+    fields:
+      - name: section_number
+        type: str
+        role: identity
+        description: Section number as printed in the heading.
+        examples: ["1", "2.1"]
+      - name: subsections
+        type: Section
+        is_list: true
+        role: edge
+        edge_label: CONTAINS_SECTION
+        reference: true
+        description: Nested subsections of this section, referenced by number only.
+  - name: Person
+    kind: entity
+    docstring: A person named in the chart. NOT an organization.
+    identity_fields: [full_name]
+    fields:
+      - name: full_name
+        type: str
+        role: identity
+        description: Full name as printed.
+        examples: ["Ada Lovelace", "Grace Hopper"]
+      - name: works_for
+        type: Organization
+        role: edge
+        edge_label: EMPLOYED_BY
+        reference: true
+        description: The organization employing this person, referenced by name only.
+  - name: Organization
+    kind: entity
+    docstring: An organization in the chart. NOT a person.
+    identity_fields: [name]
+    fields:
+      - name: name
+        type: str
+        role: identity
+        description: Organization name as printed.
+        examples: ["Acme Research"]
+      - name: employees
+        type: Person
+        is_list: true
+        role: edge
+        edge_label: EMPLOYS
+        description: People employed by this organization.
+  - name: OrgChart
+    kind: root
+    docstring: The chart document root, identified by its printed title.
+    identity_fields: [chart_title]
+    fields:
+      - name: chart_title
+        type: str
+        role: identity
+        description: Title printed on the first page.
+        examples: ["Company Org Chart 2026"]
+      - name: organizations
+        type: Organization
+        is_list: true
+        role: edge
+        edge_label: HAS_ORGANIZATION
+        description: Organizations described by the chart.
+      - name: sections
+        type: Section
+        is_list: true
+        role: edge
+        edge_label: CONTAINS_SECTION
+        description: Top-level sections of the chart document.
+generator: {}

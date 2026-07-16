@@ -1,0 +1,58 @@
+@prefix ex: <http://example.org/logistics#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Manifest a owl:Class ;
+    rdfs:comment "A shipping manifest." .
+
+ex:manifestNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Manifest ;
+    rdfs:range xsd:string .
+
+ex:containsOrder a owl:ObjectProperty ;
+    rdfs:domain ex:Manifest ;
+    rdfs:range ex:Order .
+
+ex:containsShipment a owl:ObjectProperty ;
+    rdfs:domain ex:Manifest ;
+    rdfs:range ex:Shipment .
+
+# Order declares 3 datatype properties -> canonical home for Item.
+ex:Order a owl:Class ;
+    rdfs:comment "A purchase order." .
+
+ex:orderNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:string .
+
+ex:orderDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:date .
+
+ex:orderTotal a owl:DatatypeProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:decimal .
+
+ex:containsItem a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Item .
+
+# Shipment declares 1 datatype property -> its inbound edge becomes a reference.
+ex:Shipment a owl:Class ;
+    rdfs:comment "A physical shipment." .
+
+ex:shipmentCode a owl:DatatypeProperty ;
+    rdfs:domain ex:Shipment ;
+    rdfs:range xsd:string .
+
+ex:shipsItem a owl:ObjectProperty ;
+    rdfs:domain ex:Shipment ;
+    rdfs:range ex:Item .
+
+ex:Item a owl:Class ;
+    rdfs:comment "A catalog item." .
+
+ex:itemName a owl:DatatypeProperty ;
+    rdfs:domain ex:Item ;
+    rdfs:range xsd:string .

@@ -1,0 +1,13 @@
+@prefix ex: <http://example.org/covernotes#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# The root class itself has no identity-like property:
+# a document_reference identity is synthesized instead.
+ex:CoverNote a owl:Class ;
+    rdfs:comment "A temporary cover note." .
+
+ex:freeText a owl:DatatypeProperty ;
+    rdfs:domain ex:CoverNote ;
+    rdfs:range xsd:string .

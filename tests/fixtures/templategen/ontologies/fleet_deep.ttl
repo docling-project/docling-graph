@@ -1,0 +1,49 @@
+@prefix ex: <http://example.org/fleetdeep#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Fleet a owl:Class ;
+    rdfs:comment "A managed fleet." .
+
+ex:fleetCode a owl:DatatypeProperty ;
+    rdfs:domain ex:Fleet ;
+    rdfs:range xsd:string .
+
+ex:owns a owl:ObjectProperty ;
+    rdfs:domain ex:Fleet ;
+    rdfs:range ex:Vehicle .
+
+# Two-level abstract hierarchy: Vehicle AND Car are both dropped (no direct
+# properties, >= 2 subclasses each), so the owns edge must fan out through the
+# nested abstract down to the emitted leaves: Sedan, Suv, Boat.
+ex:Vehicle a owl:Class ;
+    rdfs:comment "Any vehicle of the fleet." .
+
+ex:Car a owl:Class ;
+    rdfs:subClassOf ex:Vehicle ;
+    rdfs:comment "A passenger car." .
+
+ex:Boat a owl:Class ;
+    rdfs:subClassOf ex:Vehicle ;
+    rdfs:comment "A boat." .
+
+ex:boatName a owl:DatatypeProperty ;
+    rdfs:domain ex:Boat ;
+    rdfs:range xsd:string .
+
+ex:Sedan a owl:Class ;
+    rdfs:subClassOf ex:Car ;
+    rdfs:comment "A sedan." .
+
+ex:sedanName a owl:DatatypeProperty ;
+    rdfs:domain ex:Sedan ;
+    rdfs:range xsd:string .
+
+ex:Suv a owl:Class ;
+    rdfs:subClassOf ex:Car ;
+    rdfs:comment "A sport utility vehicle." .
+
+ex:suvName a owl:DatatypeProperty ;
+    rdfs:domain ex:Suv ;
+    rdfs:range xsd:string .

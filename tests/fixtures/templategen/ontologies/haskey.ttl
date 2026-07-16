@@ -1,0 +1,36 @@
+@prefix ex: <http://example.org/contracts#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Contract a owl:Class ;
+    rdfs:comment "A signed agreement." ;
+    owl:hasKey ( ex:contractNumber ex:contractSeries ) .
+
+ex:contractNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Contract ;
+    rdfs:range xsd:string .
+
+ex:contractSeries a owl:DatatypeProperty ;
+    rdfs:domain ex:Contract ;
+    rdfs:range xsd:string .
+
+ex:hasAmendment a owl:ObjectProperty ;
+    rdfs:domain ex:Contract ;
+    rdfs:range ex:Amendment .
+
+ex:Amendment a owl:Class ;
+    rdfs:comment "A change to the contract." ;
+    owl:hasKey ( ex:amendmentId ex:amendmentDate ex:amendmentSeq ) .
+
+ex:amendmentId a owl:DatatypeProperty ;
+    rdfs:domain ex:Amendment ;
+    rdfs:range xsd:string .
+
+ex:amendmentDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Amendment ;
+    rdfs:range xsd:date .
+
+ex:amendmentSeq a owl:DatatypeProperty ;
+    rdfs:domain ex:Amendment ;
+    rdfs:range xsd:integer .

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Invoice",
+  "description": "A commercial invoice.",
+  "type": "object",
+  "required": ["invoice_number", "issue_date"],
+  "properties": {
+    "invoice_number": {
+      "type": "string",
+      "description": "Number printed in the header.",
+      "examples": ["INV-2024-0113", "INV-2024-0207"]
+    },
+    "issue_date": {"type": "string", "format": "date"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "total": {
+      "type": "object",
+      "description": "Grand total block.",
+      "properties": {
+        "amount": {"type": "number"},
+        "currency": {"type": "string"}
+      }
+    },
+    "status": {"type": "string", "enum": ["draft", "sent", "paid"]},
+    "line_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/LineItem"},
+      "maxItems": 10
+    },
+    "seller": {"$ref": "#/$defs/Party"},
+    "buyer": {"$ref": "#/$defs/Party"},
+    "tags": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "LineItem": {
+      "type": "object",
+      "description": "One row of the billing table.",
+      "required": ["line_number", "description"],
+      "properties": {
+        "line_number": {"type": "string", "examples": ["1", "2"]},
+        "description": {"type": "string"},
+        "quantity": {"type": "integer"},
+        "unit_price": {"type": "number"}
+      }
+    },
+    "Party": {
+      "type": "object",
+      "description": "A legal party of the invoice.",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string"},
+        "vat_id": {"type": "string"},
+        "address": {"$ref": "#/$defs/Address"}
+      }
+    },
+    "Address": {
+      "type": "object",
+      "properties": {
+        "street": {"type": "string"},
+        "city": {"type": "string"}
+      }
+    }
+  }
+}

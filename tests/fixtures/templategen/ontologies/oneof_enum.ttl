@@ -1,0 +1,27 @@
+@prefix ex: <http://example.org/docs#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Doc a owl:Class ;
+    rdfs:comment "A tracked document." .
+
+ex:docNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Doc ;
+    rdfs:range xsd:string .
+
+ex:severity a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Doc ;
+    rdfs:range ex:Severity ;
+    rdfs:comment "Severity as printed in the header." .
+
+ex:Severity a owl:Class ;
+    owl:oneOf ( ex:low ex:medium ex:high ) .
+
+ex:low skos:prefLabel "Low" ;
+    skos:altLabel "minor" .
+
+ex:medium skos:prefLabel "Medium" .
+
+ex:high rdfs:label "High" .
