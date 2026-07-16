@@ -1,0 +1,32 @@
+@prefix ex: <http://example.org/coverage#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Policy a owl:Class ;
+    rdfs:comment "An insurance policy." .
+
+ex:policyNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:string .
+
+ex:coverageType a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range ex:CoverageType ;
+    rdfs:comment "Coverage type as printed on the schedule." .
+
+# A class whose instances are all skos:Concepts in one scheme -> EnumSpec.
+ex:CoverageType a owl:Class ;
+    rdfs:comment "Coverage type vocabulary." .
+
+ex:CoverageScheme a skos:ConceptScheme .
+
+ex:fire a ex:CoverageType, skos:Concept ;
+    skos:inScheme ex:CoverageScheme ;
+    skos:prefLabel "Fire" ;
+    skos:altLabel "Fire damage", "Incendie" .
+
+ex:theft a ex:CoverageType, skos:Concept ;
+    skos:inScheme ex:CoverageScheme ;
+    skos:prefLabel "Theft" .

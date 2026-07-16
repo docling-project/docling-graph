@@ -1,0 +1,45 @@
+@prefix ex: <http://example.org/reinsurance#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Policy a owl:Class ;
+    rdfs:comment "A reinsurance policy schedule." .
+
+ex:policyNumber a owl:DatatypeProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range xsd:string .
+
+# Two single-valued roles from ONE parent to the same target: the seller/buyer
+# multi-role shape -> both edges must stay full (no reference flipping).
+ex:insurer a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range ex:Company .
+
+ex:reinsurer a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range ex:Company .
+
+ex:Company a owl:Class ;
+    rdfs:comment "A company named on the schedule." .
+
+ex:companyName a owl:DatatypeProperty ;
+    rdfs:domain ex:Company ;
+    rdfs:range xsd:string .
+
+# Same parent but one edge is repeatable: NOT the multi-role shape, so the
+# non-canonical path still flips to a reference.
+ex:leadBroker a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range ex:Broker .
+
+ex:panelBroker a owl:ObjectProperty ;
+    rdfs:domain ex:Policy ;
+    rdfs:range ex:Broker .
+
+ex:Broker a owl:Class ;
+    rdfs:comment "A broker intermediating the placement." .
+
+ex:brokerName a owl:DatatypeProperty ;
+    rdfs:domain ex:Broker ;
+    rdfs:range xsd:string .

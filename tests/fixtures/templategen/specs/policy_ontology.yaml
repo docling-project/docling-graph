@@ -1,0 +1,52 @@
+# Ontology-compiled SPEC with unfilled gaps: missing identity examples and
+# missing descriptions render as runnable code + TODO(docling-graph) comments
+# (the --no-llm-gap-fill path stays 100% deterministic). Also exercises
+# graph_max_instances and the minimal import block (no validators at all).
+module_docstring: >-
+  Insurance policy structure compiled deterministically from an OWL ontology.
+root: Policy
+enums: []
+models:
+  - name: Guarantee
+    kind: entity
+    docstring: >-
+      A named guarantee/coverage offered by the policy. NOT an exclusion
+      clause. At most 6 per document.
+    identity_fields: [guarantee_name]
+    max_instances: 12
+    provenance: ontology
+    source_ref: "http://example.org/policy#Guarantee"
+    fields:
+      - name: guarantee_name
+        type: str
+        role: identity
+        description: Name of the guarantee as printed in the section heading.
+        examples: []
+      - name: description
+        type: str
+        description: ""
+        examples: []
+  - name: Policy
+    kind: root
+    docstring: An insurance contract document.
+    identity_fields: [policy_number]
+    provenance: ontology
+    source_ref: "http://example.org/policy#Policy"
+    fields:
+      - name: policy_number
+        type: str
+        role: identity
+        description: ""
+        examples: []
+      - name: effective_date
+        type: date
+        description: Date the policy takes effect.
+        examples: []
+      - name: covers
+        type: Guarantee
+        is_list: true
+        role: edge
+        edge_label: COVERS
+        description: Guarantees covered by this policy.
+generator:
+  source: policy.ttl

@@ -1,0 +1,31 @@
+@prefix ex: <http://example.org/firms#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Firm and Enterprise are equivalent: collapsed to one model (Firm declares
+# more properties, so it is the representative), fields merged.
+ex:Firm a owl:Class ;
+    rdfs:comment "A company." ;
+    owl:equivalentClass ex:Enterprise .
+
+ex:Enterprise a owl:Class .
+
+ex:firmName a owl:DatatypeProperty ;
+    rdfs:domain ex:Firm ;
+    rdfs:range xsd:string .
+
+ex:vatCode a owl:DatatypeProperty ;
+    rdfs:domain ex:Enterprise ;
+    rdfs:range xsd:string .
+
+ex:employsPerson a owl:ObjectProperty ;
+    rdfs:domain ex:Firm ;
+    rdfs:range ex:Person .
+
+ex:Person a owl:Class ;
+    rdfs:comment "A natural person." .
+
+ex:personName a owl:DatatypeProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range xsd:string .

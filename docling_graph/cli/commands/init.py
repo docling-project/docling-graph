@@ -84,3 +84,9 @@ def _print_final_steps(config_dict: dict, deps_valid: bool) -> None:
             next_steps = ""
         # Dependencies missing, use the function that prepends install step
         print_next_steps_with_deps(config_dict, next_steps)
+
+    rich_print(
+        "\n[blue]Tip:[/blue] no template yet? Generate one with "
+        "[bold cyan]docling-graph template from-docs <examples...>[/bold cyan] "
+        "or [bold cyan]docling-graph template from-ontology <schema>[/bold cyan]."
+    )

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claim",
+  "description": "An insurance claim form.",
+  "type": "object",
+  "required": ["claim_number"],
+  "properties": {
+    "claim_number": {
+      "type": "string",
+      "examples": ["CLM-001", "CLM-002"]
+    },
+    "vehicle": {"$ref": "#/definitions/InsuredVehicle"}
+  },
+  "definitions": {
+    "VehicleBase": {
+      "type": "object",
+      "description": "Common vehicle attributes.",
+      "properties": {
+        "make": {"type": "string"},
+        "model_year": {"type": "integer"}
+      }
+    },
+    "InsuredVehicle": {
+      "allOf": [
+        {"$ref": "#/definitions/VehicleBase"},
+        {
+          "type": "object",
+          "required": ["registration_code"],
+          "properties": {
+            "registration_code": {"type": "string"}
+          }
+        }
+      ]
+    }
+  }
+}

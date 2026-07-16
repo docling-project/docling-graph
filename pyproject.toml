@@ -74,6 +74,13 @@ bedrock = [
 semantic = [
     "rapidfuzz",
 ]
+# Ontology-based template generation (docling-graph template from-ontology):
+# rdflib for OWL/RDFS/SKOS, linkml-runtime for LinkML SchemaView. The JSON
+# Schema compiler is stdlib-only and needs neither.
+templategen = [
+    "rdflib>=7.0,<8.0",
+    "linkml-runtime>=1.7,<2.0",
+]
 
 
 
@@ -191,6 +198,9 @@ classmethod-decorators = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]
 "tests/**/*.py" = ["ASYNC", "ANN201", "ANN001"]
+# Rendered templategen goldens keep the schema-definition docs' Optional[...]
+# idiom (template-basics.md required imports) instead of `X | None`.
+"tests/fixtures/templategen/golden/*.py" = ["UP045"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 30

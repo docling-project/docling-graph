@@ -1,0 +1,55 @@
+@prefix ex: <http://example.org/fleet#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Fleet a owl:Class ;
+    rdfs:comment "A managed fleet of vehicles and its coverages." .
+
+ex:fleetCode a owl:DatatypeProperty ;
+    rdfs:domain ex:Fleet ;
+    rdfs:range xsd:string .
+
+ex:includesCoverage a owl:ObjectProperty ;
+    rdfs:domain ex:Fleet ;
+    rdfs:range ex:Coverage .
+
+ex:ownsVehicle a owl:ObjectProperty ;
+    rdfs:domain ex:Fleet ;
+    rdfs:range ex:Vehicle .
+
+# Abstract parent: no direct properties, two subclasses -> dropped, fanned out.
+ex:Coverage a owl:Class ;
+    rdfs:comment "An insurance coverage." .
+
+ex:FireCoverage a owl:Class ;
+    rdfs:subClassOf ex:Coverage ;
+    rdfs:comment "Covers fire damage." .
+
+ex:TheftCoverage a owl:Class ;
+    rdfs:subClassOf ex:Coverage ;
+    rdfs:comment "Covers theft." .
+
+ex:coverageName a owl:DatatypeProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( ex:FireCoverage ex:TheftCoverage ) ] ;
+    rdfs:range xsd:string .
+
+ex:fireRisk a owl:DatatypeProperty ;
+    rdfs:domain ex:FireCoverage ;
+    rdfs:range xsd:string .
+
+# Concrete parent: own property, one subclass -> both kept, property pushed down.
+ex:Vehicle a owl:Class ;
+    rdfs:comment "A vehicle of the fleet." .
+
+ex:vin a owl:DatatypeProperty ;
+    rdfs:domain ex:Vehicle ;
+    rdfs:range xsd:string .
+
+ex:Car a owl:Class ;
+    rdfs:subClassOf ex:Vehicle ;
+    rdfs:comment "A passenger car." .
+
+ex:seatCount a owl:DatatypeProperty ;
+    rdfs:domain ex:Car ;
+    rdfs:range xsd:integer .

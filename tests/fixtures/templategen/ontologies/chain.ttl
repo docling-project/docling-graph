@@ -1,0 +1,20 @@
+@prefix ex: <http://example.org/ledger#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# A 4-deep chain for --depth pruning: Ledger -> Account -> Entry -> Detail.
+ex:Ledger a owl:Class ; rdfs:comment "A ledger book." .
+ex:ledgerCode a owl:DatatypeProperty ; rdfs:domain ex:Ledger ; rdfs:range xsd:string .
+ex:containsAccount a owl:ObjectProperty ; rdfs:domain ex:Ledger ; rdfs:range ex:Account .
+
+ex:Account a owl:Class ; rdfs:comment "An account." .
+ex:accountCode a owl:DatatypeProperty ; rdfs:domain ex:Account ; rdfs:range xsd:string .
+ex:containsEntry a owl:ObjectProperty ; rdfs:domain ex:Account ; rdfs:range ex:Entry .
+
+ex:Entry a owl:Class ; rdfs:comment "A booked entry." .
+ex:entryCode a owl:DatatypeProperty ; rdfs:domain ex:Entry ; rdfs:range xsd:string .
+ex:containsDetail a owl:ObjectProperty ; rdfs:domain ex:Entry ; rdfs:range ex:Detail .
+
+ex:Detail a owl:Class ; rdfs:comment "A booking detail line." .
+ex:detailCode a owl:DatatypeProperty ; rdfs:domain ex:Detail ; rdfs:range xsd:string .

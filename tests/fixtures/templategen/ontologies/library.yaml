@@ -1,0 +1,117 @@
+id: https://example.org/library
+name: library
+description: Library lending domain schema.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  lib: https://example.org/library/
+default_prefix: lib
+default_range: string
+imports:
+  - linkml:types
+
+classes:
+  NamedThing:
+    abstract: true
+    description: Anything that can carry a note.
+    slots:
+      - common_note
+
+  Library:
+    tree_root: true
+    description: A lending library and its catalog.
+    slots:
+      - library_name
+      - status
+      - books
+      - branches
+
+  Book:
+    is_a: NamedThing
+    description: A published book in the catalog.
+    aliases:
+      - Volume
+    slots:
+      - isbn
+      - page_count
+      - authors
+      - primary_author
+      - published_by
+    slot_usage:
+      page_count:
+        description: Number of pages as printed on the last page.
+
+  Author:
+    description: A person who wrote one of the books.
+    slots:
+      - author_name
+      - birth_date
+
+  Publisher:
+    description: The publishing house block on the imprint page.
+    slots:
+      - imprint_city
+
+  Branch:
+    description: A physical branch of the library.
+    slots:
+      - branch_code
+
+slots:
+  library_name:
+    identifier: true
+    description: Official library name as printed on the title page.
+    examples:
+      - value: Central City Library
+      - value: Northside Branch Library
+  status:
+    range: LibraryStatus
+    required: true
+    description: Operational status.
+  books:
+    range: Book
+    multivalued: true
+    inlined: false
+    description: Catalog entries.
+  branches:
+    range: Branch
+    multivalued: true
+    maximum_cardinality: 4
+  isbn:
+    key: true
+    description: ISBN printed on the copyright page.
+    examples:
+      - value: 978-3-16-148410-0
+      - value: 978-0-306-40615-7
+  page_count:
+    range: integer
+    description: Placeholder description (overridden per class).
+  authors:
+    range: Author
+    multivalued: true
+  primary_author:
+    range: Author
+    multivalued: true
+    maximum_cardinality: 1
+  published_by:
+    range: Publisher
+  author_name:
+    description: Author full name as printed.
+  birth_date:
+    range: date
+    minimum_cardinality: 1
+  common_note:
+    description: Free-text note.
+  imprint_city:
+    description: City printed in the imprint block.
+  branch_code:
+    description: Short branch code.
+
+enums:
+  LibraryStatus:
+    description: Whether the library operates.
+    permissible_values:
+      OPEN:
+        title: Open
+      CLOSED:
+        title: Closed
+        meaning: lib:closed
