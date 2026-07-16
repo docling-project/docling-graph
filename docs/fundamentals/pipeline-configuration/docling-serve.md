@@ -29,7 +29,10 @@ config = PipelineConfig(
     # Convert on a remote docling-serve instance
     docling_serve_url="http://localhost:5001",
     docling_serve_api_key="my-key",   # only if the server requires one
-    docling_serve_timeout=300,        # seconds; raise for large documents
+    docling_serve_timeout=300,        # per-document job deadline in seconds
+    # For deployments behind an auth proxy (e.g. bearer tokens) instead of
+    # X-Api-Key — sent on every request:
+    # docling_serve_headers={"Authorization": "Bearer <token>"},
 )
 config.run()
 ```
@@ -58,18 +61,21 @@ When no URL is set explicitly, Docling Graph falls back to environment variables
 
 ```bash
 export DOCLING_SERVE_URL="http://docling-serve.internal:5001"
-export DOCLING_SERVE_API_KEY="my-key"   # optional
+export DOCLING_SERVE_API_KEY="my-key"                              # optional
+export DOCLING_SERVE_HEADERS='{"Authorization": "Bearer <token>"}' # optional, JSON object
 ```
 
-**Precedence:** CLI flag > `config.yaml` / `PipelineConfig` > environment variable. The API key is never written to `metadata.json`.
+**Precedence:** CLI flag > `config.yaml` / `PipelineConfig` > environment variable. The API key and custom headers are never written to `metadata.json`.
 
 ---
 
 ## How It Works
 
-1. Local files are uploaded to `POST /v1/convert/file`; URL sources are passed to `POST /v1/convert/source` so the server fetches them itself.
-2. The client requests DoclingDocument JSON output (`to_formats: ["json"]`).
-3. The response is parsed back into a `DoclingDocument`, and the pipeline continues exactly as with local conversion (including `chunks.json`, DocLang export, and provenance).
+Docling Graph uses the official Docling service client (`docling.service_client`) and the server's **asynchronous task API** (requires docling-serve >= 1.0.0):
+
+1. Local files are uploaded (and URL sources submitted for the server to fetch itself) as an async conversion task.
+2. The client polls the task status over HTTP until the job finishes — no long-held connection, so load-balancer idle timeouts and the server's synchronous wait cap don't abort large documents. Transient errors (HTTP 500/502, and 429/503 with a Retry-After header) are retried automatically.
+3. The DoclingDocument JSON result (`to_formats: ["json"]`) is fetched and parsed, and the pipeline continues exactly as with local conversion (including `chunks.json`, DocLang export, and provenance).
 
 The `docling_config` pipeline selection still applies and maps to the server-side pipeline:
 
@@ -82,7 +88,7 @@ The `docling_config` pipeline selection still applies and maps to the server-sid
 
 ## Timeouts and Large Documents
 
-The synchronous docling-serve API holds the HTTP connection while converting, so the timeout must cover the whole conversion:
+`docling_serve_timeout` is the approximate deadline for one document's conversion job, from submission to terminal status. Conversion runs asynchronously on the server and the client polls until this deadline — server queue time counts toward it, so on a busy shared instance raise it accordingly. On timeout, the job may still be running server-side.
 
 ```python
 config = PipelineConfig(
@@ -92,6 +98,8 @@ config = PipelineConfig(
     docling_serve_timeout=1800,  # 30 minutes
 )
 ```
+
+Connect/read timeouts and transient-error retries are handled automatically and bounded separately (an unreachable server fails after ~10 seconds, not the full deadline).
 
 ---
 
@@ -116,19 +124,31 @@ uv run docling-graph convert document.pdf --template "templates.BillingDocument"
 
 ### 🐛 `Failed to reach docling-serve`
 
-The instance is unreachable. Check the URL, network access, and that the service is running (`curl <url>/health`).
+The instance is unreachable. Check the URL, network access, and that the service is running (`curl <url>/health`). For custom/corporate CAs, set `SSL_CERT_FILE` — the client's HTTP stack (httpx) does not read `REQUESTS_CA_BUNDLE` (Docling Graph bridges it automatically when only `REQUESTS_CA_BUNDLE` is set).
 
 ### 🐛 `docling-serve returned HTTP 401/403`
 
-The server has authentication enabled. Provide the key via `DOCLING_SERVE_API_KEY` (or `docling_serve_api_key`); it is sent as the `X-Api-Key` header.
+The server has authentication enabled. Provide the key via `DOCLING_SERVE_API_KEY` (or `docling_serve_api_key`); it is sent as the `X-Api-Key` header. Deployments behind an auth proxy (e.g. bearer tokens) can send arbitrary headers via `DOCLING_SERVE_HEADERS` (or `docling_serve_headers`) instead.
 
-### 🐛 `docling-serve request timed out`
+### 🐛 `docling-serve returned HTTP 402 (usage limit exceeded)`
 
-Conversion took longer than `docling_serve_timeout`. Raise the timeout, or check the server's queue/load.
+The service's usage quota is exhausted (managed/SaaS deployments). The error details carry the current usage and limit.
 
-### 🐛 `response contains no DoclingDocument JSON`
+### 🐛 `docling-serve returned HTTP 404`
 
-The server did not honor the `json` output format — make sure the docling-serve version is recent enough to support `to_formats: ["json"]`.
+If the URL is correct, the server may predate the v1 async task API — remote conversion requires docling-serve >= 1.0.0 (`curl <url>/version`).
+
+### 🐛 `conversion did not finish within ...s (job deadline)`
+
+Conversion (including server queue time) took longer than `docling_serve_timeout`. Raise the timeout, or check the server's queue/load — the job may still be running server-side.
+
+### 🐛 `Failed to parse DoclingDocument response`
+
+The client and server versions may disagree on the response schema — upgrade the older side (client: the `docling` package; server: docling-serve).
+
+### 🐛 `docling-serve returned HTTP 422`
+
+Docling Graph always requests in-body results (no presigned artifact storage). If a deployment mandates presigned/artifact-storage results and rejects in-body targets, conversion fails with a 422 — check the server's target configuration.
 
 ---
 

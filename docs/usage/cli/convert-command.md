@@ -465,7 +465,7 @@ uv run docling-graph convert document.pdf \
     --docling-serve-url http://localhost:5001
 ```
 
-Also configurable via `docling.serve.url` in `config.yaml` or the `DOCLING_SERVE_URL` environment variable; the API key (if the server requires one) is read from `DOCLING_SERVE_API_KEY`. See [Docling-Serve Integration](../../fundamentals/pipeline-configuration/docling-serve.md).
+Also configurable via `docling.serve.url` in `config.yaml` or the `DOCLING_SERVE_URL` environment variable; the API key (if the server requires one) is read from `DOCLING_SERVE_API_KEY`, and extra auth headers (e.g. `Authorization: Bearer` for deployments behind an auth proxy) from `DOCLING_SERVE_HEADERS` (a JSON object string). See [Docling-Serve Integration](../../fundamentals/pipeline-configuration/docling-serve.md).
 
 ---
 
