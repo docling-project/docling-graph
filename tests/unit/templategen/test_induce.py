@@ -14,12 +14,15 @@ from typing import Any
 
 import pytest
 
-from docling_graph.exceptions import ExtractionError
+from docling_graph.exceptions import ClientError, ExtractionError
 from docling_graph.templategen.induce.documents import (
     ELISION_MARKER,
+    DocumentContent,
     InductionReport,
     induce_spec_from_documents,
     prepare_document_text,
+    prepare_document_windows,
+    source_display_name,
 )
 from docling_graph.templategen.induce.gapfill import fill_gaps
 from docling_graph.templategen.induce.merge import (
@@ -621,6 +624,128 @@ def test_distinct_invalid_payloads_fail_after_one_retry(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# Pass 2 truncation splitting
+# ---------------------------------------------------------------------------
+
+
+class _Pass2SizeLimitedLLM(ScriptedLLM):
+    """Raises for pass-2 batches above ``max_batch``, scripted otherwise."""
+
+    def __init__(self, script: dict, *, max_batch: int, truncated: bool) -> None:
+        super().__init__(script)
+        self._max_batch = max_batch
+        self._truncated = truncated
+
+    @staticmethod
+    def _batch_size(prompt: dict[str, str]) -> int:
+        listing = prompt["user"].split("Propose fields for exactly these classes:")[1]
+        return sum(1 for line in listing.splitlines() if line.startswith("- "))
+
+    def __call__(self, *, prompt: dict[str, str], schema_json: str, context: str) -> Any:
+        if "pass2" in context and self._batch_size(prompt) > self._max_batch:
+            self.calls.append({"prompt": prompt, "schema_json": schema_json, "context": context})
+            details = {"truncated": True} if self._truncated else {}
+            raise ClientError("Invalid JSON response", details=details)
+        return super().__call__(prompt=prompt, schema_json=schema_json, context=context)
+
+
+def _four_class_source(tmp_path) -> Path:
+    source = tmp_path / "big.md"
+    source.write_text("Plain prose sentence for the batching test. " * 10, encoding="utf-8")
+    return source
+
+
+def _four_class_script(pass2_payloads: list[Any]) -> dict:
+    names = [f"Klass{i}" for i in range(1, 5)]
+    return {
+        "pass1": [
+            {"classes": [p1(name, "component", is_root=(name == "Klass1")) for name in names]}
+        ],
+        "pass2": pass2_payloads,
+        "pass3": [{"edges": []}],
+    }
+
+
+def test_pass2_truncated_batch_splits_and_recovers(tmp_path):
+    llm = _Pass2SizeLimitedLLM(
+        _four_class_script([{"classes": []}, {"classes": []}]), max_batch=2, truncated=True
+    )
+    spec, report = induce_spec_from_documents([_four_class_source(tmp_path)], llm)
+    assert len(spec.models) == 4
+    stats = report.documents[0]
+    assert stats.pass2_splits == 1
+    # The 4-class batch failed twice (call + retry), then each half succeeded.
+    assert len(llm.calls_for("pass2")) == 4
+    assert stats.retries == 1
+
+
+def test_pass2_non_truncation_failure_never_splits(tmp_path):
+    llm = _Pass2SizeLimitedLLM(_four_class_script([]), max_batch=2, truncated=False)
+    with pytest.raises(ExtractionError, match="failed after one retry"):
+        induce_spec_from_documents([_four_class_source(tmp_path)], llm)
+
+
+# ---------------------------------------------------------------------------
+# Pass 2 batch sizing and concurrent induction
+# ---------------------------------------------------------------------------
+
+
+def test_pass2_batch_size_parameter(tmp_path):
+    llm = ScriptedLLM(_four_class_script([{"classes": []}, {"classes": []}]))
+    spec, _ = induce_spec_from_documents([_four_class_source(tmp_path)], llm, pass2_batch_size=2)
+    pass2_calls = llm.calls_for("pass2")
+    assert len(pass2_calls) == 2
+    assert pass2_calls[0]["context"].endswith(":batch0")
+    assert pass2_calls[1]["context"].endswith(":batch1")
+    assert len(spec.models) == 4
+
+
+class _RoutedLLM:
+    """Thread-safe scripted callable keyed by the exact context tag.
+
+    Context tags are deterministic under any worker count (documents by name,
+    pass-2 batches by position), so routing by tag makes the parity test
+    independent of call-completion order.
+    """
+
+    def __init__(self, table: dict[str, Any]) -> None:
+        self.table = dict(table)
+        self._lock = __import__("threading").Lock()
+        self.contexts: list[str] = []
+
+    def __call__(self, *, prompt: dict[str, str], schema_json: str, context: str) -> Any:
+        with self._lock:
+            self.contexts.append(context)
+            assert context in self.table, f"unexpected context: {context!r}"
+            return copy.deepcopy(self.table[context])
+
+
+def _routed_invoice_llm() -> _RoutedLLM:
+    script = invoice_script().script
+    return _RoutedLLM(
+        {
+            "templategen_pass1_classes:invoice_1.md": script["pass1"][0],
+            "templategen_pass2_fields:invoice_1.md:batch0": script["pass2"][0],
+            "templategen_pass3_edges:invoice_1.md": script["pass3"][0],
+            "templategen_pass1_classes:invoice_2.md": script["pass1"][1],
+            "templategen_pass2_fields:invoice_2.md:batch0": script["pass2"][1],
+            "templategen_pass3_edges:invoice_2.md": script["pass3"][1],
+        }
+    )
+
+
+def test_parallel_induction_matches_sequential():
+    """workers > 1 changes wall time, never the induced spec or the report."""
+    sources = [FIXTURE_DOCS / "invoice_1.md", FIXTURE_DOCS / "invoice_2.md"]
+    spec_seq, report_seq = induce_spec_from_documents(sources, _routed_invoice_llm())
+    spec_par, report_par = induce_spec_from_documents(sources, _routed_invoice_llm(), workers=4)
+    assert spec_par.model_dump() == spec_seq.model_dump()
+    assert [d.model_dump() for d in report_par.documents] == [
+        d.model_dump() for d in report_seq.documents
+    ]
+
+
+# ---------------------------------------------------------------------------
 # prepare_document_text: budget sampler
 # ---------------------------------------------------------------------------
 
@@ -772,6 +897,77 @@ def test_induction_report_carries_cache_paths(tmp_path):
     )
     assert report.documents[0].cache_path == cache_dir / "register.document.json"
     assert report.documents[0].cache_path.is_file()
+
+
+# ---------------------------------------------------------------------------
+# prepare_document_text: URL sources and direct DocumentContent
+# ---------------------------------------------------------------------------
+
+
+def test_source_display_name_shapes():
+    assert source_display_name(Path("/tmp/scan.pdf")) == "scan.pdf"
+    assert source_display_name("https://example.com/docs/spec-sheet.pdf") == "spec-sheet.pdf"
+    assert source_display_name("https://example.com/") == "example.com"
+    assert source_display_name(DocumentContent(name="inline doc", text="x")) == "inline doc"
+
+
+def test_url_source_uses_injected_processor():
+    stub = StubProcessor("# Converted page\nBody text.")
+    prepared = prepare_document_text("https://example.com/docs/report.pdf", doc_processor=stub)
+    # The URL reaches the processor verbatim — never mangled through Path.
+    assert stub.converted == ["https://example.com/docs/report.pdf"]
+    assert prepared.markdown == "# Converted page\nBody text."
+    assert prepared.name == "report.pdf"
+
+
+def test_url_source_without_processor_raises():
+    with pytest.raises(ValueError, match="DocumentProcessor"):
+        prepare_document_text("https://example.com/report.md")
+
+
+def test_url_source_cache_stem_is_sanitized(tmp_path):
+    cache_dir = tmp_path / "cache"
+    stub = CachingStubProcessor("# Converted\nBody.")
+    prepared = prepare_document_text(
+        "https://example.com/docs/spec%20sheet.pdf", doc_processor=stub, cache_dir=cache_dir
+    )
+    assert prepared.cache_path == cache_dir / "spec_20sheet.document.json"
+    assert prepared.cache_path.is_file()
+
+
+def test_document_content_is_read_directly(tmp_path):
+    content = DocumentContent(name="inline register", text=GATE_DOC)
+    prepared = prepare_document_text(content, cache_dir=tmp_path / "cache")
+    assert prepared.name == "inline register"
+    assert prepared.markdown == GATE_DOC
+    # Nothing was converted, so nothing is cached.
+    assert prepared.cache_path is None
+    assert not (tmp_path / "cache").exists()
+
+
+def test_document_content_is_budget_sampled():
+    prepared = prepare_document_text(
+        DocumentContent(name="long doc", text=sampler_text()), budget_chars=800
+    )
+    assert prepared.sampled
+    assert ELISION_MARKER in prepared.markdown
+
+
+def test_induction_accepts_document_content_directly():
+    llm = ScriptedLLM(
+        {
+            "pass1": [
+                {"classes": [p1("Register", is_root=True, ident=("register_id", "", ["GOOD-1"]))]}
+            ],
+            "pass2": [{"classes": []}],
+            "pass3": [{"edges": []}],
+        }
+    )
+    spec, report = induce_spec_from_documents(
+        [DocumentContent(name="register.md", text=GATE_DOC)], llm
+    )
+    assert spec.root == "Register"
+    assert report.documents[0].name == "register.md"
 
 
 def test_near_empty_sources_are_skipped_and_all_empty_fails(tmp_path):
@@ -1252,3 +1448,203 @@ def test_gapfill_schema_is_structurally_incapable_of_injection():
         "reference",
     }
     assert not (property_names & forbidden)
+
+
+# ---------------------------------------------------------------------------
+# prepare_document_windows: oversized documents split into spread windows
+# ---------------------------------------------------------------------------
+
+
+def _lined_text(lines: int, tag: str) -> str:
+    return "".join(f"{tag} content line number {i:04d} with prose.\n" for i in range(lines))
+
+
+def test_small_document_is_a_single_full_unit(tmp_path):
+    source = tmp_path / "small.md"
+    source.write_text(GATE_DOC, encoding="utf-8")
+    units = prepare_document_windows(source, budget_chars=24_000)
+    assert len(units) == 1
+    assert units[0].markdown == GATE_DOC
+    assert units[0].window_index is None
+    assert units[0].name == "small.md"
+
+
+def test_oversized_document_tiles_into_full_coverage_windows(tmp_path):
+    text = _lined_text(60, "BODY")  # ~2.7k chars
+    source = tmp_path / "big.md"
+    source.write_text(text, encoding="utf-8")
+    units = prepare_document_windows(source, budget_chars=1_000)
+    assert [u.name for u in units] == [f"big.md [{i + 1}/{len(units)}]" for i in range(len(units))]
+    assert len(units) == 3  # ceil(2.7k / 1k)
+    assert all(u.window_count == len(units) for u in units)
+    # Full coverage: every source line appears in some window.
+    joined = "\n".join(u.markdown for u in units)
+    for i in range(60):
+        assert f"number {i:04d}" in joined
+    assert not units[0].sampled  # tiling regime: nothing elided
+    # Windows are line-aligned and self-describing.
+    for u in units:
+        body = u.markdown.split("\n", 1)[1]
+        assert body.startswith("BODY ")
+        assert u.markdown.startswith("[docling-graph] window ")
+
+
+def test_giant_document_caps_windows_and_marks_sampling(tmp_path):
+    text = _lined_text(2_000, "HUGE")  # ~90k chars >> 6 x 1k cap
+    source = tmp_path / "huge.md"
+    source.write_text(text, encoding="utf-8")
+    units = prepare_document_windows(source, budget_chars=1_000, max_windows=6)
+    assert len(units) == 6
+    assert all(u.sampled for u in units)  # gaps between windows
+    # Evenly spread: first window starts at the head, last covers the tail.
+    assert "number 0000" in units[0].markdown
+    assert "number 1999" in units[-1].markdown
+
+
+def test_window_cache_rides_on_first_window_only(tmp_path):
+    stub = CachingStubProcessor(_lined_text(60, "SCAN"))
+    units = prepare_document_windows(
+        "scan.pdf", doc_processor=stub, budget_chars=1_000, cache_dir=tmp_path / "cache"
+    )
+    assert len(units) > 1
+    assert units[0].cache_path is not None and units[0].cache_path.is_file()
+    assert all(u.cache_path is None for u in units[1:])
+
+
+def test_windowed_document_flows_through_induction():
+    """Two windows of one document contribute classes only their own text
+    holds — proof the whole body (not a head-biased sample) reaches the LLM."""
+    part_a = "Alpha section line with marker ALPHA-77 in the text.\n" * 12
+    part_b = "Beta section line with marker BETA-88 in the text.\n" * 12
+    content = DocumentContent(name="big.md", text=part_a + part_b)
+
+    def pass1(cls_name: str, marker: str, is_root: bool) -> dict:
+        return {"classes": [p1(cls_name, is_root=is_root, ident=("name", "", [marker]))]}
+
+    llm = _RoutedLLM(
+        {
+            "templategen_pass1_classes:big.md [1/2]": pass1("AlphaThing", "ALPHA-77", True),
+            "templategen_pass2_fields:big.md [1/2]:batch0": {"classes": []},
+            "templategen_pass3_edges:big.md [1/2]": {"edges": []},
+            "templategen_pass1_classes:big.md [2/2]": pass1("BetaThing", "BETA-88", False),
+            "templategen_pass2_fields:big.md [2/2]:batch0": {"classes": []},
+            "templategen_pass3_edges:big.md [2/2]": {"edges": []},
+        }
+    )
+    spec, report = induce_spec_from_documents([content], llm, budget_chars=700)
+    names = {m.name for m in spec.models}
+    assert {"AlphaThing", "BetaThing"} <= names
+    # The verbatim gate ran against each window's own text.
+    assert get_field(spec, "AlphaThing", "name").examples == ["ALPHA-77"]
+    assert get_field(spec, "BetaThing", "name").examples == ["BETA-88"]
+    assert [s.name for s in report.documents] == ["big.md [1/2]", "big.md [2/2]"]
+    assert report.units_total == 2
+
+
+def test_rare_field_counts_physical_documents_not_windows():
+    def unit(name: str, extra_fields: list) -> DocumentCandidates:
+        return doc(
+            name,
+            root_cls(),
+            cc("Item", identity=("name", ["Widget"]), fields=extra_fields),
+        )
+
+    units = [
+        unit("big.md [1/3]", [fc("color", examples=["red"])]),
+        unit("big.md [2/3]", []),
+        unit("big.md [3/3]", []),
+    ]
+    # Three windows of ONE document: a mid-document field is never "rare".
+    draft, report, _ = merge_documents(units, doc_groups=[0, 0, 0], group_names=["big.md"])
+    color = draft_field(draft_model(draft, "Item"), "color")
+    assert not color["description"].startswith("Rare:")
+    assert not report.by_kind("rare_field")
+    assert draft_model(draft, "Item")["source_ref"] == "induced from: big.md"
+
+    # The same shape across three PHYSICAL documents stays flagged.
+    draft, report, _ = merge_documents(units, doc_groups=[0, 1, 2])
+    color = draft_field(draft_model(draft, "Item"), "color")
+    assert color["description"].startswith("Rare:")
+    assert report.by_kind("rare_field")
+
+
+# ---------------------------------------------------------------------------
+# Saturation stop and the unit cap (large corpora)
+# ---------------------------------------------------------------------------
+
+
+class _ConstantLLM:
+    """Thread-safe callable returning the same payload per pass, any unit."""
+
+    def __init__(self, by_pass: dict[str, Any]) -> None:
+        self.by_pass = dict(by_pass)
+        self.contexts: list[str] = []
+        self._lock = __import__("threading").Lock()
+
+    def __call__(self, *, prompt: dict[str, str], schema_json: str, context: str) -> Any:
+        with self._lock:
+            self.contexts.append(context)
+        for key, payload in self.by_pass.items():
+            if key in context:
+                return copy.deepcopy(payload)
+        raise AssertionError(f"unexpected context: {context!r}")
+
+
+def _register_corpus(count: int) -> list[DocumentContent]:
+    return [DocumentContent(name=f"doc{i:02d}.md", text=GATE_DOC) for i in range(count)]
+
+
+def _register_llm() -> _ConstantLLM:
+    return _ConstantLLM(
+        {
+            "pass1": {
+                "classes": [p1("Register", is_root=True, ident=("register_id", "", ["GOOD-1"]))]
+            },
+            "pass2": {"classes": []},
+            "pass3": {"edges": []},
+        }
+    )
+
+
+def test_saturation_stops_a_homogeneous_corpus():
+    llm = _register_llm()
+    spec, report = induce_spec_from_documents(_register_corpus(12), llm)
+    assert spec.root == "Register"
+    # Unit 1 is novel; units 2-7 are quiet -> streak of 6 stops the run.
+    assert len(report.documents) == 7
+    assert len(report.skipped_saturated) == 5
+    assert report.units_total == 12
+    assert len(llm.contexts) == 7 * 3  # three passes per induced unit
+
+
+def test_saturation_disabled_induces_everything():
+    llm = _register_llm()
+    _spec, report = induce_spec_from_documents(_register_corpus(12), llm, saturation=False)
+    assert len(report.documents) == 12
+    assert report.skipped_saturated == []
+
+
+def test_saturation_never_engages_below_the_floor():
+    llm = _register_llm()
+    _spec, report = induce_spec_from_documents(_register_corpus(8), llm)
+    assert len(report.documents) == 8
+    assert report.skipped_saturated == []
+
+
+def test_max_units_cap_skips_and_reports():
+    llm = _register_llm()
+    _spec, report = induce_spec_from_documents(
+        _register_corpus(12), llm, max_units=4, saturation=False
+    )
+    assert len(report.documents) == 4
+    # Without saturation the processing order is the source order.
+    assert [s.name for s in report.documents] == [f"doc{i:02d}.md" for i in range(4)]
+    assert report.skipped_capped == [f"doc{i:02d}.md" for i in range(4, 12)]
+
+
+def test_saturation_order_is_deterministic():
+    first = induce_spec_from_documents(_register_corpus(12), _register_llm())
+    second = induce_spec_from_documents(_register_corpus(12), _register_llm())
+    assert first[0].model_dump() == second[0].model_dump()
+    assert [d.name for d in first[1].documents] == [d.name for d in second[1].documents]
+    assert first[1].skipped_saturated == second[1].skipped_saturated

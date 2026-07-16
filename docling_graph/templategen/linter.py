@@ -133,6 +133,7 @@ _DOC_REFS: dict[str, str] = {
     "R20": "docling_graph/templategen/naming.py (keyword/builtin renames)",
     "R21": "docling_graph/templategen/naming.py (reserved node-attr keys written by GraphConverter)",
     "R22": "best-practices.md (unmodeled-noise fields)",
+    "R23": "relationships.md (every entity needs a discovery path from the root)",
 }
 
 
@@ -722,6 +723,77 @@ def _rule_r11_reference_targets(spec: TemplateSpec, ctx: _Ctx) -> None:
                 nonref[target.name] += 1
 
 
+def _rule_r23_reachability(spec: TemplateSpec, ctx: _Ctx) -> None:
+    """R23 — every entity keeps a discovery path from the root.
+
+    The dense catalog (verification gate V4) discovers entities only through
+    non-reference nesting chains from the root, so an entity outside every
+    such chain can never be extracted. Induced drafts arrive with islands
+    when a model's relationships pass simply never connects a subtree to the
+    root (small models under truncation pressure) and the cross-document
+    merge then unions each document's clusters verbatim. Repair: attach each
+    island's head — an unreachable entity that no other unreachable model
+    nests — to the root as a full list edge. One invented connection per
+    island, the island's inner structure untouched; a gap is raised so
+    gap-fill or the user refines the boilerplate description.
+    """
+    root = next((m for m in spec.models if m.kind == "root"), None)
+    if root is None:
+        return
+    for _ in range(len(spec.models)):
+        reachable = set(_edge_depths(spec, include_reference=False))
+        unreachable = [m for m in spec.models if m.kind == "entity" and m.name not in reachable]
+        if not unreachable:
+            return
+        unreachable_names = {m.name for m in unreachable}
+        nested_within_island = {
+            field.type
+            for model in unreachable
+            for field in model.fields
+            if field.type in unreachable_names
+            and not field.reference
+            and (field.role == "edge" or field.role == "property")
+        }
+        heads = [m for m in unreachable if m.name not in nested_within_island] or unreachable[:1]
+        for head in heads:
+            taken = {f.name for f in root.fields}
+            field_name = _unique_name(to_snake_case(head.name), taken)
+            ctx.add(
+                "R23",
+                "warn",
+                root.name,
+                field_name,
+                f"entity '{head.name}' has no discovery path from the root "
+                f"(island of {len(unreachable)} unreachable class(es)) — attached to the "
+                "root as a full list edge so dense discovery can reach it",
+                repaired=ctx.repair,
+            )
+            if not ctx.repair:
+                continue
+            root.fields.append(
+                FieldSpec(
+                    name=field_name,
+                    type=head.name,
+                    is_list=True,
+                    role="edge",
+                    edge_label=derive_edge_label(field_name, head.name),
+                    description=f"Every {head.name} the document describes.",
+                )
+            )
+            ctx.gap(
+                root.name,
+                field_name,
+                "missing_description",
+                f"edge attached by the linter (R23): no document evidence connected "
+                f"'{head.name}' to the root — refine the locator description or re-home "
+                "the edge via the SPEC YAML",
+            )
+        if not ctx.repair:
+            # Report-only: reachability cannot change, so one pass of findings
+            # (the current island heads) is all there is to report.
+            return
+
+
 def _rule_r14_nesting_depth(spec: TemplateSpec, ctx: _Ctx) -> None:
     """R14 — full-nesting depth from the root stays within 2-4 levels.
 
@@ -1188,6 +1260,7 @@ _RULES: tuple[Callable[[TemplateSpec, _Ctx], None], ...] = (
     _rule_r10_canonical_home,
     _rule_r12_closed_catalog,
     _rule_r11_reference_targets,
+    _rule_r23_reachability,
     _rule_r14_nesting_depth,
     _rule_r15_cycles,
     _rule_r5_digit_honesty,

@@ -675,7 +675,9 @@ class TestR13Cardinality:
             max_instances=6,
             docstring="One of the 3-6 reportable segments named in the segment note.",
         )
-        spec, _ = repair_draft(ddraft(droot(), segment), strict=True)  # must not raise
+        # Root edge keeps the entity reachable (an island would trip R23 first).
+        root = droot(dfld("segments", role="edge", type="Segment", edge_label="HAS_SEGMENT"))
+        spec, _ = repair_draft(ddraft(root, segment), strict=True)  # must not raise
         assert get_model(spec, "Segment").max_instances == 12
 
     def test_strict_raises_on_injection(self):
@@ -1291,7 +1293,11 @@ class TestStrictMode:
 
     def test_advisory_findings_do_not_fail_strict(self):
         # R3 (missing examples) has no deterministic repair — advisory only.
-        spec = build_spec(make_root(), mdl("Party", fields=[ident("name", ("Acme Corp",))]))
+        # Party hangs off the root so reachability (R23) has nothing to repair.
+        spec = build_spec(
+            make_root(edge_fld("party", "Party", "BILLED_TO")),
+            mdl("Party", fields=[ident("name", ("Acme Corp",))]),
+        )
         _, report = lint_spec(spec, strict=True)
         assert report.by_rule("R3")
 
@@ -1324,3 +1330,116 @@ class TestEnumDraftRepairs:
         spec, report = repair_draft(draft)
         assert spec.enums[0].synonyms == {}
         assert repairs(report, "R17")
+
+
+# ---------------------------------------------------------------------------
+# R23 — every entity keeps a discovery path from the root
+# ---------------------------------------------------------------------------
+
+
+class TestR23Reachability:
+    def _island_draft(self) -> dict:
+        """Root -> Author is connected; CathodeSlurry -> Solvent is an island."""
+        root = droot(dfld("author", role="edge", type="Author", edge_label="AUTHORED_BY"))
+        author = dmdl(
+            "Author",
+            "entity",
+            [dfld("name", role="identity", examples=["Ada B", "Alan T"])],
+            identity_fields=["name"],
+        )
+        slurry = dmdl(
+            "CathodeSlurry",
+            "entity",
+            [
+                dfld("slurry_id", role="identity", examples=["S-1", "S-2"]),
+                dfld("solvent", role="edge", type="Solvent", edge_label="USES_SOLVENT"),
+            ],
+            identity_fields=["slurry_id"],
+        )
+        solvent = dmdl(
+            "Solvent",
+            "entity",
+            [dfld("name", role="identity", examples=["NMP", "water"])],
+            identity_fields=["name"],
+        )
+        return ddraft(root, author, slurry, solvent)
+
+    def test_island_head_attached_to_root(self):
+        spec, report = repair_draft(self._island_draft())
+        entries = repairs(report, "R23")
+        # Only the island head is attached; Solvent rides along below it.
+        assert len(entries) == 1
+        assert "CathodeSlurry" in entries[0].message
+        attached = get_field(spec, "Doc", "cathode_slurry")
+        assert attached.role == "edge"
+        assert attached.type == "CathodeSlurry"
+        assert attached.is_list is True
+        assert attached.reference is False
+        assert attached.edge_label
+        assert any(
+            g.kind == "missing_description" and g.field == "cathode_slurry" for g in report.gaps
+        )
+
+    def test_repaired_spec_passes_dense_catalog_gate(self):
+        from docling_graph.templategen.renderer import render_template
+        from docling_graph.templategen.verify import verify_template_source
+
+        spec, _report = repair_draft(self._island_draft())
+        verification = verify_template_source(
+            render_template(spec), root_class=spec.root, spec=spec
+        )
+        assert verification.passed, verification.summary()
+
+    def test_repair_is_idempotent(self):
+        spec, _ = repair_draft(self._island_draft())
+        relinted, report = lint_spec(spec, repair=True)
+        assert not report.by_rule("R23")
+        assert [f.name for f in get_model(relinted, "Doc").fields] == [
+            f.name for f in get_model(spec, "Doc").fields
+        ]
+
+    def test_fully_reachable_spec_untouched(self):
+        root = droot(dfld("author", role="edge", type="Author", edge_label="AUTHORED_BY"))
+        author = dmdl(
+            "Author",
+            "entity",
+            [dfld("name", role="identity", examples=["Ada B", "Alan T"])],
+            identity_fields=["name"],
+        )
+        _spec, report = repair_draft(ddraft(root, author))
+        assert not report.by_rule("R23")
+
+    def test_cyclic_island_resolved_via_fallback_head(self):
+        """A->B->A island has no topological head: the first class is attached."""
+        a = dmdl(
+            "Alpha",
+            "entity",
+            [
+                dfld("name", role="identity", examples=["a1", "a2"]),
+                dfld("beta", role="edge", type="Beta", edge_label="LINKS_BETA"),
+            ],
+            identity_fields=["name"],
+        )
+        b = dmdl(
+            "Beta",
+            "entity",
+            [
+                dfld("name", role="identity", examples=["b1", "b2"]),
+                dfld("alpha", role="edge", type="Alpha", edge_label="LINKS_ALPHA"),
+            ],
+            identity_fields=["name"],
+        )
+        spec, report = repair_draft(ddraft(droot(), a, b))
+        assert repairs(report, "R23")
+        from docling_graph.templategen.linter import _edge_depths
+
+        depths = _edge_depths(spec, include_reference=False)
+        assert {"Alpha", "Beta"} <= set(depths)
+
+    def test_report_only_mode_records_without_attaching(self):
+        spec = TemplateSpec.model_validate(self._island_draft())
+        before = [f.name for f in get_model(spec, "Doc").fields]
+        _linted, report = lint_spec(spec, repair=False)
+        entries = report.by_rule("R23")
+        assert entries and not any(e.repaired for e in entries)
+        assert [f.name for f in get_model(spec, "Doc").fields] == before

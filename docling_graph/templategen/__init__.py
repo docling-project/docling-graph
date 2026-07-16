@@ -17,7 +17,8 @@ Public surface (design §2.2):
 - **reverse flow** (``template lint`` on existing templates):
   ``reverse_draft``, ``spec_from_template``, ``spec_from_dotted_path``;
 - **front-ends**: ``spec_draft_from_ontology`` (deterministic, zero LLM),
-  ``induce_spec_from_documents``, ``fill_gaps``;
+  ``induce_spec_from_documents`` (sources: file paths, http(s) URLs, or
+  ``DocumentContent`` objects carrying the text directly), ``fill_gaps``;
 - **one-shot convenience**: ``generate_template``, ``GenerationResult``
   (draft -> repair -> render -> verify -> optional atomic write);
 - **empirical harness**: ``evaluate_template``, ``EvaluationReport``;
@@ -44,11 +45,12 @@ from .verify import VerificationReport, synthesize_sample, verify_template_sourc
 if TYPE_CHECKING:  # pragma: no cover - static-analysis view of the lazy exports
     from .evaluate import EvaluationReport, evaluate_template
     from .generate import GenerationResult, generate_template
-    from .induce.documents import induce_spec_from_documents
+    from .induce.documents import DocumentContent, induce_spec_from_documents
     from .induce.gapfill import fill_gaps
     from .ontology import spec_draft_from_ontology
 
 __all__ = [
+    "DocumentContent",
     "EnumSpec",
     "EvaluationReport",
     "FieldSpec",
@@ -78,6 +80,7 @@ __all__ = [
 ]
 
 _LAZY_EXPORTS: dict[str, tuple[str, str]] = {
+    "DocumentContent": (".induce.documents", "DocumentContent"),
     "EvaluationReport": (".evaluate", "EvaluationReport"),
     "GenerationResult": (".generate", "GenerationResult"),
     "evaluate_template": (".evaluate", "evaluate_template"),

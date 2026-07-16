@@ -27,7 +27,24 @@ uv run docling-graph template from-docs invoice1.pdf invoice2.pdf \
     --trial-run
 ```
 
+Sources can be file paths or `http(s)://` URLs — URLs are fetched and converted by Docling like any other document:
+
+```bash
+uv run docling-graph template from-docs invoice1.pdf https://example.com/samples/invoice2.pdf
+```
+
 The documents are converted with Docling, then three focused LLM passes propose classes, fields, and relationships as structured data. Deterministic gates filter hallucinations — most importantly the **verbatim gate**: every identity example must appear verbatim in the source document, or it is dropped. Candidates from multiple documents merge deterministically (type promotion `int → float → str`, majority votes, example union).
+
+If a pass's output overflows the model's `max_tokens` budget, the call is retried once with a doubled budget (capped at half the context window); a fields pass that still overflows is split into smaller class batches automatically. The fields pass is also **pre-sized** against the model's output budget (~1500 output tokens per class), so small-budget models make more, smaller calls instead of truncating. Persistent truncation warnings mean the model's output budget is too small for your documents — raise `llm_overrides.max_output_tokens` in `config.yaml` or switch to a larger model.
+
+Induction LLM calls run **concurrently** (`--workers`, default `templategen.workers` = 4): documents in parallel, and fields batches in parallel within each document. Results are deterministic regardless of the worker count — candidates merge in source order and batch payloads apply in batch order. Use `--workers 1` for strictly sequential calls (e.g. against rate-limited APIs).
+
+**Scale** is handled by two mechanisms sharing one "induction unit" abstraction:
+
+- **Oversized documents** (text beyond `input_budget_chars`, ~24k chars) split into up to `templategen.max_windows_per_doc` (6) evenly spread, line-aligned **windows** — each inducted as its own unit and merged back as one document. A 200-page report contributes evidence from its whole body instead of one head-biased sample, and each window's verbatim gate checks against text the model actually saw.
+- **Large corpora** (more than 10 units) process in a deterministic name-hash order (decorrelating vendor/date filename grouping) with a **saturation stop**: once 6 consecutive units add no new classes and essentially no new fields, the rest is skipped and reported — the schema has converged, and documents 20–100 would only repeat it. `templategen.max_units` (24) is the hard cap on top.
+
+Pass `--exhaustive` to disable both the saturation stop and the unit cap. Skipped units are always listed in the induction report (`skipped_saturated` / `skipped_capped`), never dropped silently.
 
 | Option | Description |
 |--------|-------------|
@@ -94,12 +111,16 @@ Template commands read `config.yaml` only for LLM settings and an optional block
 
 ```yaml
 templategen:
-  input_budget_chars: 24000   # per-document markdown budget (also bounded by the model's context window)
+  input_budget_chars: 24000   # per-unit markdown budget (also bounded by the model's context window)
   max_models: 30
   max_enum_members: 24
   ontology_depth: 4
   llm_gap_fill: false
   strict: false
+  workers: 4                  # concurrent induction LLM calls
+  max_units: 24               # hard cap on induction units (documents/windows); 0 = unlimited
+  max_windows_per_doc: 6      # windows an oversized document may split into
+  saturation_stop: true       # stop once the schema stops changing (corpora > 10 units)
 ```
 
 ---
@@ -131,3 +152,18 @@ result.spec, result.lint_report, result.gaps, result.source_code, result.written
 ```
 
 `kind="spec"` re-renders a SPEC YAML; `kind="docs"` (one or many documents) requires an injected `llm_call_fn`.
+
+Document sources for `kind="docs"` / `induce_spec_from_documents` can be file paths, `http(s)://` URLs, or — when you already hold the text — `DocumentContent` objects passed directly, no file needed:
+
+```python
+from docling_graph.templategen import DocumentContent, induce_spec_from_documents
+
+spec, report = induce_spec_from_documents(
+    [
+        "invoice1.pdf",                                          # file
+        "https://example.com/samples/invoice2.pdf",              # URL (converted by Docling)
+        DocumentContent(name="invoice3", text=markdown_string),  # direct content
+    ],
+    llm_call_fn,
+)
+```
