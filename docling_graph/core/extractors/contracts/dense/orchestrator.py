@@ -1348,7 +1348,7 @@ class DenseOrchestratorConfig:
     max_pass_retries: int = 1
     skeleton_batch_tokens: int = 1024
     fill_nodes_cap: int = 5
-    parallel_workers: int = 1
+    parallel_workers: int = 4
     # "scoped": fill prompts only include the skeleton batches where the node was
     # observed (plus the document head); "full": always send the whole document.
     fill_context_mode: str = "scoped"
@@ -1387,7 +1387,7 @@ class DenseOrchestratorConfig:
         return cls(
             skeleton_batch_tokens=skeleton_batch_tokens,
             fill_nodes_cap=int(c.get("dense_fill_nodes_cap", 5) or 5),
-            parallel_workers=max(1, int(c.get("parallel_workers", 1) or 1)),
+            parallel_workers=max(1, int(c.get("parallel_workers", 4) or 4)),
             fill_context_mode=fill_context_mode,
             dedupe_mode=dedupe_mode,
             provenance_mode=provenance_mode,
@@ -1430,6 +1430,7 @@ class DenseOrchestrator:
         # Per-path count of nodes kept from the Phase 1 coverage pass (observability).
         self._coverage_recovered_by_path: dict[str, int] = {}
         self._effective_workers = 1
+        self._workers_hint_logged = False
         self._phase1_elapsed = 0.0
         self._phase2_elapsed = 0.0
         # Lazily-built shallow (root + direct children) skeleton artifacts used
@@ -1440,6 +1441,24 @@ class DenseOrchestrator:
     def _bump(self, counter: str, count: int = 1) -> None:
         with self._counter_lock:
             self._counters[counter] = self._counters.get(counter, 0) + count
+
+    def _hint_lower_workers(self, workers: int) -> None:
+        """Suggest lowering parallel_workers after a job raised. Once per run.
+
+        A batch that fails under concurrency is usually hitting the model
+        server's request limit rather than choking on the document, and the
+        underlying error (a connection reset, a timeout, a 429) never says so.
+        Called only from the parallel branches, in the main thread.
+        """
+        if workers <= 1 or self._workers_hint_logged:
+            return
+        self._workers_hint_logged = True
+        logger.warning(
+            "Hint: this run uses %s parallel workers. If failures persist, retry with a "
+            "lower --parallel-workers (1 = sequential) — model servers commonly reject or "
+            "time out concurrent requests beyond their slot limit.",
+            workers,
+        )
 
     def _record_dropped_chunks(self, chunk_ids: list[int]) -> None:
         """Mark chunk ids as producing no skeleton node (unrecoverable truncation)."""
@@ -2481,6 +2500,7 @@ class DenseOrchestrator:
                     progress.advance(note=f"+{len(normalized_batch)} node(s)")
                 except Exception as e:
                     logger.warning("%s Failed: %s", batch_tag(batch_idx, total_batches), e)
+                    self._hint_lower_workers(workers)
                     skeleton_results[batch_idx] = []
                     progress.advance(note="failed")
         progress.finish()
@@ -2637,6 +2657,7 @@ class DenseOrchestrator:
         self._counters = {}
         self._dropped_chunk_ids = []
         self._coverage_recovered_by_path = {}
+        self._workers_hint_logged = False
         self._phase1_elapsed = 0.0
         self._phase2_elapsed = 0.0
         self.last_run_stats = {}
@@ -2849,6 +2870,7 @@ class DenseOrchestrator:
                             batch_index,
                             e,
                         )
+                        self._hint_lower_workers(workers)
                         fill_progress.advance(note="failed")
             for path, pairs in results_by_path.items():
                 pairs.sort(key=lambda x: x[0])

@@ -491,7 +491,7 @@ class ExtractionStage(PipelineStage):
         dense_config = {
             "structured_output": bool(conf.get("structured_output", True)),
             "structured_sparse_check": bool(conf.get("structured_sparse_check", True)),
-            "parallel_workers": conf.get("parallel_workers", 1),
+            "parallel_workers": conf.get("parallel_workers", 4),
             "gleaning_enabled": conf.get("gleaning_enabled", True),
             "dense_skeleton_batch_tokens": conf.get("dense_skeleton_batch_tokens", 2048),
             "dense_fill_nodes_cap": conf.get("dense_fill_nodes_cap", 5),

@@ -212,8 +212,8 @@ class PipelineConfig(BaseModel):
 
     # Parallel workers for extraction
     parallel_workers: int | None = Field(
-        default=None,
-        description="Parallel workers for extraction.",
+        default=4,
+        description="Parallel workers for extraction (1 = sequential; null = default).",
     )
 
     # Gleaning (direct contract): one optional "what did you miss?" pass.
