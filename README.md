@@ -48,9 +48,9 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
-- **🔗 Graph fusion:** [Merge](https://docling-project.github.io/docling-graph/usage/cli/merge-command/) multiple knowledge graphs into one — deterministic, fully audited, and no LLM calls.
+- **🔗 Graph fusion:** [Merge](https://docling-project.github.io/docling-graph/usage/cli/merge-command/) multiple knowledge graphs into one. Fully audited, deterministic, and no LLM calls.
 
-- **🧬 Template generation:** [Generate](https://docling-project.github.io/docling-graph/usage/cli/template-command/) Pydantic templates from example documents or an ontology (OWL/RDFS/SKOS, LinkML, JSON Schema), plus rulebook linting for existing templates.
+- **🧩 Template generation:** [Generate](https://docling-project.github.io/docling-graph/usage/cli/template-command/) Pydantic templates from example documents or ontologies (OWL/RDFS...).
 
 - **🦆 DocLang support:** Parse `.dclg`/`.dclx` inputs, and [optionally serialize](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/document-conversion/#llm-input-serialization) document as [DocLang](https://github.com/doclang-project/doclang) for the LLM.
 
@@ -59,13 +59,6 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 - **✨ Dense extraction:** Advanced [skeleton-then-flesh](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/dense-extraction/) extraction mode for complex documents.
 
 - **🚀 Docling Serve support:** Offload [document conversion](https://docling-project.github.io/docling-graph/fundamentals/pipeline-configuration/docling-serve/) to a remote [docling-serve](https://github.com/docling-project/docling-serve) instance.
-
-### Coming Soon
-
-* 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
-
-* 🧲 **Ontology-Based Template Matching:** Match content to the best Pydantic template using semantic similarity.
-
 
 
 ## Quick Start
@@ -183,7 +176,34 @@ class Organization(BaseModel):
     employees: list[Person] = edge("EMPLOYS", description="List of employees")
 ```
 
+### Generating a template from documents
+
+Instead of writing the template by hand, you can induce one from a few example documents:
+
+```bash
+docling-graph template from-docs invoice1.pdf invoice2.pdf \
+    --output templates/invoices.py \
+    --name InvoiceDocument \
+    --trial-run
+```
+
+The documents are converted with Docling, then LLM passes propose classes, fields, and relationships **as structured data** — a deterministic renderer turns that into the Python module, so no LLM ever writes code. Candidates are filtered by deterministic gates (every identity example must appear verbatim in the source) and merged across documents. `--trial-run` then runs a real extraction on the first document and prints an advisory quality report.
+
+Each generator also writes an editable SPEC YAML next to the template (`templates/invoices.spec.yaml`). Rename an edge or flip an entity to a component with a one-line YAML edit and re-render, rather than hand-patching generated code:
+
+```bash
+docling-graph template from-spec templates/invoices.spec.yaml -o templates/invoices.py
+```
+
+Templates can also be compiled from an existing ontology — OWL/RDFS/SKOS, LinkML, or JSON Schema — with no LLM involved at all (needs the `templategen` extra: `pip install 'docling-graph[templategen]'`). Any template, generated or hand-written, can be checked against the rulebook:
+
+```bash
+docling-graph template from-ontology schema.ttl --root ex:InsurancePolicy -o templates/policy.py
+docling-graph template lint templates.invoices.InvoiceDocument
+```
+
 For complete guidance, see:
+- [template Command](https://docling-project.github.io/docling-graph/usage/cli/template-command/) — generating, linting, and evaluating templates
 - [Schema Definition Guide](https://docling-project.github.io/docling-graph/fundamentals/schema-definition/)
 - [Template Basics](https://docling-project.github.io/docling-graph/fundamentals/schema-definition/template-basics/)
 - [Example Templates](docs/examples/README.md)
