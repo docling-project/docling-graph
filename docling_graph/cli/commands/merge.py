@@ -2,6 +2,7 @@
 Merge command - deterministically merges exported knowledge graphs.
 """
 
+import logging
 from pathlib import Path
 
 import typer
@@ -19,6 +20,7 @@ from docling_graph.exceptions import DoclingGraphError
 
 from ..validators import validate_export_format, validate_merge_conflicts, validate_merge_precedence
 
+logger = logging.getLogger(__name__)
 DEFAULT_OUTPUT_DIR = Path("outputs")
 
 
@@ -58,7 +60,10 @@ def merge_command(
         str,
         typer.Option(
             "--conflicts",
-            help="Scalar conflict policy: 'keep-first' or 'keep-all'.",
+            help="Scalar conflict policy: 'keep-first', 'keep-all' (suppressed "
+            "values kept on the node under __conflicts__), or 'variants' "
+            "(suppressed values reified as <Class>Variant sub-nodes linked by "
+            "HAS_CONFLICT_VARIANT edges).",
         ),
     ] = "keep-first",
     combine_fields: Annotated[
@@ -152,13 +157,22 @@ def merge_command(
         }
     )
 
-    rich_print("--- [blue]Starting Docling-Graph Merge[/blue] ---")
-    rich_print(f"  Inputs: [cyan]{', '.join(str(p) for p in inputs)}[/cyan]")
-    if template:
-        rich_print(f"  Template: [cyan]{template}[/cyan]")
-    rich_print(f"  Precedence: [cyan]{precedence}[/cyan] | Conflicts: [cyan]{conflicts}[/cyan]")
+    logger.info("Starting Docling-Graph Merge", extra={"component": "Merge"})
+    logger.info(
+        "inputs=%s, template=%s, precedence=%s, conflicts=%s, rekey=%s, dry_run=%s",
+        ", ".join(str(p) for p in inputs),
+        template or "none",
+        precedence,
+        conflicts,
+        "auto" if rekey is None else rekey,
+        dry_run,
+        extra={"component": "MergeConfiguration"},
+    )
     if dry_run:
-        rich_print("  Mode: [yellow]dry-run (only merge_report.json is written)[/yellow]")
+        logger.info(
+            "Dry-run mode: only merge_report.json will be written",
+            extra={"component": "Merge"},
+        )
 
     # The merge runs fully in memory (validation included) before any output
     # directory exists — a failure never leaves a half-baked run dir behind.
@@ -188,7 +202,7 @@ def merge_command(
             report_path.write_text(merge_report.model_dump_json(indent=2), encoding="utf-8")
             rich_print(f"\nDry run: merge plan written to [cyan]{report_path}[/cyan]")
             _print_summary(merge_report)
-            rich_print("--- [blue]Docling-Graph Merge Finished (dry run)[/blue] ---")
+            logger.info("Merge dry run completed", extra={"component": "Merge"})
             return
 
         json_path = graph_dir / "graph.json"
@@ -219,7 +233,7 @@ def merge_command(
     rich_print(f"\nMerged graph written to [cyan]{json_path}[/cyan]")
     _print_summary(merge_report)
     rich_print(f"\n[blue]Tip:[/blue] inspect it with: docling-graph inspect {json_path} -f json")
-    rich_print("--- [blue]Docling-Graph Merge Finished Successfully[/blue] ---")
+    logger.info("Merge completed successfully", extra={"component": "Merge"})
 
 
 def _print_summary(merge_report: MergeReport) -> None:
@@ -234,6 +248,17 @@ def _print_summary(merge_report: MergeReport) -> None:
         f"Field conflicts: {len(merge_report.field_conflicts)} | "
         f"Edge label conflicts: {len(merge_report.edge_label_conflicts)}"
     )
+    if merge_report.conflict_variants:
+        rich_print(
+            f"  Conflict variants: {merge_report.conflict_variants} sub-node(s) "
+            "preserve suppressed values (HAS_CONFLICT_VARIANT edges)"
+        )
+    if merge_report.cross_document_splits:
+        rich_print(
+            f"  [yellow]Cross-document splits: {len(merge_report.cross_document_splits)} "
+            "same-ID node(s) kept separate (unrelated documents, conflicting content) — "
+            "see 'cross_document_splits' in merge_report.json[/yellow]"
+        )
     rich_print(
         f"  Identity source: {merge_report.identity_source}"
         + (

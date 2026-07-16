@@ -18,7 +18,11 @@ class MergePolicy(BaseModel):
             index asc). Both are total orders, so both are deterministic.
         conflicts: Scalar conflict policy. ``keep-first`` keeps the survivor
             value and records the conflict; ``keep-all`` additionally stores
-            suppressed values in a ``__conflicts__`` node attribute.
+            suppressed values in a ``__conflicts__`` node attribute;
+            ``variants`` additionally reifies each source's suppressed values
+            as a ``<Class>Variant`` sub-node linked from the canonical node
+            by a ``HAS_CONFLICT_VARIANT`` edge (graph-queryable, provenance
+            attached; the canonical node is identical to ``keep-first``).
         combine_fields: Text fields merged with sentence-level dedup instead
             of first-wins (the exact set the many-to-one merge passes).
         description_max_length: Truncation bound for combined text fields.
@@ -34,7 +38,7 @@ class MergePolicy(BaseModel):
     """
 
     precedence: Literal["input-order", "richest"] = "input-order"
-    conflicts: Literal["keep-first", "keep-all"] = "keep-first"
+    conflicts: Literal["keep-first", "keep-all", "variants"] = "keep-first"
     combine_fields: set[str] = Field(default_factory=lambda: {"description", "summary"})
     description_max_length: int = 4096
     rekey: bool | None = None

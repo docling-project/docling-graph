@@ -421,6 +421,343 @@ def test_remerge_of_skolemized_export_keeps_roots_apart(tmp_path):
     assert children_by_root == {"alpha", "beta"}
 
 
+# ------------------------------------------- cross-document conflict splits
+
+
+def _invoice_graph(root_id: str, desc: str, qty: float, party: str | None = None) -> nx.DiGraph:
+    """Root + weak-identity child (line_number is only locally unique)."""
+    g = nx.DiGraph()
+    g.add_node(root_id, id=root_id, **_node("Invoice", reference=root_id))
+    g.add_node(
+        "Line_1",
+        id="Line_1",
+        **_node("LineItem", line_number="1", description=desc, quantity=qty),
+    )
+    g.add_edge(root_id, "Line_1", label="CONTAINS_LINE")
+    if party is not None:
+        g.add_node("Party_p", id="Party_p", **_node("Party", name=party))
+        g.add_edge(root_id, "Party_p", label="ISSUED_BY")
+    g.graph["id_fields_map"] = {
+        "Invoice": ["reference"],
+        "LineItem": ["line_number"],
+        "Party": ["name"],
+    }
+    return g
+
+
+def test_conflicting_child_collision_across_documents_splits(tmp_path):
+    """Line 1 of two unrelated invoices mints the same ID (weak local identity):
+    folding would clobber amounts and share children across roots — split."""
+    run_a = _write_run(
+        tmp_path,
+        "run_a",
+        _invoice_graph("Inv_A", "Gardenwork", 28.0, party="Acme"),
+        _ledger("doc-aaaa", "/x/a.jpg"),
+    )
+    run_b = _write_run(
+        tmp_path,
+        "run_b",
+        _invoice_graph("Inv_B", "Keyboard", 1.0, party="Acme"),
+        _ledger("doc-bbbb", "/y/b.docx"),
+    )
+    merged, report = merge_graphs([run_a, run_b], policy=MergePolicy(rekey=False))
+
+    lines = {n: d for n, d in merged.nodes(data=True) if d["__class__"] == "LineItem"}
+    assert set(lines) == {"Line_1", "Line_1__doc_doc-bbbb"}
+    assert len(report.cross_document_splits) == 1
+    record = report.cross_document_splits[0]
+    assert record["original_id"] == "Line_1"
+    assert record["split_id"] == "Line_1__doc_doc-bbbb"
+    assert record["conflicting_fields"] == ["quantity"]  # description combines, never conflicts
+    assert record["document_id"] == "doc-bbbb"
+    # Each line keeps its own values and hangs under its own invoice only.
+    assert merged.nodes["Line_1"]["quantity"] == 28.0
+    assert merged.nodes["Line_1"]["description"] == "Gardenwork"
+    assert merged.nodes["Line_1__doc_doc-bbbb"]["quantity"] == 1.0
+    assert merged.nodes["Line_1__doc_doc-bbbb"]["skolem_document_id"] == "doc-bbbb"
+    assert merged.has_edge("Inv_A", "Line_1")
+    assert merged.has_edge("Inv_B", "Line_1__doc_doc-bbbb")
+    assert not merged.has_edge("Inv_B", "Line_1")
+    assert not merged.has_edge("Inv_A", "Line_1__doc_doc-bbbb")
+    # The compatible collision (shared Party, no conflicting fields) still folds.
+    parties = [n for n, d in merged.nodes(data=True) if d["__class__"] == "Party"]
+    assert parties == ["Party_p"]
+
+
+def test_same_document_reextraction_conflicts_fold_not_split(tmp_path):
+    """A JPG and a DOCX of the SAME invoice share the root id: their same-ID
+    children are the same instance, so extraction noise folds under keep-first."""
+    run_a = _write_run(
+        tmp_path,
+        "run_a",
+        _invoice_graph("Inv_X", "Gardenwork", 28.0),
+        _ledger("doc-aaaa", "/x/inv.jpg"),
+    )
+    run_b = _write_run(
+        tmp_path,
+        "run_b",
+        _invoice_graph("Inv_X", "Gardenwork", 26.0),
+        _ledger("doc-bbbb", "/y/inv.docx"),
+    )
+    merged, report = merge_graphs([run_a, run_b], policy=MergePolicy(rekey=False))
+    assert report.cross_document_splits == []
+    lines = [n for n, d in merged.nodes(data=True) if d["__class__"] == "LineItem"]
+    assert lines == ["Line_1"]
+    assert merged.nodes["Line_1"]["quantity"] == 28.0  # keep-first
+    assert any(c["field"] == "quantity" for c in report.field_conflicts)
+
+
+def test_conflicting_collision_without_ledgers_splits_with_src_suffix():
+    """No ledgers: the structural + content evidence still stands; the suffix
+    falls back to the input position."""
+    merged, report = merge_graphs(
+        [
+            _invoice_graph("Inv_A", "Gardenwork", 28.0),
+            _invoice_graph("Inv_B", "Keyboard", 1.0),
+        ],
+        policy=MergePolicy(rekey=False),
+    )
+    assert len(report.cross_document_splits) == 1
+    assert report.cross_document_splits[0]["split_id"] == "Line_1__src_1"
+    assert merged.nodes["Line_1__src_1"]["skolem_document_id"] == "input-1"
+
+
+def test_remerge_of_split_export_keeps_instances_apart(tmp_path):
+    """Split nodes carry the skolem stamp, so the auto-rekey of a re-merge
+    never recomputes them back onto the colliding base id — and re-merging a
+    constituent input converges instead of corrupting."""
+    run_a = _write_run(
+        tmp_path,
+        "run_a",
+        _invoice_graph("Inv_A", "Gardenwork", 28.0),
+        _ledger("doc-aaaa", "/x/a.jpg"),
+    )
+    run_b = _write_run(
+        tmp_path,
+        "run_b",
+        _invoice_graph("Inv_B", "Keyboard", 1.0),
+        _ledger("doc-bbbb", "/y/b.docx"),
+    )
+    merged, report = merge_graphs([run_a, run_b], policy=MergePolicy(rekey=False))
+    assert len(report.cross_document_splits) == 1
+    merged_run = _write_run(tmp_path, "merged_run", merged)
+
+    # Default policy: the merged export is format-v2, so re-keying auto-enables.
+    remerged, re_report = merge_graphs([merged_run, run_b])
+    assert re_report.rekeyed is True
+    lines = {
+        d["description"]: d for _n, d in remerged.nodes(data=True) if d["__class__"] == "LineItem"
+    }
+    assert set(lines) == {"Gardenwork", "Keyboard"}  # never re-fused into a chimera
+    assert lines["Gardenwork"]["quantity"] == 28.0
+    assert lines["Keyboard"]["quantity"] == 1.0
+
+
+def test_same_class_conflict_splits_compatible_sibling_collision(tmp_path):
+    """Once line 1 proves LineItem IDs under-determine instances across two
+    documents, line 2 of the same pair splits too — even though its values
+    agree — so unrelated invoices never share a line-item child. Classes
+    without a conflict (the shared Party) are untouched by the contagion."""
+
+    def invoice(root_id: str, qty1: float) -> nx.DiGraph:
+        g = nx.DiGraph()
+        g.add_node(root_id, id=root_id, **_node("Invoice", reference=root_id))
+        g.add_node("Line_1", id="Line_1", **_node("LineItem", line_number="1", quantity=qty1))
+        g.add_node("Line_2", id="Line_2", **_node("LineItem", line_number="2", quantity=1.0))
+        g.add_node("Party_p", id="Party_p", **_node("Party", name="Acme"))
+        g.add_edge(root_id, "Line_1", label="CONTAINS_LINE")
+        g.add_edge(root_id, "Line_2", label="CONTAINS_LINE")
+        g.add_edge(root_id, "Party_p", label="ISSUED_BY")
+        g.graph["id_fields_map"] = {
+            "Invoice": ["reference"],
+            "LineItem": ["line_number"],
+            "Party": ["name"],
+        }
+        return g
+
+    run_a = _write_run(tmp_path, "run_a", invoice("Inv_A", 28.0), _ledger("doc-aaaa", "/x/a.jpg"))
+    run_b = _write_run(tmp_path, "run_b", invoice("Inv_B", 1.0), _ledger("doc-bbbb", "/y/b.docx"))
+    merged, report = merge_graphs([run_a, run_b], policy=MergePolicy(rekey=False))
+
+    splits = {r["original_id"]: r for r in report.cross_document_splits}
+    assert set(splits) == {"Line_1", "Line_2"}
+    assert splits["Line_1"]["reason"] == "field-conflict"
+    assert splits["Line_1"]["conflicting_fields"] == ["quantity"]
+    assert splits["Line_2"]["reason"] == "same-class-conflict"
+    assert splits["Line_2"]["conflicting_fields"] == []
+    assert splits["Line_2"]["triggered_by"] == "Line_1"
+    # Each invoice keeps its own line 2; the value-identical pair never fused.
+    assert merged.has_edge("Inv_A", "Line_2")
+    assert merged.has_edge("Inv_B", "Line_2__doc_doc-bbbb")
+    assert not merged.has_edge("Inv_B", "Line_2")
+    parties = [n for n, d in merged.nodes(data=True) if d["__class__"] == "Party"]
+    assert parties == ["Party_p"]
+
+
+def test_formatting_noise_folds_shared_entity_instead_of_splitting(tmp_path):
+    """The same real-world entity extracted from a PDF and a JPG differs only
+    in phone spacing — OCR formatting noise, not a conflict. The Party folds
+    (and enriches) instead of splitting into per-document copies."""
+
+    def invoice(root_id: str, phone: str, country: str | None) -> nx.DiGraph:
+        g = nx.DiGraph()
+        g.add_node(root_id, id=root_id, **_node("Invoice", reference=root_id))
+        g.add_node(
+            "Party_p",
+            id="Party_p",
+            **_node("Party", name="Robert Schneider AG", phone=phone, country=country),
+        )
+        g.add_edge(root_id, "Party_p", label="ISSUED_BY")
+        g.graph["id_fields_map"] = {"Invoice": ["reference"], "Party": ["name"]}
+        return g
+
+    run_a = _write_run(
+        tmp_path,
+        "run_a",
+        invoice("Inv_A", "059/987 65 40", "Switzerland"),
+        _ledger("doc-aaaa", "/x/a.pdf"),
+    )
+    run_b = _write_run(
+        tmp_path,
+        "run_b",
+        invoice("Inv_B", "059/9876540", None),
+        _ledger("doc-bbbb", "/y/b.jpg"),
+    )
+    merged, report = merge_graphs([run_a, run_b], policy=MergePolicy(rekey=False))
+    assert report.cross_document_splits == []
+    assert report.field_conflicts == []
+    party = merged.nodes["Party_p"]
+    assert party["phone"] == "059/987 65 40"  # survivor form kept verbatim
+    assert party["country"] == "Switzerland"  # fill-empty enrichment
+    assert merged.has_edge("Inv_A", "Party_p") and merged.has_edge("Inv_B", "Party_p")
+
+
+def test_variants_mode_reifies_suppressed_values():
+    """conflicts=variants: the canonical node is byte-identical to keep-first;
+    each conflicting source's suppressed values become a <Class>Variant
+    sub-node hanging off the canonical node."""
+    merged, report = merge_graphs(
+        [_graph_a(), _graph_b()], policy=MergePolicy(conflicts="variants")
+    )
+    person = merged.nodes["P_x"]
+    assert person["role"] == "physicist"  # keep-first winner unchanged
+    assert person["city"] == "Paris"  # fill-empty unchanged
+    assert "__conflicts__" not in person
+    variant = merged.nodes["P_x__var_in1"]
+    assert variant["type"] == "variant"
+    assert variant["label"] == "PersonVariant"
+    assert variant["__class__"] == "Person"
+    assert variant["role"] == "chemist"
+    assert variant["variant_of"] == "P_x"
+    assert variant["variant_document_id"] == "input-1"
+    edge = merged.edges["P_x", "P_x__var_in1"]
+    assert edge["label"] == "HAS_CONFLICT_VARIANT"
+    assert edge["fields"] == ["role"]
+    assert edge["document_id"] == "input-1"
+    assert report.conflict_variants == 1
+    # The report still records the conflict exactly like keep-first.
+    assert [c["field"] for c in report.field_conflicts] == ["role"]
+
+
+def test_keep_first_and_keep_all_create_no_variant_nodes():
+    for policy in (MergePolicy(), MergePolicy(conflicts="keep-all")):
+        merged, report = merge_graphs([_graph_a(), _graph_b()], policy=policy)
+        assert report.conflict_variants == 0
+        assert all(d.get("type") != "variant" for _n, d in merged.nodes(data=True))
+
+
+def test_variants_mode_does_not_affect_cross_document_splits(tmp_path):
+    """Split collisions never fold, so they never spawn variants: different
+    instances stay whole nodes, not canonical-plus-variant."""
+    run_a = _write_run(
+        tmp_path,
+        "run_a",
+        _invoice_graph("Inv_A", "Gardenwork", 28.0),
+        _ledger("doc-aaaa", "/x/a.jpg"),
+    )
+    run_b = _write_run(
+        tmp_path,
+        "run_b",
+        _invoice_graph("Inv_B", "Keyboard", 1.0),
+        _ledger("doc-bbbb", "/y/b.docx"),
+    )
+    _merged, report = merge_graphs(
+        [run_a, run_b], policy=MergePolicy(conflicts="variants", rekey=False)
+    )
+    assert len(report.cross_document_splits) == 1
+    assert report.conflict_variants == 0
+
+
+def test_variants_are_stable_across_remerge_and_rekey(tmp_path):
+    """Variant ids are derived from (base id, document id): auto-rekey moves
+    them in lockstep with their re-keyed base, and re-merging a constituent
+    input re-detects the conflict onto the existing variant instead of
+    minting a duplicate."""
+    run_a = _write_run(
+        tmp_path,
+        "run_a",
+        _invoice_graph("Inv_X", "Gardenwork", 28.0),
+        _ledger("doc-aaaa", "/x/inv.jpg"),
+    )
+    run_b = _write_run(
+        tmp_path,
+        "run_b",
+        _invoice_graph("Inv_X", "Gardenwork", 26.0),
+        _ledger("doc-bbbb", "/y/inv.docx"),
+    )
+    merged, report = merge_graphs(
+        [run_a, run_b], policy=MergePolicy(conflicts="variants", rekey=False)
+    )
+    assert report.conflict_variants == 1
+    assert merged.nodes["Line_1__var_doc-bbbb"]["quantity"] == 26.0
+    merged_run = _write_run(tmp_path, "merged_run", merged)
+
+    # Default rekey auto-enables on the format-v2 export.
+    remerged, re_report = merge_graphs(
+        [merged_run, run_b], policy=MergePolicy(conflicts="variants")
+    )
+    assert re_report.rekeyed is True
+    variants = {n: d for n, d in remerged.nodes(data=True) if d.get("type") == "variant"}
+    assert len(variants) == 1
+    ((variant_id, variant),) = variants.items()
+    assert variant["quantity"] == 26.0
+    assert re_report.conflict_variants == 0  # existing variant reused, not duplicated
+    bases = [
+        n
+        for n, d in remerged.nodes(data=True)
+        if d["__class__"] == "LineItem" and d.get("type") != "variant"
+    ]
+    assert len(bases) == 1
+    assert remerged.edges[bases[0], variant_id]["label"] == "HAS_CONFLICT_VARIANT"
+    assert variant["variant_of"] == bases[0]
+
+
+def test_alias_candidate_stubs_surface_field_conflicts():
+    """Stubs list the content fields a confirmed merge would contradict, so a
+    human can spot distinct instances sharing an identifier ('3139' vs
+    'INV-3139' with different currencies) before flipping confirm. Identity
+    fields and formatting-noise differences are excluded."""
+    g = nx.DiGraph()
+    g.add_node(
+        "B_1",
+        id="B_1",
+        **_node("BillingDocument", document_number="3139", currency="CHF", notes="ACME"),
+    )
+    g.add_node(
+        "B_2",
+        id="B_2",
+        **_node("BillingDocument", document_number="INV-3139", currency="EUR", notes="Acme"),
+    )
+    g.graph["id_fields_map"] = {"BillingDocument": ["document_number"]}
+    _merged, report = merge_graphs([g], policy=MergePolicy(rekey=False))
+    assert len(report.alias_candidates) == 1
+    stub = report.alias_candidates[0]
+    assert stub["keep_display"] == "3139"
+    assert stub["merge_displays"] == ["INV-3139"]
+    assert stub["field_conflicts"] == ["currency"]
+    assert stub["confirm"] is False
+
+
 # ------------------------------------------------------------------ identity
 
 
@@ -488,7 +825,9 @@ def test_merge_metadata_shape():
         "identity_source",
         "nodes_folded",
         "field_conflicts",
+        "conflict_variants",
         "edge_label_conflicts",
+        "cross_document_splits",
         "alias_candidates",
         "alias_merged",
         "rekeyed",

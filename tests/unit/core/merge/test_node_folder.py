@@ -1,6 +1,11 @@
 """Unit tests for the per-field fold rules (core.merge.node_folder, design §5.3/§5.7)."""
 
-from docling_graph.core.merge.node_folder import fold_edge, fold_edge_attrs, fold_node_attrs
+from docling_graph.core.merge.node_folder import (
+    conflicting_scalar_fields,
+    fold_edge,
+    fold_edge_attrs,
+    fold_node_attrs,
+)
 from docling_graph.core.merge.policy import MergePolicy
 from docling_graph.core.utils.alias_reconciler import _attr_richness
 from docling_graph.core.utils.graph_cleaner import GraphCleaner
@@ -183,3 +188,66 @@ def test_fold_edge_attrs_conflicting_scalars_keep_survivor_silently():
     survivor = {"label": "REL", "weight": 1}
     fold_edge_attrs(survivor, {"label": "REL", "weight": 9}, POLICY)
     assert survivor["weight"] == 1
+
+
+def test_conflicting_scalar_fields_mirrors_rule8():
+    """The dry-run detector flags exactly what fold_node_attrs would record."""
+    survivor = {
+        "id": "A",
+        "__class__": "LineItem",
+        "quantity": 28.0,
+        "unit_price": 120.0,
+        "description": "Gardenwork",  # combine field: merges, never conflicts
+        "tags": ["a"],  # lists union, never conflict
+        "unit": None,  # empty on one side: fill, never conflict
+        "code": "X-1",
+    }
+    incoming = {
+        "id": "B",  # meta: never content
+        "quantity": 1.0,
+        "unit_price": 120.0,  # equal: no-op
+        "description": "Gaming Keyboard",
+        "tags": ["b"],
+        "unit": "pcs",
+        "code": "X-9",
+    }
+    assert conflicting_scalar_fields(survivor, incoming, POLICY) == ["code", "quantity"]
+    # Parity with the mutating fold on a copy.
+    folded = dict(survivor)
+    records = fold_node_attrs(folded, incoming, POLICY, "src")
+    assert sorted(r["field"] for r in records) == ["code", "quantity"]
+
+
+def test_conflicting_scalar_fields_empty_when_compatible():
+    survivor = {"id": "A", "name": "Acme GmbH", "vat": None}
+    incoming = {"id": "B", "name": "Acme GmbH", "vat": "DE-1"}
+    assert conflicting_scalar_fields(survivor, incoming, POLICY) == []
+
+
+def test_formatting_noise_is_not_a_conflict():
+    """OCR renders the same source text with unstable spacing, case, and
+    Unicode width forms: those must compare equal, not trip rule 8."""
+    survivor = {
+        "id": "A",
+        "phone": "059/987 65 40",  # spaced (PDF layout)
+        "country": "SWITZERLAND",  # case noise
+        # "INV-3139" in full-width forms (NFKC-normalizes to ASCII)
+        "reference": "\uff29\uff2e\uff36\uff0d\uff13\uff11\uff13\uff19",
+    }
+    incoming = {
+        "id": "B",
+        "phone": "059/9876540",  # unspaced (JPG OCR)
+        "country": "Switzerland",
+        "reference": "INV-3139",
+    }
+    assert conflicting_scalar_fields(survivor, incoming, POLICY) == []
+    assert fold_node_attrs(survivor, incoming, POLICY, "src") == []
+    # Rule 4: the survivor's form is kept verbatim, never rewritten.
+    assert survivor["phone"] == "059/987 65 40"
+    assert survivor["country"] == "SWITZERLAND"
+
+
+def test_genuinely_different_strings_still_conflict():
+    survivor = {"id": "A", "phone": "059/987 65 40"}
+    incoming = {"id": "B", "phone": "059/987 65 41"}
+    assert conflicting_scalar_fields(survivor, incoming, POLICY) == ["phone"]
