@@ -138,6 +138,8 @@ nav:
       - Overview: usage/cli/index.md
       - init Command: usage/cli/init-command.md
       - convert Command: usage/cli/convert-command.md
+      - merge Command: usage/cli/merge-command.md
+      - template Command: usage/cli/template-command.md
       - inspect Command: usage/cli/inspect-command.md
       - CLI Recipes: usage/cli/cli-recipes.md
     - Python API:

@@ -48,6 +48,10 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Latest Changes
 
+- **🔗 Graph fusion:** [Merge](https://docling-project.github.io/docling-graph/usage/cli/merge-command/) multiple knowledge graphs into one — deterministic, fully audited, and no LLM calls.
+
+- **🧬 Template generation:** [Generate](https://docling-project.github.io/docling-graph/usage/cli/template-command/) Pydantic templates from example documents or an ontology (OWL/RDFS/SKOS, LinkML, JSON Schema), plus rulebook linting for existing templates.
+
 - **🦆 DocLang support:** Parse `.dclg`/`.dclx` inputs, and [optionally serialize](https://docling-project.github.io/docling-graph/fundamentals/extraction-process/document-conversion/#llm-input-serialization) document as [DocLang](https://github.com/doclang-project/doclang) for the LLM.
 
 - **📍 Data grounding:** Deterministic [provenance](https://docling-project.github.io/docling-graph/fundamentals/graph-management/provenance/) ledger with bounding-box geometry and no extra LLM calls.
@@ -58,11 +62,9 @@ This toolkit supports two extraction paths: **local VLM extraction** via Docling
 
 ### Coming Soon
 
-* 🔗 **Graph Fusion:** Combine and reconcile disparate knowledge graphs into a unified structure.
-
 * 🧩 **Interactive Template Builder:** Guided workflows for building Pydantic templates.
 
-* 🧲 **Ontology-Based Templates:** Match content to the best Pydantic template using semantic similarity.
+* 🧲 **Ontology-Based Template Matching:** Match content to the best Pydantic template using semantic similarity.
 
 
 
