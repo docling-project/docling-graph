@@ -134,9 +134,22 @@ class PipelineConfig(BaseModel):
     docling_serve_timeout: int = Field(
         default=300,
         description=(
-            "Timeout in seconds for docling-serve conversion requests. The "
-            "synchronous API holds the connection while converting, so large "
-            "documents need generous values."
+            "Approximate deadline in seconds for one document's remote "
+            "conversion, from submission to terminal status. Conversion runs "
+            "asynchronously on the server; the client polls until this "
+            "deadline, and server queue time counts toward it. Connect/read "
+            "timeouts and transient-error retries are bounded separately. On "
+            "timeout, the job may still be running server-side."
+        ),
+    )
+    docling_serve_headers: dict[str, str] | None = Field(
+        default=None,
+        description=(
+            "Extra HTTP headers sent on every docling-serve request, e.g. "
+            '{"Authorization": "Bearer <token>"} for deployments that do not '
+            "use X-Api-Key auth. Falls back to the DOCLING_SERVE_HEADERS "
+            "environment variable (a JSON object string). Treated as a "
+            "secret: never written to metadata.json."
         ),
     )
 
@@ -313,15 +326,33 @@ class PipelineConfig(BaseModel):
         """Fill docling-serve settings from environment variables.
 
         Explicit values (config file, CLI flag, constructor) win; the env vars
-        DOCLING_SERVE_URL / DOCLING_SERVE_API_KEY are fallbacks so cluster
-        deployments can enable remote conversion without touching configs.
+        DOCLING_SERVE_URL / DOCLING_SERVE_API_KEY / DOCLING_SERVE_HEADERS are
+        fallbacks so cluster deployments can enable remote conversion without
+        touching configs.
         """
+        import json
         import os
 
         if not self.docling_serve_url:
             self.docling_serve_url = self._clean_serve_url(os.environ.get("DOCLING_SERVE_URL"))
         if self.docling_serve_url and not self.docling_serve_api_key:
             self.docling_serve_api_key = os.environ.get("DOCLING_SERVE_API_KEY") or None
+        if self.docling_serve_url and not self.docling_serve_headers:
+            raw_headers = os.environ.get("DOCLING_SERVE_HEADERS")
+            if raw_headers:
+                # Auth material: a malformed value must fail loudly, not be
+                # silently dropped (requests would go out unauthenticated).
+                try:
+                    parsed = json.loads(raw_headers)
+                except json.JSONDecodeError as e:
+                    raise ValueError(
+                        f"DOCLING_SERVE_HEADERS must be a JSON object string: {e}"
+                    ) from e
+                if not isinstance(parsed, dict):
+                    raise ValueError(
+                        f"DOCLING_SERVE_HEADERS must be a JSON object, got {type(parsed).__name__}"
+                    )
+                self.docling_serve_headers = {str(k): str(v) for k, v in parsed.items()}
         return self
 
     def to_metadata_config_dict(
@@ -335,9 +366,11 @@ class PipelineConfig(BaseModel):
         Includes all options with their effective values (including defaults not overridden).
         """
         # Full dump, JSON-serializable (Path -> str, etc.), exclude non-serializable
-        # and secrets (the docling-serve API key must never land in metadata.json)
+        # and secrets (docling-serve API key and custom auth headers must
+        # never land in metadata.json)
         data = self.model_dump(
-            mode="json", exclude={"llm_client", "template", "docling_serve_api_key"}
+            mode="json",
+            exclude={"llm_client", "template", "docling_serve_api_key", "docling_serve_headers"},
         )
         # template can be a Pydantic model class; serialize as dotted path string
         if isinstance(self.template, str):
@@ -363,6 +396,7 @@ class PipelineConfig(BaseModel):
             "docling_serve_url": self.docling_serve_url,
             "docling_serve_api_key": self.docling_serve_api_key,
             "docling_serve_timeout": self.docling_serve_timeout,
+            "docling_serve_headers": self.docling_serve_headers,
             "structured_output": self.structured_output,
             "structured_sparse_check": self.structured_sparse_check,
             "llm_input_format": self.llm_input_format,
@@ -428,7 +462,9 @@ class PipelineConfig(BaseModel):
             "docling": {
                 "pipeline": default_config.docling_config,
                 # Remote conversion via docling-serve; keep url null for local
-                # conversion. The api key is read from DOCLING_SERVE_API_KEY.
+                # conversion. The api key is read from DOCLING_SERVE_API_KEY;
+                # extra auth headers (e.g. Authorization: Bearer) come from
+                # DOCLING_SERVE_HEADERS (JSON object string).
                 "serve": {
                     "url": default_config.docling_serve_url,
                     "timeout": default_config.docling_serve_timeout,

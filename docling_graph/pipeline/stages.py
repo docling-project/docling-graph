@@ -375,7 +375,8 @@ class ExtractionStage(PipelineStage):
 
         if not context.extracted_models:
             raise ExtractionError(
-                "No models extracted from document", details={"source": context.config.source}
+                "Extraction produced no models from document",
+                details={"source": context.config.source},
             )
 
         self.log.info(f"Extracted {len(context.extracted_models)} items")
@@ -531,6 +532,7 @@ class ExtractionStage(PipelineStage):
                 "base_url": conf["docling_serve_url"],
                 "api_key": conf.get("docling_serve_api_key"),
                 "timeout": conf.get("docling_serve_timeout", 300),
+                "headers": conf.get("docling_serve_headers"),
             }
             self.log.info(
                 f"Document conversion delegated to docling-serve: {conf['docling_serve_url']}"
