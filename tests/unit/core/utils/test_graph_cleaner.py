@@ -180,6 +180,36 @@ def test_content_hash_disambiguates_placeholder_siblings_by_node_id(cleaner: Gra
     assert h1 != h2
 
 
+def test_merge_audit_attrs_do_not_block_dedup(cleaner: GraphCleaner):
+    """__conflicts__/merged_from (graph-merge audit records) are metadata:
+    content-identical nodes still deduplicate when one side carries them."""
+    g = nx.DiGraph()
+    g.add_node("node-1", name="Alice")
+    g.add_node(
+        "node-2",
+        name="Alice",
+        __conflicts__=[{"field": "age", "dropped": 30}],
+        merged_from=[{"document_id": "doc-a"}],
+    )
+    cleaned = cleaner.clean_graph(g)
+    assert cleaned.number_of_nodes() == 1
+
+
+def test_node_with_only_merge_audit_attrs_is_phantom(cleaner: GraphCleaner):
+    """Merge audit records alone can't keep an otherwise-empty node alive."""
+    g = nx.DiGraph()
+    g.add_node("keeper", name="Alice")
+    g.add_node(
+        "audit-only",
+        id="audit-only",
+        label="Person",
+        merged_from=[{"document_id": "doc-a"}],
+    )
+    cleaned = cleaner.clean_graph(g)
+    assert "keeper" in cleaned
+    assert "audit-only" not in cleaned
+
+
 def test_redirect_edges_skips_self_loop_creation(cleaner: GraphCleaner):
     """Redirecting a duplicate's edges never creates a self-loop on the canonical node."""
     g = nx.DiGraph()

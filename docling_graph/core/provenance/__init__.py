@@ -15,6 +15,7 @@ from .identity import (
     compact_view,
     identity_key,
     identity_pairs,
+    iter_provenance_views,
     merge_compact_views,
 )
 from .models import (
@@ -28,6 +29,7 @@ from .models import (
     content_hash,
     document_level_ledger,
     geometry_from_meta,
+    template_schema_hash,
     text_hash,
 )
 
@@ -47,6 +49,8 @@ __all__ = [
     "geometry_from_meta",
     "identity_key",
     "identity_pairs",
+    "iter_provenance_views",
     "merge_compact_views",
+    "template_schema_hash",
     "text_hash",
 ]

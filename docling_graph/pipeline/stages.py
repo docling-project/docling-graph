@@ -393,7 +393,12 @@ class ExtractionStage(PipelineStage):
         if getattr(context.config, "provenance", "standard") == "off":
             return
 
-        from ..core.provenance import DocumentOrigin, ProvenanceLedger, content_hash
+        from ..core.provenance import (
+            DocumentOrigin,
+            ProvenanceLedger,
+            content_hash,
+            template_schema_hash,
+        )
 
         backend = getattr(context.extractor, "backend", None)
         ledger = getattr(backend, "last_provenance", None)
@@ -437,13 +442,7 @@ class ExtractionStage(PipelineStage):
         if context.template is not None:
             template_name = getattr(context.template, "__name__", "")
             try:
-                import json as _json
-
-                schema_hash = content_hash(
-                    _json.dumps(context.template.model_json_schema(), sort_keys=True).encode(
-                        "utf-8"
-                    )
-                )
+                schema_hash = template_schema_hash(context.template)
             except Exception:
                 schema_hash = ""
 

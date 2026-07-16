@@ -3,6 +3,7 @@ Tests for JSON exporter.
 """
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 import networkx as nx
@@ -105,6 +106,58 @@ class TestJSONExporterGraphToDict:
 
         assert result["metadata"]["node_count"] == 2
         assert result["metadata"]["edge_count"] == 1
+
+
+class TestJSONExporterGraphMetadata:
+    """Graph-level metadata (graph.graph) serialized under the "graph" key."""
+
+    def test_graph_to_dict_includes_graph_metadata(self, sample_graph):
+        """graph.graph content lands under the top-level "graph" key."""
+        sample_graph.graph["format"] = "docling-graph/v2"
+        sample_graph.graph["id_fields_map"] = {"Person": ["name"]}
+
+        result = JSONExporter._graph_to_dict(sample_graph)
+
+        assert result["graph"] == {
+            "format": "docling-graph/v2",
+            "id_fields_map": {"Person": ["name"]},
+        }
+
+    def test_graph_key_empty_dict_without_metadata(self, sample_graph):
+        """A graph with no graph-level metadata still exports the key."""
+        result = JSONExporter._graph_to_dict(sample_graph)
+
+        assert result["graph"] == {}
+
+    def test_export_round_trips_graph_metadata(self, sample_graph, tmp_path):
+        """Format-v2 metadata survives a full export/load round-trip."""
+        sample_graph.graph["format"] = "docling-graph/v2"
+        sample_graph.graph["template_name"] = "Person"
+        sample_graph.graph["template_schema_hash"] = "abc123"
+        sample_graph.graph["id_fields_map"] = {"Person": ["name"]}
+        output_file = tmp_path / "graph.json"
+
+        JSONExporter().export(sample_graph, output_file)
+
+        with open(output_file) as f:
+            data = json.load(f)
+        assert data["graph"]["format"] == "docling-graph/v2"
+        assert data["graph"]["template_name"] == "Person"
+        assert data["graph"]["template_schema_hash"] == "abc123"
+        assert data["graph"]["id_fields_map"] == {"Person": ["name"]}
+        # Historical keys keep their exact shape for old consumers.
+        assert data["metadata"] == {"node_count": 2, "edge_count": 1}
+
+    def test_export_serializes_datetime_graph_values(self, sample_graph, tmp_path):
+        """graph.graph values go through json_serializable like node attrs do."""
+        sample_graph.graph["converted_at"] = datetime(2026, 7, 16, 12, 0, 0)
+        output_file = tmp_path / "graph.json"
+
+        JSONExporter().export(sample_graph, output_file)
+
+        with open(output_file) as f:
+            data = json.load(f)
+        assert data["graph"]["converted_at"] == "2026-07-16T12:00:00"
 
 
 class TestJSONExporterExport:

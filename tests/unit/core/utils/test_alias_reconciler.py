@@ -6,6 +6,8 @@ import networkx as nx
 from pydantic import BaseModel, ConfigDict, Field
 
 from docling_graph.core.utils.alias_reconciler import (
+    _META_ATTRS,
+    _attr_richness,
     containment_groups,
     id_fields_by_class,
     propose_alias_candidates,
@@ -118,6 +120,38 @@ def test_reconcile_survives_llm_exception() -> None:
     stats = reconcile_graph_aliases(graph, _ID_FIELDS, llm_call_fn=boom)
     assert stats["merged"] == 0
     assert "G_short" in graph and "G_long" in graph
+
+
+def test_merge_audit_attrs_are_meta_not_content() -> None:
+    """__conflicts__ and merged_from (graph-merge audit records) are framework
+    attrs: they never count toward attribute richness."""
+    assert {"__conflicts__", "merged_from"} <= _META_ATTRS
+    bare = _node("Garantie", nom="Attentat")
+    audited = {
+        **bare,
+        "__conflicts__": [{"field": "nom", "dropped": "x"}],
+        "merged_from": [{"document_id": "doc-a"}],
+    }
+    assert _attr_richness(audited) == _attr_richness(bare)
+
+
+def test_reconcile_never_copies_merge_audit_attrs() -> None:
+    """An absorbed node's __conflicts__/merged_from must neither tip the
+    survivor choice nor be copied onto the survivor."""
+    graph = _cgv_like_graph()
+    graph.nodes["G_short"]["__conflicts__"] = [{"field": "nom", "dropped": "x"}]
+    graph.nodes["G_short"]["merged_from"] = [{"document_id": "doc-a"}]
+
+    def confirm(**_kwargs: Any) -> dict[str, Any]:
+        return {"merges": [{"class": "Garantie", "keep": 0, "merge": [1]}]}
+
+    stats = reconcile_graph_aliases(graph, _ID_FIELDS, llm_call_fn=confirm)
+    assert stats["merged"] == 1
+    # Without meta-attr registration the audit attrs would have made G_short
+    # the "richer" survivor; the description-bearing node must still win.
+    assert "G_long" in graph and "G_short" not in graph
+    assert "__conflicts__" not in graph.nodes["G_long"]
+    assert "merged_from" not in graph.nodes["G_long"]
 
 
 def test_id_fields_by_class_walks_nested_models() -> None:

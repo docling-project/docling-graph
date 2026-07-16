@@ -30,8 +30,18 @@ INFERENCE_LOCATIONS: Final[list[str]] = ["local", "remote"]
 # Export formats (enum for validation)
 EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher"]
 
+# Merge duplicate-group fold orders (enum for validation)
+MERGE_PRECEDENCE: Final[list[str]] = ["input-order", "richest"]
+
+# Merge scalar conflict policies (enum for validation)
+MERGE_CONFLICTS: Final[list[str]] = ["keep-first", "keep-all"]
+
 # Docling pipeline configurations (enum for validation)
 DOCLING_PIPELINES: Final[list[str]] = ["ocr", "vision"]
+
+# Ontology formats accepted by `template from-ontology` (enum for validation).
+# "auto" sniffs the format from the file suffix/content.
+TEMPLATE_FORMATS: Final[list[str]] = ["owl", "linkml", "jsonschema", "auto"]
 
 # Docling export formats (enum for validation)
 DOCLING_EXPORT_FORMATS: Final[list[str]] = ["markdown", "json", "document"]

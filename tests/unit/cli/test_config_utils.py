@@ -12,6 +12,7 @@ import yaml
 from docling_graph.cli.config_utils import (
     get_config_value,
     load_config,
+    load_config_optional,
     save_config,
 )
 from docling_graph.cli.constants import CONFIG_FILE_NAME
@@ -89,6 +90,39 @@ class TestLoadConfig:
 
         assert config["defaults"]["backend"] == "llm"
         assert config["models"]["llm"]["local"]["provider"] == "ollama"
+
+
+class TestLoadConfigOptional:
+    """Test tolerant configuration loading (template commands)."""
+
+    @patch("docling_graph.cli.config_utils.Path.cwd")
+    def test_missing_file_returns_none(self, mock_cwd, tmp_path):
+        """Should return None instead of exiting when config.yaml is absent."""
+        mock_cwd.return_value = tmp_path
+
+        assert load_config_optional() is None
+
+    @patch("docling_graph.cli.config_utils.Path.cwd")
+    def test_present_file_loads_normally(self, mock_cwd, tmp_path):
+        """Should load an existing config exactly like load_config."""
+        config_path = tmp_path / CONFIG_FILE_NAME
+        config_path.write_text("templategen:\n  strict: true\n")
+        mock_cwd.return_value = tmp_path
+
+        config = load_config_optional()
+
+        assert config == {"templategen": {"strict": True}}
+
+    @patch("docling_graph.cli.config_utils.Path.cwd")
+    def test_malformed_file_still_exits(self, mock_cwd, tmp_path):
+        """A file that exists but cannot be parsed keeps load_config's errors."""
+        config_path = tmp_path / CONFIG_FILE_NAME
+        config_path.write_text("invalid: [yaml:")
+        mock_cwd.return_value = tmp_path
+
+        with pytest.raises(typer.Exit) as exc_info:
+            load_config_optional()
+        assert exc_info.value.exit_code == 1
 
 
 class TestSaveConfig:

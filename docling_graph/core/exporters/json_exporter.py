@@ -64,6 +64,11 @@ class JSONExporter:
     def _graph_to_dict(graph: nx.DiGraph) -> Dict[str, Any]:
         """Convert graph to dictionary format.
 
+        Graph-level metadata (``graph.graph``) is serialized under a top-level
+        ``"graph"`` key — format-v2 exports carry their identity contract
+        (id_fields_map, template name/schema hash) there. ``nodes``/``edges``/
+        ``metadata`` keep their exact historical shape for old consumers.
+
         Args:
             graph: NetworkX directed graph.
 
@@ -84,4 +89,5 @@ class JSONExporter:
             "nodes": nodes,
             "edges": edges,
             "metadata": {"node_count": len(nodes), "edge_count": len(edges)},
+            "graph": dict(graph.graph),
         }

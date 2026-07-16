@@ -12,7 +12,7 @@ both delegate here, so recording and resolution can never disagree.
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterator, Mapping, Sequence
 
 from ..utils.entity_name_normalizer import canonicalize_identity_for_dedup
 from .models import KIND_STRENGTH, NodeProvenance, ProvenanceLedger
@@ -169,13 +169,39 @@ def compact_view(
     return view
 
 
+def iter_provenance_views(view: dict[str, Any] | None) -> Iterator[dict[str, Any]]:
+    """Yield the per-document compact views inside a node's provenance value.
+
+    Accepts both the plain single-document view (yielded as-is) and the
+    wrapped multi-document form ``{"multi_document": True, "sources": [...]}``
+    written by cross-document graph merging (each source view is yielded).
+    ``None``/empty yields nothing. Views are yielded by reference, not copied.
+    """
+    if not view:
+        return
+    if view.get("multi_document"):
+        for source in view.get("sources") or []:
+            if isinstance(source, dict) and source:
+                yield source
+        return
+    yield view
+
+
+def _source_views(view: dict[str, Any]) -> list[dict[str, Any]]:
+    """Copied per-document views of a plain or wrapped compact view."""
+    return [dict(v) for v in iter_provenance_views(view)]
+
+
 def merge_compact_views(
     a: dict[str, Any] | None, b: dict[str, Any] | None
 ) -> dict[str, Any] | None:
     """Union two compact views (graph-cleaner dedup merge). Never widens claims.
 
     An ``unresolved`` view yields to any resolved one; ``scope: document``
-    absorbs chunk-level detail (the broader claim wins on merge).
+    absorbs chunk-level detail (the broader claim wins on merge). When either
+    side is the wrapped multi-document form, sources are merged pairwise by
+    ``document_id`` — chunk ids are ledger-local, so views from different
+    documents are kept side by side instead of being blended.
     """
     if not a:
         return dict(b) if b else None
@@ -185,6 +211,34 @@ def merge_compact_views(
         return dict(b)
     if b.get("status") == "unresolved":
         return dict(a)
+    if a.get("multi_document") or b.get("multi_document"):
+        sources = _source_views(a)
+        for incoming in _source_views(b):
+            document_id = incoming.get("document_id") or ""
+            match = next(
+                (i for i, s in enumerate(sources) if (s.get("document_id") or "") == document_id),
+                None,
+            )
+            if match is None:
+                sources.append(incoming)
+            else:
+                merged_source = merge_compact_views(sources[match], incoming)
+                if merged_source is not None:
+                    sources[match] = merged_source
+        wrapped: dict[str, Any] = {"multi_document": True, "sources": sources}
+        # The wrapper is rebuilt from scratch: carry overflow accounting from
+        # earlier source-cap truncations across, or it is silently lost.
+        sources_omitted = int(a.get("sources_omitted") or 0) + int(b.get("sources_omitted") or 0)
+        if sources_omitted:
+            wrapped["sources_omitted"] = sources_omitted
+        return wrapped
+    doc_a = str(a.get("document_id") or "")
+    doc_b = str(b.get("document_id") or "")
+    if doc_a and doc_b and doc_a != doc_b:
+        # Two plain resolved views from provably different documents: chunk ids
+        # are ledger-local, so blending them under one document_id would point
+        # at the wrong ledger. Keep them side by side in the wrapped form.
+        return {"multi_document": True, "sources": [dict(a), dict(b)]}
     if a.get("scope") == "document" or b.get("scope") == "document":
         merged = {"document_id": a.get("document_id") or b.get("document_id"), "scope": "document"}
         if a.get("synthetic") and b.get("synthetic"):

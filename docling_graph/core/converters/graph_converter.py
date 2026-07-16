@@ -20,7 +20,8 @@ import networkx as nx
 from pydantic import BaseModel
 
 from ...logging_utils import get_component_logger
-from ..provenance.identity import PROVENANCE_NODE_ATTR
+from ..provenance.identity import PROVENANCE_NODE_ATTR, iter_provenance_views
+from ..provenance.models import template_schema_hash
 from ..utils.alias_reconciler import _attr_richness, id_fields_by_class, reconcile_graph_aliases
 from ..utils.entity_name_normalizer import canonicalize_identity_for_dedup
 from ..utils.graph_cleaner import GraphCleaner, validate_graph_structure
@@ -119,15 +120,21 @@ def _collect_cardinality_bounds(model_instances: List[BaseModel]) -> dict[str, i
 
 
 def _provenance_weight(node_data: dict[str, Any]) -> int:
-    """Distinct-chunk support recorded by the grounding binder (0 when off)."""
+    """Distinct-chunk support recorded by the grounding binder (0 when off).
+
+    Wrapped multi-document views (produced by cross-document graph merging)
+    sum the chunk support of every source, so re-merged nodes never score 0.
+    """
     prov = node_data.get(PROVENANCE_NODE_ATTR)
     if not isinstance(prov, dict):
         return 0
-    chunks = prov.get("chunks")
-    weight = len(chunks) if isinstance(chunks, list) else 0
-    omitted = prov.get("chunks_omitted")
-    if isinstance(omitted, int) and omitted > 0:
-        weight += omitted
+    weight = 0
+    for view in iter_provenance_views(prov):
+        chunks = view.get("chunks")
+        weight += len(chunks) if isinstance(chunks, list) else 0
+        omitted = view.get("chunks_omitted")
+        if isinstance(omitted, int) and omitted > 0:
+            weight += omitted
     return weight
 
 
@@ -266,6 +273,21 @@ class GraphConverter:
                 logger.warning("Provenance binding failed: %s", e)
 
         id_fields_map = id_fields_by_class(model_instances)
+
+        # Format-v2 self-describing export: embed the identity contract so a
+        # later `docling-graph merge` can re-key nodes and propose aliases from
+        # the export alone, without the original template. The schema hash uses
+        # the same derivation as DocumentOrigin.template_schema_hash so the two
+        # values always agree.
+        root_template = type(model_instances[0])
+        try:
+            schema_hash = template_schema_hash(root_template)
+        except Exception:
+            schema_hash = ""
+        graph.graph["format"] = "docling-graph/v2"
+        graph.graph["template_name"] = root_template.__name__
+        graph.graph["template_schema_hash"] = schema_hash
+        graph.graph["id_fields_map"] = id_fields_map
 
         # Auto-cleanup if enabled
         if self.auto_cleanup and self.cleaner:

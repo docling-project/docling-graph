@@ -47,6 +47,10 @@ def edge(label: str, **kwargs: Any) -> Any:
     """
     Create a Pydantic Field with edge metadata for graph relationships.
 
+    Edges are optional by default (single edges fall back to ``default=None``):
+    required-ness belongs to identity fields only, so one missing relationship
+    never fails an otherwise valid document.
+
     Args:
         label: Edge label in ALL_CAPS format (e.g., "ISSUED_BY", "CONTAINS_LINE")
         **kwargs: Additional Field parameters
@@ -55,7 +59,7 @@ def edge(label: str, **kwargs: Any) -> Any:
         Pydantic Field with edge metadata
     """
     if "default" not in kwargs and "default_factory" not in kwargs:
-        kwargs["default"] = ...
+        kwargs["default"] = None
     return Field(json_schema_extra={"edge_label": label}, **kwargs)
 
 

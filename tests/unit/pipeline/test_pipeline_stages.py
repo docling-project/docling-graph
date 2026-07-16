@@ -788,6 +788,21 @@ class TestExtractionStageProvenanceCapture:
         assert ledger.document.template_name == template.__name__
         assert ledger.document.template_schema_hash != ""
 
+    def test_provenance_schema_hash_matches_shared_helper(self, tmp_path):
+        """The ledger hash uses the shared template_schema_hash derivation —
+        the same one GraphConverter embeds in format-v2 exports, so the two
+        values always agree for merge-time compatibility gates."""
+        from docling_graph.core.provenance import ProvenanceLedger, template_schema_hash
+
+        context, template = self._build_context(tmp_path)
+        context.extractor = Mock()
+        ledger = ProvenanceLedger()
+        context.extractor.backend = Mock(last_provenance=ledger)
+
+        ExtractionStage()._capture_provenance(context)
+
+        assert ledger.document.template_schema_hash == template_schema_hash(template)
+
     def test_provenance_schema_hash_empty_when_template_none(self, tmp_path):
         """No template on the context leaves template_name/hash empty."""
         from docling_graph.core.provenance import ProvenanceLedger
