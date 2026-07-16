@@ -31,8 +31,13 @@ authors = [
 ]
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    # DocLang input/export + serializer surface requires docling>=2.100 / docling-core>=2.86.
-    "docling>=2.100.0,<3.0.0",
+    # DocLang input/export + serializer surface requires docling>=2.100 /
+    # docling-core>=2.86. The docling.service_client SDK used for remote
+    # docling-serve conversion needs >=2.104 (aligned convert(source=) API;
+    # all imported exceptions exist since 2.102); floor set at 2.105.0,
+    # whose service-client surface is identical to the locked version and
+    # carries the multipart nested-options encoding fix (#3672).
+    "docling>=2.105.0,<3.0.0",
     "docling-core[chunking, chunking-openai]>=2.86.0,<3.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "networkx>=3.0.0,<4.0.0",
@@ -43,7 +48,7 @@ dependencies = [
     "pyyaml>=6.0,<7.0",
     "aiofiles>=24.0.0,<26.0.0",
     "tenacity>=9.1.4",
-    # URL input handling and the docling-serve remote conversion client
+    # URL input handling (docling-serve conversion uses docling.service_client)
     "requests>=2.31,<3.0",
 ]
 
@@ -58,7 +63,7 @@ docling-graph = "docling_graph.cli.main:main"
 
 [project.optional-dependencies]
 vlm = [
-    "docling[vlm]>=2.100.0,<3.0.0",
+    "docling[vlm]>=2.105.0,<3.0.0",
 ]
 # Legacy provider SDKs removed; LiteLLM is installed by default.
 # Amazon Bedrock routes through LiteLLM but needs boto3 for the AWS

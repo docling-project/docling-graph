@@ -441,6 +441,7 @@ def test_init_with_docling_serve_skips_local_converter(mock_serve_class, mock_co
         api_key="k",
         timeout=60.0,
         docling_config="vision",
+        headers=None,
     )
     assert processor.converter is None
     assert processor.serve_client is mock_serve_class.return_value
@@ -472,6 +473,30 @@ def test_docling_serve_config_without_url_uses_local_converter(
 
     mock_serve_class.assert_not_called()
     mock_converter_class.assert_called_once()
+    assert processor.serve_client is None
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+@patch("docling_graph.core.extractors.document_processor.DoclingServeClient")
+def test_cleanup_closes_serve_client(mock_serve_class, mock_converter_class):
+    """cleanup() closes the remote client's connection pool."""
+    processor = DocumentProcessor(docling_serve_config={"base_url": "http://serve:5001"})
+
+    processor.cleanup()
+
+    mock_serve_class.return_value.close.assert_called_once()
+    assert processor.serve_client is None
+    processor.cleanup()  # idempotent: no second close, no error
+    mock_serve_class.return_value.close.assert_called_once()
+
+
+@patch("docling_graph.core.extractors.document_processor.DocumentConverter")
+def test_cleanup_without_serve_client(mock_converter_class):
+    """cleanup() is safe when no remote client was configured."""
+    processor = DocumentProcessor()
+
+    processor.cleanup()
+
     assert processor.serve_client is None
 
 

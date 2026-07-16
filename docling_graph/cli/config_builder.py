@@ -254,7 +254,9 @@ class ConfigurationBuilder:
             "pipeline": pipeline,
             # Remote conversion: set url to a docling-serve instance (e.g.
             # http://localhost:5001) to convert documents there instead of
-            # locally. API key comes from the DOCLING_SERVE_API_KEY env var.
+            # locally. API key comes from the DOCLING_SERVE_API_KEY env var;
+            # extra auth headers (e.g. Authorization: Bearer) come from
+            # DOCLING_SERVE_HEADERS (JSON object string).
             "serve": {
                 "url": self._defaults.docling_serve_url,
                 "timeout": self._defaults.docling_serve_timeout,

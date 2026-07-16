@@ -335,6 +335,7 @@ class TestExtractionStage:
             "base_url": "http://serve:5001",
             "api_key": "secret",
             "timeout": 120,
+            "headers": None,
         }
 
     @patch("docling_graph.pipeline.stages.ExtractorFactory.create_extractor")

@@ -160,9 +160,10 @@ class DocumentProcessor:
             docling_serve_config (dict): When set (with a "base_url" key),
                 document conversion is delegated to a remote docling-serve
                 instance and no local conversion models are loaded. Keys:
-                base_url (required), api_key, timeout. The docling_config
-                pipeline selection still applies (mapped to the server's
-                standard/vlm pipelines).
+                base_url (required), api_key, timeout, headers (extra HTTP
+                headers, e.g. for bearer-token auth proxies). The
+                docling_config pipeline selection still applies (mapped to
+                the server's standard/vlm pipelines).
         """
         self.docling_config = docling_config
         self.llm_input_format = llm_input_format
@@ -189,6 +190,7 @@ class DocumentProcessor:
                 api_key=docling_serve_config.get("api_key"),
                 timeout=float(docling_serve_config.get("timeout") or 300.0),
                 docling_config=docling_config,
+                headers=docling_serve_config.get("headers"),
             )
             logger.info(
                 "Initialized with remote docling-serve conversion (%s)",
@@ -610,6 +612,10 @@ class DocumentProcessor:
     def cleanup(self) -> None:
         """Clean up document converter resources."""
         try:
+            serve_client = getattr(self, "serve_client", None)
+            if serve_client is not None:
+                serve_client.close()
+                self.serve_client = None
             if hasattr(self, "converter"):
                 del self.converter
             gc.collect()

@@ -74,6 +74,7 @@ def _resolve_cli_settings(
     docling_serve_url_val = docling_serve_url or docling_serve_cfg.get("url")
     docling_serve_timeout_val = docling_serve_cfg.get("timeout")
     docling_serve_api_key_val = docling_serve_cfg.get("api_key")
+    docling_serve_headers_val = docling_serve_cfg.get("headers")
 
     final_llm_input_format = str(
         llm_input_format
@@ -115,6 +116,7 @@ def _resolve_cli_settings(
         "docling_serve_url": docling_serve_url_val,
         "docling_serve_api_key": docling_serve_api_key_val,
         "docling_serve_timeout": docling_serve_timeout_val,
+        "docling_serve_headers": docling_serve_headers_val,
         "llm_input_format": final_llm_input_format,
         "chunk_max_tokens": (
             chunk_max_tokens if chunk_max_tokens is not None else defaults.get("chunk_max_tokens")
@@ -570,6 +572,7 @@ def convert_command(
         docling_serve_url=settings["docling_serve_url"],
         docling_serve_api_key=settings["docling_serve_api_key"],
         docling_serve_timeout=int(settings["docling_serve_timeout"] or 300),
+        docling_serve_headers=settings["docling_serve_headers"],
         model_override=model,
         provider_override=provider,
         models=models_from_yaml,
