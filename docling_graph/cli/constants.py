@@ -34,7 +34,7 @@ EXPORT_FORMATS: Final[list[str]] = ["csv", "cypher"]
 MERGE_PRECEDENCE: Final[list[str]] = ["input-order", "richest"]
 
 # Merge scalar conflict policies (enum for validation)
-MERGE_CONFLICTS: Final[list[str]] = ["keep-first", "keep-all"]
+MERGE_CONFLICTS: Final[list[str]] = ["keep-first", "keep-all", "variants"]
 
 # Docling pipeline configurations (enum for validation)
 DOCLING_PIPELINES: Final[list[str]] = ["ocr", "vision"]

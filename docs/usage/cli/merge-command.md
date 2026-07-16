@@ -50,7 +50,7 @@ uv run docling-graph merge a/ b/ --template templates.invoices.InvoiceDocument
 | `--output`, `-o` | `outputs/merged_<timestamp>/` | Output directory |
 | `--template`, `-t` | — | Dotted path (`module.Class`); enables re-keying and alias proposal for v1 exports (v2 exports are self-describing) |
 | `--precedence` | `input-order` | Duplicate-group fold order: `input-order` or `richest` |
-| `--conflicts` | `keep-first` | Scalar conflict policy: `keep-first` (record dropped values in the report) or `keep-all` (also keep them on the node under `__conflicts__`) |
+| `--conflicts` | `keep-first` | Scalar conflict policy: `keep-first` (record dropped values in the report), `keep-all` (also keep them on the node under `__conflicts__`), or `variants` (also reify them as `<Class>Variant` sub-nodes — see below) |
 | `--combine-fields` | `description,summary` | Text fields merged with sentence-level dedup instead of first-wins |
 | `--rekey / --no-rekey` | auto | Recompute node IDs from identity attributes before folding (guards against normalizer drift across docling-graph versions) |
 | `--alias-decisions` | — | JSON file of confirmed alias candidates (edit the stubs from a previous `merge_report.json`) |
@@ -67,17 +67,30 @@ uv run docling-graph merge a/ b/ --template templates.invoices.InvoiceDocument
 | Situation | Behavior |
 |-----------|----------|
 | Same node ID in two graphs | Nodes fold: empty fields filled, `description`/`summary` sentence-merged, scalar lists unioned |
-| Conflicting scalar values | First graph wins; the suppressed value + its source document are recorded (and kept on the node with `--conflicts keep-all`) |
+| Conflicting scalar values | First graph wins; the suppressed value + its source document are recorded (and kept on the node with `--conflicts keep-all`). Strings that differ only in whitespace, case, or Unicode form (`"059/987 65 40"` vs `"059/9876540"` — OCR formatting noise) are treated as equal, not as conflicts |
+| Same node ID from **unrelated documents** with conflicting values | **Split, not folded.** Some identities are only locally unique (line numbers, step indexes); when the two occurrences hang under no common root *and* folding would overwrite conflicting values, the later node is kept separate (`<id>__doc_<document_id>`) and recorded under `cross_document_splits`. One proven conflict extends to the whole (document pair, class) group: once `LineItem` "1" conflicts between two documents, their `LineItem` "2" is split too even when its values agree (`reason: same-class-conflict` in the report), because line-number identities from unrelated documents describe different instances. Re-extractions of the same document (shared root) still fold |
 | Same edge, same label | Attributes fold |
 | Same edge, different labels | First label wins; losing labels kept in `also_labels` and reported |
 | Similar-but-not-identical names ("IBM" vs "International Business Machines") | **Never auto-merged.** Proposed as alias candidate stubs in the report with advisory similarity scores |
 | Two different documents sharing a filename stem | Colliding filename-derived root IDs are split (skolemized) when provenance proves distinct documents |
 | Duplicate inputs (same document converted twice) | Second copy absorbed with a warning |
 
+### Conflict variants (`--conflicts variants`)
+
+When two sources describe the *same* node but disagree on a value (a JPG and a PDF re-extraction of one invoice reading a total differently), `keep-first` keeps the winner and the losing value survives only in the report. With `--conflicts variants` the losing values stay **in the graph**: the canonical node is exactly what `keep-first` produces (consensus fields plus the precedence winner), and each conflicting source contributes one sub-node holding only its suppressed values:
+
+```text
+LineItem_1f9e8d… {quantity: 28.0, …}                     ← canonical (winner)
+   └─ HAS_CONFLICT_VARIANT {fields: [quantity]} →
+      LineItem_1f9e8d…__var_doc-bbbb {quantity: 26.0}    ← LineItemVariant, type: variant
+```
+
+Variant nodes carry `variant_of`, `variant_document_id`, and the source's own `__provenance__`, so "which document said 26.0?" is a graph query instead of a report lookup. They are `type: variant` with label `<Class>Variant` — easy to filter out downstream — and their ids are derived from (base id, document id), so re-merging a constituent input converges onto the existing variant and re-keying moves them in lockstep with their base. Splits are unaffected: nodes from unrelated documents stay whole, they never become canonical-plus-variant.
+
 ### Confirming alias candidates (human-in-the-loop, still no LLM)
 
 1. Run a merge; open `merge_report.json` and find `alias_candidates`.
-2. Flip `"confirm": true` on the pairs you vouch for, save as `decisions.json`.
+2. Flip `"confirm": true` on the pairs you vouch for, save as `decisions.json`. Each stub lists the `field_conflicts` a confirmed merge would contradict — many conflicts (e.g. different `currency`, `total_amount`, `issue_date`) usually mean two distinct instances sharing an identifier, not aliases.
 3. Re-run with `--alias-decisions decisions.json`.
 
 Confirmed pairs replay through the exact same guarded reconciliation pass the extraction pipeline uses — unproposed pairs are ignored, and the sibling-veto still applies. Confirmations the guards veto are surfaced under `ignored_alias_decisions` in `merge_report.json` with the veto reason, so nothing disappears silently.

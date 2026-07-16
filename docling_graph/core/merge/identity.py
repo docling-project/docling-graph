@@ -22,7 +22,7 @@ from ...logging_utils import get_component_logger
 from ..provenance.identity import PROVENANCE_NODE_ATTR
 from ..utils.alias_reconciler import _META_ATTRS
 from ..utils.entity_name_normalizer import canonicalize_identity_for_dedup
-from .node_folder import fold_edge, fold_node_attrs
+from .node_folder import VARIANT_TYPE, fold_edge, fold_node_attrs, variant_node_id
 from .policy import MergePolicy
 from .provenance_merge import merge_node_views
 
@@ -167,7 +167,13 @@ def rekey_graph(
     """
     mapping: dict[str, str] = {}
     class_by_new_id: dict[str, str] = {}
+    variant_nodes: list[tuple[str, Mapping[str, Any]]] = []
     for node_id, attrs in graph.nodes(data=True):
+        if str(attrs.get("type") or "") == VARIANT_TYPE:
+            # Conflict-variant sub-nodes carry no identity fields of their
+            # own; they are re-id'd in lockstep with their base below.
+            variant_nodes.append((str(node_id), attrs))
+            continue
         cls = str(attrs.get("__class__") or "")
         new_id = recompute_node_id(attrs, list(id_fields_map.get(cls) or []))
         existing_cls = class_by_new_id.get(new_id)
@@ -179,6 +185,10 @@ def rekey_graph(
             )
         class_by_new_id[new_id] = cls
         mapping[str(node_id)] = new_id
+    for node_id, attrs in variant_nodes:
+        new_base = mapping.get(str(attrs.get("variant_of") or ""))
+        stamp = str(attrs.get("variant_document_id") or "")
+        mapping[node_id] = variant_node_id(new_base, stamp) if new_base and stamp else node_id
     changed = sum(1 for old, new in mapping.items() if old != new)
 
     rekeyed = nx.DiGraph()
@@ -188,6 +198,10 @@ def rekey_graph(
         new_id = mapping[str(node_id)]
         incoming = dict(attrs)
         incoming["id"] = new_id
+        if str(attrs.get("type") or "") == VARIANT_TYPE:
+            new_base = mapping.get(str(attrs.get("variant_of") or ""))
+            if new_base:
+                incoming["variant_of"] = new_base
         if new_id in rekeyed:
             survivor = rekeyed.nodes[new_id]
             field_conflicts.extend(fold_node_attrs(survivor, incoming, policy, source_tag))

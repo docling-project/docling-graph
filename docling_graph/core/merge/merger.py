@@ -35,7 +35,13 @@ from ..utils.alias_reconciler import (
 from ..utils.graph_cleaner import GraphCleaner, validate_graph_structure
 from ..utils.stats_calculator import calculate_graph_stats
 from .identity import id_fields_by_template, rekey_graph
-from .node_folder import fold_edge, fold_node_attrs
+from .node_folder import (
+    VARIANT_TYPE,
+    build_conflict_variant,
+    conflicting_scalar_fields,
+    fold_edge,
+    fold_node_attrs,
+)
 from .policy import MergePolicy
 from .provenance_merge import merge_node_views, write_ledger_sidecars
 
@@ -73,8 +79,18 @@ class MergeReport(BaseModel):
     rekeyed_changed: int = 0
     nodes_folded: int = 0
     field_conflicts: list[dict[str, Any]] = Field(default_factory=list)
+    conflict_variants: int = 0
+    """Variant sub-nodes created under ``conflicts: variants`` — one per
+    (folded node, conflicting source) pair, holding the suppressed values."""
     edge_label_conflicts: list[dict[str, Any]] = Field(default_factory=list)
     root_skolemized: list[dict[str, Any]] = Field(default_factory=list)
+    cross_document_splits: list[dict[str, Any]] = Field(default_factory=list)
+    """Same-ID collisions split instead of folded: the inputs share no root
+    (so they are not re-extractions of one document) and folding would have
+    overwritten conflicting scalar values (weak local identities such as line
+    numbers minting equal IDs for unrelated instances). A proven conflict is
+    contagious within its (document pair, class) group (``reason`` is
+    ``field-conflict`` or ``same-class-conflict`` with ``triggered_by``)."""
     alias_candidates: list[dict[str, Any]] = Field(default_factory=list)
     alias_stats: dict[str, int] = Field(default_factory=dict)
     ignored_alias_decisions: list[dict[str, Any]] = Field(default_factory=list)
@@ -250,6 +266,7 @@ class GraphMerger:
             self.report.rekeyed_changed = changed_total
 
         self._skolemize_root_collisions(id_fields_map)
+        self._split_conflicting_collisions()
         graph = self._union_fold()
         GraphCleaner(verbose=True).clean_graph(graph)
         self._alias_pass(graph, id_fields_map)
@@ -446,12 +463,146 @@ class GraphMerger:
             for node_id in item.graph.nodes:
                 first_owner.setdefault(str(node_id), item)
 
+    @staticmethod
+    def _root_scope(graph: nx.DiGraph, node_id: str, roots: set[str]) -> set[str]:
+        """The root node IDs a node hangs under (itself, when it is a root)."""
+        scope = {str(ancestor) for ancestor in nx.ancestors(graph, node_id)}
+        scope.add(str(node_id))
+        return scope & roots
+
+    def _split_conflicting_collisions(self) -> None:
+        """Veto cross-document folds that would overwrite conflicting content.
+
+        Node IDs are content hashes of identity fields, but some identities
+        are only locally unique (line numbers, positions, step indexes): two
+        unrelated documents can mint the same ID for different instances, and
+        folding them corrupts both (chimera descriptions, clobbered amounts,
+        children shared across roots). The guard is structural + content-based:
+
+        - the two occurrences hang under **no common root node ID** (per-node
+          ancestry, so multi-document containers like re-merged outputs stay
+          honest) — occurrences sharing a root are re-extractions of the same
+          logical document (e.g. a JPG and a DOCX of one invoice), where
+          same-ID children are the same instance and extraction noise
+          legitimately folds under keep-first; and
+        - folding would trip at least one rule-8 scalar conflict
+          (:func:`conflicting_scalar_fields`) — fill-empty-compatible
+          occurrences still fold, so shared entities (a Party appearing in
+          two invoices) keep folding by identity.
+
+        One proven conflict is contagious within its (document pair, class)
+        group: a scalar conflict on any collision of class C between inputs
+        A and B is proof that C's identity fields under-determine instances
+        across these documents, so every C-collision between A and B splits —
+        line 2 of two unrelated invoices is a different instance even when
+        its extracted values happen to agree, and folding it would share one
+        child across both roots. Other classes are untouched: a compatible
+        Party still folds even while the LineItems split.
+
+        A both-roots collision has itself as its scope on both sides, so the
+        shared-scope carve-out defers it to the root-collision policy above.
+        The later input's node is renamed ``<id>__doc_<document_id[:8]>``
+        (``__src_<index>`` without a ledger) and stamped with
+        ``skolem_document_id`` so re-keying on a future re-merge does not
+        silently re-fuse the pair (same mechanism as root skolemization).
+        Every split is recorded on ``report.cross_document_splits``.
+        """
+        roots_by_input = [
+            {str(node) for node in item.graph.nodes if item.graph.in_degree(node) == 0}
+            for item in self.inputs
+        ]
+        first_owner: dict[str, _LoadedInput] = {}
+        for item in self.inputs:
+            collisions: list[tuple[str, _LoadedInput, list[str], str]] = []
+            for node_id in item.graph.nodes:
+                key = str(node_id)
+                owner = first_owner.get(key)
+                if owner is None:
+                    continue
+                owner_scope = self._root_scope(owner.graph, key, roots_by_input[owner.index])
+                item_scope = self._root_scope(item.graph, key, roots_by_input[item.index])
+                if owner_scope & item_scope:
+                    continue
+                conflicts = conflicting_scalar_fields(
+                    owner.graph.nodes[key], item.graph.nodes[key], self.policy
+                )
+                cls = str(item.graph.nodes[key].get("__class__") or "")
+                collisions.append((key, owner, conflicts, cls))
+            # Conflict contagion: the first conflicting collision of each
+            # (owner input, class) group condemns the whole group.
+            trigger_by_group: dict[tuple[int, str], str] = {}
+            for key, owner, conflicts, cls in collisions:
+                if conflicts and cls:
+                    trigger_by_group.setdefault((owner.index, cls), key)
+            renames: dict[str, str] = {}
+            for key, owner, conflicts, cls in collisions:
+                trigger = trigger_by_group.get((owner.index, cls)) if cls else None
+                if not conflicts and trigger is None:
+                    continue
+                attrs = item.graph.nodes[key]
+                if item.document_id:
+                    stamp, new_id = item.document_id, f"{key}__doc_{item.document_id[:8]}"
+                else:
+                    stamp, new_id = f"input-{item.index}", f"{key}__src_{item.index}"
+                attrs["skolem_document_id"] = stamp
+                renames[key] = new_id
+                record: dict[str, Any] = {
+                    "original_id": key,
+                    "split_id": new_id,
+                    "class": cls,
+                    "conflicting_fields": conflicts,
+                    "reason": "field-conflict" if conflicts else "same-class-conflict",
+                    "document_id": item.document_id,
+                    "source": item.source,
+                    "collided_with": owner.source,
+                }
+                if not conflicts:
+                    record["triggered_by"] = trigger
+                self.report.cross_document_splits.append(record)
+                if conflicts:
+                    logger.warning(
+                        "Cross-document split: %s in %s collides with %s but the inputs "
+                        "share no root and %d field(s) conflict (%s) — folded IDs from "
+                        "unrelated documents describe different instances; renamed to %s",
+                        key,
+                        item.source,
+                        owner.source,
+                        len(conflicts),
+                        ", ".join(conflicts),
+                        new_id,
+                    )
+                else:
+                    logger.warning(
+                        "Cross-document split (same-class conflict): %s in %s collides "
+                        "with %s without field conflicts, but same-class collision %s "
+                        "from the same document pair does conflict — %s identities "
+                        "under-determine instances across these documents; renamed to %s",
+                        key,
+                        item.source,
+                        owner.source,
+                        trigger,
+                        cls,
+                        new_id,
+                    )
+            if renames:
+                nx.relabel_nodes(item.graph, renames, copy=False)
+                roots = roots_by_input[item.index]
+                for old_id, new_id in renames.items():
+                    item.graph.nodes[new_id]["id"] = new_id
+                    if old_id in roots:
+                        roots.discard(old_id)
+                        roots.add(new_id)
+            for node_id in item.graph.nodes:
+                first_owner.setdefault(str(node_id), item)
+
     def _source_tag(self, position: int) -> str:
         return self.inputs[position].source
 
     def _union_fold(self) -> nx.DiGraph:
         """Accumulate the union: fold same-ID nodes (§5.3), union edges (§5.7),
-        wrap cross-document provenance (§5.5), record merged_from."""
+        wrap cross-document provenance (§5.5), record merged_from. Under
+        ``conflicts: variants``, each fold's suppressed values are reified as
+        variant sub-nodes after the union (:func:`build_conflict_variant`)."""
         node_order: list[str] = []
         node_occurrences: dict[str, list[tuple[int, dict[str, Any]]]] = {}
         edge_order: list[tuple[str, str]] = []
@@ -472,6 +623,7 @@ class GraphMerger:
 
         merged = nx.DiGraph()
         folded = 0
+        variant_specs: list[tuple[str, int, dict[str, Any], Any]] = []
         for node_id in node_order:
             occurrences = node_occurrences[node_id]
             if len(occurrences) == 1:
@@ -496,9 +648,19 @@ class GraphMerger:
             merged_from = [dict(entry) for entry in (base.get("merged_from") or [])]
             merged_aliases = list(base.get("merged_aliases") or [])
             for position, attrs in ordered[1:]:
-                self.report.field_conflicts.extend(
-                    fold_node_attrs(base, attrs, self.policy, self._source_tag(position))
-                )
+                records = fold_node_attrs(base, attrs, self.policy, self._source_tag(position))
+                self.report.field_conflicts.extend(records)
+                if (
+                    self.policy.conflicts == "variants"
+                    and records
+                    # A variant never spawns variants of its own: a colliding
+                    # variant pair folds keep-first like any other node.
+                    and str(base.get("type") or "") != VARIANT_TYPE
+                ):
+                    dropped = {r["field"]: r["dropped"] for r in records}
+                    variant_specs.append(
+                        (node_id, position, dropped, attrs.get(PROVENANCE_NODE_ATTR))
+                    )
                 provenance = merge_node_views(provenance, attrs.get(PROVENANCE_NODE_ATTR))
                 # Audit trails from previous merges survive re-merging.
                 for entry in attrs.get("merged_from") or []:
@@ -536,6 +698,20 @@ class GraphMerger:
                     self.report.edge_label_conflicts.append(record)
             merged.add_edge(source, target, **base)
 
+        for base_id, position, dropped, provenance in variant_specs:
+            item = self.inputs[position]
+            stamp = item.document_id or f"input-{position}"
+            variant_id, attrs, edge_attrs = build_conflict_variant(
+                merged.nodes[base_id], dropped, stamp, provenance
+            )
+            if variant_id in merged:
+                # Re-merge of an export that already carries this variant: the
+                # deterministic id makes the re-detected conflict a no-op.
+                continue
+            merged.add_node(variant_id, **attrs)
+            merged.add_edge(base_id, variant_id, **edge_attrs)
+            self.report.conflict_variants += 1
+
         self.report.nodes_folded = folded
         return merged
 
@@ -553,7 +729,7 @@ class GraphMerger:
             return
         node_ids_by_class, display_by_class, groups = propose_alias_candidates(graph, id_fields_map)
         self.report.alias_candidates = self._candidate_stubs(
-            node_ids_by_class, display_by_class, groups
+            graph, id_fields_map, node_ids_by_class, display_by_class, groups
         )
         decisions_fn: Callable[..., Any] | None = None
         confirmed_pairs: list[dict[str, str]] = []
@@ -579,14 +755,20 @@ class GraphMerger:
                 }
             )
 
-    @staticmethod
     def _candidate_stubs(
+        self,
+        graph: nx.DiGraph,
+        id_fields_map: dict[str, list[str]],
         node_ids_by_class: dict[str, list[str]],
         display_by_class: dict[str, list[str]],
         groups: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Ready-to-edit decision stubs (flip "confirm" and re-run with
-        --alias-decisions). Similarity scores are advisory triage only."""
+        --alias-decisions). Similarity scores are advisory triage only;
+        ``field_conflicts`` lists the content fields a confirmed merge would
+        contradict (identity fields excluded — the displays already show
+        them) — many conflicts usually mean distinct instances that happen
+        to share an identifier, not aliases."""
         stubs: list[dict[str, Any]] = []
         for group in groups:
             cls = str(group["class"])
@@ -600,14 +782,27 @@ class GraphMerger:
             merge_indexes = [int(m) for m in group["merge"]]
             keep_display = _display(keep)
             merge_displays = [_display(m) for m in merge_indexes]
+            merge_ids = [node_ids[m] for m in merge_indexes]
+            identity_fields = set(id_fields_map.get(cls) or [])
+            field_conflicts = sorted(
+                {
+                    field
+                    for merge_id in merge_ids
+                    for field in conflicting_scalar_fields(
+                        graph.nodes[node_ids[keep]], graph.nodes[merge_id], self.policy
+                    )
+                }
+                - identity_fields
+            )
             stubs.append(
                 {
                     "class": cls,
                     "keep_id": node_ids[keep],
                     "keep_display": keep_display,
-                    "merge_ids": [node_ids[m] for m in merge_indexes],
+                    "merge_ids": merge_ids,
                     "merge_displays": merge_displays,
                     "similarity": _advisory_similarity(keep_display, merge_displays),
+                    "field_conflicts": field_conflicts,
                     "confirm": False,
                 }
             )
@@ -740,7 +935,9 @@ class GraphMerger:
             "identity_source": self.report.identity_source,
             "nodes_folded": self.report.nodes_folded,
             "field_conflicts": self.report.field_conflicts,
+            "conflict_variants": self.report.conflict_variants,
             "edge_label_conflicts": self.report.edge_label_conflicts,
+            "cross_document_splits": self.report.cross_document_splits,
             "alias_candidates": self.report.alias_candidates,
             "alias_merged": self.report.alias_merged,
             "rekeyed": self.report.rekeyed,
