@@ -230,6 +230,32 @@ class TestDirectExtraction:
         assert results == []
         assert doc is None
 
+    def test_extraction_error_propagates(self, mock_llm_backend, patch_deps):
+        """ExtractionError (e.g. a docling-serve failure) is re-raised, not swallowed."""
+        from docling_graph.exceptions import ExtractionError
+
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dp.return_value.convert_to_docling_doc.side_effect = ExtractionError(
+            "docling-serve returned HTTP 401"
+        )
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        with pytest.raises(ExtractionError, match="HTTP 401"):
+            strategy.extract("test.pdf", MockTemplate)
+
+    def test_generic_error_still_swallowed(self, mock_llm_backend, patch_deps):
+        """Non-ExtractionError failures keep the resilient [], None contract."""
+        mock_dp, _, mock_is_llm, _ = patch_deps
+        mock_is_llm.return_value = True
+        mock_dp.return_value.convert_to_docling_doc.side_effect = RuntimeError("boom")
+
+        strategy = ManyToOneStrategy(backend=mock_llm_backend)
+        results, doc = strategy.extract("test.pdf", MockTemplate)
+
+        assert results == []
+        assert doc is None
+
     def test_vlm_no_models_returns_empty_and_none(self, mock_vlm_backend, patch_deps):
         """VLM extract_from_document returns empty list -> [], None (149-151)."""
         _, _, _, mock_is_vlm = patch_deps

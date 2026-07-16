@@ -8,6 +8,7 @@ from typing import Any, List, Tuple, Type
 from docling_core.types.doc import DoclingDocument
 from pydantic import BaseModel
 
+from ....exceptions import ExtractionError
 from ....logging_utils import ProgressTracker, get_component_logger
 from ....protocols import (
     Backend,
@@ -91,6 +92,11 @@ class OneToOneStrategy(BaseExtractor):
                     f"Backend '{backend_class}' does not implement a recognized extraction protocol. "
                     "Expected either a VLM or LLM backend."
                 )
+        except ExtractionError:
+            # Conversion/extraction failures carry a precise cause (auth,
+            # timeout, HTTP status, ...) — let the pipeline surface it instead
+            # of laundering it into an empty result.
+            raise
         except Exception as e:
             logger.error("Extraction error: %s", e)
             return [], None
