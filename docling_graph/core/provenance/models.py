@@ -8,6 +8,7 @@ graph nodes after conversion. See specs/data-grounding/architecture_spec.md.
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import datetime
 from typing import Literal
 
@@ -34,6 +35,17 @@ def text_hash(text: str) -> str:
 def content_hash(data: bytes) -> str:
     """Stable document-identity hash of raw source bytes."""
     return hashlib.blake2b(data, digest_size=16).hexdigest()
+
+
+def template_schema_hash(template: type[BaseModel]) -> str:
+    """Stable hash of a template's JSON schema.
+
+    Single source of truth for the value stored in
+    ``DocumentOrigin.template_schema_hash`` and in format-v2 graph exports
+    (``graph.graph["template_schema_hash"]``) — both must agree so merge-time
+    compatibility gates can compare them.
+    """
+    return content_hash(json.dumps(template.model_json_schema(), sort_keys=True).encode("utf-8"))
 
 
 class DocumentOrigin(BaseModel):

@@ -22,6 +22,7 @@ from docling_graph.cli.validators import (
     validate_option,
     validate_processing_mode,
     validate_provider,
+    validate_template_format,
     validate_vlm_constraints,
 )
 
@@ -184,6 +185,21 @@ class TestValidateExtractionContract:
     def test_validate_extraction_contract_invalid_raises_exit(self):
         with pytest.raises(typer.Exit):
             validate_extraction_contract("atomic")
+
+
+class TestValidateTemplateFormat:
+    """Test ontology format validation (template from-ontology)."""
+
+    @pytest.mark.parametrize("fmt", ["owl", "linkml", "jsonschema", "auto"])
+    def test_validate_template_format_accepts_known_formats(self, fmt):
+        assert validate_template_format(fmt) == fmt
+
+    def test_validate_template_format_case_insensitive(self):
+        assert validate_template_format("OWL") == "owl"
+
+    def test_validate_template_format_invalid_raises_exit(self):
+        with pytest.raises(typer.Exit):
+            validate_template_format("rdfxml")
 
 
 class TestValidateVLMConstraints:

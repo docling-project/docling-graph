@@ -36,8 +36,19 @@ _DIGIT_RUNS = re.compile(r"\d+")
 _MIN_CONTAINMENT_LEN = 4
 
 # Framework-owned node attributes; never treated as content when choosing the
-# attribute-richer survivor or copying attributes across.
-_META_ATTRS = {"id", "label", "type", "__class__", PROVENANCE_NODE_ATTR, "merged_aliases"}
+# attribute-richer survivor or copying attributes across. "merged_from" and
+# "__conflicts__" are audit records written by graph merging (docling-graph
+# merge), following the same contract as "merged_aliases".
+_META_ATTRS = {
+    "id",
+    "label",
+    "type",
+    "__class__",
+    PROVENANCE_NODE_ATTR,
+    "merged_aliases",
+    "merged_from",
+    "__conflicts__",
+}
 
 
 def digit_signature(text: str) -> tuple[str, ...]:

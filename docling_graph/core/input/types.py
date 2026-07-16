@@ -168,12 +168,39 @@ class InputTypeDetector:
 
         Returns:
             InputType.DOCLING_DOCUMENT if it's a DoclingDocument, InputType.TEXT otherwise
+
+        Raises:
+            ConfigurationError: If the JSON is an exported knowledge graph
+                (top-level "nodes" + "edges"), which cannot be re-converted.
         """
         if cls._is_docling_document(file_path):
             return InputType.DOCLING_DOCUMENT
 
+        # An exported graph.json fed back to convert would be misrouted to
+        # Docling as an opaque document — fail early with a pointer to merge.
+        if cls._is_graph_export(file_path):
+            raise ConfigurationError(
+                f"This JSON looks like an exported knowledge graph, not a document: {file_path}",
+                details={
+                    "file": str(file_path),
+                    "hint": "Exported graphs cannot be converted again. "
+                    "Did you mean 'docling-graph merge'?",
+                },
+            )
+
         # Not a DoclingDocument - send to Docling like any other file
         return InputType.DOCUMENT
+
+    @classmethod
+    def _is_graph_export(cls, file_path: Path) -> bool:
+        """Sniff for a docling-graph export: top-level "nodes" + "edges" keys
+        (the exact shape JSONExporter writes)."""
+        try:
+            with open(file_path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            return False
+        return isinstance(data, dict) and "nodes" in data and "edges" in data
 
     @classmethod
     def _is_docling_document(cls, file_path: Path) -> bool:

@@ -45,6 +45,26 @@ def load_config() -> Dict[str, Any]:
         raise typer.Exit(code=1) from err
 
 
+def load_config_optional() -> Dict[str, Any] | None:
+    """Load configuration from YAML file, tolerating its absence.
+
+    The ``template`` commands must not hard-require ``config.yaml``
+    (``from-ontology`` without gap-fill needs no config at all), so a missing
+    file returns ``None`` instead of exiting. A file that exists but is
+    malformed still exits with the same errors as :func:`load_config`.
+
+    Returns:
+        The configuration mapping, or ``None`` when no config file exists.
+
+    Raises:
+        typer.Exit: The config file exists but cannot be parsed.
+    """
+    config_path = Path.cwd() / CONFIG_FILE_NAME
+    if not config_path.exists():
+        return None
+    return load_config()
+
+
 def save_config(config_dict: Dict[str, Any], output_path: Path) -> None:
     """Save configuration dictionary to YAML file.
 

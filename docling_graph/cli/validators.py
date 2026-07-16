@@ -15,7 +15,10 @@ from .constants import (
     EXTRACTION_CONTRACTS,
     INFERENCE_LOCATIONS,
     LOCAL_PROVIDERS,
+    MERGE_CONFLICTS,
+    MERGE_PRECEDENCE,
     PROCESSING_MODES,
+    TEMPLATE_FORMATS,
 )
 from .dependencies import INFERENCE_PROVIDERS, OPTIONAL_DEPS, get_missing_dependencies
 
@@ -27,6 +30,9 @@ VALIDATION_SETS = {
     "docling_config": (DOCLING_PIPELINES, "docling config"),
     "extraction_contract": (EXTRACTION_CONTRACTS, "extraction contract"),
     "export_format": (EXPORT_FORMATS, "export format"),
+    "merge_precedence": (MERGE_PRECEDENCE, "merge precedence"),
+    "merge_conflicts": (MERGE_CONFLICTS, "merge conflict policy"),
+    "template_format": (TEMPLATE_FORMATS, "ontology format"),
 }
 
 
@@ -54,6 +60,9 @@ validate_inference = _make_validator("inference")
 validate_docling_config = _make_validator("docling_config")
 validate_extraction_contract = _make_validator("extraction_contract")
 validate_export_format = _make_validator("export_format")
+validate_merge_precedence = _make_validator("merge_precedence")
+validate_merge_conflicts = _make_validator("merge_conflicts")
+validate_template_format = _make_validator("template_format")
 
 
 def validate_vlm_constraints(backend: str, inference: str) -> None:

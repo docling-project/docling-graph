@@ -12,6 +12,7 @@ from docling_graph.core.provenance import (
     compact_view,
     identity_key,
     identity_pairs,
+    iter_provenance_views,
     merge_compact_views,
 )
 
@@ -405,6 +406,149 @@ class TestMergeCompactViews:
         b = {"document_id": "d", "match": "observed", "chunks": [2], "pages": []}
         merged = merge_compact_views(a, b)
         assert "synthetic" not in merged
+
+
+class TestIterProvenanceViews:
+    def test_none_and_empty_yield_nothing(self):
+        assert list(iter_provenance_views(None)) == []
+        assert list(iter_provenance_views({})) == []
+
+    def test_plain_view_yields_itself(self):
+        view = {"document_id": "d", "match": "observed", "chunks": [1], "pages": []}
+        assert list(iter_provenance_views(view)) == [view]
+
+    def test_wrapped_view_yields_each_source(self):
+        a = {"document_id": "a", "chunks": [1]}
+        b = {"document_id": "b", "chunks": [2]}
+        wrapped = {"multi_document": True, "sources": [a, b]}
+        assert list(iter_provenance_views(wrapped)) == [a, b]
+
+    def test_wrapped_view_skips_non_dict_and_empty_sources(self):
+        wrapped = {"multi_document": True, "sources": [None, "x", {}, {"document_id": "a"}]}
+        assert list(iter_provenance_views(wrapped)) == [{"document_id": "a"}]
+
+    def test_wrapped_view_without_sources_yields_nothing(self):
+        assert list(iter_provenance_views({"multi_document": True})) == []
+
+
+class TestMergeCompactViewsWrapped:
+    """Wrapped multi-document views merge source-wise by document_id."""
+
+    @staticmethod
+    def _wrapped() -> dict[str, Any]:
+        return {
+            "multi_document": True,
+            "sources": [
+                {"document_id": "a", "match": "observed", "chunks": [1], "pages": [1]},
+                {"document_id": "b", "match": "observed", "chunks": [0], "pages": []},
+            ],
+        }
+
+    def test_plain_merge_never_produces_wrapped_form(self):
+        a = {"document_id": "d", "match": "observed", "chunks": [1], "pages": []}
+        b = {"document_id": "d", "match": "observed", "chunks": [2], "pages": []}
+        merged = merge_compact_views(a, b)
+        assert "multi_document" not in merged
+        assert "sources" not in merged
+
+    def test_plain_views_from_different_documents_wrap_instead_of_blending(self):
+        """Chunk ids are ledger-local: two plain resolved views from different
+        documents must be kept side by side, never blended under one id."""
+        a = {"document_id": "doc-a", "match": "verbatim", "chunks": [2], "pages": [1]}
+        b = {"document_id": "doc-b", "match": "verbatim", "chunks": [5], "pages": [3]}
+        merged = merge_compact_views(a, b)
+        assert merged["multi_document"] is True
+        by_doc = {s["document_id"]: s for s in merged["sources"]}
+        assert by_doc["doc-a"]["chunks"] == [2]
+        assert by_doc["doc-b"]["chunks"] == [5]
+        # Inputs are not mutated by the wrap.
+        assert a == {"document_id": "doc-a", "match": "verbatim", "chunks": [2], "pages": [1]}
+        assert b == {"document_id": "doc-b", "match": "verbatim", "chunks": [5], "pages": [3]}
+
+    def test_plain_views_missing_document_id_still_blend(self):
+        a = {"document_id": "", "match": "observed", "chunks": [1], "pages": []}
+        b = {"document_id": "doc-b", "match": "observed", "chunks": [2], "pages": []}
+        merged = merge_compact_views(a, b)
+        assert "multi_document" not in merged
+        assert merged["chunks"] == [1, 2]
+
+    def test_wrapped_plus_plain_same_document_merges_into_matching_source(self):
+        plain = {"document_id": "a", "match": "verbatim", "chunks": [2], "pages": [2]}
+        merged = merge_compact_views(self._wrapped(), plain)
+        assert merged["multi_document"] is True
+        source_a = next(s for s in merged["sources"] if s["document_id"] == "a")
+        assert source_a["chunks"] == [1, 2]
+        assert source_a["pages"] == [1, 2]
+        assert source_a["match"] == "verbatim"
+        source_b = next(s for s in merged["sources"] if s["document_id"] == "b")
+        assert source_b == {"document_id": "b", "match": "observed", "chunks": [0], "pages": []}
+
+    def test_wrapped_plus_plain_new_document_appends(self):
+        plain = {"document_id": "c", "match": "observed", "chunks": [7], "pages": []}
+        merged = merge_compact_views(self._wrapped(), plain)
+        assert len(merged["sources"]) == 3
+        assert merged["sources"][-1] == plain
+
+    def test_plain_plus_wrapped_keeps_wrapped_form(self):
+        plain = {"document_id": "a", "match": "observed", "chunks": [2], "pages": []}
+        merged = merge_compact_views(plain, self._wrapped())
+        assert merged["multi_document"] is True
+        source_a = next(s for s in merged["sources"] if s["document_id"] == "a")
+        assert source_a["chunks"] == [1, 2]
+
+    def test_wrapped_plus_wrapped_unions_by_document(self):
+        other = {
+            "multi_document": True,
+            "sources": [
+                {"document_id": "b", "match": "observed", "chunks": [5], "pages": [4]},
+                {"document_id": "c", "match": "observed", "chunks": [0], "pages": []},
+            ],
+        }
+        merged = merge_compact_views(self._wrapped(), other)
+        assert [s["document_id"] for s in merged["sources"]] == ["a", "b", "c"]
+        source_b = next(s for s in merged["sources"] if s["document_id"] == "b")
+        assert source_b["chunks"] == [0, 5]
+        assert source_b["pages"] == [4]
+
+    def test_document_scope_absorbs_within_matching_source_only(self):
+        """A scope:document view collapses its own document's source, not others."""
+        scoped = {"document_id": "a", "scope": "document"}
+        merged = merge_compact_views(self._wrapped(), scoped)
+        source_a = next(s for s in merged["sources"] if s["document_id"] == "a")
+        assert source_a == {"document_id": "a", "scope": "document"}
+        source_b = next(s for s in merged["sources"] if s["document_id"] == "b")
+        assert source_b["chunks"] == [0]
+
+    def test_unresolved_yields_to_wrapped(self):
+        wrapped = self._wrapped()
+        assert merge_compact_views({"status": "unresolved"}, wrapped) == wrapped
+        assert merge_compact_views(wrapped, {"status": "unresolved"}) == wrapped
+
+    def test_wrapped_merge_does_not_mutate_inputs(self):
+        wrapped = self._wrapped()
+        plain = {"document_id": "a", "match": "observed", "chunks": [9], "pages": []}
+        merge_compact_views(wrapped, plain)
+        assert wrapped == self._wrapped()
+        assert plain["chunks"] == [9]
+
+    def test_wrapped_merge_preserves_sources_omitted(self):
+        """Overflow accounting from an earlier source cap survives the rebuild
+        of the wrapper (GraphCleaner/alias callers merge without a cap pass)."""
+        wrapped = {**self._wrapped(), "sources_omitted": 2}
+        plain = {"document_id": "c", "match": "observed", "chunks": [7], "pages": []}
+        merged = merge_compact_views(wrapped, plain)
+        assert merged["sources_omitted"] == 2
+        assert len(merged["sources"]) == 3
+
+    def test_wrapped_merge_sums_sources_omitted_from_both_sides(self):
+        left = {**self._wrapped(), "sources_omitted": 2}
+        right = {
+            "multi_document": True,
+            "sources": [{"document_id": "c", "match": "observed", "chunks": [0], "pages": []}],
+            "sources_omitted": 1,
+        }
+        merged = merge_compact_views(left, right)
+        assert merged["sources_omitted"] == 3
 
 
 class TestLedgerRoundTrip:

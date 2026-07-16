@@ -11,6 +11,8 @@ from ..logging_utils import configure_logging
 from .commands.convert import convert_command
 from .commands.init import init_command
 from .commands.inspect import inspect_command
+from .commands.merge import merge_command
+from .commands.template import template_app
 
 configure_logging()
 
@@ -79,6 +81,17 @@ app.command(
 )(convert_command)
 
 app.command(name="inspect", help="Visualize graph data in the browser.")(inspect_command)
+
+app.command(
+    name="merge",
+    help="Merge multiple exported knowledge graphs into one, deterministically.",
+)(merge_command)
+
+app.add_typer(
+    template_app,
+    name="template",
+    help="Generate, lint, and empirically evaluate extraction templates.",
+)
 
 
 def main() -> None:

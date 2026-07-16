@@ -20,8 +20,18 @@ logger = get_component_logger("GraphCleaner", __name__)
 # Framework-owned node attributes that carry no extracted content. Excluded
 # from phantom detection and content hashing so grounding metadata can never
 # keep an empty node alive or stop identical entities from deduplicating.
-# "merged_aliases" is written by the alias reconciler (utils.alias_reconciler).
-_METADATA_NODE_ATTRS = {"id", "label", "type", PROVENANCE_NODE_ATTR, "merged_aliases"}
+# "merged_aliases" is written by the alias reconciler (utils.alias_reconciler);
+# "merged_from" and "__conflicts__" are audit records written by graph merging
+# (docling-graph merge).
+_METADATA_NODE_ATTRS = {
+    "id",
+    "label",
+    "type",
+    PROVENANCE_NODE_ATTR,
+    "merged_aliases",
+    "merged_from",
+    "__conflicts__",
+}
 
 
 def is_meaningful_value(value: Any) -> bool:

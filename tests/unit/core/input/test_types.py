@@ -119,6 +119,42 @@ class TestInputTypeDetector:
         result = InputTypeDetector.detect(str(json_file), mode="api")
         assert result == InputType.DOCUMENT
 
+    # ==================== Exported Graph Guard ====================
+
+    def test_detect_exported_graph_json_raises_with_merge_hint(self, temp_dir):
+        """Feeding an exported graph.json to convert fails fast, pointing at merge."""
+        import json
+
+        graph_export = {
+            "nodes": [{"id": "n1", "label": "Person"}],
+            "edges": [],
+            "metadata": {"node_count": 1, "edge_count": 0},
+        }
+        graph_file = temp_dir / "graph.json"
+        graph_file.write_text(json.dumps(graph_export))
+
+        with pytest.raises(ConfigurationError, match="docling-graph merge"):
+            InputTypeDetector.detect(str(graph_file), mode="cli")
+
+    def test_detect_exported_graph_json_raises_in_api_mode(self, temp_dir):
+        """The graph-export guard fires in API mode too."""
+        import json
+
+        graph_file = temp_dir / "graph.json"
+        graph_file.write_text(json.dumps({"nodes": [], "edges": []}))
+
+        with pytest.raises(ConfigurationError, match="exported knowledge graph"):
+            InputTypeDetector.detect(str(graph_file), mode="api")
+
+    def test_json_with_nodes_but_no_edges_is_document(self, temp_dir):
+        """Only the exact nodes+edges pair triggers the guard."""
+        import json
+
+        json_file = temp_dir / "partial.json"
+        json_file.write_text(json.dumps({"nodes": [1, 2, 3]}))
+        result = InputTypeDetector.detect(str(json_file), mode="api")
+        assert result == InputType.DOCUMENT
+
     # ==================== Raw text (API) -> DOCUMENT ====================
 
     def test_detect_plain_text_api_mode(self):
@@ -233,6 +269,30 @@ class TestInputTypeDetectorHelpers:
         md_file = temp_dir / "test.md"
         md_file.write_text("# MD")
         assert InputTypeDetector._detect_from_file(md_file) == InputType.DOCUMENT
+
+    def test_is_graph_export_helper(self, temp_dir):
+        """Test _is_graph_export helper method."""
+        import json
+
+        # Exported graph shape (nodes + edges)
+        export_file = temp_dir / "graph.json"
+        export_file.write_text(json.dumps({"nodes": [], "edges": [], "metadata": {}}))
+        assert InputTypeDetector._is_graph_export(export_file) is True
+
+        # Regular JSON
+        regular_file = temp_dir / "regular.json"
+        regular_file.write_text(json.dumps({"data": "value"}))
+        assert InputTypeDetector._is_graph_export(regular_file) is False
+
+        # JSON array (not an object)
+        array_file = temp_dir / "array.json"
+        array_file.write_text(json.dumps(["nodes", "edges"]))
+        assert InputTypeDetector._is_graph_export(array_file) is False
+
+        # Invalid JSON
+        invalid_file = temp_dir / "invalid.json"
+        invalid_file.write_text("not json {")
+        assert InputTypeDetector._is_graph_export(invalid_file) is False
 
     def test_is_docling_document_helper(self, temp_dir):
         """Test _is_docling_document helper method."""
