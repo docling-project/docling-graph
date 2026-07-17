@@ -10,7 +10,7 @@ from .converters.config import ExportConfig, GraphConfig
 from .converters.graph_converter import GraphConverter
 from .converters.models import Edge, GraphMetadata
 from .exporters.csv_exporter import CSVExporter
-from .exporters.cypher_exporter import CypherExporter
+from .exporters.cypher_exporter import CypherExporter, CypherStyle
 from .exporters.docling_exporter import DoclingExporter
 from .exporters.json_exporter import JSONExporter
 from .extractors.factory import ExtractorFactory
@@ -20,6 +20,7 @@ from .visualizers.report_generator import ReportGenerator
 __all__ = [
     "CSVExporter",
     "CypherExporter",
+    "CypherStyle",
     "DoclingExporter",
     "Edge",
     "ExportConfig",
