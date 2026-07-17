@@ -1,6 +1,7 @@
 """Unit tests for input handlers."""
 
 import json
+import socket
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -14,6 +15,14 @@ from docling_graph.core.input.handlers import (
     URLInputHandler,
 )
 from docling_graph.exceptions import ValidationError
+
+
+def _addrinfo(*ips: str) -> list:
+    """Build a socket.getaddrinfo-style result list for the given IP addresses."""
+    return [
+        (socket.AF_INET6 if ":" in ip else socket.AF_INET, socket.SOCK_STREAM, 6, "", (ip, 0))
+        for ip in ips
+    ]
 
 
 class TestTextInputHandler:
@@ -438,13 +447,13 @@ class TestURLInputHandler:
 
     # ==================== SSRF Protection Tests ====================
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_validates_initial_url_safety(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_validates_initial_url_safety(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that initial URL is validated for SSRF before download."""
         # URL resolves to localhost
-        mock_gethostbyname.return_value = "127.0.0.1"
+        mock_getaddrinfo.return_value = _addrinfo("127.0.0.1")
 
         with pytest.raises(ValidationError, match="loopback"):
             handler.load("http://localhost/file.pdf")
@@ -453,22 +462,22 @@ class TestURLInputHandler:
         mock_head.assert_not_called()
         mock_get.assert_not_called()
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_private_ip_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_private_ip_addresses(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that private IP addresses are blocked."""
-        mock_gethostbyname.return_value = "192.168.1.1"
+        mock_getaddrinfo.return_value = _addrinfo("192.168.1.1")
 
         with pytest.raises(ValidationError, match="private"):
             handler.load("http://internal.company.local/file.pdf")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_cloud_metadata_endpoint(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_cloud_metadata_endpoint(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that cloud metadata endpoint (169.254.169.254) is explicitly blocked."""
-        mock_gethostbyname.return_value = "169.254.169.254"
+        mock_getaddrinfo.return_value = _addrinfo("169.254.169.254")
 
         with pytest.raises(ValidationError, match="metadata"):
             handler.load("http://metadata.example.com/")
@@ -480,48 +489,48 @@ class TestURLInputHandler:
             assert "169.254.169.254" in str(e)
             assert "Cloud metadata endpoint" in e.details["reason"]
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_link_local_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_link_local_addresses(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that link-local addresses are blocked."""
-        mock_gethostbyname.return_value = "169.254.1.1"
+        mock_getaddrinfo.return_value = _addrinfo("169.254.1.1")
 
         with pytest.raises(ValidationError, match="link-local"):
             handler.load("http://link-local.test/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_multicast_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_multicast_addresses(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that multicast addresses are blocked."""
-        mock_gethostbyname.return_value = "224.0.0.1"
+        mock_getaddrinfo.return_value = _addrinfo("224.0.0.1")
 
         with pytest.raises(ValidationError, match="multicast"):
             handler.load("http://multicast.test/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_blocks_reserved_addresses(self, mock_get, mock_head, mock_gethostbyname, handler):
+    def test_blocks_reserved_addresses(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that reserved IP addresses are blocked."""
-        mock_gethostbyname.return_value = "240.0.0.1"
+        mock_getaddrinfo.return_value = _addrinfo("240.0.0.1")
 
         with pytest.raises(ValidationError, match="reserved"):
             handler.load("http://reserved.test/")
 
-    @patch("socket.gethostbyname")
-    def test_handles_dns_resolution_failure_in_validation(self, mock_gethostbyname, handler):
+    @patch("socket.getaddrinfo")
+    def test_handles_dns_resolution_failure_in_validation(self, mock_getaddrinfo, handler):
         """Test handling of DNS resolution failures during URL validation."""
         import socket as sock
 
-        mock_gethostbyname.side_effect = sock.gaierror("Name or service not known")
+        mock_getaddrinfo.side_effect = sock.gaierror("Name or service not known")
 
         with pytest.raises(ValidationError, match="Failed to resolve hostname"):
             handler.load("http://nonexistent-domain-12345.com/")
 
-    @patch("socket.gethostbyname")
-    def test_handles_invalid_url_without_hostname(self, mock_gethostbyname, handler):
+    @patch("socket.getaddrinfo")
+    def test_handles_invalid_url_without_hostname(self, mock_getaddrinfo, handler):
         """Test handling of invalid URLs without hostname."""
         # This should fail during URL parsing before DNS lookup
         with pytest.raises(ValidationError, match="Invalid URL"):
@@ -529,15 +538,15 @@ class TestURLInputHandler:
 
     # ==================== Manual Redirect Validation Tests ====================
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
     def test_validates_redirect_destination_safety(
-        self, mock_get, mock_head, mock_gethostbyname, handler
+        self, mock_get, mock_head, mock_getaddrinfo, handler
     ):
         """Test that redirect destinations are validated for SSRF."""
         # Initial URL is safe, redirect goes to private IP
-        mock_gethostbyname.side_effect = ["8.8.8.8", "192.168.1.1"]
+        mock_getaddrinfo.side_effect = [_addrinfo("8.8.8.8"), _addrinfo("192.168.1.1")]
 
         # HEAD returns redirect
         mock_head_response = Mock()
@@ -548,14 +557,12 @@ class TestURLInputHandler:
         with pytest.raises(ValidationError, match="private"):
             handler.load("http://public.com/redirect")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
-    def test_handles_relative_redirect_safely(
-        self, mock_get, mock_head, mock_gethostbyname, handler
-    ):
+    def test_handles_relative_redirect_safely(self, mock_get, mock_head, mock_getaddrinfo, handler):
         """Test that relative redirects are handled and validated."""
-        mock_gethostbyname.return_value = "8.8.8.8"
+        mock_getaddrinfo.return_value = _addrinfo("8.8.8.8")
 
         # HEAD returns relative redirect
         mock_head_response1 = Mock()
@@ -578,11 +585,11 @@ class TestURLInputHandler:
         result = handler.load("http://example.com/old-location")
         assert result.exists()
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
-    def test_enforces_max_redirects_in_head_request(self, mock_head, mock_gethostbyname, handler):
+    def test_enforces_max_redirects_in_head_request(self, mock_head, mock_getaddrinfo, handler):
         """Test that maximum redirect limit is enforced in HEAD requests."""
-        mock_gethostbyname.return_value = "8.8.8.8"
+        mock_getaddrinfo.return_value = _addrinfo("8.8.8.8")
 
         # Create 6 redirects (exceeds limit of 5)
         redirect_responses = []
@@ -597,13 +604,13 @@ class TestURLInputHandler:
         with pytest.raises(ValidationError, match="Too many redirects"):
             handler.load("http://redirect0.com/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     def test_handles_redirect_without_location_header_in_head(
-        self, mock_head, mock_gethostbyname, handler
+        self, mock_head, mock_getaddrinfo, handler
     ):
         """Test handling of redirect without Location header in HEAD request."""
-        mock_gethostbyname.return_value = "8.8.8.8"
+        mock_getaddrinfo.return_value = _addrinfo("8.8.8.8")
 
         mock_head_response = Mock()
         mock_head_response.status_code = 302
@@ -613,15 +620,19 @@ class TestURLInputHandler:
         with pytest.raises(ValidationError, match="Location header"):
             handler.load("http://broken-redirect.com/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
     def test_validates_redirects_in_get_request(
-        self, mock_get, mock_head, mock_gethostbyname, handler
+        self, mock_get, mock_head, mock_getaddrinfo, handler
     ):
         """Test that GET request redirects are also validated."""
         # HEAD fails, so GET is used
-        mock_gethostbyname.side_effect = ["8.8.8.8", "8.8.8.8", "192.168.1.1"]
+        mock_getaddrinfo.side_effect = [
+            _addrinfo("8.8.8.8"),
+            _addrinfo("8.8.8.8"),
+            _addrinfo("192.168.1.1"),
+        ]
 
         # HEAD fails
         import requests
@@ -637,14 +648,14 @@ class TestURLInputHandler:
         with pytest.raises(ValidationError, match="private"):
             handler.load("http://public.com/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
     def test_enforces_max_redirects_in_get_request(
-        self, mock_get, mock_head, mock_gethostbyname, handler
+        self, mock_get, mock_head, mock_getaddrinfo, handler
     ):
         """Test that maximum redirect limit is enforced in GET requests."""
-        mock_gethostbyname.return_value = "8.8.8.8"
+        mock_getaddrinfo.return_value = _addrinfo("8.8.8.8")
 
         # HEAD fails
         import requests
@@ -664,14 +675,14 @@ class TestURLInputHandler:
         with pytest.raises(ValidationError, match="Too many redirects"):
             handler.load("http://redirect0.com/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
     def test_handles_redirect_without_location_header_in_get(
-        self, mock_get, mock_head, mock_gethostbyname, handler
+        self, mock_get, mock_head, mock_getaddrinfo, handler
     ):
         """Test handling of redirect without Location header in GET request."""
-        mock_gethostbyname.return_value = "8.8.8.8"
+        mock_getaddrinfo.return_value = _addrinfo("8.8.8.8")
 
         # HEAD fails
         import requests
@@ -687,14 +698,14 @@ class TestURLInputHandler:
         with pytest.raises(ValidationError, match="Location header"):
             handler.load("http://broken-redirect.com/")
 
-    @patch("socket.gethostbyname")
+    @patch("socket.getaddrinfo")
     @patch("requests.head")
     @patch("requests.get")
     def test_handles_multiple_redirect_status_codes(
-        self, mock_get, mock_head, mock_gethostbyname, handler
+        self, mock_get, mock_head, mock_getaddrinfo, handler
     ):
         """Test handling of various redirect status codes (301, 302, 303, 307, 308)."""
-        mock_gethostbyname.return_value = "8.8.8.8"
+        mock_getaddrinfo.return_value = _addrinfo("8.8.8.8")
 
         # Test each redirect status code
         for status_code in [301, 302, 303, 307, 308]:
