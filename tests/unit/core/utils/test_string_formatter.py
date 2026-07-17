@@ -175,3 +175,76 @@ class TestTruncateString:
 
         assert len(result) == 5
         assert result.endswith("~")
+
+
+class TestJsonSerializableWidened:
+    """The widened json_serializable default used by JSONExporter."""
+
+    def test_date_and_datetime(self):
+        import datetime
+
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        assert json_serializable(datetime.date(2025, 1, 2)) == "2025-01-02"
+        assert json_serializable(datetime.datetime(2025, 1, 2, 3, 4, 5)).startswith(
+            "2025-01-02T03:04:05"
+        )
+        assert json_serializable(datetime.time(3, 4, 5)) == "03:04:05"
+
+    def test_decimal_uuid_path(self):
+        import decimal
+        import uuid
+        from pathlib import PurePosixPath
+
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        assert json_serializable(decimal.Decimal("1.5")) == 1.5
+        assert json_serializable(uuid.UUID(int=0)) == "00000000-0000-0000-0000-000000000000"
+        assert json_serializable(PurePosixPath("/a/b")) == "/a/b"
+
+    def test_set_is_sorted_list(self):
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        assert json_serializable({3, 1, 2}) == [1, 2, 3]
+        assert json_serializable(frozenset({"b", "a"})) == ["a", "b"]
+
+    def test_bytes_and_enum(self):
+        import enum
+
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        assert json_serializable(b"hi") == "hi"
+
+        class Color(enum.Enum):
+            RED = "red"
+
+        assert json_serializable(Color.RED) == "red"
+
+    def test_pydantic_model_dump(self):
+        from pydantic import BaseModel
+
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        class M(BaseModel):
+            a: int = 1
+
+        assert json_serializable(M()) == {"a": 1}
+
+    def test_unknown_type_raises(self):
+        import pytest
+
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        with pytest.raises(TypeError):
+            json_serializable(object())
+
+    def test_end_to_end_json_dumps(self):
+        import datetime
+        import json
+        import uuid
+
+        from docling_graph.core.utils.string_formatter import json_serializable
+
+        payload = {"when": datetime.date(2025, 1, 1), "id": uuid.UUID(int=1), "tags": {"b", "a"}}
+        blob = json.dumps(payload, default=json_serializable)
+        assert "2025-01-01" in blob and "00000000-0000-0000-0000-000000000001" in blob
