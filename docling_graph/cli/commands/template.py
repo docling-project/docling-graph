@@ -20,10 +20,8 @@ itself is optional for every subcommand (``load_config_optional``).
 
 import logging
 import os
-import re
 import sys
 import tempfile
-import threading
 import types
 from collections import Counter
 from pathlib import Path
@@ -196,130 +194,27 @@ def _build_llm_call(
     *,
     structured_output: bool = True,
 ) -> tuple[LlmCallFn, "EffectiveModelConfig"]:
-    """Bind an ``llm_call_fn`` to a LiteLLM client (stages.py two-liner).
+    """Bind an ``llm_call_fn`` to a LiteLLM client and resolve its model config.
 
-    The callable follows the ``templategen.induce.documents`` contract and owns
-    truncation handling: one retry with escalated ``max_tokens`` (doubled,
-    capped at half the model's context window). The retry fires whether the
-    truncated response was salvaged into JSON or failed to parse outright —
-    the unrecoverable case surfaces as a ``ClientError`` and needs the
-    escalation the most. The retry's result is returned (or its error raised)
-    either way.
-
-    ``structured_output=False`` (the one-shot strategy) requests plain
-    ``json_object`` decoding instead of a schema grammar — small models that
-    degenerate under guided decoding answer normally, and the response
-    handler's fence-stripping/repair absorbs the slack.
-
-    Thread-safe by construction: induction runs calls concurrently
-    (``templategen.workers``), and one shared client would race on
-    ``last_call_diagnostics`` and the escalation's ``max_tokens`` swap — so
-    every thread gets its own client instance (the one built eagerly here
-    doubles as the fail-fast credential check and the building thread's
-    client).
+    Thin CLI adapter over the public
+    :func:`docling_graph.templategen.build_llm_call_fn`: it pulls
+    ``llm_overrides`` out of the ``config.yaml`` dict and additionally returns the
+    resolved :class:`EffectiveModelConfig` the CLI needs for budget/batch sizing
+    (``_effective_budget_chars`` / ``_pass2_batch_size``). The callable's
+    thread-safety and truncation-escalation behavior live in the public builder.
     """
-    import copy as _copy
-
-    from docling_graph.exceptions import ClientError
-    from docling_graph.llm_clients import get_client
     from docling_graph.llm_clients.config import resolve_effective_model_config
+    from docling_graph.templategen import build_llm_call_fn
 
     overrides = get_config_value(config or {}, "llm_overrides")
-    effective = resolve_effective_model_config(
-        provider, model, overrides=overrides if isinstance(overrides, dict) else None
+    overrides = overrides if isinstance(overrides, dict) else None
+    effective = resolve_effective_model_config(provider, model, overrides=overrides)
+    llm_call_fn = build_llm_call_fn(
+        provider,
+        model,
+        llm_overrides=overrides,
+        structured_output=structured_output,
     )
-    client_factory = get_client(provider)
-    thread_clients = threading.local()
-    # Every client gets its own DEEP COPY of the config: the escalation retry
-    # mutates generation.max_tokens, and a config shared across thread clients
-    # lets concurrent escalations compound (4092 -> 8184 -> 16368 -> 65472...)
-    # and race on the restore — the budget must never ratchet across calls.
-    thread_clients.client = client_factory(_copy.deepcopy(effective))  # fail fast, pre-spend
-    # Escalation baseline is fixed at build time: a retry may double the
-    # CONFIGURED budget once, never the (possibly already escalated) live one.
-    baseline_max_tokens = int(
-        getattr(getattr(effective, "generation", None), "max_tokens", 0)
-        or getattr(effective, "max_output_tokens", 0)
-        or 0
-    )
-
-    def llm_call_fn(*, prompt: dict[str, str], schema_json: str, context: str) -> Any:
-        client = getattr(thread_clients, "client", None)
-        if client is None:
-            client = thread_clients.client = client_factory(_copy.deepcopy(effective))
-        # OpenAI-family providers require response_format schema names to match
-        # ^[a-zA-Z0-9_-]+$ (<=64 chars); the context tag carries ':' and the
-        # source filename's '.', so sanitize before it reaches the provider.
-        schema_name = re.sub(r"[^a-zA-Z0-9_-]", "_", context)[:40]
-
-        def call() -> Any:
-            return client.get_json_response(
-                prompt,
-                schema_json,
-                structured_output=structured_output,
-                response_top_level="object",
-                response_schema_name=schema_name,
-            )
-
-        def warn_still_truncated(max_tokens: int) -> None:
-            logger.warning(
-                "Induction call '%s' is still truncated at max_tokens=%d — this pass "
-                "should need far less output, so the model is likely looping "
-                "(degenerate repetition); keeping the salvaged partial result. A "
-                "stronger model is the reliable fix; llm_overrides.max_output_tokens "
-                "raises the budget only if the output is genuinely large",
-                context,
-                max_tokens,
-                extra={"component": "TemplateInduction"},
-            )
-
-        out: Any = None
-        error: ClientError | None = None
-        try:
-            out = call()
-        except ClientError as e:
-            # Truncated output that could not be repaired into JSON raises,
-            # but the client diagnostics still flag the truncation.
-            if not client.last_call_diagnostics.get("truncated"):
-                raise
-            error = e
-        if not client.last_call_diagnostics.get("truncated"):
-            return out
-        generation = getattr(client, "_generation", None)
-        current = int(getattr(client, "max_tokens", 0) or 0)
-        context_limit = int(getattr(client, "context_limit", 0) or 0)
-        # Hard ceiling: one doubling of the configured budget, ever. A model
-        # in a repetition loop truncates at ANY budget; escalating past 2x
-        # only converts junk into minutes of generation time (and timeouts).
-        ceiling = 2 * (baseline_max_tokens or current)
-        if context_limit > 0:
-            ceiling = min(ceiling, context_limit // 2)
-        escalated = min(current * 2, ceiling)
-        if generation is None or current <= 0 or escalated <= current:
-            if error is not None:
-                warn_still_truncated(current)
-                raise error
-            return out
-        logger.warning(
-            "Induction call '%s' was truncated; retrying once with max_tokens=%d",
-            context,
-            escalated,
-            extra={"component": "TemplateInduction"},
-        )
-        original = getattr(generation, "max_tokens", None)
-        try:
-            generation.max_tokens = escalated
-            out = call()
-        except ClientError:
-            if client.last_call_diagnostics.get("truncated"):
-                warn_still_truncated(escalated)
-            raise
-        finally:
-            generation.max_tokens = original
-        if client.last_call_diagnostics.get("truncated"):
-            warn_still_truncated(escalated)
-        return out
-
     return llm_call_fn, effective
 
 

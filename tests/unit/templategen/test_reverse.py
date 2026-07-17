@@ -611,6 +611,7 @@ class TestPublicApi:
         "EvaluationReport",
         "generate_template",
         "GenerationResult",
+        "build_llm_call_fn",
         "TemplateGenSettings",
         "load_templategen_settings",
     ]
