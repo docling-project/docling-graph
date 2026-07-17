@@ -2511,6 +2511,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../usage/cli/merge-command/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    merge Command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage/cli/template-command/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    template Command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../usage/cli/inspect-command/" class="md-nav__link">
         
   
@@ -4378,8 +4434,8 @@ flowchart TD
 </tr>
 <tr>
 <td><code>parallel_workers</code></td>
-<td><code>1</code></td>
-<td>When &gt; 1, Phase 1 skeleton batches and Phase 2 fill batches run in parallel to reduce wall-clock time.</td>
+<td><code>4</code></td>
+<td>When &gt; 1, Phase 1 skeleton batches and Phase 2 fill batches run in parallel to reduce wall-clock time. Set <code>1</code> for sequential extraction.</td>
 </tr>
 </tbody>
 </table>
@@ -4388,7 +4444,7 @@ flowchart TD
 <h3 id="provenance">Provenance<a class="headerlink" href="#provenance" title="Permanent link">&para;</a></h3>
 <p>Dense is the contract with the richest <a href="../../graph-management/provenance/">grounding</a>: the skeleton phase's per-batch bookkeeping lets every extracted node be traced back to the chunk(s) it was observed in, and — when its final identifier appears verbatim in the document — to an exact chunk and page. This is fully deterministic and adds no prompt or output-schema overhead; it is controlled by the separate top-level <code>provenance</code> setting (default <code>"standard"</code>), not by any dense-specific option. See <a href="../../graph-management/provenance/">Data Grounding &amp; Provenance</a> for the full picture, including how it differs for the direct contract.</p>
 <h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
-<p>For long documents, set <code>parallel_workers</code> (e.g. 2–4) so that Phase 1 skeleton batches and Phase 2 fill batches run in parallel; this reduces wall-clock time without changing merge logic or output quality. This matters most at scale: on a 124-page report the Phase 2 fill dominates wall-clock (several hundred to &gt;1000 s sequential) and each fill call is independent, so it parallelizes almost linearly. The default stays <code>1</code> (conservative, fully deterministic ordering); raise it explicitly for large documents. The parent-linkage recovery (text-anchor / adjacency / reconciliation) is order-independent, so parallel workers do not change which parents children attach to. <strong>Chunk and batch sizing:</strong> Both <strong>chunk size</strong> (<code>chunk_max_tokens</code>, e.g. 512–1024 per chunk) and <strong>dense_skeleton_batch_tokens</strong> (e.g. 1024–2048) determine how many Phase 1 batches you get. If the chunker produces one huge chunk for the whole document, you will get only one batch no matter how low you set <code>dense_skeleton_batch_tokens</code>. Set a strict max tokens per chunk so the document splits into many chunks; then the batch token limit groups those chunks into multiple batches. The options <code>dense_fill_nodes_cap</code> and <code>dense_skeleton_batch_tokens</code> trade off the number of LLM calls vs tokens per call (fewer, larger batches mean fewer calls but more tokens per request). <strong>Fill context:</strong> with the default <code>dense_fill_context="scoped"</code>, each Phase 2 call sends only the document regions where the node was observed instead of the whole document; on long documents this cuts Phase 2 token volume by an order of magnitude. Use <code>dense_fill_context="full"</code> if your entities are described far away from where they are first mentioned.</p>
+<p><code>parallel_workers</code> defaults to <code>4</code>, so Phase 1 skeleton batches and Phase 2 fill batches run in parallel without changing merge logic or output quality. This matters most at scale: on a 124-page report the Phase 2 fill dominates wall-clock (several hundred to &gt;1000 s sequential) and each fill call is independent, so it parallelizes almost linearly. The parent-linkage recovery (text-anchor / adjacency / reconciliation) is order-independent, so parallel workers do not change which parents children attach to. Set <code>parallel_workers=1</code> for sequential extraction — worth doing when the model server cannot absorb concurrent requests (local runtimes often serve a small fixed number of slots) or when you want fully deterministic ordering. When a batch or fill job raises while workers are in use, the run logs a hint to lower the setting, since concurrency limits are the usual cause. <strong>Chunk and batch sizing:</strong> Both <strong>chunk size</strong> (<code>chunk_max_tokens</code>, e.g. 512–1024 per chunk) and <strong>dense_skeleton_batch_tokens</strong> (e.g. 1024–2048) determine how many Phase 1 batches you get. If the chunker produces one huge chunk for the whole document, you will get only one batch no matter how low you set <code>dense_skeleton_batch_tokens</code>. Set a strict max tokens per chunk so the document splits into many chunks; then the batch token limit groups those chunks into multiple batches. The options <code>dense_fill_nodes_cap</code> and <code>dense_skeleton_batch_tokens</code> trade off the number of LLM calls vs tokens per call (fewer, larger batches mean fewer calls but more tokens per request). <strong>Fill context:</strong> with the default <code>dense_fill_context="scoped"</code>, each Phase 2 call sends only the document regions where the node was observed instead of the whole document; on long documents this cuts Phase 2 token volume by an order of magnitude. Use <code>dense_fill_context="full"</code> if your entities are described far away from where they are first mentioned.</p>
 <hr />
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h3>

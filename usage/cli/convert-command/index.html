@@ -18,7 +18,7 @@
         <link rel="prev" href="../init-command/">
       
       
-        <link rel="next" href="../inspect-command/">
+        <link rel="next" href="../merge-command/">
       
       
         
@@ -3054,6 +3054,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../merge-command/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    merge Command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../template-command/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    template Command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../inspect-command/" class="md-nav__link">
         
   
@@ -5667,7 +5723,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span>--docling-serve-url<span class="w"> </span>http://localhost:5001
 </code></pre></div></p>
-<p>Also configurable via <code>docling.serve.url</code> in <code>config.yaml</code> or the <code>DOCLING_SERVE_URL</code> environment variable; the API key (if the server requires one) is read from <code>DOCLING_SERVE_API_KEY</code>. See <a href="../../../fundamentals/pipeline-configuration/docling-serve/">Docling-Serve Integration</a>.</p>
+<p>Also configurable via <code>docling.serve.url</code> in <code>config.yaml</code> or the <code>DOCLING_SERVE_URL</code> environment variable; the API key (if the server requires one) is read from <code>DOCLING_SERVE_API_KEY</code>, and extra auth headers (e.g. <code>Authorization: Bearer</code> for deployments behind an auth proxy) from <code>DOCLING_SERVE_HEADERS</code> (a JSON object string). See <a href="../../../fundamentals/pipeline-configuration/docling-serve/">Docling-Serve Integration</a>.</p>
 <hr />
 <h2 id="export-options">Export Options<a class="headerlink" href="#export-options" title="Permanent link">&para;</a></h2>
 <h3 id="export-format">Export Format<a class="headerlink" href="#export-format" title="Permanent link">&para;</a></h3>
