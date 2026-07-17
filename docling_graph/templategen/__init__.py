@@ -47,6 +47,7 @@ if TYPE_CHECKING:  # pragma: no cover - static-analysis view of the lazy exports
     from .generate import GenerationResult, generate_template
     from .induce.documents import DocumentContent, induce_spec_from_documents
     from .induce.gapfill import fill_gaps
+    from .llm_call import build_llm_call_fn
     from .ontology import spec_draft_from_ontology
 
 __all__ = [
@@ -63,6 +64,7 @@ __all__ = [
     "TemplateLintError",
     "TemplateSpec",
     "VerificationReport",
+    "build_llm_call_fn",
     "evaluate_template",
     "fill_gaps",
     "generate_template",
@@ -83,6 +85,7 @@ _LAZY_EXPORTS: dict[str, tuple[str, str]] = {
     "DocumentContent": (".induce.documents", "DocumentContent"),
     "EvaluationReport": (".evaluate", "EvaluationReport"),
     "GenerationResult": (".generate", "GenerationResult"),
+    "build_llm_call_fn": (".llm_call", "build_llm_call_fn"),
     "evaluate_template": (".evaluate", "evaluate_template"),
     "fill_gaps": (".induce.gapfill", "fill_gaps"),
     "generate_template": (".generate", "generate_template"),
