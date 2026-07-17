@@ -23,10 +23,45 @@ hand-edit one line and re-render instead of editing generated Python.
 
 from __future__ import annotations
 
+import keyword
 from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+def _require_identifier(value: str, kind: str) -> str:
+    """Reject names that cannot safely be emitted as a Python identifier.
+
+    The renderer interpolates model / enum / field names **raw** into generated
+    source, and ``verify_template_source`` executes that source — so an
+    identifier that is not a plain, non-keyword, non-dunder name is both a
+    guaranteed render failure (``SyntaxError``) and, for hostile input, a code-
+    injection vector.
+
+    This is applied by :func:`docling_graph.templategen.render_template` at
+    render time (see its ``_assert_renderable_identifiers``), NOT on ``TemplateSpec``
+    construction — the R20/R21 linter deliberately builds drafts with keyword/
+    builtin names and *renames* them during ``repair_draft``/``lint_spec``, so the
+    IR must remain constructible with such names. The render gate is the final
+    stop for an un-repaired or hand-crafted spec reaching ``exec``.
+
+    Soft keywords (``type``, ``match``, ``case``) are allowed — they are valid
+    identifiers and common document field names.
+    """
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{kind} must be a non-empty string")
+    if not value.isidentifier():
+        raise ValueError(
+            f"{kind} {value!r} is not a valid Python identifier "
+            "(letters, digits, underscores; not starting with a digit)"
+        )
+    if keyword.iskeyword(value):
+        raise ValueError(f"{kind} {value!r} is a reserved Python keyword")
+    if value.startswith("__") and value.endswith("__"):
+        raise ValueError(f"{kind} {value!r} is a reserved dunder name")
+    return value
+
 
 ScalarType = Literal["str", "int", "float", "bool", "date", "datetime"]
 """Scalar field types the renderer knows how to emit."""
