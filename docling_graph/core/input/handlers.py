@@ -5,7 +5,6 @@ This module provides handlers that load various input formats and
 normalize them into a consistent internal representation.
 """
 
-import ipaddress
 import json
 import socket
 import tempfile
@@ -226,113 +225,39 @@ class URLInputHandler(InputHandler):
         Raises:
             ValidationError: If URL resolves to an unsafe IP address
         """
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+
+        if not hostname:
+            raise ValidationError(
+                f"Invalid URL (cannot extract hostname): {url}",
+                details={"url": url},
+            )
+
+        # Resolve EVERY address (all A and AAAA records): a fetch may connect to
+        # any of them, so one safe record must not vouch for an unsafe sibling.
         try:
-            parsed = urlparse(url)
-            hostname = parsed.hostname
-
-            if not hostname:
-                raise ValidationError(
-                    f"Invalid URL (cannot extract hostname): {url}",
-                    details={"url": url},
-                )
-
-            # Resolve hostname to IP address
-            ip_str = socket.gethostbyname(hostname)
-            ip_addr = ipaddress.ip_address(ip_str)
-
-            # Explicitly block cloud metadata endpoint (169.254.169.254) FIRST
-            if ip_str == "169.254.169.254":
-                raise ValidationError(
-                    "Access to cloud metadata endpoint is not allowed: 169.254.169.254",
-                    details={
-                        "url": url,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Cloud metadata endpoint (AWS, Azure, GCP)",
-                    },
-                )
-
-            # Block loopback addresses (127.0.0.0/8, ::1)
-            if ip_addr.is_loopback:
-                raise ValidationError(
-                    f"Access to loopback addresses is not allowed: {ip_str}",
-                    details={
-                        "url": url,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Loopback address",
-                    },
-                )
-
-            # Block link-local addresses (169.254.0.0/16, fe80::/10)
-            if ip_addr.is_link_local:
-                raise ValidationError(
-                    f"Access to link-local addresses is not allowed: {ip_str}",
-                    details={
-                        "url": url,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Link-local address",
-                    },
-                )
-
-            # Block multicast addresses
-            if ip_addr.is_multicast:
-                raise ValidationError(
-                    f"Access to multicast addresses is not allowed: {ip_str}",
-                    details={
-                        "url": url,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Multicast address",
-                    },
-                )
-
-            # Block reserved addresses
-            if ip_addr.is_reserved:
-                raise ValidationError(
-                    f"Access to reserved IP addresses is not allowed: {ip_str}",
-                    details={
-                        "url": url,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Reserved IP address",
-                    },
-                )
-
-            # Block private IP addresses (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
-            # Check this LAST because is_private also returns True for loopback and link-local
-            if ip_addr.is_private:
-                raise ValidationError(
-                    f"Access to private IP addresses is not allowed: {ip_str}",
-                    details={
-                        "url": url,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Private IP address (RFC 1918)",
-                    },
-                )
-
+            addrinfos = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)
+            resolved_ips = sorted({str(info[4][0]) for info in addrinfos})
         except socket.gaierror as e:
             raise ValidationError(
                 f"Failed to resolve hostname: {hostname}",
-                details={
-                    "url": url,
-                    "hostname": hostname,
-                    "error": str(e),
-                },
+                details={"url": url, "hostname": hostname, "error": str(e)},
             ) from e
+
+        # Reuse URLValidator's per-address gate so the two SSRF entry points
+        # (validate-time and this fetch/redirect-time check) can never diverge.
+        from .validators import URLValidator
+
+        try:
+            for ip_str in resolved_ips:
+                URLValidator._validate_ip(url, hostname, ip_str)
         except ValidationError:
-            # Re-raise validation errors
             raise
         except Exception as e:
             raise ValidationError(
                 f"Error validating URL safety: {url}",
-                details={
-                    "url": url,
-                    "error": str(e),
-                    "type": type(e).__name__,
-                },
+                details={"url": url, "error": str(e), "type": type(e).__name__},
             ) from e
 
     def load(self, source: str) -> Path:

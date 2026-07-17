@@ -1,6 +1,7 @@
 """Unit tests for input validators."""
 
 import json
+import socket
 import tempfile
 from pathlib import Path
 
@@ -12,6 +13,14 @@ from docling_graph.core.input.validators import (
     URLValidator,
 )
 from docling_graph.exceptions import ValidationError
+
+
+def _addrinfo(*ips: str) -> list:
+    """Build a socket.getaddrinfo-style result list for the given IP addresses."""
+    return [
+        (socket.AF_INET6 if ":" in ip else socket.AF_INET, socket.SOCK_STREAM, 6, "", (ip, 0))
+        for ip in ips
+    ]
 
 
 class TestTextValidator:
@@ -90,7 +99,9 @@ class TestURLValidator:
         ]
 
         # Mock DNS resolution to return a public IP address
-        with patch("socket.gethostbyname", return_value="93.184.216.34"):  # example.com's actual IP
+        with patch(
+            "socket.getaddrinfo", return_value=_addrinfo("93.184.216.34")
+        ):  # example.com's actual IP
             for url in valid_urls:
                 validator.validate(url)  # Should not raise
 
@@ -106,7 +117,9 @@ class TestURLValidator:
         ]
 
         # Mock DNS resolution to return a public IP address
-        with patch("socket.gethostbyname", return_value="93.184.216.34"):  # example.com's actual IP
+        with patch(
+            "socket.getaddrinfo", return_value=_addrinfo("93.184.216.34")
+        ):  # example.com's actual IP
             for url in valid_urls:
                 validator.validate(url)  # Should not raise
 

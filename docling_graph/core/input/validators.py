@@ -218,86 +218,13 @@ class URLValidator(InputValidator):
                 details={"url": source},
             )
 
-        # Perform DNS resolution and IP validation to prevent SSRF attacks
+        # Perform DNS resolution and IP validation to prevent SSRF attacks.
+        # Resolve EVERY address (all A and AAAA records): the downloader may
+        # connect to any of them, so a single safe first record must not vouch
+        # for an unsafe sibling (multi-record SSRF bypass).
         try:
-            # Resolve hostname to IP address
-            ip_str = socket.gethostbyname(hostname)
-            ip_addr = ipaddress.ip_address(ip_str)
-
-            # Explicitly block cloud metadata endpoint (169.254.169.254) FIRST
-            # This is critical for preventing access to cloud instance metadata
-            if ip_str == "169.254.169.254":
-                raise ValidationError(
-                    "Access to cloud metadata endpoint is not allowed: 169.254.169.254",
-                    details={
-                        "url": source,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Cloud metadata endpoint (AWS, Azure, GCP)",
-                    },
-                )
-
-            # Block loopback addresses (127.0.0.0/8, ::1)
-            if ip_addr.is_loopback:
-                raise ValidationError(
-                    f"Access to loopback addresses is not allowed: {ip_str}",
-                    details={
-                        "url": source,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Loopback address (127.0.0.0/8, ::1)",
-                    },
-                )
-
-            # Block link-local addresses (169.254.0.0/16, fe80::/10)
-            if ip_addr.is_link_local:
-                raise ValidationError(
-                    f"Access to link-local addresses is not allowed: {ip_str}",
-                    details={
-                        "url": source,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Link-local address (169.254.0.0/16, fe80::/10)",
-                    },
-                )
-
-            # Block multicast addresses
-            if ip_addr.is_multicast:
-                raise ValidationError(
-                    f"Access to multicast addresses is not allowed: {ip_str}",
-                    details={
-                        "url": source,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Multicast address",
-                    },
-                )
-
-            # Block reserved addresses
-            if ip_addr.is_reserved:
-                raise ValidationError(
-                    f"Access to reserved IP addresses is not allowed: {ip_str}",
-                    details={
-                        "url": source,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Reserved IP address",
-                    },
-                )
-
-            # Block private IP addresses (RFC 1918)
-            # Check this LAST because is_private also returns True for loopback and link-local
-            if ip_addr.is_private:
-                raise ValidationError(
-                    f"Access to private IP addresses is not allowed: {ip_str}",
-                    details={
-                        "url": source,
-                        "hostname": hostname,
-                        "resolved_ip": ip_str,
-                        "reason": "Private IP address (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)",
-                    },
-                )
-
+            addrinfos = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)
+            resolved_ips = sorted({str(info[4][0]) for info in addrinfos})
         except socket.gaierror as e:
             # DNS resolution failed
             raise ValidationError(
@@ -309,6 +236,10 @@ class URLValidator(InputValidator):
                     "hint": "Hostname could not be resolved to an IP address",
                 },
             ) from e
+
+        try:
+            for ip_str in resolved_ips:
+                self._validate_ip(source, hostname, ip_str)
         except ValidationError:
             # Re-raise validation errors from IP checks
             raise
@@ -323,6 +254,85 @@ class URLValidator(InputValidator):
                     "type": type(e).__name__,
                 },
             ) from e
+
+    @staticmethod
+    def _validate_ip(source: str, hostname: str, ip_str: str) -> None:
+        """Reject one resolved address if it targets a protected network."""
+        ip_addr = ipaddress.ip_address(ip_str)
+
+        # Explicitly block cloud metadata endpoint (169.254.169.254) FIRST
+        # This is critical for preventing access to cloud instance metadata
+        if ip_str == "169.254.169.254":
+            raise ValidationError(
+                "Access to cloud metadata endpoint is not allowed: 169.254.169.254",
+                details={
+                    "url": source,
+                    "hostname": hostname,
+                    "resolved_ip": ip_str,
+                    "reason": "Cloud metadata endpoint (AWS, Azure, GCP)",
+                },
+            )
+
+        # Block loopback addresses (127.0.0.0/8, ::1)
+        if ip_addr.is_loopback:
+            raise ValidationError(
+                f"Access to loopback addresses is not allowed: {ip_str}",
+                details={
+                    "url": source,
+                    "hostname": hostname,
+                    "resolved_ip": ip_str,
+                    "reason": "Loopback address (127.0.0.0/8, ::1)",
+                },
+            )
+
+        # Block link-local addresses (169.254.0.0/16, fe80::/10)
+        if ip_addr.is_link_local:
+            raise ValidationError(
+                f"Access to link-local addresses is not allowed: {ip_str}",
+                details={
+                    "url": source,
+                    "hostname": hostname,
+                    "resolved_ip": ip_str,
+                    "reason": "Link-local address (169.254.0.0/16, fe80::/10)",
+                },
+            )
+
+        # Block multicast addresses
+        if ip_addr.is_multicast:
+            raise ValidationError(
+                f"Access to multicast addresses is not allowed: {ip_str}",
+                details={
+                    "url": source,
+                    "hostname": hostname,
+                    "resolved_ip": ip_str,
+                    "reason": "Multicast address",
+                },
+            )
+
+        # Block reserved addresses
+        if ip_addr.is_reserved:
+            raise ValidationError(
+                f"Access to reserved IP addresses is not allowed: {ip_str}",
+                details={
+                    "url": source,
+                    "hostname": hostname,
+                    "resolved_ip": ip_str,
+                    "reason": "Reserved IP address",
+                },
+            )
+
+        # Block private IP addresses (RFC 1918)
+        # Check this LAST because is_private also returns True for loopback and link-local
+        if ip_addr.is_private:
+            raise ValidationError(
+                f"Access to private IP addresses is not allowed: {ip_str}",
+                details={
+                    "url": source,
+                    "hostname": hostname,
+                    "resolved_ip": ip_str,
+                    "reason": "Private IP address (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)",
+                },
+            )
 
 
 class DoclangValidator(InputValidator):
