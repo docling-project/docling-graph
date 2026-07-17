@@ -2458,6 +2458,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Python API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-an-llm_call_fn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building an llm_call_fn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inducing-a-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inducing a SPEC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -4071,6 +4099,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Python API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-an-llm_call_fn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building an llm_call_fn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inducing-a-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inducing a SPEC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -4293,17 +4349,92 @@
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">result</span><span class="o">.</span><span class="n">spec</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">lint_report</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">gaps</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">source_code</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">written_path</span>
 </code></pre></div>
 <p><code>kind="spec"</code> re-renders a SPEC YAML; <code>kind="docs"</code> (one or many documents) requires an injected <code>llm_call_fn</code>.</p>
-<p>Document sources for <code>kind="docs"</code> / <code>induce_spec_from_documents</code> can be file paths, <code>http(s)://</code> URLs, or — when you already hold the text — <code>DocumentContent</code> objects passed directly, no file needed:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.templategen</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentContent</span><span class="p">,</span> <span class="n">induce_spec_from_documents</span>
+<h3 id="building-an-llm_call_fn">Building an <code>llm_call_fn</code><a class="headerlink" href="#building-an-llm_call_fn" title="Permanent link">&para;</a></h3>
+<p>Induction does not create LLM clients itself — it calls an injected <code>llm_call_fn</code>, so you stay in control of the provider, model, and credentials. <code>build_llm_call_fn</code> binds one to a LiteLLM client for you:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.templategen</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_llm_call_fn</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">spec</span><span class="p">,</span> <span class="n">report</span> <span class="o">=</span> <span class="n">induce_spec_from_documents</span><span class="p">(</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="p">[</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="s2">&quot;invoice1.pdf&quot;</span><span class="p">,</span>                                          <span class="c1"># file</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="s2">&quot;https://example.com/samples/invoice2.pdf&quot;</span><span class="p">,</span>              <span class="c1"># URL (converted by Docling)</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="n">DocumentContent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;invoice3&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">markdown_string</span><span class="p">),</span>  <span class="c1"># direct content</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="p">],</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">llm_call_fn</span><span class="p">,</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">llm_call_fn</span> <span class="o">=</span> <span class="n">build_llm_call_fn</span><span class="p">(</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span> <span class="s2">&quot;mistral-small-latest&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The returned callable follows the induction contract (<code>llm_call_fn(*, prompt, schema_json, context)</code>) and is <strong>thread-safe</strong>: induction fans calls out across <code>--workers</code>, so each thread gets its own client.</p>
+<p>It also owns truncation handling — if a response comes back truncated, it retries once with <code>max_tokens</code> doubled (capped at half the model's context window, and never more than 2x the configured budget). A model stuck in a repetition loop truncates at any budget, so the ceiling stops a runaway from turning junk into minutes of generation time; you get a warning instead.</p>
+<p>Optional arguments:</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>llm_overrides</code></td>
+<td><code>LlmRuntimeOverrides</code> | <code>dict</code> | <code>None</code></td>
+<td><code>None</code></td>
+<td>Runtime overrides (e.g. <code>{"max_output_tokens": 8192}</code>), same shape as the <code>llm_overrides</code> block in <code>config.yaml</code></td>
+</tr>
+<tr>
+<td><code>structured_output</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td><code>True</code> uses a schema grammar (pair with <code>strategy="three-pass"</code>); <code>False</code> requests plain <code>json_object</code> decoding (pair with <code>strategy="one-shot"</code>)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Pair <code>structured_output</code> with your <code>strategy</code></p>
+<p>The two settings live on different functions — <code>structured_output</code> on <code>build_llm_call_fn</code>, <code>strategy</code> on <code>induce_spec_from_documents</code> — and nothing cross-checks them. Mismatching them silently applies grammar-constrained decoding to the <code>one-shot</code> strategy, the exact combination <code>one-shot</code> exists to avoid for small local models.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Strategy</th>
+<th style="text-align: left;"><code>structured_output</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>three-pass</code></td>
+<td style="text-align: left;"><code>True</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>one-shot</code></td>
+<td style="text-align: left;"><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<p>The defaults line up (<code>build_llm_call_fn</code> → <code>True</code>, <code>induce_spec_from_documents</code> → <code>strategy="three-pass"</code>), so leaving both alone is safe. Note the <strong>CLI</strong> defaults to <code>one-shot</code> instead and wires <code>structured_output</code> for you; when you switch a programmatic call to <code>one-shot</code>, you must flip <code>structured_output</code> yourself:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">llm_call_fn</span> <span class="o">=</span> <span class="n">build_llm_call_fn</span><span class="p">(</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="s2">&quot;gemma3:12b&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">llm_overrides</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_output_tokens&quot;</span><span class="p">:</span> <span class="mi">8192</span><span class="p">},</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">structured_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>          <span class="c1"># ← must match ...</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="n">spec</span><span class="p">,</span> <span class="n">report</span> <span class="o">=</span> <span class="n">induce_spec_from_documents</span><span class="p">(</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="p">[</span><span class="s2">&quot;invoice1.pdf&quot;</span><span class="p">],</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">llm_call_fn</span><span class="p">,</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;one-shot&quot;</span><span class="p">,</span>              <span class="c1"># ← ... this</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="p">)</span>
+</code></pre></div>
+</div>
+<p>Construction is offline: it fails fast if <code>litellm</code> is missing, but it does <strong>not</strong> validate credentials or reject unknown providers (those fall back to generic defaults with a warning). A bad API key first surfaces as a <code>ClientError</code> from the returned callable's first real call.</p>
+<h3 id="inducing-a-spec">Inducing a SPEC<a class="headerlink" href="#inducing-a-spec" title="Permanent link">&para;</a></h3>
+<p>Document sources for <code>kind="docs"</code> / <code>induce_spec_from_documents</code> can be file paths, <code>http(s)://</code> URLs, or — when you already hold the text — <code>DocumentContent</code> objects passed directly, no file needed:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.templategen</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">DocumentContent</span><span class="p">,</span> <span class="n">build_llm_call_fn</span><span class="p">,</span> <span class="n">induce_spec_from_documents</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">llm_call_fn</span> <span class="o">=</span> <span class="n">build_llm_call_fn</span><span class="p">(</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span> <span class="s2">&quot;mistral-small-latest&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">spec</span><span class="p">,</span> <span class="n">report</span> <span class="o">=</span> <span class="n">induce_spec_from_documents</span><span class="p">(</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="p">[</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="s2">&quot;invoice1.pdf&quot;</span><span class="p">,</span>                                          <span class="c1"># file</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="s2">&quot;https://example.com/samples/invoice2.pdf&quot;</span><span class="p">,</span>              <span class="c1"># URL (converted by Docling)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">DocumentContent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;invoice3&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">markdown_string</span><span class="p">),</span>  <span class="c1"># direct content</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    <span class="p">],</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="n">llm_call_fn</span><span class="p">,</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="p">)</span>
 </code></pre></div>
 
 

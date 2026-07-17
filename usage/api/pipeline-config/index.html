@@ -2661,6 +2661,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#runtime-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#export-settings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4580,6 +4591,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#runtime-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#export-settings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5271,6 +5293,25 @@
 <td><code>bool</code></td>
 <td><code>False</code></td>
 <td>Enable debug mode to save all intermediate extraction artifacts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-settings">Runtime Settings<a class="headerlink" href="#runtime-settings" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gc_collect</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Run a full <code>gc.collect()</code> after each pipeline run. Keep <code>True</code> for CLI/batch use; set <code>False</code> in a long-lived service to avoid the per-run stop-the-world pause (the CUDA cache purge still runs)</td>
 </tr>
 </tbody>
 </table>
