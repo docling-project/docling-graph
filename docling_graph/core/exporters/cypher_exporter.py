@@ -172,7 +172,7 @@ class CypherExporter:
             return repr(value) if math.isfinite(value) else self._quoted(str(value))
         if isinstance(value, str):
             return self._quoted(value)
-        if isinstance(value, (list, tuple)):
+        if isinstance(value, list | tuple):
             return self._format_list(list(value))
         if isinstance(value, dict):
             return self._quoted(json.dumps(value, ensure_ascii=False, default=str))
@@ -216,7 +216,7 @@ class CypherExporter:
         raw = data.get("id")
         if raw is None:
             raw = node_id
-        if isinstance(raw, bool) or not isinstance(raw, (str, int, float)):
+        if isinstance(raw, bool) or not isinstance(raw, str | int | float):
             raw = str(raw)
         return self._format_value(raw)
 
