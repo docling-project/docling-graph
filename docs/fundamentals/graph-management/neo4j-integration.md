@@ -156,9 +156,13 @@ driver = GraphDatabase.driver(
 with open("neo4j_import/graph.cypher") as f:
     cypher_script = f.read()
 
-# Execute
+# session.run() executes one statement at a time: split the script the way
+# cypher-shell does (each statement ends with ';' at end of line).
+code = "\n".join(line for line in cypher_script.splitlines() if not line.startswith("//"))
 with driver.session() as session:
-    session.run(cypher_script)
+    for statement in code.split(";\n"):
+        if statement.strip():
+            session.run(statement)
 
 driver.close()
 print("✅ Imported to Neo4j")
