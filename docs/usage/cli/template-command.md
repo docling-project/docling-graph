@@ -33,7 +33,14 @@ Sources can be file paths or `http(s)://` URLs — URLs are fetched and converte
 uv run docling-graph template from-docs invoice1.pdf https://example.com/samples/invoice2.pdf
 ```
 
-The documents are converted with Docling, then three focused LLM passes propose classes, fields, and relationships as structured data. Deterministic gates filter hallucinations — most importantly the **verbatim gate**: every identity example must appear verbatim in the source document, or it is dropped. Candidates from multiple documents merge deterministically (type promotion `int → float → str`, majority votes, example union).
+The documents are converted with Docling, then the LLM proposes classes, fields, and relationships. Deterministic gates filter hallucinations — most importantly the **verbatim gate**: every identity example must appear verbatim in the source document, or it is dropped. Candidates from multiple documents merge deterministically (type promotion `int → float → str`, majority votes, example union), and a deterministic renderer emits the module — no LLM ever writes code.
+
+**Strategies** (`--strategy`, default `templategen.strategy` = `one-shot`):
+
+- `one-shot` — **one plain-JSON LLM call per document/window** carrying the condensed schema-definition rulebook, returning the full ontology (classes + fields + edges) at once. This is the programmatic form of the proven manual workflow (documents + the schema guides into a strong model, ontology out); the deterministic merge/linter/renderer replace the "now write the Pydantic" step. No grammar-constrained decoding — it works with small local models that degenerate under guided JSON grammars, and costs ~1/8 of the calls.
+- `three-pass` — the focused inventory → fields → relationships passes under strict structured output. More per-field evidence for models that handle guided decoding well.
+
+Both strategies run the exact same evidence gates, cross-document merge, and rulebook repair.
 
 If a pass's output overflows the model's `max_tokens` budget, the call is retried once with a doubled budget (capped at half the context window); a fields pass that still overflows is split into smaller class batches automatically. The fields pass is also **pre-sized** against the model's output budget (~1500 output tokens per class), so small-budget models make more, smaller calls instead of truncating. Persistent truncation warnings mean the model's output budget is too small for your documents — raise `llm_overrides.max_output_tokens` in `config.yaml` or switch to a larger model.
 
@@ -52,6 +59,7 @@ Pass `--exhaustive` to disable both the saturation stop and the unit cap. Skippe
 | `--name`, `-n` | Root model class name |
 | `--provider` / `--model`, `-m` | LLM settings (default: `config.yaml` `models.llm`) |
 | `--spec-out` | Where to write the editable SPEC YAML (default `<output>.spec.yaml`) |
+| *(always written)* | `<output stem>.report.md` — the full generation detail (induction stats, merge decisions, repair log, gaps, verification, semantic guide); the console shows one metric line per concern |
 | `--llm-gap-fill / --no-llm-gap-fill` | One extra call to fill missing docstrings/examples — it structurally cannot add classes, fields, or edges |
 | `--trial-run` | After generation, run a real extraction on the first document and print an advisory quality report |
 | `--strict / --no-strict` | Fail instead of auto-repairing rulebook violations |
@@ -117,6 +125,7 @@ templategen:
   ontology_depth: 4
   llm_gap_fill: false
   strict: false
+  strategy: one-shot          # one-shot (1 plain-JSON call/unit) | three-pass (strict grammars)
   workers: 4                  # concurrent induction LLM calls
   max_units: 24               # hard cap on induction units (documents/windows); 0 = unlimited
   max_windows_per_doc: 6      # windows an oversized document may split into
