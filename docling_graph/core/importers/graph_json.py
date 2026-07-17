@@ -66,7 +66,10 @@ def resolve_graph_path(input_path: Path) -> Path:
 
 
 def load_graph_json(path: Path) -> nx.DiGraph:
-    """Load one exported graph.json into an ``nx.DiGraph``.
+    """Load one exported graph.json file into an ``nx.DiGraph``.
+
+    Thin wrapper over :func:`load_graph_from_dict` that reads and parses the
+    file first.
 
     Raises:
         ConfigurationError: When the file is not a docling-graph export
@@ -79,13 +82,41 @@ def load_graph_json(path: Path) -> nx.DiGraph:
         raise ConfigurationError(
             f"Cannot read graph export: {path}", details={"path": str(path)}, cause=e
         ) from e
+    graph = load_graph_from_dict(data, source=str(path))
+    logger.info(
+        "Loaded graph export %s: %s nodes, %s edges (%s)",
+        path,
+        graph.number_of_nodes(),
+        graph.number_of_edges(),
+        str(graph.graph.get("format") or "v1, no graph metadata"),
+    )
+    return graph
 
+
+def load_graph_from_dict(data: dict, *, source: str = "<dict>") -> nx.DiGraph:
+    """Load an in-memory graph.json object (already parsed) into an ``nx.DiGraph``.
+
+    The read-side inverse of ``JSONExporter._graph_to_dict`` for callers that
+    already hold the dict (e.g. an HTTP request body) and want to avoid spooling
+    it to a temp file just to call :func:`load_graph_json`. Validation is
+    identical.
+
+    Args:
+        data: A docling-graph graph export object: ``{"nodes": [...],
+            "edges": [...], "graph"?: {...}, ...}``.
+        source: Label used in error messages (a path, URL, or ``"<dict>"``).
+
+    Raises:
+        ConfigurationError: When ``data`` is not a docling-graph export, is
+            empty, or is structurally corrupt (malformed records, dangling edge
+            endpoints).
+    """
     if not isinstance(data, dict) or "nodes" not in data or "edges" not in data:
         found = sorted(data.keys()) if isinstance(data, dict) else type(data).__name__
         raise ConfigurationError(
             "Not a docling-graph export: expected top-level 'nodes' and 'edges' keys "
             "(the shape JSONExporter writes)",
-            details={"path": str(path), "found": found},
+            details={"source": source, "found": found},
         )
 
     nodes = data["nodes"]
@@ -93,13 +124,13 @@ def load_graph_json(path: Path) -> nx.DiGraph:
     if not isinstance(nodes, list) or not isinstance(edges, list):
         raise ConfigurationError(
             "Malformed graph export: 'nodes' and 'edges' must be lists",
-            details={"path": str(path)},
+            details={"source": source},
         )
     if not nodes:
-        # The exporter refuses to write empty graphs, so this is a hand-made file.
+        # The exporter refuses to write empty graphs, so this is a hand-made input.
         raise ConfigurationError(
             "Graph export contains no nodes (docling-graph never writes empty exports)",
-            details={"path": str(path)},
+            details={"source": source},
         )
 
     graph = nx.DiGraph()
@@ -111,7 +142,14 @@ def load_graph_json(path: Path) -> nx.DiGraph:
         if not isinstance(raw_node, dict) or "id" not in raw_node:
             raise ConfigurationError(
                 "Malformed graph export: every node needs an 'id'",
-                details={"path": str(path), "node": str(raw_node)[:200]},
+                details={"source": source, "node": str(raw_node)[:200]},
+            )
+        # A null/object/array id would leak a raw networkx ValueError/TypeError
+        # (unhashable) instead of this function's ConfigurationError contract.
+        if not isinstance(raw_node["id"], str | int | float | bool):
+            raise ConfigurationError(
+                "Malformed graph export: node 'id' must be a JSON scalar (string/number/bool)",
+                details={"source": source, "node": str(raw_node)[:200]},
             )
         attrs = dict(raw_node)
         # The exporter writes id redundantly (node key + attr); keep the attr —
@@ -122,25 +160,22 @@ def load_graph_json(path: Path) -> nx.DiGraph:
         if not isinstance(raw_edge, dict) or "source" not in raw_edge or "target" not in raw_edge:
             raise ConfigurationError(
                 "Malformed graph export: every edge needs 'source' and 'target'",
-                details={"path": str(path), "edge": str(raw_edge)[:200]},
+                details={"source": source, "edge": str(raw_edge)[:200]},
             )
         attrs = dict(raw_edge)
-        source = attrs.pop("source")
-        target = attrs.pop("target")
-        if source not in graph or target not in graph:
+        edge_source = attrs.pop("source")
+        edge_target = attrs.pop("target")
+        if edge_source not in graph or edge_target not in graph:
             raise ConfigurationError(
                 "Malformed graph export: edge endpoint is not an exported node",
-                details={"path": str(path), "source": str(source), "target": str(target)},
+                details={
+                    "source": source,
+                    "edge_source": str(edge_source),
+                    "edge_target": str(edge_target),
+                },
             )
-        graph.add_edge(source, target, **attrs)
+        graph.add_edge(edge_source, edge_target, **attrs)
 
-    logger.info(
-        "Loaded graph export %s: %s nodes, %s edges (%s)",
-        path,
-        graph.number_of_nodes(),
-        graph.number_of_edges(),
-        str(graph.graph.get("format") or "v1, no graph metadata"),
-    )
     return graph
 
 

@@ -188,3 +188,47 @@ def test_corrupt_sibling_ledger_degrades_to_none(tmp_path):
     graph_path = _export(graph, tmp_path / "graph.json")
     (graph_path.parent / "provenance.json").write_text("{not json", encoding="utf-8")
     assert load_sibling_ledger(graph_path) is None
+
+
+class TestInMemoryRoundTrip:
+    """load_graph_from_dict / graph_to_dict — the file-free public round trip."""
+
+    def test_round_trip_dict(self):
+        import networkx as nx
+
+        from docling_graph.core.exporters import graph_to_dict
+        from docling_graph.core.importers import load_graph_from_dict
+
+        g = nx.DiGraph()
+        g.add_node("n1", id="n1", label="Doc", type="entity", __class__="Doc", title="A")
+        g.add_node("n2", id="n2", label="Doc", type="entity", __class__="Doc", title="B")
+        g.add_edge("n1", "n2", label="REL")
+        g.graph.update({"format": "docling-graph/v2"})
+
+        data = graph_to_dict(g)
+        g2 = load_graph_from_dict(data)
+        assert g2.number_of_nodes() == 2
+        assert g2.number_of_edges() == 1
+        assert g2.graph.get("format") == "docling-graph/v2"
+
+    def test_rejects_non_export_dict(self):
+        import pytest
+
+        from docling_graph.core.importers import load_graph_from_dict
+        from docling_graph.exceptions import ConfigurationError
+
+        with pytest.raises(ConfigurationError):
+            load_graph_from_dict({"not": "a graph"})
+
+    @pytest.mark.parametrize("bad_id", [None, {"a": 1}, [1, 2]])
+    def test_rejects_non_scalar_node_id(self, bad_id):
+        """A null/object/array id must surface as ConfigurationError, not a raw
+        networkx ValueError/TypeError (the documented contract for HTTP bodies)."""
+        import pytest
+
+        from docling_graph.core.importers import load_graph_from_dict
+        from docling_graph.exceptions import ConfigurationError
+
+        data = {"nodes": [{"id": bad_id, "label": "Doc"}], "edges": []}
+        with pytest.raises(ConfigurationError, match="JSON scalar"):
+            load_graph_from_dict(data)
