@@ -2,6 +2,127 @@
 
 <!-- version list -->
 
+## v1.8.0 (2026-07-17)
+
+### Bug Fixes
+
+- **extraction**: Default parallel_workers to 4 and hint to lower it on failure
+  ([`61bd9ca`](https://github.com/docling-project/docling-graph/commit/61bd9ca98aaa02f30caa0d9f4ce7eacfa15ec156))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **llm-clients**: Suppress litellm's redundant stderr banner on errors
+  ([`9ba3117`](https://github.com/docling-project/docling-graph/commit/9ba31177ceccac7217a646e868de10f2da21f122))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **strategies**: Surface ExtractionError instead of swallowing it
+  ([`363094c`](https://github.com/docling-project/docling-graph/commit/363094c03a0f8174badb885391e1df8774921581))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Handle recursive roots, component-owned edges, and cyclic nesting in the
+  verification gates
+  ([`6210007`](https://github.com/docling-project/docling-graph/commit/621000713b61b2d998a26ebcfc7efbf58964b502))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Import Self from typing_extensions for the 3.10 floor
+  ([`a7eb089`](https://github.com/docling-project/docling-graph/commit/a7eb0893ef4f9e70d4b3e32a8af9e9c825470424))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Trim the generated template's verification footer to a short note
+  ([`78f65c5`](https://github.com/docling-project/docling-graph/commit/78f65c51165b729609e449cc2987a35a040804a8))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **deps**: Update pytest-durations requirement
+  ([`d7b361e`](https://github.com/docling-project/docling-graph/commit/d7b361e31ba258ddba21b6803d457a347c1b941c))
+
+Updates the requirements on [pytest-durations](https://github.com/blake-r/pytest-durations) to
+  permit the latest version.
+
+Updates `pytest-durations` to 1.7.0 - [Release
+  notes](https://github.com/blake-r/pytest-durations/releases) -
+  [Commits](https://github.com/blake-r/pytest-durations/compare/v1.6.1...v1.7.0)
+
+--- updated-dependencies: - dependency-name: pytest-durations dependency-version: 1.7.0
+
+dependency-type: direct:development
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+### Documentation
+
+- **cli**: Add merge and template commands to README and navigation
+  ([`1701aa4`](https://github.com/docling-project/docling-graph/commit/1701aa471bc2c2b2c2c3824b5e7e1dbc320d090c))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **docling-serve**: Document async conversion, custom headers, and timeouts
+  ([`0dde73a`](https://github.com/docling-project/docling-graph/commit/0dde73a902562bec22d7d93b2a04a6ed7513e32e))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **readme**: Document from-docs template generation and ignore templates output
+  ([`b74db6f`](https://github.com/docling-project/docling-graph/commit/b74db6fabc9a09e178443bd4f88a8baf65b5ad35))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Document the one-shot strategy and generation report
+  ([`0c18c7a`](https://github.com/docling-project/docling-graph/commit/0c18c7a45071186cd375b1c59d257b2dab8c14d9))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Features
+
+- **cli**: Add --strategy flag and switch template generation to metric logs with a report sidecar
+  ([`5e87bdf`](https://github.com/docling-project/docling-graph/commit/5e87bdfc385bc0ae012c5f7b3c60a773bb75c651))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Add self-describing graph exports and CLI plumbing for graph fusion and template
+  generation
+  ([`116e472`](https://github.com/docling-project/docling-graph/commit/116e4727ccc1760eb86c8934dbd7842d72827b49))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **extractors**: Convert via the official docling service client
+  ([`4cd548d`](https://github.com/docling-project/docling-graph/commit/4cd548da2809e644b36c8083230b156959ff3478))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **merge**: Add deterministic knowledge graph merge library and command
+  ([`4ec90b3`](https://github.com/docling-project/docling-graph/commit/4ec90b36827a2b9aa718ab5747bc4ea3d0cc5248))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **merge**: Fix conflict detection and add queryable conflict-variant nodes
+  ([`2db2446`](https://github.com/docling-project/docling-graph/commit/2db2446169c8505cc1542bed26833eaf4608a58f))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Add one-shot induction strategy as the default
+  ([`256e4db`](https://github.com/docling-project/docling-graph/commit/256e4db344cee7ed42f24243b39e138127f8dd10))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Generate, lint, and evaluate extraction templates
+  ([`5611953`](https://github.com/docling-project/docling-graph/commit/5611953c24e8721c892dd646c47d8e4a8bbe4cc3))
+
+Signed-off-by: Ayoub El Bouchtili <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Scale induction with windowing, concurrency, and truncation-safe retries
+  ([`4dda718`](https://github.com/docling-project/docling-graph/commit/4dda7183a8058bf26849e357c5e7d1cad92d9742))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.7.1 (2026-07-10)
 
 ### Bug Fixes
