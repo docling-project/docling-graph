@@ -2,8 +2,12 @@
 
 import json
 import re
-from datetime import date, datetime
+from datetime import date, datetime, time
+from decimal import Decimal
+from enum import Enum
+from pathlib import PurePath
 from typing import Any
+from uuid import UUID
 
 
 def format_property_value(value: Any, max_length: int = 80) -> str:
@@ -75,11 +79,28 @@ def truncate_string(text: str, max_length: int, suffix: str = "...") -> str:
 def json_serializable(obj: Any) -> Any:
     """
     Custom JSON serializer for objects not serializable by default.
-    Converts date and datetime to ISO format strings.
-    Raises TypeError for other unknown types.
+
+    Handles the value types a Pydantic extraction template can legitimately put
+    on a graph node — ``date``/``datetime``/``time`` (ISO strings),
+    ``Decimal`` (float), ``UUID``/``Path`` (str), ``set``/``frozenset`` (sorted
+    list), ``bytes`` (utf-8 text), ``Enum`` (its value), and any object exposing
+    ``model_dump`` (Pydantic models). Raises ``TypeError`` for anything else.
     """
-    if isinstance(obj, date | datetime):
+    if isinstance(obj, date | datetime | time):
         return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return float(obj)
+    if isinstance(obj, UUID | PurePath):
+        return str(obj)
+    if isinstance(obj, set | frozenset):
+        return sorted(obj, key=str)
+    if isinstance(obj, bytes):
+        return obj.decode("utf-8", "replace")
+    if isinstance(obj, Enum):
+        return obj.value
+    model_dump = getattr(obj, "model_dump", None)
+    if callable(model_dump):
+        return model_dump(mode="json")
     raise TypeError(f"Type {type(obj)} not serializable")
 
 
