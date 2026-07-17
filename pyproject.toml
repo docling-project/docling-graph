@@ -132,6 +132,9 @@ test = [
     "types-PyYAML",
     "types-requests",
     "mypy>=1.4.0",
+    # Cypher exporter integration tests (skip cleanly when Docker is absent)
+    "neo4j>=5.20.0",
+    "testcontainers>=4.8.0",
 ]
 
 # Notebook-related tools and data analysis helpers
