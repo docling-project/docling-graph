@@ -2,6 +2,46 @@
 
 <!-- version list -->
 
+## v1.9.1 (2026-07-17)
+
+### Bug Fixes
+
+- **exporters**: Make Cypher export idempotent, typed and executable
+  ([`c40957d`](https://github.com/docling-project/docling-graph/commit/c40957d1b4f9e7da45fe2a61e60429608847aa7b))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Code Style
+
+- **exporters**: Use PEP 604 unions in isinstance checks
+  ([`97a38ba`](https://github.com/docling-project/docling-graph/commit/97a38ba743282c160aa136ed36f7df4c22b514d6))
+
+Caught by the repo's pinned ruff (UP038) via pre-commit, not by ruff run standalone.
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Continuous Integration
+
+- **test**: Run Neo4j-backed tests in a dedicated service-container job
+  ([`f727dc4`](https://github.com/docling-project/docling-graph/commit/f727dc45f3ffdd11033ce439e039abe0fc719b74))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Documentation
+
+- **exporters**: Document MERGE-based Cypher output and style knob
+  ([`4443e1e`](https://github.com/docling-project/docling-graph/commit/4443e1e329383117802e5c38bcf939dca4aa9903))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Testing
+
+- **exporters**: Verify Cypher scripts against a real Neo4j
+  ([`eac0cd4`](https://github.com/docling-project/docling-graph/commit/eac0cd491b7388cfff9ee2215f1cff6a592f9066))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.9.0 (2026-07-17)
 
 ### Bug Fixes
