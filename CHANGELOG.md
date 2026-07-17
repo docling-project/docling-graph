@@ -2,6 +2,55 @@
 
 <!-- version list -->
 
+## v1.9.0 (2026-07-17)
+
+### Bug Fixes
+
+- **security**: Validate every resolved IP in the URL SSRF guard
+  ([`50cb9e5`](https://github.com/docling-project/docling-graph/commit/50cb9e59bad5f01cb8cc767df43971b478ba82bf))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Enforce identifier security gate at render time
+  ([`052fa28`](https://github.com/docling-project/docling-graph/commit/052fa28cca53bab2b6047ec3f4554c3e9517a5f9))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **deps**: Sync uv.lock
+  ([`0cb30fe`](https://github.com/docling-project/docling-graph/commit/0cb30fe7a9a73e06e54f1aec24bf1e5831834317))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **docs**: Document build_llm_call_fn and the file-free graph round-trip
+  ([`8e85cf2`](https://github.com/docling-project/docling-graph/commit/8e85cf2c759fde8c90d2be9f35101f4dbee06d0e))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+### Features
+
+- **core**: Add file-free graph.json round-trip helpers
+  ([`7175f4a`](https://github.com/docling-project/docling-graph/commit/7175f4a85a80c67740c8b53e6124da3e57f61ef0))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **core**: Widen json_serializable for template value types
+  ([`4d3b5c6`](https://github.com/docling-project/docling-graph/commit/4d3b5c620c7608aaa8ac873d8d73b4284a9bc99a))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **pipeline**: Add gc_collect gate and propagate typed pipeline errors
+  ([`dc02587`](https://github.com/docling-project/docling-graph/commit/dc02587e8befcfd0f4463f4348fbd32313afd987))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **templategen**: Add public build_llm_call_fn constructor
+  ([`f31c558`](https://github.com/docling-project/docling-graph/commit/f31c55800c7fb377941506b6fe193ee3f1b4673f))
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+
 ## v1.8.0 (2026-07-17)
 
 ### Bug Fixes
