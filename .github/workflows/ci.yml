@@ -61,7 +61,8 @@ jobs:
         run: uv sync --all-extras --dev
       
       - name: Run tests
-        run: uv run pytest --cov=docling_graph --cov-report=xml --cov-report=term tests/
+        # Neo4j-backed tests need Docker; they run in the neo4j-integration job.
+        run: uv run pytest -m "not neo4j" --cov=docling_graph --cov-report=xml --cov-report=term tests/
       
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.12'
@@ -121,6 +122,51 @@ jobs:
       
       - name: Run ruff linter
         run: uv run ruff check .
+
+  neo4j-integration:
+    name: Neo4j integration
+    runs-on: ubuntu-latest
+    # Kept out of the test matrix so the common path stays Docker-free, and out
+    # of the build gate so a database hiccup cannot block the distribution.
+    # Failures still surface on the PR.
+    services:
+      neo4j:
+        image: neo4j:5.26
+        env:
+          NEO4J_AUTH: neo4j/testpassword
+        ports:
+          - 7687:7687
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p testpassword 'RETURN 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 30s
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run Neo4j-backed tests
+        # NEO4J_TEST_URI points at the service container, so the tests use it
+        # directly instead of starting a testcontainers instance.
+        env:
+          NEO4J_TEST_URI: bolt://localhost:7687
+          NEO4J_TEST_AUTH: neo4j/testpassword
+        run: uv run pytest -m neo4j tests/
 
   build:
     name: Build distribution
