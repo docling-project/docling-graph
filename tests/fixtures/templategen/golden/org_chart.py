@@ -170,17 +170,9 @@ Person.model_rebuild()
 # -----------------------------------------------------------------------------
 # Verification
 # -----------------------------------------------------------------------------
-# Graph-shape smoke test mirroring the templategen verification gate (V6).
-# Re-run it by hand after editing this template:
+# This template passed generation gates V1-V6 (parse, import allowlist,
+# load, structured-output schema, dense catalog walk, graph-shape smoke
+# test). Comments never reach extraction prompts — only class docstrings
+# and field descriptions do. After hand edits, re-verify with:
 #
-#     from docling_graph.core.converters.graph_converter import GraphConverter
-#
-#     sample = OrgChart.model_validate(
-#         {'chart_title': 'Company Org Chart 2026',
-#          'organizations': [{'name': 'Acme Research',
-#                             'employees': [{'full_name': 'Ada Lovelace'}]}],
-#          'sections': [{'section_number': '1'}]}
-#     )
-#     graph, _metadata = GraphConverter().pydantic_list_to_graph([sample])
-#     assert not graph.graph.get("empty_identity_nodes")
-#     print(graph.number_of_nodes(), "nodes /", graph.number_of_edges(), "edges")
+#     docling-graph template lint <module.path.OrgChart>

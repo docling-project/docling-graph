@@ -645,23 +645,20 @@ def _render_str_method(model: ModelSpec) -> str:
 
 
 def _render_footer(spec: TemplateSpec) -> str:
-    """Comment block showing the V6 graph-shape smoke test with the exact
-    sample the verification gate synthesizes, so users can re-run it by hand
-    (the best-practices.md verification ritual)."""
-    plan = synthesize_sample_plan(spec)
-    payload_lines = pprint.pformat(plan.payload, width=72, sort_dicts=False).splitlines()
+    """Short informational comment block closing the generated module.
+
+    Comments are inert: extraction prompts are built from class docstrings and
+    field descriptions only, never from module comments. The full verification
+    detail (including the synthesized V6 sample) lives in the generation
+    report, not here — a template should read like a schema, not a log.
+    """
     lines = [
         _banner("Verification"),
-        "# Graph-shape smoke test mirroring the templategen verification gate (V6).",
-        "# Re-run it by hand after editing this template:",
+        "# This template passed generation gates V1-V6 (parse, import allowlist,",
+        "# load, structured-output schema, dense catalog walk, graph-shape smoke",
+        "# test). Comments never reach extraction prompts — only class docstrings",
+        "# and field descriptions do. After hand edits, re-verify with:",
         "#",
-        "#     from docling_graph.core.converters.graph_converter import GraphConverter",
-        "#",
-        f"#     sample = {spec.root}.model_validate(",
-        *(f"#         {line}" for line in payload_lines),
-        "#     )",
-        "#     graph, _metadata = GraphConverter().pydantic_list_to_graph([sample])",
-        '#     assert not graph.graph.get("empty_identity_nodes")',
-        '#     print(graph.number_of_nodes(), "nodes /", graph.number_of_edges(), "edges")',
+        f"#     docling-graph template lint <module.path.{spec.root}>",
     ]
     return "\n".join(lines)

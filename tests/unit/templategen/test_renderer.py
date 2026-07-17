@@ -247,8 +247,10 @@ def test_evidence_is_dropped_at_render_time(name, rendered_by_name):
 def test_verification_footer_present(name, rendered_by_name):
     rendered = rendered_by_name[name]
     assert "# Verification" in rendered
-    assert "pydantic_list_to_graph([sample])" in rendered
-    assert 'graph.graph.get("empty_identity_nodes")' in rendered
+    # Short informational footer only: comments never reach extraction
+    # prompts, and the V6 sample detail lives in the generation report.
+    assert "docling-graph template lint" in rendered
+    assert "never reach extraction prompts" in rendered
 
 
 def test_invoice_spec_has_evidence_to_drop():
