@@ -123,7 +123,7 @@ class VlmBackend:
             logger.error("Error during VLM extraction: %s: %s", type(e).__name__, e)
             return []
 
-    def cleanup(self) -> None:
+    def cleanup(self, collect: bool = True) -> None:
         """
         Enhanced GPU cleanup with memory tracking.
 
@@ -132,7 +132,8 @@ class VlmBackend:
         2. Model-to-CPU transfer (if model exists)
         3. Resource deletion
         4. CUDA cache clearing
-        5. Garbage collection
+        5. Garbage collection (skipped when ``collect`` is False — CUDA cache
+           clearing still runs; see ``PipelineConfig.gc_collect``)
         6. Memory tracking (after cleanup)
         """
         try:
@@ -169,8 +170,8 @@ class VlmBackend:
                 self.doc_extractor = None
                 logger.info("Extractor deleted")
 
-            # Force garbage collection
-            gc.collect()
+            if collect:
+                gc.collect()
 
             # Clear CUDA cache if available
             try:

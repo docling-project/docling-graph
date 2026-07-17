@@ -609,8 +609,14 @@ class DocumentProcessor:
 
         return chunks, metadata_list
 
-    def cleanup(self) -> None:
-        """Clean up document converter resources."""
+    def cleanup(self, collect: bool = True) -> None:
+        """Clean up document converter resources.
+
+        Args:
+            collect: Run a full ``gc.collect()`` after releasing resources.
+                Long-lived services pass False (via ``PipelineConfig.gc_collect``)
+                to avoid the per-run stop-the-world pause.
+        """
         try:
             serve_client = getattr(self, "serve_client", None)
             if serve_client is not None:
@@ -618,7 +624,8 @@ class DocumentProcessor:
                 self.serve_client = None
             if hasattr(self, "converter"):
                 del self.converter
-            gc.collect()
+            if collect:
+                gc.collect()
             logger.info("Cleaned up resources")
         except Exception as e:
             logger.warning("Warning during cleanup: %s", e)

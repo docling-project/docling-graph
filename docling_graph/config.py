@@ -291,6 +291,18 @@ class PipelineConfig(BaseModel):
         ),
     )
 
+    # Per-run garbage collection. A full gc.collect() after every run is a
+    # stop-the-world pause; long-lived services running many small jobs can set
+    # this False to avoid the tail-latency cost (the CUDA cache purge still runs).
+    gc_collect: bool = Field(
+        default=True,
+        description=(
+            "Run a full gc.collect() after each pipeline run. Keep True for CLI/"
+            "batch use; set False in a long-lived service to avoid the per-run "
+            "stop-the-world pause."
+        ),
+    )
+
     @field_validator("source", "output_dir")
     @classmethod
     def _path_to_str(cls, v: Union[str, Path]) -> str:
@@ -421,6 +433,7 @@ class PipelineConfig(BaseModel):
             "reverse_edges": self.reverse_edges,
             "output_dir": self.output_dir,
             "dump_to_disk": self.dump_to_disk,
+            "gc_collect": self.gc_collect,
             "models": self.models.model_dump(),
             "llm_overrides": self.llm_overrides.model_dump(),
             "llm_client": self.llm_client,

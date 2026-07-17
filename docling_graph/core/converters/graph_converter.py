@@ -19,6 +19,7 @@ from typing import Any, List, Mapping, Optional, Set
 import networkx as nx
 from pydantic import BaseModel
 
+from ...exceptions import GraphError
 from ...logging_utils import get_component_logger
 from ..provenance.identity import PROVENANCE_NODE_ATTR, iter_provenance_views
 from ..provenance.models import template_schema_hash
@@ -227,7 +228,10 @@ class GraphConverter:
             Tuple of (graph, metadata)
         """
         if not model_instances:
-            raise ValueError("Cannot create graph from empty model list")
+            raise GraphError(
+                "Cannot create graph from empty model list",
+                details={"reason": "no_models_extracted"},
+            )
 
         # Pre-register all models to ensure consistent node IDs across batches
         logger.info("Pre-registering models for deterministic node IDs...")
