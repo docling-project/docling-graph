@@ -33,6 +33,7 @@ V7 (``--trial-run``, a real extraction) belongs to the CLI layer, not here.
 from __future__ import annotations
 
 import ast
+import itertools
 import json
 import sys
 import types
@@ -61,7 +62,19 @@ ALLOWED_IMPORT_ROOTS: frozenset[str] = frozenset(
 FORBIDDEN_NAMES: frozenset[str] = frozenset({"exec", "eval", "open", "__import__", "compile"})
 """Builtins whose mere mention fails V1b — templates are declarative modules."""
 
-_EXEC_MODULE_NAME = "docling_graph_generated_template"
+_EXEC_MODULE_PREFIX = "docling_graph_generated_template"
+_exec_module_counter = itertools.count(1)
+
+
+def _next_exec_module_name() -> str:
+    """A unique sys.modules key per verification run.
+
+    A fixed name would make concurrent ``verify_template_source`` calls (e.g. a
+    service compiling templates from parallel requests) overwrite each other's
+    module and pop it mid-exec; ``itertools.count`` is atomic under the GIL.
+    """
+    return f"{_EXEC_MODULE_PREFIX}_{next(_exec_module_counter)}"
+
 
 _GATE_ORDER: tuple[tuple[str, str], ...] = (
     ("V1", "ast parse + file structure"),
@@ -484,13 +497,14 @@ def verify_template_source(
     # through sys.modules[cls.__module__], so a bare dict namespace would
     # defer the model build and fail every schema-touching gate downstream —
     # unlike the imported modules TemplateLoadingStage produces.
-    module = types.ModuleType(_EXEC_MODULE_NAME)
-    module.__file__ = f"<{_EXEC_MODULE_NAME}>"
-    sys.modules[_EXEC_MODULE_NAME] = module
+    exec_module_name = _next_exec_module_name()
+    module = types.ModuleType(exec_module_name)
+    module.__file__ = f"<{exec_module_name}>"
+    sys.modules[exec_module_name] = module
     try:
         namespace: dict[str, Any] = module.__dict__
         try:
-            exec(compile(source, f"<{_EXEC_MODULE_NAME}>", "exec"), namespace)
+            exec(compile(source, f"<{exec_module_name}>", "exec"), namespace)
         except Exception as exc:
             record("V2", False, f"{type(exc).__name__}: {exc}")
             skip_rest("V3", "V2 failed — no live classes")
@@ -506,7 +520,7 @@ def verify_template_source(
         record("V2", True, f"'{root_class}' loads under the TemplateLoadingStage predicate")
         _run_schema_gates(report, record, root_model, namespace, spec)
     finally:
-        sys.modules.pop(_EXEC_MODULE_NAME, None)
+        sys.modules.pop(exec_module_name, None)
 
     return report
 

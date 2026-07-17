@@ -60,8 +60,20 @@ from .snippets import (
     STR_METHOD_TEMPLATE,
     STRING_LIST_VALIDATOR_TEMPLATE,
 )
-from .spec import SCALAR_TYPES, EnumSpec, FieldSpec, ModelSpec, TemplateSpec
+from .spec import SCALAR_TYPES, EnumSpec, FieldSpec, ModelSpec, TemplateSpec, _require_identifier
 from .verify import synthesize_sample_plan
+
+
+def _assert_renderable_identifiers(spec: TemplateSpec) -> None:
+    """Render-time security gate: every interpolated name must be a safe identifier."""
+    _require_identifier(spec.root, "template root")
+    for enum in spec.enums:
+        _require_identifier(enum.name, "enum name")
+    for model in spec.models:
+        _require_identifier(model.name, f"model name (in {model.name!r})")
+        for field in model.fields:
+            _require_identifier(field.name, f"field name (in model {model.name!r})")
+
 
 MAX_LINE = 100
 """Emitted lines aim for the repo's ruff line length (long string literals may
@@ -96,7 +108,19 @@ class _Usage:
 
 
 def render_template(spec: TemplateSpec) -> str:
-    """Render a validated SPEC into a runnable Pydantic template module."""
+    """Render a validated SPEC into a runnable Pydantic template module.
+
+    Raises:
+        ValueError: A model/enum/field name (or the root) is not a safe Python
+            identifier. This is the render-time security gate — the renderer
+            interpolates names raw into source that ``verify_template_source``
+            executes, so a non-identifier name is both a guaranteed
+            ``SyntaxError`` and a code-injection vector. The R20/R21 linter
+            renames keyword/builtin collisions during repair, so specs that
+            went through ``lint_spec``/``repair_draft`` pass this gate; it exists
+            to stop an un-repaired or hand-crafted spec from reaching ``exec``.
+    """
+    _assert_renderable_identifiers(spec)
     enums_by_name = {enum.name: enum for enum in spec.enums}
     models_by_name = {model.name: model for model in spec.models}
     ordered = _ordered_models(spec)

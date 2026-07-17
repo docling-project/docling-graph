@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from docling_graph.templategen.renderer import render_template
-from docling_graph.templategen.spec import ModelSpec, TemplateSpec
+from docling_graph.templategen.spec import FieldSpec, ModelSpec, TemplateSpec
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "templategen"
@@ -392,3 +392,49 @@ def test_backslashes_in_docstrings_render_parseable_source():
     )
     class_doc = ast.get_docstring(person)
     assert class_doc is not None and "\\Users\\xavier\\exports" in class_doc
+
+
+class TestRenderSecurityGate:
+    """render_template must reject non-identifier names before emitting source.
+
+    The renderer interpolates names raw into source that verify_template_source
+    executes, so a non-identifier name is a code-injection vector. The R20/R21
+    linter renames keyword collisions during repair; this gate is the final
+    stop for an un-repaired or hand-crafted spec reaching exec.
+    """
+
+    @staticmethod
+    def _root_spec(field: FieldSpec) -> TemplateSpec:
+        model = ModelSpec(
+            name="Root",
+            kind="root",
+            docstring="A root document.",
+            identity_fields=["name"],
+            fields=[FieldSpec(name="name", type="str", role="identity"), field],
+        )
+        return TemplateSpec(root="Root", models=[model])
+
+    def test_injection_field_name_rejected_before_exec(self, tmp_path):
+        marker = tmp_path / "pwned.txt"
+        evil = f'x = __import__("pathlib").Path({str(marker)!r}).write_text("P")  #'
+        spec = self._root_spec(FieldSpec(name=evil, type="str", role="property"))
+        with pytest.raises(ValueError, match="not a valid Python identifier"):
+            render_template(spec)
+        assert not marker.exists()  # no code ran
+
+    def test_keyword_field_name_rejected(self):
+        spec = self._root_spec(FieldSpec(name="class", type="str", role="property"))
+        with pytest.raises(ValueError, match="reserved Python keyword"):
+            render_template(spec)
+
+    def test_dunder_field_name_rejected(self):
+        spec = self._root_spec(FieldSpec(name="__class__", type="str", role="property"))
+        with pytest.raises(ValueError, match="reserved dunder"):
+            render_template(spec)
+
+    def test_soft_keyword_field_name_allowed(self):
+        # 'type'/'match'/'case' are valid identifiers and common document fields.
+        for soft in ("type", "match", "case"):
+            spec = self._root_spec(FieldSpec(name=soft, type="str", role="property"))
+            src = render_template(spec)
+            assert f"    {soft}:" in src
