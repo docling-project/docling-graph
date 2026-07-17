@@ -86,8 +86,9 @@ Scientific and technical documents often contain measurements in various formats
 ### The Solution
 
 ```python
-from typing import Union, Optional, Self
+from typing import Union, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing_extensions import Self
 
 class Measurement(BaseModel):
     """

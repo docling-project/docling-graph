@@ -12,12 +12,21 @@ from docling_graph.templategen import snippets
 REPO_ROOT = Path(__file__).resolve().parents[3]
 INSURANCE_CANON = REPO_ROOT / "docs" / "examples" / "templates" / "insurance_terms.py"
 BILLING_CANON = REPO_ROOT / "docs" / "examples" / "templates" / "billing_document.py"
-TEMPLATE_BASICS = REPO_ROOT / "docs" / "fundamentals" / "schema-definition" / "template-basics.md"
+SCHEMA_DEFINITION_DOCS = REPO_ROOT / "docs" / "fundamentals" / "schema-definition"
+CANON_TEMPLATES = REPO_ROOT / "docs" / "examples" / "templates"
+TEMPLATE_BASICS = SCHEMA_DEFINITION_DOCS / "template-basics.md"
 VALIDATION_DOC = REPO_ROOT / "docs" / "fundamentals" / "schema-definition" / "validation.md"
 GRAPH_CONVERTER = REPO_ROOT / "docling_graph" / "core" / "converters" / "graph_converter.py"
 DENSE_CATALOG = (
     REPO_ROOT / "docling_graph" / "core" / "extractors" / "contracts" / "dense" / "catalog.py"
 )
+
+
+def _imported_names(import_line: str) -> list[str]:
+    """Names of a ``from x import a, b  # comment`` line."""
+    _, _, names = import_line.partition(" import ")
+    names = names.partition("#")[0]
+    return [name.strip() for name in names.split(",") if name.strip()]
 
 
 def _split_edge_helper() -> tuple[str, str]:
@@ -87,7 +96,26 @@ class TestImportBlockDriftGuards:
         assert snippets.OPTIONAL_IMPORT_DATETIME in basics
         assert snippets.OPTIONAL_IMPORT_ENUM in basics
         assert snippets.OPTIONAL_IMPORT_RE in basics
+        assert snippets.OPTIONAL_IMPORT_SELF in basics
         assert snippets.OPTIONAL_IMPORT_LOGGING in validation
+
+    def test_self_never_imported_from_typing(self):
+        # typing.Self is 3.11+ and the repo floor is 3.10: nothing users copy may
+        # put `Self` on a `from typing import ...` line — not the snippet library,
+        # not the schema-definition guide, not the canon templates.
+        for name, value in vars(snippets).items():
+            if not name.isupper() or not isinstance(value, str):
+                continue
+            for line in value.splitlines():
+                if line.startswith("from typing import"):
+                    assert "Self" not in _imported_names(line), name
+
+        copyable = [*SCHEMA_DEFINITION_DOCS.rglob("*.md"), *CANON_TEMPLATES.glob("*.py")]
+        assert copyable, "no docs found to guard"
+        for path in copyable:
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip().startswith("from typing import"):
+                    assert "Self" not in _imported_names(line), f"{path.name}: {line}"
 
 
 class TestNeverRaiseLaw:
@@ -214,6 +242,9 @@ class TestValidatorTemplates:
         source = "\n".join(
             [
                 snippets.IMPORT_BLOCK,
+                # ROOT_LIST_DEDUP_TEMPLATE below returns `Self`, which the
+                # renderer sources from typing_extensions (3.10 floor).
+                snippets.OPTIONAL_IMPORT_SELF,
                 snippets.OPTIONAL_IMPORT_ENUM,
                 snippets.OPTIONAL_IMPORT_LOGGING,
                 snippets.OPTIONAL_IMPORT_RE,

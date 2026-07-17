@@ -21,12 +21,12 @@ before their sources); cycles fall back to quoted forward references plus
 ``Model.model_rebuild()`` lines appended after the class definitions.
 
 Compatibility note (documented decision): the repo floor is Python 3.10 while
-``typing.Self`` needs 3.11+. The shipped canon templates never import ``Self``,
-so the emitted typing import carries only the names the module actually uses;
-when the root-list dedup validator (the one snippet returning ``Self``) is
-emitted, ``Self`` is imported from ``typing_extensions`` — the exact idiom of
-validation.md's "Deduplicate root-level list by key" section (and a pydantic
-dependency, hence always installed).
+``typing.Self`` needs 3.11+. The emitted typing import carries only the names
+the module actually uses, and never ``Self``; when the root-list dedup validator
+(the one snippet returning ``Self``) is emitted, ``Self`` is imported from
+``typing_extensions`` — the exact idiom of validation.md's "Deduplicate
+root-level list by key" section and of the shipped canon templates (and a
+pydantic dependency, hence always installed).
 
 Determinism: the same SPEC always renders byte-identical source. All iteration
 follows SPEC list order; nothing depends on set/dict iteration order.
@@ -55,6 +55,7 @@ from .snippets import (
     OPTIONAL_IMPORT_ENUM,
     OPTIONAL_IMPORT_LOGGING,
     OPTIONAL_IMPORT_RE,
+    OPTIONAL_IMPORT_SELF,
     ROOT_LIST_DEDUP_TEMPLATE,
     STR_METHOD_TEMPLATE,
     STRING_LIST_VALIDATOR_TEMPLATE,
@@ -295,8 +296,7 @@ def _render_imports(usage: _Usage) -> str:
         stdlib.append(OPTIONAL_IMPORT_ENUM)
 
     # Subset of the canonical typing/pydantic lines (template-basics.md),
-    # filtered to what the emitted module actually uses. `Self` deliberately
-    # never comes from `typing` (3.11+); see the module docstring.
+    # filtered to what the emitted module actually uses.
     typing_line, pydantic_line = (line for line in IMPORT_BLOCK.strip().splitlines())
     typing_used = {
         "Any": True,  # edge() helper
@@ -319,7 +319,7 @@ def _render_imports(usage: _Usage) -> str:
     ]
     third_party = [f"from pydantic import {', '.join(pydantic_names)}"]
     if usage.uses_self:
-        third_party.append("from typing_extensions import Self")
+        third_party.append(OPTIONAL_IMPORT_SELF)
 
     return "\n".join(stdlib) + "\n\n" + "\n".join(third_party)
 
