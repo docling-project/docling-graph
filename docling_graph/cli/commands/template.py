@@ -25,6 +25,7 @@ import sys
 import tempfile
 import threading
 import types
+from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Sequence
 
@@ -189,7 +190,11 @@ def _resolve_provider_model(
 
 
 def _build_llm_call(
-    provider: str, model: str, config: dict[str, Any] | None
+    provider: str,
+    model: str,
+    config: dict[str, Any] | None,
+    *,
+    structured_output: bool = True,
 ) -> tuple[LlmCallFn, "EffectiveModelConfig"]:
     """Bind an ``llm_call_fn`` to a LiteLLM client (stages.py two-liner).
 
@@ -201,6 +206,11 @@ def _build_llm_call(
     escalation the most. The retry's result is returned (or its error raised)
     either way.
 
+    ``structured_output=False`` (the one-shot strategy) requests plain
+    ``json_object`` decoding instead of a schema grammar — small models that
+    degenerate under guided decoding answer normally, and the response
+    handler's fence-stripping/repair absorbs the slack.
+
     Thread-safe by construction: induction runs calls concurrently
     (``templategen.workers``), and one shared client would race on
     ``last_call_diagnostics`` and the escalation's ``max_tokens`` swap — so
@@ -208,6 +218,8 @@ def _build_llm_call(
     doubles as the fail-fast credential check and the building thread's
     client).
     """
+    import copy as _copy
+
     from docling_graph.exceptions import ClientError
     from docling_graph.llm_clients import get_client
     from docling_graph.llm_clients.config import resolve_effective_model_config
@@ -218,12 +230,23 @@ def _build_llm_call(
     )
     client_factory = get_client(provider)
     thread_clients = threading.local()
-    thread_clients.client = client_factory(effective)  # fail fast, pre-spend
+    # Every client gets its own DEEP COPY of the config: the escalation retry
+    # mutates generation.max_tokens, and a config shared across thread clients
+    # lets concurrent escalations compound (4092 -> 8184 -> 16368 -> 65472...)
+    # and race on the restore — the budget must never ratchet across calls.
+    thread_clients.client = client_factory(_copy.deepcopy(effective))  # fail fast, pre-spend
+    # Escalation baseline is fixed at build time: a retry may double the
+    # CONFIGURED budget once, never the (possibly already escalated) live one.
+    baseline_max_tokens = int(
+        getattr(getattr(effective, "generation", None), "max_tokens", 0)
+        or getattr(effective, "max_output_tokens", 0)
+        or 0
+    )
 
     def llm_call_fn(*, prompt: dict[str, str], schema_json: str, context: str) -> Any:
         client = getattr(thread_clients, "client", None)
         if client is None:
-            client = thread_clients.client = client_factory(effective)
+            client = thread_clients.client = client_factory(_copy.deepcopy(effective))
         # OpenAI-family providers require response_format schema names to match
         # ^[a-zA-Z0-9_-]+$ (<=64 chars); the context tag carries ':' and the
         # source filename's '.', so sanitize before it reaches the provider.
@@ -233,16 +256,18 @@ def _build_llm_call(
             return client.get_json_response(
                 prompt,
                 schema_json,
-                structured_output=True,
+                structured_output=structured_output,
                 response_top_level="object",
                 response_schema_name=schema_name,
             )
 
         def warn_still_truncated(max_tokens: int) -> None:
             logger.warning(
-                "Induction call '%s' is still truncated at max_tokens=%d — the model "
-                "cannot fit this pass's output; raise llm_overrides.max_output_tokens "
-                "in config.yaml or use a larger model",
+                "Induction call '%s' is still truncated at max_tokens=%d — this pass "
+                "should need far less output, so the model is likely looping "
+                "(degenerate repetition); keeping the salvaged partial result. A "
+                "stronger model is the reliable fix; llm_overrides.max_output_tokens "
+                "raises the budget only if the output is genuinely large",
                 context,
                 max_tokens,
                 extra={"component": "TemplateInduction"},
@@ -263,9 +288,13 @@ def _build_llm_call(
         generation = getattr(client, "_generation", None)
         current = int(getattr(client, "max_tokens", 0) or 0)
         context_limit = int(getattr(client, "context_limit", 0) or 0)
-        escalated = current * 2
+        # Hard ceiling: one doubling of the configured budget, ever. A model
+        # in a repetition loop truncates at ANY budget; escalating past 2x
+        # only converts junk into minutes of generation time (and timeouts).
+        ceiling = 2 * (baseline_max_tokens or current)
         if context_limit > 0:
-            escalated = min(escalated, max(current, context_limit // 2))
+            ceiling = min(ceiling, context_limit // 2)
+        escalated = min(current * 2, ceiling)
         if generation is None or current <= 0 or escalated <= current:
             if error is not None:
                 warn_still_truncated(current)
@@ -447,26 +476,173 @@ def _atomic_write(path: Path, text: str) -> None:
 
 # ---------------------------------------------------------------------------
 # Report printing
+#
+# Generators log METRICS through logging_utils (one line per concern: counts
+# by rule/kind) and write the full detail to a markdown sidecar next to the
+# template (`<output stem>.report.md`) — a run should read as a handful of
+# metric lines, not pages of per-field findings. The verbose console printers
+# below them remain for `lint` (whose product IS the findings) and for strict
+# failures.
 # ---------------------------------------------------------------------------
 
 
+class _GenerationReport:
+    """Accumulates full generation detail for the sidecar report file."""
+
+    def __init__(self) -> None:
+        self.sections: list[tuple[str, list[str]]] = []
+
+    def add(self, title: str, lines: Sequence[str]) -> None:
+        self.sections.append((title, [str(line) for line in lines]))
+
+    def write(self, path: Path) -> None:
+        parts = ["# Template generation report", ""]
+        for title, lines in self.sections:
+            parts.extend([f"## {title}", "", *lines, ""])
+        _atomic_write(path, "\n".join(parts))
+        logger.info(
+            "Full generation detail written to %s", path, extra={"component": "TemplateGeneration"}
+        )
+
+
+def _report_path(output: Path) -> Path:
+    return output.with_suffix(".report.md")
+
+
+def _counts(items: Sequence[str]) -> str:
+    counter = Counter(items)
+    return ", ".join(f"{key} x{count}" for key, count in counter.most_common())
+
+
+def _lint_entry_lines(report: LintReport) -> list[str]:
+    lines: list[str] = []
+    for entry in report.entries:
+        location = entry.model + (f".{entry.field}" if entry.field else "")
+        status = "repaired" if entry.repaired else entry.severity
+        lines.append(f"[{entry.rule_id}] {status:<8} {location}: {entry.message}")
+    return lines
+
+
+def _gap_lines(gaps: Sequence[SpecGap]) -> list[str]:
+    return [
+        f"{gap.kind}: {gap.model}{f'.{gap.field}' if gap.field else ''}"
+        + (f" — {gap.note}" if gap.note else "")
+        for gap in gaps
+    ]
+
+
+def _log_lint_report(
+    report: LintReport, gen_report: _GenerationReport, *, title: str = "Repair log"
+) -> None:
+    gen_report.add(title, _lint_entry_lines(report) or ["clean (no findings)"])
+    repaired = [e.rule_id for e in report.entries if e.repaired]
+    advisory = [e.rule_id for e in report.entries if not e.repaired]
+    logger.info(
+        "%s: %d repair(s)%s, %d advisory finding(s)%s",
+        title,
+        len(repaired),
+        f" ({_counts(repaired)})" if repaired else "",
+        len(advisory),
+        f" ({_counts(advisory)})" if advisory else "",
+        extra={"component": "TemplateGeneration"},
+    )
+
+
+def _log_gaps(gaps: Sequence[SpecGap], gen_report: _GenerationReport) -> None:
+    gen_report.add("Open gaps / TODOs", _gap_lines(gaps) or ["none"])
+    logger.info(
+        "Open gaps: %d%s",
+        len(gaps),
+        f" ({_counts([g.kind for g in gaps])})" if gaps else "",
+        extra={"component": "TemplateGeneration"},
+    )
+
+
+def _log_induction_report(report: "InductionReport", gen_report: _GenerationReport) -> None:
+    detail: list[str] = []
+    for stats in report.documents:
+        sampled = " (sampled)" if stats.sampled else ""
+        splits = f", {stats.pass2_splits} truncation split(s)" if stats.pass2_splits else ""
+        logger.info(
+            "%s%s: %d/%d classes kept, %d example(s) gated, %d retry(ies)%s",
+            stats.name,
+            sampled,
+            stats.classes_kept,
+            stats.classes_proposed,
+            stats.examples_dropped_by_gate,
+            stats.retries,
+            splits,
+            extra={"component": "TemplateInduction"},
+        )
+        detail.append(
+            f"{stats.name}{sampled}: {stats.classes_kept}/{stats.classes_proposed} classes "
+            f"kept, {stats.examples_dropped_by_gate} example(s) gated, "
+            f"{stats.retries} retry(ies){splits}"
+        )
+        for label, values in (
+            ("overflow classes (max_models)", stats.overflow_classes),
+            ("identity candidates dropped", stats.identity_candidates_dropped),
+            ("digit-honesty renames", stats.digit_honesty_renames),
+            ("cardinality bounds dropped", stats.cardinality_bounds_dropped),
+            ("edges dropped", stats.edges_dropped),
+        ):
+            if values:
+                detail.append(f"  {label}: {', '.join(values)}")
+    for skipped in report.skipped_sources:
+        logger.warning(
+            "Skipped %s: near-empty text (check OCR settings)",
+            skipped,
+            extra={"component": "TemplateInduction"},
+        )
+        detail.append(f"skipped {skipped}: near-empty text")
+    if report.skipped_capped:
+        logger.warning(
+            "%d of %d unit(s) skipped by the max_units cap (--exhaustive induces everything)",
+            len(report.skipped_capped),
+            report.units_total,
+            extra={"component": "TemplateInduction"},
+        )
+        detail.append(f"skipped by max_units cap: {', '.join(report.skipped_capped)}")
+    if report.skipped_saturated:
+        logger.info(
+            "Saturation stop: %d of %d unit(s) skipped — the schema stopped changing "
+            "(--exhaustive induces everything)",
+            len(report.skipped_saturated),
+            report.units_total,
+            extra={"component": "TemplateInduction"},
+        )
+        detail.append(f"skipped by saturation stop: {', '.join(report.skipped_saturated)}")
+    gen_report.add("Induction report", detail)
+    if report.merge.decisions:
+        decision_lines = [
+            f"[{d.kind}] {d.model}{f'.{d.field}' if d.field else ''}: {d.message}"
+            for d in report.merge.decisions
+        ]
+        gen_report.add("Merge decisions", decision_lines)
+        logger.info(
+            "Merge decisions: %d (%s)",
+            len(report.merge.decisions),
+            _counts([d.kind for d in report.merge.decisions]),
+            extra={"component": "TemplateInduction"},
+        )
+    _log_lint_report(report.lint, gen_report)
+
+
 def _print_lint_entries(report: LintReport, *, title: str = "Repair log") -> None:
+    """Verbose console findings — `lint` and strict failures only."""
     rich_print(f"\n[bold]{title}:[/bold]")
     if not report.entries:
         typer.echo("  clean (no findings)")
         return
-    for entry in report.entries:
-        location = entry.model + (f".{entry.field}" if entry.field else "")
-        status = "repaired" if entry.repaired else entry.severity
-        typer.echo(f"  [{entry.rule_id}] {status:<8} {location}: {entry.message}")
+    for line in _lint_entry_lines(report):
+        typer.echo(f"  {line}")
 
 
 def _print_gaps(gaps: Sequence[SpecGap]) -> None:
+    """Verbose console gaps — `lint` only."""
     rich_print(f"\n[bold]Open gaps / TODOs:[/bold] {len(gaps)}")
-    for gap in gaps:
-        location = gap.model + (f".{gap.field}" if gap.field else "")
-        note = f" — {gap.note}" if gap.note else ""
-        typer.echo(f"  {gap.kind}: {location}{note}")
+    for line in _gap_lines(gaps):
+        typer.echo(f"  {line}")
 
 
 def _print_spec_summary(spec: TemplateSpec) -> None:
@@ -494,51 +670,6 @@ def _print_spec_summary(spec: TemplateSpec) -> None:
 def _print_semantic_guide(preview: str) -> None:
     rich_print("\n[bold]What the LLM will see (compact semantic guide):[/bold]")
     typer.echo(preview)
-
-
-def _print_induction_report(report: "InductionReport") -> None:
-    rich_print("\n[bold]Induction report:[/bold]")
-    for stats in report.documents:
-        sampled = " (sampled)" if stats.sampled else ""
-        splits = f", {stats.pass2_splits} truncation split(s)" if stats.pass2_splits else ""
-        typer.echo(
-            f"  {stats.name}{sampled}: {stats.classes_kept}/{stats.classes_proposed} "
-            f"classes kept, {stats.examples_dropped_by_gate} example(s) dropped by the "
-            f"verbatim gate, {stats.retries} retry(ies){splits}"
-        )
-        if stats.overflow_classes:
-            typer.echo(f"    overflow classes (max_models): {', '.join(stats.overflow_classes)}")
-        if stats.identity_candidates_dropped:
-            typer.echo(
-                f"    identity candidates dropped: {', '.join(stats.identity_candidates_dropped)}"
-            )
-        if stats.digit_honesty_renames:
-            typer.echo(f"    digit-honesty renames: {', '.join(stats.digit_honesty_renames)}")
-        if stats.cardinality_bounds_dropped:
-            typer.echo(
-                f"    cardinality bounds dropped: {', '.join(stats.cardinality_bounds_dropped)}"
-            )
-        if stats.edges_dropped:
-            typer.echo(f"    edges dropped: {', '.join(stats.edges_dropped)}")
-    for skipped in report.skipped_sources:
-        rich_print(f"  [yellow]Skipped {skipped}: near-empty text (check OCR settings)[/yellow]")
-    if report.skipped_capped:
-        rich_print(
-            f"  [yellow]{len(report.skipped_capped)} of {report.units_total} unit(s) skipped "
-            "by the templategen.max_units cap (pass --exhaustive to induce everything)[/yellow]"
-        )
-    if report.skipped_saturated:
-        rich_print(
-            f"  Saturation stop: {len(report.skipped_saturated)} of {report.units_total} "
-            "unit(s) skipped — the schema stopped changing "
-            "(pass --exhaustive to induce everything)"
-        )
-    if report.merge.decisions:
-        rich_print("\n[bold]Merge decisions:[/bold]")
-        for decision in report.merge.decisions:
-            location = decision.model + (f".{decision.field}" if decision.field else "")
-            typer.echo(f"  [{decision.kind}] {location}: {decision.message}")
-    _print_lint_entries(report.lint)
 
 
 def _handle_strict_failure(error: TemplateLintError) -> typer.Exit:
@@ -837,16 +968,28 @@ def from_docs_command(
             "saturation stop and the templategen.max_units cap.",
         ),
     ] = False,
+    strategy: Annotated[
+        str | None,
+        typer.Option(
+            "--strategy",
+            help="Induction strategy: 'one-shot' (one plain-JSON LLM call per "
+            "document/window — fastest, works with small models) or "
+            "'three-pass' (focused strict-structured passes — more per-field "
+            "evidence, needs a model that handles guided decoding). Default: "
+            "templategen.strategy in config.yaml (one-shot).",
+        ),
+    ] = None,
     force: Annotated[
         bool,
         typer.Option("--force", help="Overwrite existing outputs without prompting (CI)."),
     ] = False,
 ) -> None:
-    """Induce a Pydantic template from example documents (LLM structured output).
+    """Induce a Pydantic template from example documents.
 
-    Three focused passes per document (class inventory, fields, relationships)
-    plus deterministic anti-hallucination gates produce a SPEC; a deterministic
-    renderer then emits the template — no LLM ever writes code.
+    The LLM proposes an ontology (classes, fields, relationships) per
+    document; deterministic anti-hallucination gates, a cross-document merge,
+    and the rulebook linter produce a SPEC; a deterministic renderer then
+    emits the template — no LLM ever writes code.
     """
     _validate_doc_sources(sources)
     config, settings = _load_config_and_settings()
@@ -855,9 +998,17 @@ def from_docs_command(
     workers_val = settings.workers if workers is None else workers
     saturation_val = settings.saturation_stop and not exhaustive
     max_units_val = 0 if exhaustive else settings.max_units
+    strategy_val = (strategy or settings.strategy).lower().strip()
+    if strategy_val not in ("one-shot", "three-pass"):
+        raise _fail(f"Invalid --strategy '{strategy_val}'. Must be 'one-shot' or 'three-pass'.")
     provider_val, model_val, inference_val = _resolve_provider_model(config, provider, model)
     try:
-        llm_call_fn, effective = _build_llm_call(provider_val, model_val, config)
+        llm_call_fn, effective = _build_llm_call(
+            provider_val,
+            model_val,
+            config,
+            structured_output=strategy_val != "one-shot",
+        )
     except (ConfigurationError, ImportError, ValueError) as e:
         raise _fail_from(e) from e
     budget_chars = _effective_budget_chars(settings, effective)
@@ -867,16 +1018,17 @@ def from_docs_command(
         "Starting template generation (from-docs)", extra={"component": "TemplateGeneration"}
     )
     logger.info(
-        "sources=%s, llm=%s/%s, input_budget=%s chars/unit, workers=%s, "
-        "pass2_batch=%s classes/call, max_units=%s, saturation_stop=%s",
+        "sources=%s, llm=%s/%s, strategy=%s, input_budget=%s chars/unit, workers=%s, "
+        "max_units=%s, saturation_stop=%s%s",
         ", ".join(sources),
         provider_val,
         model_val,
+        strategy_val,
         budget_chars,
         workers_val,
-        batch_size,
         max_units_val or "unlimited",
         saturation_val,
+        f", pass2_batch={batch_size} classes/call" if strategy_val == "three-pass" else "",
         extra={"component": "TemplateConfiguration"},
     )
 
@@ -913,13 +1065,15 @@ def from_docs_command(
                 max_windows_per_doc=settings.max_windows_per_doc,
                 max_units=max_units_val,
                 saturation=saturation_val,
+                strategy=strategy_val,
             )
         except TemplateLintError as e:
             raise _handle_strict_failure(e) from e
         except DoclingGraphError as e:
             raise _fail_from(e) from e
 
-        _print_induction_report(report)
+        gen_report = _GenerationReport()
+        _log_induction_report(report, gen_report)
 
         gaps = list(report.gaps)
         if gap_fill_val and gaps:
@@ -949,8 +1103,13 @@ def from_docs_command(
         if spec_path != spec_out_val:
             spec_path.unlink(missing_ok=True)  # rescue copy superseded by the confirmed home
         rich_print(f"\nTemplate written to [cyan]{output_val}[/cyan]")
-        _print_gaps(gaps)
-        _print_semantic_guide(verify_report.semantic_guide_preview)
+        _log_gaps(gaps, gen_report)
+        gen_report.add("Verification (V1-V6)", verify_report.summary().splitlines())
+        gen_report.add(
+            "Compact semantic guide (what the LLM sees)",
+            verify_report.semantic_guide_preview.splitlines(),
+        )
+        gen_report.write(_report_path(output_val))
 
         if trial_run:
             _trial_run(
@@ -1144,7 +1303,8 @@ def from_ontology_command(
     except ValidationError as e:
         raise _fail(f"The compiled ontology draft did not validate: {rich_escape(str(e))}") from e
 
-    _print_lint_entries(lint_report)
+    gen_report = _GenerationReport()
+    _log_lint_report(lint_report, gen_report)
     gaps = _dedupe_gaps([*compiler_gaps, *lint_report.gaps])
 
     if gap_fill_val and gaps:
@@ -1181,8 +1341,13 @@ def from_ontology_command(
     if spec_path != spec_out_val:
         spec_path.unlink(missing_ok=True)  # rescue copy superseded by the confirmed home
     rich_print(f"\nTemplate written to [cyan]{output_val}[/cyan]")
-    _print_gaps(gaps)
-    _print_semantic_guide(verify_report.semantic_guide_preview)
+    _log_gaps(gaps, gen_report)
+    gen_report.add("Verification (V1-V6)", verify_report.summary().splitlines())
+    gen_report.add(
+        "Compact semantic guide (what the LLM sees)",
+        verify_report.semantic_guide_preview.splitlines(),
+    )
+    gen_report.write(_report_path(output_val))
     logger.info(
         "Template generation completed successfully", extra={"component": "TemplateGeneration"}
     )
@@ -1250,7 +1415,8 @@ def from_spec_command(
     except TemplateLintError as e:
         raise _handle_strict_failure(e) from e
 
-    _print_lint_entries(lint_report)
+    gen_report = _GenerationReport()
+    _log_lint_report(lint_report, gen_report)
 
     output_val = output or _default_output_path(spec.root)
     _confirm_overwrite([output_val], force)
@@ -1258,8 +1424,13 @@ def from_spec_command(
     _print_spec_summary(spec)
     verify_report = _finalize_template(spec, output_val)
     rich_print(f"\nTemplate written to [cyan]{output_val}[/cyan]")
-    _print_gaps(lint_report.gaps)
-    _print_semantic_guide(verify_report.semantic_guide_preview)
+    _log_gaps(lint_report.gaps, gen_report)
+    gen_report.add("Verification (V1-V6)", verify_report.summary().splitlines())
+    gen_report.add(
+        "Compact semantic guide (what the LLM sees)",
+        verify_report.semantic_guide_preview.splitlines(),
+    )
+    gen_report.write(_report_path(output_val))
     logger.info(
         "Template generation completed successfully", extra={"component": "TemplateGeneration"}
     )
