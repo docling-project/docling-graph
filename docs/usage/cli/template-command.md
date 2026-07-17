@@ -162,10 +162,65 @@ result.spec, result.lint_report, result.gaps, result.source_code, result.written
 
 `kind="spec"` re-renders a SPEC YAML; `kind="docs"` (one or many documents) requires an injected `llm_call_fn`.
 
+### Building an `llm_call_fn`
+
+Induction does not create LLM clients itself — it calls an injected `llm_call_fn`, so you stay in control of the provider, model, and credentials. `build_llm_call_fn` binds one to a LiteLLM client for you:
+
+```python
+from docling_graph.templategen import build_llm_call_fn
+
+llm_call_fn = build_llm_call_fn("mistral", "mistral-small-latest")
+```
+
+The returned callable follows the induction contract (`llm_call_fn(*, prompt, schema_json, context)`) and is **thread-safe**: induction fans calls out across `--workers`, so each thread gets its own client.
+
+It also owns truncation handling — if a response comes back truncated, it retries once with `max_tokens` doubled (capped at half the model's context window, and never more than 2x the configured budget). A model stuck in a repetition loop truncates at any budget, so the ceiling stops a runaway from turning junk into minutes of generation time; you get a warning instead.
+
+Optional arguments:
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `llm_overrides` | `LlmRuntimeOverrides` \| `dict` \| `None` | `None` | Runtime overrides (e.g. `{"max_output_tokens": 8192}`), same shape as the `llm_overrides` block in `config.yaml` |
+| `structured_output` | `bool` | `True` | `True` uses a schema grammar (pair with `strategy="three-pass"`); `False` requests plain `json_object` decoding (pair with `strategy="one-shot"`) |
+
+!!! warning "Pair `structured_output` with your `strategy`"
+
+    The two settings live on different functions — `structured_output` on `build_llm_call_fn`, `strategy` on `induce_spec_from_documents` — and nothing cross-checks them. Mismatching them silently applies grammar-constrained decoding to the `one-shot` strategy, the exact combination `one-shot` exists to avoid for small local models.
+
+    | Strategy | `structured_output` |
+    |:---------|:--------------------|
+    | `three-pass` | `True` |
+    | `one-shot` | `False` |
+
+    The defaults line up (`build_llm_call_fn` → `True`, `induce_spec_from_documents` → `strategy="three-pass"`), so leaving both alone is safe. Note the **CLI** defaults to `one-shot` instead and wires `structured_output` for you; when you switch a programmatic call to `one-shot`, you must flip `structured_output` yourself:
+
+    ```python
+    llm_call_fn = build_llm_call_fn(
+        "ollama",
+        "gemma3:12b",
+        llm_overrides={"max_output_tokens": 8192},
+        structured_output=False,          # ← must match ...
+    )
+
+    spec, report = induce_spec_from_documents(
+        ["invoice1.pdf"],
+        llm_call_fn,
+        strategy="one-shot",              # ← ... this
+    )
+    ```
+
+Construction is offline: it fails fast if `litellm` is missing, but it does **not** validate credentials or reject unknown providers (those fall back to generic defaults with a warning). A bad API key first surfaces as a `ClientError` from the returned callable's first real call.
+
+### Inducing a SPEC
+
 Document sources for `kind="docs"` / `induce_spec_from_documents` can be file paths, `http(s)://` URLs, or — when you already hold the text — `DocumentContent` objects passed directly, no file needed:
 
 ```python
-from docling_graph.templategen import DocumentContent, induce_spec_from_documents
+from docling_graph.templategen import (
+    DocumentContent, build_llm_call_fn, induce_spec_from_documents,
+)
+
+llm_call_fn = build_llm_call_fn("mistral", "mistral-small-latest")
 
 spec, report = induce_spec_from_documents(
     [

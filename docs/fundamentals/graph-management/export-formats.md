@@ -418,6 +418,44 @@ print(f"Found {len(invoices)} invoices")
 
 ---
 
+### In-Memory Round Trip (no files)
+
+`JSONExporter` writes to disk and `load_graph_json()` reads from disk. When you already hold the graph or the payload in memory — serving a graph over HTTP, accepting one in a request body — use the file-free pair instead of spooling through a temp file:
+
+```python
+from docling_graph.core.exporters import graph_to_dict
+from docling_graph.core.importers import load_graph_from_dict
+
+payload = graph_to_dict(graph)      # graph -> dict, same shape as graph.json
+graph = load_graph_from_dict(payload)  # dict -> graph
+```
+
+`load_graph_from_dict()` accepts an optional `source=` label used in error messages (a path, URL, or the default `"<dict>"`), and raises `ConfigurationError` when the payload is not a docling-graph export, is empty, or is structurally corrupt (malformed records, dangling edge endpoints):
+
+```python
+from docling_graph.exceptions import ConfigurationError
+
+try:
+    graph = load_graph_from_dict(request_body, source="POST /graphs")
+except ConfigurationError as e:
+    print(f"Rejected: {e.message} ({e.details})")
+```
+
+!!! warning "`graph_to_dict()` output is not directly JSON-encodable"
+
+    The returned dict holds **live** Python values — a `date` stays a `date`, a `Decimal` stays a `Decimal`. Pass `json_serializable` when encoding, exactly as `JSONExporter` does internally:
+
+    ```python
+    import json
+    from docling_graph.core.utils.string_formatter import json_serializable
+
+    encoded = json.dumps(graph_to_dict(graph), default=json_serializable)
+    ```
+
+    This matters for the round trip: handing the dict straight back to `load_graph_from_dict()` preserves the live objects, but going through JSON flattens them (`date` → ISO string, `Decimal` → float). The graph round-trips structurally either way; attribute *types* only survive if you skip the encode step.
+
+---
+
 ## Format Selection
 
 ### Decision Matrix
