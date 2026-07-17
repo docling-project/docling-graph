@@ -5,9 +5,16 @@ the first graph import path in the repo, shared by ``docling-graph merge``
 (and adoptable by inspect/Neo4j-push later).
 """
 
-from .graph_json import load_graph_input, load_graph_json, load_sibling_ledger, resolve_graph_path
+from .graph_json import (
+    load_graph_from_dict,
+    load_graph_input,
+    load_graph_json,
+    load_sibling_ledger,
+    resolve_graph_path,
+)
 
 __all__ = [
+    "load_graph_from_dict",
     "load_graph_input",
     "load_graph_json",
     "load_sibling_ledger",

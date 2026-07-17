@@ -11,6 +11,21 @@ from ..converters.config import ExportConfig
 from ..utils.string_formatter import json_serializable
 
 
+def graph_to_dict(graph: nx.DiGraph) -> Dict[str, Any]:
+    """Serialize a graph to the canonical docling-graph JSON shape.
+
+    Public, file-free entry point for the shape ``graph.json`` uses:
+    ``{"nodes": [...], "edges": [...], "metadata": {...}, "graph": {...}}``. The
+    round-trip inverse is
+    :func:`docling_graph.core.importers.graph_json.load_graph_from_dict`.
+
+    Note: node/edge attributes may contain non-JSON-native values (dates,
+    Decimals, …); pass :func:`docling_graph.core.utils.string_formatter.json_serializable`
+    as ``json.dumps(..., default=...)`` when encoding the result.
+    """
+    return JSONExporter._graph_to_dict(graph)
+
+
 class JSONExporter:
     """Export graph to JSON format."""
 
