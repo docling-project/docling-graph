@@ -27,7 +27,11 @@ from docling_graph.core.extractors.contracts.dense.catalog import build_node_cat
 from docling_graph.exceptions import ClientError
 from docling_graph.pipeline.stages import TemplateLoadingStage
 from docling_graph.templategen import SpecGap, TemplateSpec, synthesize_sample
-from tests.unit.templategen.test_induce import ScriptedLLM, invoice_script
+from tests.unit.templategen.test_induce import (
+    ScriptedLLM,
+    _combine_oneshot,
+    invoice_script,
+)
 
 REPO_ROOT = Path(__file__).parents[2]
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "templategen"
@@ -68,6 +72,7 @@ class ScriptedClient:
     def __init__(self, script: ScriptedLLM) -> None:
         self._script = script
         self.schema_names: list[str] = []
+        self.structured_flags: list[bool] = []
         self.last_call_diagnostics: dict[str, Any] = {}
 
     def get_json_response(
@@ -79,6 +84,7 @@ class ScriptedClient:
         response_schema_name: str = "extraction_result",
     ) -> Any:
         self.schema_names.append(response_schema_name)
+        self.structured_flags.append(structured_output)
         self.last_call_diagnostics = {"truncated": False}
         return self._script(
             prompt=dict(prompt) if isinstance(prompt, dict) else {"user": str(prompt)},
@@ -288,7 +294,9 @@ class TestRootRename:
             ],
         )
         assert result.exit_code == 0, result.output
-        gap_section = result.output.split("Open gaps")[1]
+        # Gap detail lives in the generation report sidecar (console shows metrics).
+        report_md = (tmp_path / "gen_nm" / "policy.report.md").read_text(encoding="utf-8")
+        gap_section = report_md.split("Open gaps")[1]
         # The identity field has no examples -> a root-addressed gap exists,
         # and it is addressed to the renamed root.
         assert "PolicyRecord.policy_id" in gap_section
@@ -379,6 +387,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--strategy",
+                "three-pass",
                 "--workers",
                 "1",
                 "-o",
@@ -387,8 +397,11 @@ class TestFromDocs:
         )
         assert result.exit_code == 0, result.output
         assert len(script.calls) == 6  # 3 passes x 2 documents, nothing else
-        assert "Induction report" in result.output
         assert "Template written to" in result.output
+        # Full induction detail lives in the generation report sidecar.
+        report_md = (tmp_path / "gen_docs" / "invoice.report.md").read_text(encoding="utf-8")
+        assert "Induction report" in report_md
+        assert "Repair log" in report_md
 
         # Every response_format schema name sent to the provider is compliant
         # (OpenAI-family: ^[a-zA-Z0-9_-]+$, <=64 chars) — the raw context tag
@@ -434,6 +447,8 @@ class TestFromDocs:
                     "mistral",
                     "--model",
                     "mistral-small-latest",
+                    "--strategy",
+                    "three-pass",
                     "--workers",
                     "1",
                     "-o",
@@ -449,6 +464,54 @@ class TestFromDocs:
         assert config.provider_override == "mistral"
         assert config.backend == "llm"
         assert config.dump_to_disk is False
+
+    def test_oneshot_default_single_plain_json_call_per_doc(
+        self, cli_runner, tmp_path, monkeypatch
+    ):
+        """The default strategy makes ONE plain-JSON (non-grammar) call per
+        document and still renders a verified template."""
+        monkeypatch.chdir(tmp_path)
+        parts = invoice_script().script
+        script = ScriptedLLM(
+            {
+                "oneshot_invoice_1": [
+                    _combine_oneshot(parts["pass1"][0], parts["pass2"][0], parts["pass3"][0])
+                ],
+                "oneshot_invoice_2": [
+                    _combine_oneshot(parts["pass1"][1], parts["pass2"][1], parts["pass3"][1])
+                ],
+            }
+        )
+        client = ScriptedClient(script)
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.get_client", lambda provider: lambda effective: client
+        )
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.config.resolve_effective_model_config",
+            _stub_effective_config,
+        )
+        result = cli_runner.invoke(
+            app,
+            [
+                "template",
+                "from-docs",
+                str(DOCS / "invoice_1.md"),
+                str(DOCS / "invoice_2.md"),
+                "--provider",
+                "mistral",
+                "--model",
+                "mistral-small-latest",
+                "--workers",
+                "1",
+                "-o",
+                "gen_oneshot/invoice.py",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert len(script.calls) == 2  # exactly one LLM call per document
+        assert client.structured_flags == [False, False]  # no grammar-constrained decoding
+        assert (tmp_path / "gen_oneshot" / "invoice.py").is_file()
+        assert "Template written to" in result.output
 
     def test_missing_provider_names_init_and_flags(self, cli_runner, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)  # no config.yaml here
@@ -509,6 +572,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--strategy",
+                "three-pass",
                 "-o",
                 "gen_url/invoice.py",
             ],
@@ -570,6 +635,8 @@ class TestFromDocs:
                     "mistral",
                     "--model",
                     "mistral-small-latest",
+                    "--strategy",
+                    "three-pass",
                     "-o",
                     "gen_cache/invoice.py",
                     "--trial-run",
@@ -608,6 +675,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--strategy",
+                "three-pass",
                 "--workers",
                 "1",
             ],
@@ -653,6 +722,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--strategy",
+                "three-pass",
                 "--workers",
                 "1",
             ],
@@ -690,6 +761,8 @@ class TestFromDocs:
                 "mistral",
                 "--model",
                 "mistral-small-latest",
+                "--strategy",
+                "three-pass",
             ],
         )
         assert result.exit_code == 1
@@ -744,6 +817,83 @@ class TestTruncationEscalation:
         assert out == {"classes": []}
         assert client.max_tokens_seen == [1_000, 2_000]  # doubled on the retry
         assert client._generation.max_tokens == 1_000  # restored afterwards
+
+    class AlwaysTruncatedClient:
+        """Every response is truncated-but-salvaged (a looping small model)."""
+
+        def __init__(self) -> None:
+            self._generation = SimpleNamespace(max_tokens=1_000)
+            self.context_limit = 131_072
+            self.last_call_diagnostics: dict[str, Any] = {}
+            self.max_tokens_seen: list[int] = []
+
+        @property
+        def max_tokens(self) -> int:
+            return self._generation.max_tokens
+
+        def get_json_response(self, prompt: Any, schema_json: str, **_kwargs: Any) -> Any:
+            self.max_tokens_seen.append(self._generation.max_tokens)
+            self.last_call_diagnostics = {"truncated": True}
+            return {"classes": []}
+
+    def test_escalation_never_ratchets_across_calls(self, monkeypatch):
+        """A degenerate model truncates at ANY budget: each call may double the
+        configured budget once and must start from it again — never compound
+        (the 4092 -> 8184 -> 16368 -> 65472 ladder from shared state)."""
+        client = self.AlwaysTruncatedClient()
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.get_client", lambda provider: lambda effective: client
+        )
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.config.resolve_effective_model_config",
+            _stub_effective_config,
+        )
+        from docling_graph.cli.commands.template import _build_llm_call
+
+        llm_call_fn, _effective = _build_llm_call("mistral", "stub-model", None)
+        for _ in range(3):
+            llm_call_fn(
+                prompt={"system": "s", "user": "u"},
+                schema_json="{}",
+                context="templategen_pass2_fields:doc.md:batch0",
+            )
+        assert client.max_tokens_seen == [1_000, 2_000] * 3
+        assert client._generation.max_tokens == 1_000
+
+    def test_each_thread_client_gets_its_own_config(self, monkeypatch):
+        """Concurrent escalations must not share one mutable generation config:
+        every client is built over a deep copy of the effective config."""
+        import threading as _threading
+
+        received: list[Any] = []
+
+        def factory(effective: Any) -> Any:
+            received.append(effective)
+            return self.TruncatingClient()
+
+        monkeypatch.setattr("docling_graph.llm_clients.get_client", lambda provider: factory)
+        monkeypatch.setattr(
+            "docling_graph.llm_clients.config.resolve_effective_model_config",
+            _stub_effective_config,
+        )
+        from docling_graph.cli.commands.template import _build_llm_call
+
+        llm_call_fn, effective = _build_llm_call("mistral", "stub-model", None)
+
+        def worker() -> None:
+            llm_call_fn(
+                prompt={"system": "s", "user": "u"},
+                schema_json="{}",
+                context="templategen_pass1_classes:doc.md",
+            )
+
+        thread = _threading.Thread(target=worker)
+        thread.start()
+        thread.join()
+        assert len(received) == 2  # eager main-thread client + the worker's
+        assert received[0] is not effective
+        assert received[1] is not effective
+        assert received[0] is not received[1]
 
 
 @pytest.mark.integration
