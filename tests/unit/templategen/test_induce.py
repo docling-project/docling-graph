@@ -1648,3 +1648,113 @@ def test_saturation_order_is_deterministic():
     assert first[0].model_dump() == second[0].model_dump()
     assert [d.name for d in first[1].documents] == [d.name for d in second[1].documents]
     assert first[1].skipped_saturated == second[1].skipped_saturated
+
+
+# ---------------------------------------------------------------------------
+# Pass schemas: every array is bounded (degenerate-repetition wall)
+# ---------------------------------------------------------------------------
+
+
+def _walk_arrays(node: Any, path: str = "$") -> list[str]:
+    unbounded: list[str] = []
+    if isinstance(node, dict):
+        if node.get("type") == "array" and "maxItems" not in node:
+            unbounded.append(path)
+        for key, value in node.items():
+            unbounded.extend(_walk_arrays(value, f"{path}.{key}"))
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            unbounded.extend(_walk_arrays(value, f"{path}[{i}]"))
+    return unbounded
+
+
+@pytest.mark.parametrize(
+    "schema_fn",
+    [class_inventory_schema, fields_schema, relationships_schema, gapfill_schema],
+)
+def test_every_pass_schema_array_is_bounded(schema_fn):
+    """Guided decoding constrains shape, not repetition: an unbounded array is
+    where a looping model pours tokens until any max_tokens budget truncates."""
+    assert _walk_arrays(schema_fn()) == []
+
+
+# ---------------------------------------------------------------------------
+# One-shot strategy: full ontology per call, same gates
+# ---------------------------------------------------------------------------
+
+
+def _combine_oneshot(p1_payload: dict, p2_payload: dict, p3_payload: dict) -> dict:
+    """Nest the pass-2 fields and pass-3 edges inside each pass-1 class."""
+    fields_by_class = {e["class_name"]: e["fields"] for e in p2_payload["classes"]}
+    edges_by_source: dict[str, list[dict]] = {}
+    for edge in p3_payload["edges"]:
+        payload = {k: v for k, v in edge.items() if k != "source"}
+        edges_by_source.setdefault(edge["source"], []).append(payload)
+    return {
+        "classes": [
+            {
+                **entry,
+                "fields": fields_by_class.get(entry["name"], []),
+                "edges": edges_by_source.get(entry["name"], []),
+            }
+            for entry in p1_payload["classes"]
+        ]
+    }
+
+
+def _oneshot_invoice_llm() -> _RoutedLLM:
+    script = invoice_script().script
+    return _RoutedLLM(
+        {
+            "templategen_oneshot:invoice_1.md": _combine_oneshot(
+                script["pass1"][0], script["pass2"][0], script["pass3"][0]
+            ),
+            "templategen_oneshot:invoice_2.md": _combine_oneshot(
+                script["pass1"][1], script["pass2"][1], script["pass3"][1]
+            ),
+        }
+    )
+
+
+def test_oneshot_strategy_single_call_per_unit_with_gates():
+    """One LLM call per document; the composed parser runs the exact same
+    evidence gates (verbatim examples, unknown edge targets) as three-pass."""
+    llm = _oneshot_invoice_llm()
+    spec, report = induce_spec_from_documents(
+        [FIXTURE_DOCS / "invoice_1.md", FIXTURE_DOCS / "invoice_2.md"],
+        llm,
+        strategy="one-shot",
+    )
+    assert len(llm.contexts) == 2  # exactly one call per document
+    assert spec.root == "Invoice"
+    names = {m.name for m in spec.models}
+    assert {"Invoice", "Party", "LineItem", "Address"} <= names
+    # Pass-2 content arrived: fields with verbatim-gated examples.
+    assert get_field(spec, "Party", "vat_number").examples == [
+        "DE-812-940-113",
+        "IE-6388047V",
+    ]
+    # The hallucinated example never survives the verbatim gate.
+    assert "NOT-IN-DOC-XYZ" not in get_field(spec, "Invoice", "purchase_order").examples
+    # Pass-3 content arrived: labeled edges; the unknown 'Warehouse' target dropped.
+    assert get_field(spec, "Invoice", "issued_by").edge_label == "ISSUED_BY"
+    assert get_field(spec, "Invoice", "line_items").is_list is True
+    assert all(f.name != "ghost" for f in get_model(spec, "Invoice").fields)
+    assert any(s.edges_dropped for s in report.documents)
+
+
+def test_oneshot_matches_three_pass_on_the_same_content():
+    """Same candidates in, same spec out — the strategy only changes call shape."""
+    sources = [FIXTURE_DOCS / "invoice_1.md", FIXTURE_DOCS / "invoice_2.md"]
+    spec_oneshot, _ = induce_spec_from_documents(
+        sources, _oneshot_invoice_llm(), strategy="one-shot"
+    )
+    spec_passes, _ = induce_spec_from_documents(sources, _routed_invoice_llm())
+    assert spec_oneshot.model_dump() == spec_passes.model_dump()
+
+
+def test_unknown_strategy_rejected():
+    with pytest.raises(ValueError, match="strategy"):
+        induce_spec_from_documents(
+            [DocumentContent(name="x.md", text=GATE_DOC)], _register_llm(), strategy="magic"
+        )

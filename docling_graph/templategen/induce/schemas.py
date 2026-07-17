@@ -15,7 +15,13 @@ Strict-grammar conventions applied throughout:
   (``""`` for "no identity candidate", ``0`` for "cardinality not stated",
   ``[]`` for "no examples") instead of nullable unions, the least portable
   strict-grammar construct across providers. The parsers in ``documents.py``
-  decode the sentinels.
+  decode the sentinels;
+- **every array carries ``maxItems``**: guided decoding constrains shape but
+  not repetition, so an unbounded array is exactly where a small model in a
+  repetition loop pours tokens until any max_tokens budget truncates. The
+  bounds are generous for honest output and a hard wall for degenerate
+  output (grammar backends that enforce them stop the loop; the rest still
+  see the budget echoed in the prompts).
 
 The gap-fill schema is the structural firewall of the design: it is keyed by
 ``(model, field, kind)`` and carries **only** ``docstring`` / ``description``
@@ -55,6 +61,7 @@ def class_inventory_schema() -> dict[str, Any]:
             "classes": {
                 "type": "array",
                 "items": {"$ref": "#/$defs/class_candidate"},
+                "maxItems": 40,
             }
         },
         "required": ["classes"],
@@ -148,6 +155,7 @@ def fields_schema() -> dict[str, Any]:
             "classes": {
                 "type": "array",
                 "items": {"$ref": "#/$defs/class_fields"},
+                "maxItems": 6,
             }
         },
         "required": ["classes"],
@@ -160,6 +168,7 @@ def fields_schema() -> dict[str, Any]:
                     "phrases": {
                         "type": "array",
                         "items": {"type": "string"},
+                        "maxItems": 4,
                         "description": "Document phrases that map to this member.",
                     },
                 },
@@ -191,11 +200,13 @@ def fields_schema() -> dict[str, Any]:
                     "enum_members": {
                         "type": "array",
                         "items": {"type": "string"},
+                        "maxItems": 24,
                         "description": "Printed member values; [] unless type is 'enum:<Name>'.",
                     },
                     "enum_synonyms": {
                         "type": "array",
                         "items": {"$ref": "#/$defs/enum_synonym"},
+                        "maxItems": 8,
                     },
                     "unit_varies": {
                         "type": "boolean",
@@ -221,6 +232,8 @@ def fields_schema() -> dict[str, Any]:
                     "fields": {
                         "type": "array",
                         "items": {"$ref": "#/$defs/field_candidate"},
+                        "maxItems": 12,
+                        "description": "At most 12 fields: the most informative ones.",
                     },
                 },
                 "required": ["class_name", "fields"],
@@ -244,6 +257,7 @@ def relationships_schema() -> dict[str, Any]:
             "edges": {
                 "type": "array",
                 "items": {"$ref": "#/$defs/edge_candidate"},
+                "maxItems": 40,
             }
         },
         "required": ["edges"],
@@ -295,6 +309,60 @@ def relationships_schema() -> dict[str, Any]:
     }
 
 
+def oneshot_schema() -> dict[str, Any]:
+    """One-shot output: the pass-1 class candidate with pass-2 fields and
+    pass-3 edges nested per class.
+
+    The one-shot strategy runs WITHOUT grammar enforcement by default (its
+    whole point is compatibility with models that degenerate under guided
+    decoding), so this schema mostly documents the contract; providers that
+    handle strict mode well can still enforce it.
+    """
+    pass1 = class_inventory_schema()
+    pass2 = fields_schema()
+    pass3 = relationships_schema()
+    edge = dict(pass3["$defs"]["edge_candidate"])
+    # The owning class is the JSON parent; "source" is injected by the parser.
+    edge["properties"] = {k: v for k, v in edge["properties"].items() if k != "source"}
+    edge["required"] = [k for k in edge["required"] if k != "source"]
+    klass = dict(pass1["$defs"]["class_candidate"])
+    klass["properties"] = {
+        **klass["properties"],
+        "fields": {
+            "type": "array",
+            "items": {"$ref": "#/$defs/field_candidate"},
+            "maxItems": 12,
+            "description": "At most 12 data fields: the most informative ones.",
+        },
+        "edges": {
+            "type": "array",
+            "items": {"$ref": "#/$defs/edge_candidate"},
+            "maxItems": 6,
+            "description": "Relationships from this class; [] when none.",
+        },
+    }
+    klass["required"] = [*klass["required"], "fields", "edges"]
+    return {
+        "type": "object",
+        "properties": {
+            "classes": {
+                "type": "array",
+                "items": {"$ref": "#/$defs/class_candidate"},
+                "maxItems": 40,
+            }
+        },
+        "required": ["classes"],
+        "additionalProperties": False,
+        "$defs": {
+            "identity_candidate": pass1["$defs"]["identity_candidate"],
+            "enum_synonym": pass2["$defs"]["enum_synonym"],
+            "field_candidate": pass2["$defs"]["field_candidate"],
+            "edge_candidate": edge,
+            "class_candidate": klass,
+        },
+    }
+
+
 def gapfill_schema() -> dict[str, Any]:
     """Gap-fill output: content for declared gaps, structure unrepresentable.
 
@@ -311,6 +379,7 @@ def gapfill_schema() -> dict[str, Any]:
             "fills": {
                 "type": "array",
                 "items": {"$ref": "#/$defs/gap_fill"},
+                "maxItems": 60,
             }
         },
         "required": ["fills"],

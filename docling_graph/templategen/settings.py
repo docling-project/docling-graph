@@ -18,6 +18,7 @@ valid keys (silent typos would silently un-configure a run).
       ontology_depth: 4
       llm_gap_fill: false
       strict: false
+      strategy: one-shot          # one-shot (1 LLM call/unit, plain JSON) | three-pass
       workers: 4                  # concurrent induction LLM calls (documents x pass-2 batches)
       max_units: 24               # hard cap on induction units (documents/windows); 0 = unlimited
       max_windows_per_doc: 6      # windows an oversized document may split into
@@ -26,7 +27,7 @@ valid keys (silent typos would silently un-configure a run).
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -68,6 +69,15 @@ class TemplateGenSettings(BaseModel):
         default=False,
         description="Fail instead of auto-repairing lint violations (repairs are "
         "printed either way).",
+    )
+    strategy: Literal["one-shot", "three-pass"] = Field(
+        default="one-shot",
+        description="from-docs induction strategy. 'one-shot': one LLM call per unit "
+        "returning the full ontology, plain-JSON decoding (maximum model "
+        "compatibility, minimum spend). 'three-pass': focused inventory/fields/"
+        "relationships passes under strict structured output (more per-field "
+        "evidence; needs a model that handles guided decoding). Both run the same "
+        "evidence gates, merge, and rulebook repair.",
     )
     workers: int = Field(
         default=4,

@@ -91,9 +91,10 @@ from .prompts import (
     PromptDict,
     get_class_inventory_prompt,
     get_fields_prompt,
+    get_oneshot_prompt,
     get_relationships_prompt,
 )
-from .schemas import class_inventory_schema, fields_schema, relationships_schema
+from .schemas import class_inventory_schema, fields_schema, oneshot_schema, relationships_schema
 
 logger = get_component_logger("TemplateInduction", __name__)
 
@@ -439,6 +440,18 @@ def prepare_document_windows(
     if len(bounds) == 1:
         return [PreparedDoc(name=name, markdown=markdown, sampled=False, cache_path=cache_path)]
     total = len(markdown)
+    covered_estimate = sum(end - start for start, end in bounds)
+    logger.info(
+        "%s: %d chars exceed the %d-char unit budget — split into %d windows (%s); "
+        "each window is one induction unit of the same document",
+        name,
+        total,
+        budget_chars,
+        len(bounds),
+        "full coverage"
+        if covered_estimate >= total
+        else f"~{100 * covered_estimate // total}% coverage",
+    )
     covered = 0
     snapped: list[tuple[int, int]] = []
     for start, end in bounds:
@@ -974,6 +987,69 @@ def _run_pass2(
         _apply_pass2(results[key], classes_by_key, prepared, stats)
 
 
+def _induce_document_oneshot(
+    prepared: PreparedDoc,
+    llm_call_fn: LlmCallFn,
+    *,
+    root_name: str | None,
+    max_models: int,
+    stats: DocumentStats,
+) -> DocumentCandidates:
+    """One LLM call per unit: the full ontology (classes + fields + edges).
+
+    The payload nests the pass-2 field shape and the pass-3 edge shape inside
+    each pass-1 class entry, so this parser is a composition of the three
+    existing pass parsers — every deterministic evidence gate (verbatim
+    examples, digit honesty, cardinality quotes, edge-target checks) applies
+    exactly as in the three-pass strategy.
+    """
+    payload = _call_llm_pass(
+        llm_call_fn,
+        get_oneshot_prompt(
+            prepared.markdown,
+            doc_name=prepared.name,
+            max_models=max_models,
+            root_hint=root_name,
+        ),
+        oneshot_schema(),
+        f"templategen_oneshot:{prepared.name}",
+        payload_key="classes",
+        stats=stats,
+    )
+    classes = _parse_pass1(payload, prepared, stats, max_models)
+    if not classes:
+        logger.warning("No usable classes induced from %s", prepared.name)
+        return DocumentCandidates(name=prepared.name, classes=[])
+    classes_by_key = {canonical_key(cls.name): cls for cls in classes}
+
+    entries = [entry for entry in payload["classes"] if isinstance(entry, dict)]
+    _apply_pass2(
+        {
+            "classes": [
+                {"class_name": entry.get("name"), "fields": entry.get("fields") or []}
+                for entry in entries
+            ]
+        },
+        classes_by_key,
+        prepared,
+        stats,
+    )
+    _apply_pass3(
+        {
+            "edges": [
+                {**edge, "source": entry.get("name")}
+                for entry in entries
+                for edge in (entry.get("edges") or [])
+                if isinstance(edge, dict)
+            ]
+        },
+        classes_by_key,
+        stats,
+    )
+    stats.classes_kept = len(classes)
+    return DocumentCandidates(name=prepared.name, classes=classes)
+
+
 def _induce_document(
     prepared: PreparedDoc,
     llm_call_fn: LlmCallFn,
@@ -1083,6 +1159,7 @@ def induce_spec_from_documents(
     max_windows_per_doc: int = MAX_WINDOWS_PER_DOC,
     max_units: int = 0,
     saturation: bool = True,
+    strategy: str = "three-pass",
 ) -> tuple[TemplateSpec, InductionReport]:
     """Induce a validated :class:`TemplateSpec` from example documents.
 
@@ -1147,15 +1224,24 @@ def induce_spec_from_documents(
             are skipped and reported under ``skipped_capped``.
         saturation: Enable the diminishing-returns stop for large corpora
             (only engages above :data:`SATURATION_MIN_UNITS` units).
+        strategy: ``"one-shot"`` — one LLM call per unit returning the full
+            ontology (classes + fields + edges), best for maximum model
+            compatibility and minimum spend; ``"three-pass"`` (default) —
+            the focused inventory/fields/relationships passes. Both run the
+            same evidence gates and downstream merge/repair.
 
     Raises:
-        ValueError: ``sources`` is empty.
+        ValueError: ``sources`` is empty, or ``strategy`` is unknown.
         ExtractionError: No source yielded usable text, or a pass failed
             after its retry (including the no-progress guard).
         TemplateLintError: ``strict=True`` and the draft required repairs.
     """
     if not sources:
         raise ValueError("induce_spec_from_documents requires at least one source")
+    if strategy not in ("one-shot", "three-pass"):
+        raise ValueError(
+            f"Unknown induction strategy {strategy!r}: expected 'one-shot' or 'three-pass'"
+        )
 
     # Phase 1 (sequential): expand sources into induction units. Windows of
     # one physical document share its group index for the merge's
@@ -1199,7 +1285,7 @@ def induce_spec_from_documents(
             "quiet units",
             len(units),
             len(sources),
-            3 * len(units),
+            (1 if strategy == "one-shot" else 3) * len(units),
             SATURATION_STREAK,
         )
     skipped_capped: list[str] = []
@@ -1220,6 +1306,10 @@ def induce_spec_from_documents(
 
     def induce(unit_index: int) -> DocumentCandidates:
         prepared, _group, stats = units[unit_index]
+        if strategy == "one-shot":
+            return _induce_document_oneshot(
+                prepared, llm_call_fn, root_name=root_name, max_models=max_models, stats=stats
+            )
         return _induce_document(
             prepared,
             llm_call_fn,
