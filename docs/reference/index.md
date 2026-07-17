@@ -80,6 +80,7 @@ Graph export formats.
 - `CypherExporter` - Cypher scripts
 - `JSONExporter` - JSON format
 - `DoclingExporter` - Docling documents
+- `graph_to_dict()` / `load_graph_from_dict()` - File-free graph round trip
 
 **[Provenance](provenance.md)**  
 Deterministic node-to-source grounding.
@@ -109,6 +110,7 @@ docling_graph/
 │   ├── converters/          # Graph conversion
 │   ├── extractors/          # Extraction strategies
 │   ├── exporters/           # Export formats
+│   ├── importers/           # Load exported graphs back into NetworkX
 │   ├── provenance/          # Data grounding (deterministic node-to-source)
 │   └── visualizers/         # Visualization
 │
@@ -176,8 +178,12 @@ from docling_graph.core.extractors import OneToOne, ManyToOne
 from docling_graph.core.exporters import (
     CSVExporter,
     CypherExporter,
-    JSONExporter
+    JSONExporter,
+    graph_to_dict
 )
+
+# Importers (file-free round trip)
+from docling_graph.core.importers import load_graph_from_dict
 ```
 
 ---

@@ -139,30 +139,44 @@ exporter.export()
 Export graphs to JSON format.
 
 ```python
-class JSONExporter(BaseExporter):
+class JSONExporter:
     """Export graph to JSON format."""
-    
-    def export(self) -> None:
+
+    def __init__(self, config: ExportConfig | None = None) -> None:
         """
-        Export to JSON.
-        
-        Creates:
-            - graph.json: NetworkX node-link format
+        Initialize exporter.
+
+        Args:
+            config: Export configuration. Uses defaults if None.
+        """
+
+    def export(self, graph: nx.DiGraph, output_path: Path) -> None:
+        """
+        Export graph to JSON.
+
+        Args:
+            graph: NetworkX directed graph to export.
+            output_path: File path where to save JSON.
+
+        Raises:
+            ValueError: If graph is empty.
         """
 ```
 
 **Output Format:**
 
+Docling-graph's own shape — *not* NetworkX node-link. Edges live under `edges` (not `links`), and graph-level metadata (the format-v2 identity contract: `id_fields_map`, template name/schema hash) lives under a top-level `graph` key, absent on v1 exports.
+
 ```json
 {
-  "directed": true,
-  "multigraph": true,
   "nodes": [
-    {"id": "node_1", "type": "Person", "name": "John"}
+    {"id": "node_1", "type": "entity", "label": "John"}
   ],
-  "links": [
-    {"source": "node_1", "target": "node_2", "type": "WORKS_AT"}
-  ]
+  "edges": [
+    {"source": "node_1", "target": "node_2", "label": "works_at"}
+  ],
+  "metadata": {"node_count": 2, "edge_count": 1},
+  "graph": {"format": "v2"}
 }
 ```
 
@@ -172,11 +186,101 @@ class JSONExporter(BaseExporter):
 from docling_graph.core.exporters import JSONExporter
 from pathlib import Path
 
-exporter = JSONExporter(graph, Path("outputs"))
-exporter.export()
-
-# File created: outputs/graph.json
+exporter = JSONExporter()
+exporter.export(graph, Path("outputs/graph.json"))
 ```
+
+---
+
+### graph_to_dict
+
+Serialize a graph to the canonical `graph.json` shape without touching the filesystem.
+
+```python
+def graph_to_dict(graph: nx.DiGraph) -> Dict[str, Any]:
+    """
+    Serialize a graph to the canonical docling-graph JSON shape.
+
+    Args:
+        graph: NetworkX directed graph.
+
+    Returns:
+        {"nodes": [...], "edges": [...], "metadata": {...}, "graph": {...}}
+    """
+```
+
+The round-trip inverse is [`load_graph_from_dict()`](#load_graph_from_dict). Use the pair when the graph or payload is already in memory (an HTTP handler, a notebook) and a temp file would be pure overhead.
+
+**Example:**
+
+```python
+from docling_graph.core.exporters import graph_to_dict
+from docling_graph.core.importers import load_graph_from_dict
+
+payload = graph_to_dict(graph)
+restored = load_graph_from_dict(payload)
+```
+
+!!! warning "Output holds live Python values"
+
+    The returned dict is not directly JSON-encodable — a `date` stays a `date`, a `Decimal` stays a `Decimal`. Pass `json_serializable` as `default=`, the way `JSONExporter` does internally:
+
+    ```python
+    import json
+    from docling_graph.core.utils.string_formatter import json_serializable
+
+    encoded = json.dumps(graph_to_dict(graph), default=json_serializable)
+    ```
+
+    Encoding flattens those values (`date` → ISO string, `Decimal` → float); passing the dict straight to `load_graph_from_dict()` keeps them live.
+
+---
+
+## Graph Importer
+
+### load_graph_from_dict
+
+Load an in-memory `graph.json` object back into a graph. The read-side inverse of [`graph_to_dict()`](#graph_to_dict).
+
+**Module:** `docling_graph.core.importers`
+
+```python
+def load_graph_from_dict(data: dict, *, source: str = "<dict>") -> nx.DiGraph:
+    """
+    Load an already-parsed graph.json object into an nx.DiGraph.
+
+    Args:
+        data: A docling-graph graph export object.
+        source: Label used in error messages (a path, URL, or "<dict>").
+
+    Raises:
+        ConfigurationError: When data is not a docling-graph export, is empty,
+            or is structurally corrupt (malformed records, dangling edges).
+    """
+```
+
+Validation is identical to the file-based `load_graph_json()`, which is a thin wrapper over this function. Node `id`s must be JSON scalars; graph-level metadata under `graph` is restored when present and tolerated when absent (v1 exports).
+
+**Example:**
+
+```python
+from docling_graph.core.importers import load_graph_from_dict
+from docling_graph.exceptions import ConfigurationError
+
+try:
+    graph = load_graph_from_dict(request_body, source="POST /graphs")
+except ConfigurationError as e:
+    print(f"Rejected: {e.message} ({e.details})")
+```
+
+**Related file-based loaders** (`docling_graph.core.importers`):
+
+| Function | Description |
+|:---------|:------------|
+| `load_graph_json(path)` | Read and parse one `graph.json` file into a graph |
+| `resolve_graph_path(path)` | Resolve a directory to its `graph.json` (rejects lossy CSV/Cypher) |
+| `load_sibling_ledger(path)` | Load the `provenance.json` written next to `graph.json` |
+| `load_graph_input(path)` | Resolve + load one merge input: `(graph, ledger \| None, path)` |
 
 ---
 
