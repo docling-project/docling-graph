@@ -440,26 +440,9 @@ class Invoice(BaseModel):
 # -----------------------------------------------------------------------------
 # Verification
 # -----------------------------------------------------------------------------
-# Graph-shape smoke test mirroring the templategen verification gate (V6).
-# Re-run it by hand after editing this template:
+# This template passed generation gates V1-V6 (parse, import allowlist,
+# load, structured-output schema, dense catalog walk, graph-shape smoke
+# test). Comments never reach extraction prompts — only class docstrings
+# and field descriptions do. After hand edits, re-verify with:
 #
-#     from docling_graph.core.converters.graph_converter import GraphConverter
-#
-#     sample = Invoice.model_validate(
-#         {'document_number': 'INV-2024-0113',
-#          'document_type': 'Invoice',
-#          'issue_date': '2024-01-15',
-#          'currency': 'EUR',
-#          'tags': ['priority'],
-#          'mentioned_document_types': ['Receipt'],
-#          'seller': {'name': 'Acme GmbH', 'tax_id': 'FR12345678901'},
-#          'buyer': {'name': 'Beta SARL', 'tax_id': 'FR12345678901'},
-#          'items': [{'name': 'USB-C cable', 'category': 'Electronics'}],
-#          'line_items': [{'line_number': '1',
-#                          'quantity': 2.0,
-#                          'item': {'name': 'USB-C cable'}}],
-#          'taxes': [{'tax_type': 'VAT', 'tax_amount': 200.0}]}
-#     )
-#     graph, _metadata = GraphConverter().pydantic_list_to_graph([sample])
-#     assert not graph.graph.get("empty_identity_nodes")
-#     print(graph.number_of_nodes(), "nodes /", graph.number_of_edges(), "edges")
+#     docling-graph template lint <module.path.Invoice>
