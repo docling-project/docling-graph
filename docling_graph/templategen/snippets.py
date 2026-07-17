@@ -75,12 +75,15 @@ def edge(
 # Source: docs/fundamentals/schema-definition/template-basics.md, "Required
 # Imports" — the mandatory two lines every template starts with.
 IMPORT_BLOCK = """\
-from typing import Any, List, Optional, Union, Self, Type
+from typing import Any, List, Optional, Union, Type
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 """
 
 # Conditional imports, included only when the emitted template uses them
 # (template-basics.md "Include based on domain needs" / validation.md logging).
+# `Self` is 3.11+ in `typing`; the repo floor is 3.10, so it comes from
+# `typing_extensions` (a pydantic dependency, hence always installed).
+OPTIONAL_IMPORT_SELF = "from typing_extensions import Self"
 OPTIONAL_IMPORT_DATETIME = "from datetime import date, datetime"
 OPTIONAL_IMPORT_ENUM = "from enum import Enum"
 OPTIONAL_IMPORT_RE = "import re"

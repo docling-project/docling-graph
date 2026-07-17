@@ -615,6 +615,10 @@ class TestPublicApi:
         "load_templategen_settings",
     ]
 
+    # Spawns a cold interpreter that imports the whole package: comfortably over
+    # pytest.ini's 10s default on a CI runner. The inner subprocess timeout below
+    # stays lower so a genuine hang is still reported as one.
+    @pytest.mark.timeout(240)
     def test_imports_without_optional_deps_and_defers_heavy_paths(self):
         # Subprocess: a pristine interpreter with rdflib/linkml_runtime blocked
         # (the sys.modules[None] pattern of the ontology tests), so the check

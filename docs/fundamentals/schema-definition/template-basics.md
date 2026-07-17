@@ -26,8 +26,9 @@ Brief description of what this template extracts.
 Mention the document type and key domain features.
 """
 
-from typing import Any, List, Optional, Union, Self, Type
+from typing import Any, List, Optional, Union, Type
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from typing_extensions import Self  # Include if a model_validator returns Self
 from datetime import date, datetime  # Include based on domain needs
 from enum import Enum  # Include if using enums
 import re  # Include if using regex validators
@@ -38,7 +39,8 @@ import re  # Include if using regex validators
 | Import | Purpose | When to Use |
 |:-------|:--------|:------------|
 | `Any, List, Optional, Union` | Type hints for fields | Always |
-| `Self, Type` | Advanced type hints for validators | When using validators |
+| `Type` | Advanced type hints for validators | When using validators |
+| `Self` | Return type of `model_validator(mode="after")` | When a model validator returns `self` |
 | `BaseModel` | Base class for all models | Always |
 | `ConfigDict` | Model configuration (graph_id_fields, is_entity) | Always |
 | `Field` | Field definitions with metadata | Always |
@@ -47,6 +49,12 @@ import re  # Include if using regex validators
 | `date, datetime` | Date/time types | For temporal data |
 | `Enum` | Enumerated types | For controlled vocabularies |
 | `re` | Regular expressions | For pattern matching in validators |
+
+!!! note "Why `Self` comes from `typing_extensions`"
+
+    `typing.Self` only exists on Python 3.11+, and docling-graph supports 3.10.
+    Import it from `typing_extensions` instead — it ships with pydantic, so it is
+    always available wherever your template runs.
 
 ### Example: Minimal Template
 
@@ -70,8 +78,9 @@ Rheology research extraction template.
 Extracts scientific experiments, measurements, and materials.
 """
 
-from typing import Any, List, Optional, Union, Self, Type
+from typing import Any, List, Optional, Union, Type
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from typing_extensions import Self
 from datetime import date
 from enum import Enum
 import re
