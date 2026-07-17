@@ -1806,13 +1806,18 @@ class LlmBackend:
 
             return EmptyResponse()
 
-    def cleanup(self) -> None:
+    def cleanup(self, collect: bool = True) -> None:
         """
         Clean up LLM client resources.
 
         Note: Most LLM clients use stateless HTTP APIs and don't require cleanup.
         This method is provided for consistency with VlmBackend and handles any
         clients that may have cleanup methods.
+
+        Args:
+            collect: Run a full ``gc.collect()`` after releasing resources.
+                Long-lived services pass False (via ``PipelineConfig.gc_collect``)
+                to avoid the per-run stop-the-world pause.
         """
         try:
             # Release the client reference
@@ -1824,8 +1829,8 @@ class LlmBackend:
                     cleanup_fn()
                 del self.client
 
-            # Force garbage collection
-            gc.collect()
+            if collect:
+                gc.collect()
 
             logger.info("Cleaned up resources")
 

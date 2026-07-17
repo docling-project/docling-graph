@@ -46,8 +46,14 @@ class ExtractionBackendProtocol(Protocol):
         """
         ...
 
-    def cleanup(self) -> None:
-        """Clean up backend resources (GPU memory, connections, etc.)."""
+    def cleanup(self, collect: bool = True) -> None:
+        """Clean up backend resources (GPU memory, connections, etc.).
+
+        Args:
+            collect: Run a full ``gc.collect()`` as part of cleanup. Long-lived
+                services pass False (``PipelineConfig.gc_collect``) to avoid the
+                per-run stop-the-world pause.
+        """
         ...
 
 
@@ -86,7 +92,7 @@ class TextExtractionBackendProtocol(Protocol):
         """
         ...
 
-    def cleanup(self) -> None:
+    def cleanup(self, collect: bool = True) -> None:
         """Clean up backend resources."""
         ...
 

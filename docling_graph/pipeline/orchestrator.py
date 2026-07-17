@@ -264,9 +264,18 @@ class PipelineOrchestrator:
             if isinstance(e, PipelineError):
                 raise
 
+            details = {"stage": stage_name, "error": str(e), "error_type": type(e).__name__}
+            # Propagate a stable machine-readable ``reason`` from the wrapped
+            # DoclingGraphError so callers can classify the failure without
+            # parsing the English message (e.g. 'no_models_extracted').
+            cause_details = getattr(e, "details", None)
+            if isinstance(cause_details, dict) and "reason" in cause_details:
+                details["reason"] = cause_details["reason"]
+
             raise PipelineError(
                 f"Pipeline failed at stage '{stage_name}': {type(e).__name__}",
-                details={"stage": stage_name, "error": str(e), "error_type": type(e).__name__},
+                details=details,
+                cause=e,
             ) from e
 
         finally:
@@ -281,18 +290,28 @@ class PipelineOrchestrator:
         """
         logger.info("Cleaning up resources...")
 
+        # A full gc.collect() after every run is a stop-the-world pause that
+        # hurts tail latency for long-lived services running many small jobs.
+        # It stays on by default (CLI / batch); a service can set
+        # PipelineConfig(gc_collect=False) to skip it — the flag is threaded
+        # into the backend/doc-processor cleanups too, which run their own
+        # collects. The CUDA cache purge is kept regardless — it is GPU-memory
+        # hygiene, not a latency cost.
+        collect = bool(getattr(self.config, "gc_collect", True))
+
         if context.extractor:
             if hasattr(context.extractor, "backend"):
                 backend = context.extractor.backend
                 if hasattr(backend, "cleanup"):
-                    backend.cleanup()
+                    _call_cleanup(backend.cleanup, collect)
 
             if hasattr(context.extractor, "doc_processor"):
                 doc_processor = context.extractor.doc_processor
                 if hasattr(doc_processor, "cleanup"):
-                    doc_processor.cleanup()
+                    _call_cleanup(doc_processor.cleanup, collect)
 
-        gc.collect()
+        if collect:
+            gc.collect()
 
         try:
             import torch
@@ -301,6 +320,24 @@ class PipelineOrchestrator:
                 torch.cuda.empty_cache()
         except ImportError:
             pass
+
+
+def _call_cleanup(cleanup_fn: Any, collect: bool) -> None:
+    """Invoke a backend/doc-processor ``cleanup``, forwarding the gc gate.
+
+    In-repo cleanups take ``collect``; a custom backend whose ``cleanup()``
+    predates the flag is still called (it just keeps its own gc behavior).
+    """
+    import inspect
+
+    try:
+        accepts_collect = "collect" in inspect.signature(cleanup_fn).parameters
+    except (TypeError, ValueError):  # builtins/mocks without introspectable signatures
+        accepts_collect = False
+    if accepts_collect:
+        cleanup_fn(collect=collect)
+    else:
+        cleanup_fn()
 
 
 def run_pipeline(

@@ -376,7 +376,7 @@ class ExtractionStage(PipelineStage):
         if not context.extracted_models:
             raise ExtractionError(
                 "Extraction produced no models from document",
-                details={"source": context.config.source},
+                details={"source": context.config.source, "reason": "no_models_extracted"},
             )
 
         self.log.info(f"Extracted {len(context.extracted_models)} items")
@@ -675,7 +675,7 @@ class ExtractionStage(PipelineStage):
         if not extracted_models:
             raise ExtractionError(
                 "No models extracted from DoclingDocument",
-                details={"input_type": "docling_document"},
+                details={"input_type": "docling_document", "reason": "no_models_extracted"},
             )
 
         self.log.info(f"Extracted {len(extracted_models)} items from DoclingDocument")

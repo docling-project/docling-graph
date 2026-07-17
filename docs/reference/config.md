@@ -36,6 +36,7 @@ config = PipelineConfig(
     use_chunking: bool = True,
     chunk_max_tokens: int | None = None,
     debug: bool = False,
+    gc_collect: bool = True,
     dump_to_disk: bool | None = None,
     export_format: Literal["csv", "cypher"] = "csv",
     export_docling: bool = True,
@@ -79,6 +80,7 @@ config = PipelineConfig(
 | `chunk_max_tokens` | `int` or `None` | `None` | Max tokens per chunk (default 512 when chunking; raise it when using a DocLang `llm_input_format`) |
 | `debug` | `bool` | `False` | Enable debug artifacts |
 | `parallel_workers` | `int` or `None` | `4` | Parallel workers for extraction (`1` = sequential; `None` uses the default) |
+| `gc_collect` | `bool` | `True` | Run a full `gc.collect()` after each pipeline run. Keep `True` for CLI/batch use; set `False` in a long-lived service to avoid the per-run stop-the-world pause (the CUDA cache purge still runs) |
 
 #### Dense extraction (skeleton-then-flesh)
 

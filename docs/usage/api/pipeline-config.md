@@ -104,6 +104,12 @@ For **dense** extraction, additional options (`dense_skeleton_batch_tokens`, `de
 |-----------|------|---------|-------------|
 | `debug` | `bool` | `False` | Enable debug mode to save all intermediate extraction artifacts |
 
+### Runtime Settings
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `gc_collect` | `bool` | `True` | Run a full `gc.collect()` after each pipeline run. Keep `True` for CLI/batch use; set `False` in a long-lived service to avoid the per-run stop-the-world pause (the CUDA cache purge still runs) |
+
 ### Export Settings
 
 | Parameter | Type | Default | Description |
