@@ -55,6 +55,9 @@ class LiteLLMClient:
                 details={"install_command": "pip install litellm"},
                 cause=_litellm_import_error,
             )
+        # LiteLLM prints a "Give Feedback / Get Help" banner to stderr on every
+        # exception; our handlers already log the error through logging_utils.
+        litellm.suppress_debug_info = True
 
     def get_json_response(
         self,
