@@ -19,6 +19,20 @@ def normalize_schema_for_response_format(
     for key in ("title", "examples"):
         normalized.pop(key, None)
 
+    # A RECURSIVE root model (anything in the tree links back to the root,
+    # e.g. an inverse reference edge) makes pydantic hoist the root into
+    # $defs and emit a bare top-level {"$defs": ..., "$ref": "#/$defs/Root"}.
+    # Providers require a typed top-level object, so dereference: the root
+    # def's content moves to the top level while the def entry stays for the
+    # inner self-references.
+    ref = normalized.get("$ref")
+    defs = normalized.get("$defs")
+    if isinstance(ref, str) and ref.startswith("#/$defs/") and isinstance(defs, dict):
+        target = defs.get(ref.split("/")[-1])
+        if isinstance(target, dict):
+            normalized = {**copy.deepcopy(target), "$defs": defs}
+            normalized.pop("title", None)
+
     if top_level == "array":
         if normalized.get("type") != "array":
             normalized = {"type": "array", "items": normalized}

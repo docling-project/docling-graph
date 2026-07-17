@@ -195,9 +195,11 @@ def build_node_catalog(
         model: type[BaseModel],
         parent_entity_path: str,
         from_root: bool,
+        ancestry: tuple[type[BaseModel], ...] = (),
     ) -> None:
         if from_root:
             add_node("", model, "", "", False)
+        ancestry = (*ancestry, model)
 
         for fname, field_info in model.model_fields.items():
             for alias_name in _field_aliases(fname, field_info):
@@ -216,14 +218,23 @@ def build_node_catalog(
                 # canonical nodes via the NodeIDRegistry.
                 continue
 
+            if target_model in ancestry:
+                # Recursive nesting (self-loops, mutual cycles): the model is
+                # already on this walk's ancestry, so descending again would
+                # recurse forever. The recurrence is pruned from discovery —
+                # the model keeps its non-recursive path(s), and recursively
+                # nested instances resolve through the converter like any
+                # non-discovered occurrence.
+                continue
+
             if _is_entity(target_model) and not _is_component(target_model):
                 if origin is list:
                     list_path = f"{path}[]"
                     add_node(list_path, target_model, parent_entity_path, fname, True)
-                    walk(list_path, target_model, list_path, from_root=False)
+                    walk(list_path, target_model, list_path, from_root=False, ancestry=ancestry)
                 else:
                     add_node(path, target_model, parent_entity_path, fname, False)
-                    walk(path, target_model, path, from_root=False)
+                    walk(path, target_model, path, from_root=False, ancestry=ancestry)
             else:
                 # Components (is_entity=False) never become catalog paths — even
                 # with an edge_label. They are value objects without identity,
@@ -235,9 +246,15 @@ def build_node_catalog(
                 # still recurses so entities nested below a component keep paths
                 # parented to the nearest entity ancestor.
                 if origin is list:
-                    walk(f"{path}[]", target_model, parent_entity_path, from_root=False)
+                    walk(
+                        f"{path}[]",
+                        target_model,
+                        parent_entity_path,
+                        from_root=False,
+                        ancestry=ancestry,
+                    )
                 else:
-                    walk(path, target_model, parent_entity_path, from_root=False)
+                    walk(path, target_model, parent_entity_path, from_root=False, ancestry=ancestry)
 
     walk("", template, "", from_root=True)
     return NodeCatalog(nodes=nodes, field_aliases=field_aliases)
@@ -247,24 +264,25 @@ def get_model_for_path(template: type[BaseModel], path: str) -> type[BaseModel] 
     """Return the Pydantic model class for a catalog path."""
     path_to_model: dict[str, type[BaseModel]] = {}
 
-    def _walk(prefix: str, model: type[BaseModel]) -> None:
+    def _walk(prefix: str, model: type[BaseModel], ancestry: tuple[type[BaseModel], ...]) -> None:
         path_to_model[prefix or ""] = model
+        ancestry = (*ancestry, model)
         for fname, field_info in model.model_fields.items():
             seg = f".{fname}" if prefix else fname
             p = f"{prefix}{seg}" if prefix else fname
             target = _unwrap_model_from_annotation(field_info.annotation)
-            if target is None:
+            if target is None or target in ancestry:  # recursion pruned like build_node_catalog
                 continue
             orig = get_origin(field_info.annotation)
             if orig is list:
                 lp = f"{p}[]"
                 path_to_model[lp] = target
-                _walk(lp, target)
+                _walk(lp, target, ancestry)
             else:
                 path_to_model[p] = target
-                _walk(p, target)
+                _walk(p, target, ancestry)
 
-    _walk("", template)
+    _walk("", template, ())
     return path_to_model.get(path)
 
 

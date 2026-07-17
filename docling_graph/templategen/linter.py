@@ -134,6 +134,7 @@ _DOC_REFS: dict[str, str] = {
     "R21": "docling_graph/templategen/naming.py (reserved node-attr keys written by GraphConverter)",
     "R22": "best-practices.md (unmodeled-noise fields)",
     "R23": "relationships.md (every entity needs a discovery path from the root)",
+    "R24": "entities-vs-components.md (components embed; they cannot own labeled edges)",
 }
 
 
@@ -514,6 +515,60 @@ def _rule_r20_r21_naming(spec: TemplateSpec, ctx: _Ctx) -> None:
                 _rename_field(spec, model, field, new)
 
 
+def _rule_r24_component_edges(spec: TemplateSpec, ctx: _Ctx) -> None:
+    """R24 — components own no labeled edges.
+
+    The converter embeds components into their parent node, so a component
+    field's ``edge_label``/``reference`` markers never materialize as the
+    declared graph edge — dead metadata that V6 would rightly fail. Worse, an
+    ENTITY nested under a component still becomes a node with an
+    ancestor-derived edge that can clobber a sibling's declared label on the
+    same node pair. Repair, by target kind:
+
+    - entity/root target: the field is severed to a plain ``str`` holding the
+      target's identity (the relationship a component cannot own);
+    - component target: demoted to a nested property field (pure embedding —
+      no nodes or edges involved).
+
+    Common after a kind vote demotes an edge-owning entity to component.
+    """
+    models = _model_map(spec)
+    for model in spec.models:
+        if model.kind != "component":
+            continue
+        for field in model.fields:
+            if field.role != "edge":
+                continue
+            target = models.get(field.type)
+            to_entity = target is not None and target.kind != "component"
+            ctx.add(
+                "R24",
+                "warn",
+                model.name,
+                field.name,
+                f"edge on component '{model.name}' — components embed into their parent "
+                "node and cannot own graph edges; "
+                + (
+                    f"field severed to str (the {field.type} identity)"
+                    if to_entity
+                    else "demoted to a nested property field"
+                ),
+                repaired=ctx.repair,
+            )
+            if not ctx.repair:
+                continue
+            field.role = "property"
+            field.edge_label = None
+            field.reference = False
+            field.closed_catalog = False
+            if to_entity:
+                field.description = (
+                    field.description or f"The identity of the related {field.type}."
+                )
+                field.type = "str"
+                field.normalizer = "none"
+
+
 def _rule_r9_edge_labels(spec: TemplateSpec, ctx: _Ctx) -> None:
     """R9 — edge labels are ALL_CAPS verb phrases, consistent template-wide.
 
@@ -890,6 +945,33 @@ def _rule_r15_cycles(spec: TemplateSpec, ctx: _Ctx) -> None:
             else:
                 back_model, back_fields, target = model_a, a_to_b, model_b
             for field in back_fields:
+                if back_model.kind == "component":
+                    # A reference on a component is dead metadata (R24 would
+                    # demote it right back to full nesting — a repair
+                    # ping-pong). Sever the cycle instead: the back-field
+                    # becomes a plain string holding the target's identity.
+                    ctx.add(
+                        "R15",
+                        "warn",
+                        back_model.name,
+                        field.name,
+                        f"mutual nesting cycle {back_model.name} <-> {target.name} closed by "
+                        "a component-owned field — components cannot hold reference edges "
+                        f"(R24), so the field is retyped to str (the {target.name} identity)",
+                        repaired=ctx.repair,
+                    )
+                    if ctx.repair:
+                        field.role = "property"
+                        field.type = "str"
+                        field.edge_label = None
+                        field.reference = False
+                        field.closed_catalog = False
+                        field.normalizer = "none"
+                        field.description = (
+                            field.description
+                            or f"The identity of the {target.name} this belongs to."
+                        )
+                    continue
                 others = nonref[target.name] - sum(1 for f in back_fields if not f.reference)
                 can_flip = bool(target.identity_fields) and (
                     target.kind == "root" or _is_identity_only(target) or others >= 1
@@ -1256,6 +1338,7 @@ def _rule_r22_evidence(spec: TemplateSpec, ctx: _Ctx) -> None:
 
 _RULES: tuple[Callable[[TemplateSpec, _Ctx], None], ...] = (
     _rule_r20_r21_naming,
+    _rule_r24_component_edges,
     _rule_r9_edge_labels,
     _rule_r10_canonical_home,
     _rule_r12_closed_catalog,

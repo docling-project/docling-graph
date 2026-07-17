@@ -274,7 +274,15 @@ def synthesize_sample_plan(spec: TemplateSpec) -> SamplePlan:
                     occurrences[target.name] = nth + 1
                     nested = full_payload(target, (*path, target.name), nth)
                 payload[field.name] = [nested] if field.is_list else nested
-                if field.role == "edge" and field.edge_label and target.kind != "component":
+                # Only entity-owned edges to entity targets materialize as
+                # labeled graph edges (components embed; R24 repairs their
+                # edges away — this guard keeps hand-written specs honest too).
+                if (
+                    field.role == "edge"
+                    and field.edge_label
+                    and target.kind != "component"
+                    and model.kind != "component"
+                ):
                     claimed[(target.name, nth)] = field.edge_label
         for label in claimed.values():
             if label not in edge_labels:
