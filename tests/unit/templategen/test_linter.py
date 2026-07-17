@@ -1443,3 +1443,94 @@ class TestR23Reachability:
         entries = report.by_rule("R23")
         assert entries and not any(e.repaired for e in entries)
         assert [f.name for f in get_model(spec, "Doc").fields] == before
+
+
+# ---------------------------------------------------------------------------
+# R24 — components own no labeled edges
+# ---------------------------------------------------------------------------
+
+
+class TestR24ComponentEdges:
+    def _draft(self) -> dict:
+        root = droot(
+            dfld("suspension", role="edge", type="Suspension", edge_label="HAS_SUSPENSION"),
+            dfld("parameter", role="edge", type="Parameter", edge_label="HAS_PARAMETER"),
+        )
+        suspension = dmdl(
+            "Suspension",
+            "entity",
+            [dfld("name", role="identity", examples=["S-20vol", "S-30vol"])],
+            identity_fields=["name"],
+        )
+        # Component owning a reference edge to an entity: dead metadata at
+        # runtime (components embed; no graph edge ever materializes).
+        parameter = dmdl(
+            "Parameter",
+            "component",
+            [
+                dfld("value", type="float", examples=["1.5"]),
+                dfld(
+                    "characterizes",
+                    role="edge",
+                    type="Suspension",
+                    edge_label="HAS_CHARACTERIZES",
+                    reference=True,
+                ),
+            ],
+        )
+        return ddraft(root, suspension, parameter)
+
+    def test_component_edge_to_entity_severed_to_str(self):
+        spec, report = repair_draft(self._draft())
+        assert repairs(report, "R24")
+        field = get_field(spec, "Parameter", "characterizes")
+        assert field.role == "property"
+        assert field.type == "str"  # entity target: severed to its identity
+        assert field.edge_label is None
+        assert field.reference is False
+
+    def test_repaired_spec_passes_all_gates(self):
+        from docling_graph.templategen.renderer import render_template
+        from docling_graph.templategen.verify import verify_template_source
+
+        spec, _ = repair_draft(self._draft())
+        verification = verify_template_source(
+            render_template(spec), root_class=spec.root, spec=spec
+        )
+        assert verification.passed, verification.summary()
+
+    def test_component_cycle_severed_not_ping_ponged(self):
+        """A mutual cycle closed by a component field cannot flip to reference
+        (R24 would demote it back — a repair ping-pong); the back-field is
+        retyped to str and the lint converges."""
+        oil = dmdl(
+            "MineralOil",
+            "component",
+            [
+                dfld("viscosity", type="float", examples=["0.1"]),
+                dfld(
+                    "is_suspending",
+                    role="edge",
+                    type="Particle",
+                    edge_label="IS_SUSPENDING",
+                ),
+            ],
+        )
+        particle = dmdl(
+            "Particle",
+            "entity",
+            [
+                dfld("name", role="identity", examples=["KS5-75TT", "KS6"]),
+                dfld("suspended_in", role="edge", type="MineralOil", edge_label="SUSPENDED_IN"),
+            ],
+            identity_fields=["name"],
+        )
+        root = droot(dfld("particle", role="edge", type="Particle", edge_label="HAS_PARTICLE"))
+        spec, _report = repair_draft(ddraft(root, oil, particle))
+        severed = get_field(spec, "MineralOil", "is_suspending")
+        assert severed.type == "str"
+        assert severed.role == "property"
+        # Converges: re-linting is clean of R15/R24 findings.
+        _relinted, second = lint_spec(spec, repair=True)
+        assert not second.by_rule("R15")
+        assert not second.by_rule("R24")

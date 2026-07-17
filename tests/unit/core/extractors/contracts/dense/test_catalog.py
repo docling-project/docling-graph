@@ -413,3 +413,63 @@ def test_path_has_reference_fields_detects_reference_lists():
     by_path = {s.path: s for s in catalog.nodes}
     assert path_has_reference_fields(RootDoc, by_path["groups[]"]) is True
     assert path_has_reference_fields(RootDoc, by_path[""]) is False
+
+
+# ---------------------------------------------------------------------------
+# Recursive nesting: the walk prunes cycles instead of recursing forever
+# ---------------------------------------------------------------------------
+
+
+class _RecursiveMaterial(BaseModel):
+    """Self-nesting entity (renderer supports these via forward references)."""
+
+    model_config = ConfigDict(graph_id_fields=["name"])
+    name: str
+    is_suspended_in: "_RecursiveMaterial | None" = None
+
+
+class _MutualA(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["name"])
+    name: str
+    partner: "_MutualB | None" = None
+
+
+class _MutualB(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["name"])
+    name: str
+    partner: "_MutualA | None" = None
+
+
+class _RecursiveRoot(BaseModel):
+    model_config = ConfigDict(graph_id_fields=["doc_id"])
+    doc_id: str
+    material: _RecursiveMaterial | None = None
+    a: "_MutualA | None" = None
+
+
+_RecursiveMaterial.model_rebuild()
+_MutualA.model_rebuild()
+_MutualB.model_rebuild()
+_RecursiveRoot.model_rebuild()
+
+
+def test_build_node_catalog_prunes_self_loops_and_mutual_cycles() -> None:
+    """A self-referencing entity (Material -> Material) previously recursed
+    until RecursionError; the recurrence is pruned, non-recursive paths stay."""
+    catalog = build_node_catalog(_RecursiveRoot)
+    paths = [node.path for node in catalog.nodes]
+    assert "material" in paths
+    assert "a" in paths
+    assert "a.partner" in paths  # first hop of the mutual cycle keeps a path
+    assert "material.is_suspended_in" not in paths  # the recurrence is pruned
+    assert "a.partner.partner" not in paths
+    # Party-style repeats at DIFFERENT branches must still walk (no global
+    # visited set): both mutual classes appear once.
+    types = [node.node_type for node in catalog.nodes]
+    assert types.count("_MutualA") == 1
+    assert types.count("_MutualB") == 1
+
+
+def test_get_model_for_path_is_cycle_safe() -> None:
+    assert get_model_for_path(_RecursiveRoot, "material") is _RecursiveMaterial
+    assert get_model_for_path(_RecursiveRoot, "a.partner") is _MutualB

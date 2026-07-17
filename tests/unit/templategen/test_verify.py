@@ -253,10 +253,11 @@ def test_v4_fails_on_id_fields_mismatch(invoice_spec, invoice_source):
     assert "id_fields" in v4.detail
 
 
-def test_v4_full_edge_cycle_fails_gracefully():
-    # A mutual full-edge cycle sends build_node_catalog into unbounded
-    # recursion — the gate must report it as a failure, never crash (linter
-    # rule R15 exists precisely to mark cycle back-edges reference=True).
+def test_v4_full_edge_cycle_walks_safely():
+    # A mutual full-edge cycle used to send build_node_catalog into unbounded
+    # recursion; the walk now prunes recursive ancestry, so the cycle renders
+    # AND verifies — each class keeps its non-recursive discovery path (the
+    # recurrence itself is pruned, resolved by the converter at runtime).
     spec = TemplateSpec(
         root="Doc",
         models=[
@@ -294,8 +295,8 @@ def test_v4_full_edge_cycle_fails_gracefully():
     )
     report = verify_template_source(render_template(spec), root_class="Doc", spec=spec)
     v4 = gate(report, "V4")
-    assert not v4.passed
-    assert "RecursionError" in v4.detail
+    assert v4.passed, v4.detail
+    assert "3 discovery path(s)" in v4.detail  # Doc, a, a.partner — recurrence pruned
 
 
 # ---------------------------------------------------------------------------
@@ -756,3 +757,50 @@ def test_property_field_cycle_lints_renders_and_verifies():
     report = verify_template_source(source, root_class=repaired.root, spec=repaired)
     assert report.passed, report.summary()
     assert not any(g.skipped for g in report.gates)
+
+
+def test_v3_recursive_root_via_inverse_reference_passes():
+    """An inverse reference edge back to the root (Author AUTHORED_BY-> Paper)
+    hoists the root into $defs in pydantic's schema; V3 must still normalize
+    to a strict top-level object (schema_utils dereferences the root $ref)."""
+    spec = TemplateSpec(
+        root="Paper",
+        models=[
+            ModelSpec(
+                name="Author",
+                kind="entity",
+                docstring="An author of the paper.",
+                identity_fields=["name"],
+                fields=[
+                    FieldSpec(name="name", type="str", role="identity", examples=["Ada B"]),
+                    FieldSpec(
+                        name="authored",
+                        type="Paper",
+                        role="edge",
+                        edge_label="AUTHORED_BY",
+                        reference=True,
+                    ),
+                ],
+            ),
+            ModelSpec(
+                name="Paper",
+                kind="root",
+                docstring="The paper itself.",
+                identity_fields=["title"],
+                fields=[
+                    FieldSpec(name="title", type="str", role="identity", examples=["Rheology"]),
+                    FieldSpec(
+                        name="authors",
+                        type="Author",
+                        role="edge",
+                        edge_label="AUTHORED_BY",
+                        is_list=True,
+                    ),
+                ],
+            ),
+        ],
+    )
+    report = verify_template_source(render_template(spec), root_class="Paper", spec=spec)
+    v3 = gate(report, "V3")
+    assert v3.passed, v3.detail
+    assert report.passed, report.summary()
