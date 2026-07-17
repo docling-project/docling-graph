@@ -111,6 +111,8 @@ Per class:
 - documented_max_count: the maximum instance count ONLY if the document itself states it
   (e.g. "the 3 coverage tiers"); 0 otherwise.
 - evidence_quotes: 1-3 short verbatim quotes proving the class appears in the document.
+OUTPUT BUDGET (hard): list each class exactly once — never repeat an entry; keep every
+quote under 15 words. Stop after the last class.
 """
 
 _PASS2_INSTRUCTIONS = """\
@@ -127,6 +129,10 @@ Per field:
 - unit_varies: true when the same quantity appears with different units.
 Do NOT include relationship fields pointing at other classes here — a later pass
 handles relationships. Do not invent fields the document does not show.
+OUTPUT BUDGET (hard): at most 12 fields per class — the most informative ones. One short
+sentence per description, at most 3 verbatim_examples per field, each under 12 words.
+List each class exactly once and each field name at most once — never repeat yourself.
+Stop after the last listed class.
 """
 
 _PASS3_INSTRUCTIONS = """\
@@ -143,7 +149,52 @@ Per edge:
   true when this is where the target's details appear.
 - evidence: 1-2 verbatim quotes showing the relationship.
 Only propose edges between classes in the list. One edge per (source, field_name).
+OUTPUT BUDGET (hard): at most 40 edges; never repeat an edge; keep quotes under 15 words.
+Stop after the last edge.
 """
+
+_ONESHOT_INSTRUCTIONS = """\
+TASK — FULL ONTOLOGY IN ONE ANSWER:
+Design the complete extraction ontology for documents of this kind in a single JSON
+object: every class, its data fields, and its relationships, most important first,
+at most {max_models} classes.
+Per class:
+- name (PascalCase), kind ("entity" or "component" — apply the four questions),
+  is_root (true for exactly ONE class: the document itself),
+  what_it_is (one sentence, <= 240 chars), confusable_with ("" if none).
+- identity_candidate: for entities, {{"field", "why", "verbatim_examples"}} — the ONE
+  field whose value names instances; field "" when the document names no instances.
+- fields: the class's data fields. Per field: name (snake_case), type (str, int, float,
+  bool, date, datetime — or "enum:<Name>" for a small closed value set), is_list,
+  description (LOOK-FOR locator + at most ONE normalization rule),
+  verbatim_examples (0-3 values copied verbatim), enum_members ([] unless enum type).
+  Do NOT list relationship fields here.
+- edges: the class's relationships. Per edge: field_name (snake_case), target (a class
+  name from this same answer), label (ALL_CAPS verb phrase, "" if unsure), is_list,
+  target_described_fully_here (false when the target's details live elsewhere),
+  evidence (0-1 short verbatim quote).
+OUTPUT BUDGET (hard): at most 12 fields and 6 edges per class, one short sentence per
+description, every example under 12 words. List each class exactly once, each field name
+at most once — never repeat yourself. Stop after the last class.
+"""
+
+_ONESHOT_SHAPE = """\
+Return JSON with exactly this shape:
+{"classes": [
+  {"name": "Invoice", "kind": "entity", "is_root": true,
+   "what_it_is": "A commercial invoice billing a buyer.", "confusable_with": "",
+   "identity_candidate": {"field": "invoice_number", "why": "printed in the header",
+                          "verbatim_examples": ["INV-2024-0113"]},
+   "documented_max_count": 0,
+   "evidence_quotes": ["Invoice No. INV-2024-0113"],
+   "fields": [{"name": "total_amount", "type": "float", "is_list": false,
+               "description": "LOOK FOR the Total line.", "verbatim_examples": ["138.90"],
+               "enum_members": []}],
+   "edges": [{"field_name": "issued_by", "target": "Party", "label": "ISSUED_BY",
+              "is_list": false, "target_described_fully_here": true,
+              "evidence": ["Issued by: Acme GmbH"]}]}
+]}"""
+
 
 _GAPFILL_INSTRUCTIONS = """\
 TASK — FILL DOCUMENTATION GAPS:
@@ -180,6 +231,39 @@ def _system(instructions: str) -> str:
 # ---------------------------------------------------------------------------
 # Public API: prompt builders
 # ---------------------------------------------------------------------------
+
+
+def get_oneshot_prompt(
+    document_text: str,
+    *,
+    doc_name: str,
+    max_models: int,
+    root_hint: str | None = None,
+) -> PromptDict:
+    """One-shot prompt: the complete ontology (classes + fields + edges) in one call.
+
+    The programmatic twin of the proven manual workflow — example documents
+    plus the condensed schema-definition rulebook into one strong-model call,
+    ontology JSON out; the deterministic merge/linter/renderer replace the
+    "now turn it into Pydantic" second call. One LLM call per induction unit,
+    and (by default) no grammar-constrained decoding: the JSON shape is shown
+    as an example, and the response parsers tolerate missing keys.
+    """
+    hint = (
+        f"The root class (the document itself) should be named '{root_hint}'.\n"
+        if root_hint
+        else ""
+    )
+    user = (
+        _DOC_BLOCK.format(doc_name=doc_name, document_text=document_text)
+        + hint
+        + f"Design the full ontology (at most {max_models} classes) for this document.\n\n"
+        + _ONESHOT_SHAPE
+    )
+    return {
+        "system": _system(_ONESHOT_INSTRUCTIONS.format(max_models=max_models)),
+        "user": user,
+    }
 
 
 def get_class_inventory_prompt(
