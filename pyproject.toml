@@ -92,7 +92,7 @@ templategen = [
 # Development tools (linters, type-checkers) and utilities
 dev = [
     "pre-commit~=4.5",
-    "mypy~=1.10",
+    "mypy>=1.10,<3.0",
     "types-setuptools>=80.9,<85.0",
     "pandas-stubs~=2.1",
     "types-openpyxl~=3.1",
