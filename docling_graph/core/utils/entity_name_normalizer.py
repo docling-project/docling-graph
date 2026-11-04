@@ -59,8 +59,9 @@ def canonicalize_identity_for_dedup(field_name: str, value: Any) -> str:
     """
     Canonicalize an identity field value for dedup key computation only.
     - For name/title/nom: use normalize_entity_name so "John Doe" and "john doe" match.
-    - For other id fields (run_id, batch_id, etc.): lowercase and keep only
-      alphanumeric characters so "Run-1", "run_1", "run1" all become "run1".
+    - For other id fields (run_id, batch_id, etc.): casefold, strip diacritics
+      and keep only letters and digits (in any script) so "Run-1", "run_1",
+      "run1" all become "run1" while "北京" and "上海" stay distinct.
     """
     if value is None:
         return ""
@@ -71,4 +72,7 @@ def canonicalize_identity_for_dedup(field_name: str, value: Any) -> str:
         return ""
     normalized = unicodedata.normalize("NFKD", text)
     lower = normalized.casefold()
-    return re.sub(r"[^a-z0-9]", "", lower)
+    # Unicode-aware: an ASCII-only [a-z0-9] filter erased every non-Latin
+    # value to "", so distinct Chinese/Cyrillic/Greek ids shared one key.
+    # [\W_] still drops combining marks, punctuation and separators.
+    return re.sub(r"[\W_]", "", lower)

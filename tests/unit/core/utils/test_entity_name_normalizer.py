@@ -139,3 +139,12 @@ class TestAccentAndSeparatorFolding:
 
     def test_distinct_words_stay_distinct(self):
         assert normalize_entity_name("CONFORT") != normalize_entity_name("CONFORT PLUS")
+
+
+def test_canonicalize_identity_for_dedup_keeps_non_latin_letters():
+    """Non-Latin identifiers keep their letters instead of collapsing to ""."""
+    assert canonicalize_identity_for_dedup("city_code", "北京") == "北京"
+    assert canonicalize_identity_for_dedup("city_code", "上海") == "上海"
+    assert canonicalize_identity_for_dedup("full_name", "Иван-Петров") == "иванпетров"
+    assert canonicalize_identity_for_dedup("label", "Αθήνα") == "αθηνα"
+    assert canonicalize_identity_for_dedup("ref", "Ølsen_1") == "ølsen1"
