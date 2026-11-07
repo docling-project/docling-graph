@@ -56,8 +56,8 @@ from docling_graph.templategen.spec import SpecGap
 
 if TYPE_CHECKING:
     # linkml-runtime ships no py.typed marker: both imports are Any to mypy.
-    from linkml_runtime.linkml_model.meta import SlotDefinition  # type: ignore[import-untyped]
-    from linkml_runtime.utils.schemaview import SchemaView  # type: ignore[import-untyped]
+    from linkml_runtime.linkml_model.meta import SlotDefinition
+    from linkml_runtime.utils.schemaview import SchemaView
 
 LINKML_TYPE_MAP: dict[str, str] = {
     "string": "str",

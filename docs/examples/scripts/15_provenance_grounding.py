@@ -49,9 +49,8 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.rheology_research import ScholarlyRheologyPaper
-
     from docling_graph import PipelineConfig, run_pipeline
+    from examples.templates.rheology_research import ScholarlyRheologyPaper
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")

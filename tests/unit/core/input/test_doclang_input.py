@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from docling_core.types.doc import DoclingDocument
+from docling_core.types.doc import DoclingDocument, TableCell, TableData
 from docling_core.types.doc.base import BoundingBox, CoordOrigin
 from docling_core.types.doc.document import ProvenanceItem
 from docling_core.types.doc.labels import DocItemLabel
@@ -103,6 +103,25 @@ class TestDoclangValidator:
 
 
 class TestDoclangInputHandler:
+    def test_dclx_table_cell_with_ampersand_round_trips(self, temp_dir):
+        doc = DoclingDocument(name="financial-report")
+        table = doc.add_table(data=TableData(num_rows=1, num_cols=1))
+        doc.add_table_cell(
+            table_item=table,
+            cell=TableCell(
+                start_row_offset_idx=0,
+                end_row_offset_idx=1,
+                start_col_offset_idx=0,
+                end_col_offset_idx=1,
+                text="IPR&D",
+            ),
+        )
+        path = temp_dir / "financial-report.dclx"
+        doc.save_as_doclang_archive(path)
+
+        loaded = DoclangInputHandler().load(path)
+        assert loaded.tables[0].data.table_cells[0].text == "IPR&D"
+
     def test_loads_dclg_into_document(self, dclg_file):
         loaded = DoclangInputHandler().load(dclg_file)
         assert isinstance(loaded, DoclingDocument)

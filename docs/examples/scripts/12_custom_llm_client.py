@@ -49,11 +49,10 @@ except ImportError:
     litellm = None
 
 try:
-    from examples.templates.rheology_research import ScholarlyRheologyPaper
-
     from docling_graph import PipelineConfig, run_pipeline
     from docling_graph.exceptions import ClientError
     from docling_graph.llm_clients.response_handler import ResponseHandler
+    from examples.templates.rheology_research import ScholarlyRheologyPaper
 except ImportError as e:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")

@@ -49,10 +49,9 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from examples.templates.billing_document import BillingDocument
-
     from docling_graph.llm_clients import get_client
     from docling_graph.llm_clients.config import resolve_effective_model_config
+    from examples.templates.billing_document import BillingDocument
 except ImportError:
     rich_print("[red]Error:[/red] Could not import required modules.")
     rich_print("Please run this script from the project root directory.")
