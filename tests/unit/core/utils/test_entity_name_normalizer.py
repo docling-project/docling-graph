@@ -148,3 +148,38 @@ def test_canonicalize_identity_for_dedup_keeps_non_latin_letters():
     assert canonicalize_identity_for_dedup("full_name", "Иван-Петров") == "иванпетров"
     assert canonicalize_identity_for_dedup("label", "Αθήνα") == "αθηνα"
     assert canonicalize_identity_for_dedup("ref", "Ølsen_1") == "ølsen1"
+
+
+# Pairs that differ only by a script-specific mark (kana voicing mark,
+# Devanagari vowel sign, Thai tone mark, Arabic harakat). The mark is part
+# of the letter.
+_MARK_DISTINCT_PAIRS = [
+    ("ガス", "カス"),
+    ("किताब", "कताब"),
+    ("ไก่", "ไก"),
+    ("مَلِك", "مَلَك"),
+]
+
+
+@pytest.mark.parametrize(("a", "b"), _MARK_DISTINCT_PAIRS)
+def test_script_specific_marks_stay_distinct_in_names(a, b):
+    assert normalize_entity_name(a) != normalize_entity_name(b)
+
+
+@pytest.mark.parametrize(("a", "b"), _MARK_DISTINCT_PAIRS)
+def test_script_specific_marks_stay_distinct_in_identifiers(a, b):
+    assert canonicalize_identity_for_dedup("code", a) != canonicalize_identity_for_dedup("code", b)
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        ("Électroménager", "electromenager"),
+        ("Run-1", "run_1"),
+        ("Αθήνα", "αθηνα"),
+        ("\uff21\uff22\uff23\uff11", "abc1"),
+        ("Straße", "strasse"),
+    ],
+)
+def test_identifier_folding_still_matches(a, b):
+    assert canonicalize_identity_for_dedup("code", a) == canonicalize_identity_for_dedup("code", b)

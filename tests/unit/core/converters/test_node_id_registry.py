@@ -189,3 +189,14 @@ def test_non_latin_identities_stay_distinct(registry):
     beijing = CityModel(city_name="北京")
     shanghai = CityModel(city_name="上海")
     assert registry.get_node_id(beijing) != registry.get_node_id(shanghai)
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [("ガス", "カス"), ("किताब", "कताब"), ("ไก่", "ไก"), ("مَلِك", "مَلَك")],
+)
+def test_script_specific_marks_keep_identities_distinct(registry, a, b):
+    """Kana voicing, Indic vowel signs, Thai tone marks and harakat are part of the letter."""
+    assert registry.get_node_id(CityModel(city_name=a)) != registry.get_node_id(
+        CityModel(city_name=b)
+    )
