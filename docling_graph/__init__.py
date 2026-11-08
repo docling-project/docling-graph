@@ -1,4 +1,4 @@
-__version__ = "1.9.1"
+__version__ = "1.9.2"
 
 from .config import LLMConfig, ModelConfig, ModelsConfig, PipelineConfig, VLMConfig
 from .core.merge import GraphMerger, MergePolicy, MergeReport, merge_graphs

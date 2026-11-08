@@ -2,6 +2,495 @@
 
 <!-- version list -->
 
+## v1.9.2 (2026-11-08)
+
+### Bug Fixes
+
+- **core**: Keep non-Latin letters in identity dedup keys
+  ([#140](https://github.com/docling-project/docling-graph/pull/140),
+  [`b15de72`](https://github.com/docling-project/docling-graph/commit/b15de7215e4544b6b39d37dacee5bbc3a32cd531))
+
+* fix(core): keep non-Latin letters in identity dedup keys
+
+canonicalize_identity_for_dedup filtered non-name identity values to [a-z0-9], so every Chinese,
+  Cyrillic, Greek or Arabic value canonicalized to an empty string and distinct entities shared one
+  node ID.
+
+Fold only the generic combining diacritic blocks, then recompose with NFC, so Latin accents still
+  fold while kana voicing marks, Indic vowel signs, Thai tone marks and Arabic harakat stay part of
+  the letter. Identifier keys keep letters, numbers and marks in any script; normalize_entity_name
+  uses the same folding so both dedup paths agree.
+
+Node IDs change for identity values containing non-ASCII letters or script-specific marks (e.g.
+  "Łódź", "Ølsen", CJK/Cyrillic/Greek values, kana/Indic/Thai/Arabic/Hebrew names). Graphs built
+  before this fix will not share node IDs with graphs built after it for those entities.
+
+Fixes #139
+
+Signed-off-by: Raphael Fakhri <153192858+RaphaelFakhri@users.noreply.github.com>
+
+Co-authored-by: Ayoub El Bouchtili <Ayoub.elbouchtili@fr.ibm.com>
+
+### Chores
+
+- **deps**: Bump aiohttp from 3.14.1 to 3.14.3
+  ([`efb67d8`](https://github.com/docling-project/docling-graph/commit/efb67d8458d693d3a6b3490f7471441669c05b2d))
+
+Bumps [aiohttp](https://github.com/aio-libs/aiohttp) from 3.14.1 to 3.14.3. -
+  [Changelog](https://github.com/aio-libs/aiohttp/blob/master/CHANGES.rst) -
+  [Commits](https://github.com/aio-libs/aiohttp/compare/v3.14.1...v3.14.3)
+
+--- updated-dependencies: - dependency-name: aiohttp dependency-version: 3.14.3
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump aiohttp from 3.14.3 to 3.14.4
+  ([`a06cf8b`](https://github.com/docling-project/docling-graph/commit/a06cf8b94aaad04a022fe10610119aafbfb33eb9))
+
+--- updated-dependencies: - dependency-name: aiohttp dependency-version: 3.14.4
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump anyio from 4.14.1 to 4.14.2
+  ([`bbcd0e4`](https://github.com/docling-project/docling-graph/commit/bbcd0e4846fadfcadac2800784783e59cd2722a9))
+
+Bumps [anyio](https://github.com/agronholm/anyio) from 4.14.1 to 4.14.2. - [Release
+  notes](https://github.com/agronholm/anyio/releases) -
+  [Commits](https://github.com/agronholm/anyio/compare/4.14.1...4.14.2)
+
+--- updated-dependencies: - dependency-name: anyio dependency-version: 4.14.2
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump datasets from 5.0.0 to 5.0.1
+  ([`c466898`](https://github.com/docling-project/docling-graph/commit/c466898a85630da44137c94eb8f58d38a3767f95))
+
+Bumps [datasets](https://github.com/huggingface/datasets) from 5.0.0 to 5.0.1. - [Release
+  notes](https://github.com/huggingface/datasets/releases) -
+  [Commits](https://github.com/huggingface/datasets/compare/5.0.0...5.0.1)
+
+--- updated-dependencies: - dependency-name: datasets dependency-version: 5.0.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump docling from 2.110.0 to 2.132.0
+  ([`add4906`](https://github.com/docling-project/docling-graph/commit/add4906c9cd94ec46f7aaf957de377f7ba23421e))
+
+Bumps [docling](https://github.com/docling-project/docling) from 2.110.0 to 2.132.0. - [Release
+  notes](https://github.com/docling-project/docling/releases) -
+  [Changelog](https://github.com/docling-project/docling/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/docling-project/docling/compare/v2.110.0...v2.132.0)
+
+--- updated-dependencies: - dependency-name: docling dependency-version: 2.132.0
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump fsspec from 2026.4.0 to 2026.6.0
+  ([`1bf79ae`](https://github.com/docling-project/docling-graph/commit/1bf79ae6cd64a6a60d8859a0965c6098222afde6))
+
+Bumps [fsspec](https://github.com/fsspec/filesystem_spec) from 2026.4.0 to 2026.6.0. -
+  [Commits](https://github.com/fsspec/filesystem_spec/compare/2026.4.0...2026.6.0)
+
+--- updated-dependencies: - dependency-name: fsspec dependency-version: 2026.6.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.50 to 3.1.52
+  ([`4274df4`](https://github.com/docling-project/docling-graph/commit/4274df4741b91f565539292eae8c4128b499dcbe))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.50 to 3.1.52. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/CHANGES) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.50...3.1.52)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.1.52
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.52 to 3.1.54
+  ([`eeafced`](https://github.com/docling-project/docling-graph/commit/eeafced6e62f91cdfd0cea71fd0d0af630f8ce36))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.52 to 3.1.54. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/CHANGES) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.52...3.1.54)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.1.54
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.54 to 3.1.57
+  ([`f846ce9`](https://github.com/docling-project/docling-graph/commit/f846ce9b15134ba35dcfd631174227de8b640b83))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.54 to 3.1.57. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/CHANGES) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.54...3.1.57)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.1.57
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.57 to 3.1.58
+  ([`7940927`](https://github.com/docling-project/docling-graph/commit/7940927770c08ed36857e943b2f4ddf33e6e65d3))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.57 to 3.1.58. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/CHANGES) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.57...3.1.58)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.1.58
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.58 to 3.1.59
+  ([`ab5c15d`](https://github.com/docling-project/docling-graph/commit/ab5c15da92f0485ef587ab353c6e55222879ebc9))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.58 to 3.1.59. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/CHANGES) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.58...3.1.59)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.1.59
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump gitpython from 3.1.59 to 3.2.1
+  ([`52c4d14`](https://github.com/docling-project/docling-graph/commit/52c4d1441426f188e073f81921ae6ee93af0a193))
+
+Bumps [gitpython](https://github.com/gitpython-developers/GitPython) from 3.1.59 to 3.2.1. -
+  [Release notes](https://github.com/gitpython-developers/GitPython/releases) -
+  [Changelog](https://github.com/gitpython-developers/GitPython/blob/main/doc/source/changes.rst) -
+  [Commits](https://github.com/gitpython-developers/GitPython/compare/3.1.59...3.2.1)
+
+--- updated-dependencies: - dependency-name: gitpython dependency-version: 3.2.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump jupyterlab from 4.6.1 to 4.6.2
+  ([`e10816c`](https://github.com/docling-project/docling-graph/commit/e10816ce74b742e084894c75c5e2c072b1fbad2a))
+
+Bumps [jupyterlab](https://github.com/jupyterlab/jupyterlab) from 4.6.1 to 4.6.2. - [Release
+  notes](https://github.com/jupyterlab/jupyterlab/releases) -
+  [Changelog](https://github.com/jupyterlab/jupyterlab/blob/main/RELEASE.md) -
+  [Commits](https://github.com/jupyterlab/jupyterlab/compare/@jupyterlab/lsp@4.6.1...@jupyterlab/lsp@4.6.2)
+
+--- updated-dependencies: - dependency-name: jupyterlab dependency-version: 4.6.2
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump jupyterlab from 4.6.2 to 4.6.4
+  ([`e714d88`](https://github.com/docling-project/docling-graph/commit/e714d88dd33180d49547651ecec3e1e44b665115))
+
+Bumps [jupyterlab](https://github.com/jupyterlab/jupyterlab) from 4.6.2 to 4.6.4. - [Release
+  notes](https://github.com/jupyterlab/jupyterlab/releases) -
+  [Changelog](https://github.com/jupyterlab/jupyterlab/blob/main/RELEASE.md) -
+  [Commits](https://github.com/jupyterlab/jupyterlab/compare/@jupyterlab/lsp@4.6.2...@jupyterlab/lsp@4.6.4)
+
+--- updated-dependencies: - dependency-name: jupyterlab dependency-version: 4.6.4
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump litellm from 1.90.3 to 1.108.2
+  ([`cd76be8`](https://github.com/docling-project/docling-graph/commit/cd76be88e88b848271e84d12403184b59bad731e))
+
+Supersedes the Dependabot bump to 1.100.4 (#138): that release imports typing.NotRequired at module
+  level, which breaks the LiteLLM client on Python 3.10. 1.108.2 has no such import and adds the
+  async-timeout and typing-extensions backports for Python < 3.11.
+
+Signed-off-by: Ayoub EL BOUCHTILI <ayoub.elbouchtili@fr.ibm.com>
+
+- **deps**: Bump mistune from 3.3.2 to 3.3.3
+  ([`47b2a42`](https://github.com/docling-project/docling-graph/commit/47b2a42111eda197579192488d2f3888b22bf194))
+
+Bumps [mistune](https://github.com/lepture/mistune) from 3.3.2 to 3.3.3. - [Release
+  notes](https://github.com/lepture/mistune/releases) -
+  [Changelog](https://github.com/lepture/mistune/blob/main/docs/changes.rst) -
+  [Commits](https://github.com/lepture/mistune/compare/v3.3.2...v3.3.3)
+
+--- updated-dependencies: - dependency-name: mistune dependency-version: 3.3.3
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump multidict from 6.7.1 to 6.9.1
+  ([`406c9c7`](https://github.com/docling-project/docling-graph/commit/406c9c7757398542569c031ca046235c59f389cb))
+
+Bumps [multidict](https://github.com/aio-libs/multidict) from 6.7.1 to 6.9.1. - [Release
+  notes](https://github.com/aio-libs/multidict/releases) -
+  [Changelog](https://github.com/aio-libs/multidict/blob/master/CHANGES.rst) -
+  [Commits](https://github.com/aio-libs/multidict/compare/v6.7.1...v6.9.1)
+
+--- updated-dependencies: - dependency-name: multidict dependency-version: 6.9.1
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump nbconvert from 7.17.1 to 7.17.2
+  ([`ec9ae4e`](https://github.com/docling-project/docling-graph/commit/ec9ae4ef2741544971b2ba96896984a5faf3e783))
+
+Bumps [nbconvert](https://github.com/jupyter/nbconvert) from 7.17.1 to 7.17.2. - [Release
+  notes](https://github.com/jupyter/nbconvert/releases) -
+  [Changelog](https://github.com/jupyter/nbconvert/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/jupyter/nbconvert/compare/v7.17.1...v7.17.2)
+
+--- updated-dependencies: - dependency-name: nbconvert dependency-version: 7.17.2
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump soupsieve from 2.8.4 to 2.9
+  ([`de9b1f9`](https://github.com/docling-project/docling-graph/commit/de9b1f9008fbdb29d0c820539df6d60e9060ec5c))
+
+Bumps [soupsieve](https://github.com/facelessuser/soupsieve) from 2.8.4 to 2.9. - [Release
+  notes](https://github.com/facelessuser/soupsieve/releases) -
+  [Commits](https://github.com/facelessuser/soupsieve/compare/2.8.4...2.9)
+
+--- updated-dependencies: - dependency-name: soupsieve dependency-version: '2.9'
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump the dev-dependencies group with 2 updates
+  ([`a9fa545`](https://github.com/docling-project/docling-graph/commit/a9fa5450703b3304205c8da6baf9f72f2295b722))
+
+Updates the requirements on [types-setuptools](https://github.com/python/typeshed) and
+  [pytest-durations](https://github.com/blake-r/pytest-durations) to permit the latest version.
+
+Updates `types-setuptools` to 84.0.0.20260812 -
+  [Commits](https://github.com/python/typeshed/commits)
+
+Updates `pytest-durations` to 1.9.0 - [Release
+  notes](https://github.com/blake-r/pytest-durations/releases) -
+  [Commits](https://github.com/blake-r/pytest-durations/compare/v1.6.1...1.9.0)
+
+--- updated-dependencies: - dependency-name: types-setuptools dependency-version: 84.0.0.20260812
+
+dependency-type: direct:development
+
+dependency-group: dev-dependencies
+
+- dependency-name: pytest-durations dependency-version: 1.9.0
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump torch from 2.12.1 to 2.13.0
+  ([`e6c9f26`](https://github.com/docling-project/docling-graph/commit/e6c9f26bf8a8982718b2bc3609f6b52946313525))
+
+Bumps [torch](https://github.com/pytorch/pytorch) from 2.12.1 to 2.13.0. - [Release
+  notes](https://github.com/pytorch/pytorch/releases) -
+  [Changelog](https://github.com/pytorch/pytorch/blob/main/RELEASE.md) -
+  [Commits](https://github.com/pytorch/pytorch/compare/v2.12.1...v2.13.0)
+
+--- updated-dependencies: - dependency-name: torch dependency-version: 2.13.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump tornado from 6.5.7 to 6.5.8
+  ([`ddc6cc3`](https://github.com/docling-project/docling-graph/commit/ddc6cc3254f91f60dffd101583a678c36ab3ee5c))
+
+Bumps [tornado](https://github.com/tornadoweb/tornado) from 6.5.7 to 6.5.8. -
+  [Changelog](https://github.com/tornadoweb/tornado/blob/master/docs/releases.rst) -
+  [Commits](https://github.com/tornadoweb/tornado/compare/v6.5.7...v6.5.8)
+
+--- updated-dependencies: - dependency-name: tornado dependency-version: 6.5.8
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump tornado from 6.5.8 to 6.5.9
+  ([`40f121d`](https://github.com/docling-project/docling-graph/commit/40f121d16bbfab57578f239e9db54513ad563d6e))
+
+Bumps [tornado](https://github.com/tornadoweb/tornado) from 6.5.8 to 6.5.9. -
+  [Changelog](https://github.com/tornadoweb/tornado/blob/master/docs/releases.rst) -
+  [Commits](https://github.com/tornadoweb/tornado/compare/v6.5.8...v6.5.9)
+
+--- updated-dependencies: - dependency-name: tornado dependency-version: 6.5.9
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump urllib3 from 2.7.0 to 2.8.0
+  ([`e15e7a8`](https://github.com/docling-project/docling-graph/commit/e15e7a8cf36df8147a6ff4e5d31715d574541f2e))
+
+Bumps [urllib3](https://github.com/urllib3/urllib3) from 2.7.0 to 2.8.0. - [Release
+  notes](https://github.com/urllib3/urllib3/releases) -
+  [Changelog](https://github.com/urllib3/urllib3/blob/main/CHANGES.rst) -
+  [Commits](https://github.com/urllib3/urllib3/compare/2.7.0...2.8.0)
+
+--- updated-dependencies: - dependency-name: urllib3 dependency-version: 2.8.0
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump virtualenv from 21.14.9 to 21.14.13
+  ([`0657ec7`](https://github.com/docling-project/docling-graph/commit/0657ec7061163927a43929dc24850625736adb28))
+
+Bumps [virtualenv](https://github.com/pypa/virtualenv) from 21.14.9 to 21.14.13. - [Release
+  notes](https://github.com/pypa/virtualenv/releases) -
+  [Changelog](https://github.com/pypa/virtualenv/blob/main/docs/changelog.rst) -
+  [Commits](https://github.com/pypa/virtualenv/compare/21.14.9...21.14.13)
+
+--- updated-dependencies: - dependency-name: virtualenv dependency-version: 21.14.13
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Bump virtualenv from 21.5.1 to 21.14.9
+  ([`99408c1`](https://github.com/docling-project/docling-graph/commit/99408c1ca40e48dfde914a7bf7bf36b2fedcc9aa))
+
+Bumps [virtualenv](https://github.com/pypa/virtualenv) from 21.5.1 to 21.14.9. - [Release
+  notes](https://github.com/pypa/virtualenv/releases) -
+  [Changelog](https://github.com/pypa/virtualenv/blob/main/docs/changelog.rst) -
+  [Commits](https://github.com/pypa/virtualenv/compare/21.5.1...21.14.9)
+
+--- updated-dependencies: - dependency-name: virtualenv dependency-version: 21.14.9
+
+dependency-type: indirect ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update mypy requirement
+  ([`1ed0dce`](https://github.com/docling-project/docling-graph/commit/1ed0dce6ba1bb4ca0033850c3b38a6af06c0fbd8))
+
+Updates the requirements on [mypy](https://github.com/python/mypy) to permit the latest version.
+
+Updates `mypy` to 2.4.0 - [Changelog](https://github.com/python/mypy/blob/master/CHANGELOG.md) -
+  [Commits](https://github.com/python/mypy/compare/v1.10.0...v2.4.0)
+
+--- updated-dependencies: - dependency-name: mypy dependency-version: 2.4.0
+
+dependency-type: direct:development
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps**: Update pytest-durations requirement
+  ([`19815e3`](https://github.com/docling-project/docling-graph/commit/19815e3147503f78a06e263255667e237830bab9))
+
+Updates the requirements on [pytest-durations](https://github.com/blake-r/pytest-durations) to
+  permit the latest version.
+
+Updates `pytest-durations` to 1.8.0 - [Release
+  notes](https://github.com/blake-r/pytest-durations/releases) -
+  [Commits](https://github.com/blake-r/pytest-durations/compare/v1.6.1...1.8.0)
+
+--- updated-dependencies: - dependency-name: pytest-durations dependency-version: 1.8.0
+
+dependency-type: direct:development
+
+dependency-group: dev-dependencies ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps)(deps**: Bump actions/labeler in the all-actions group
+  ([`dabfc9f`](https://github.com/docling-project/docling-graph/commit/dabfc9f90ff739996feb8be3a799bc88c94da544))
+
+Bumps the all-actions group with 1 update: [actions/labeler](https://github.com/actions/labeler).
+
+Updates `actions/labeler` from 6 to 7 - [Release notes](https://github.com/actions/labeler/releases)
+  - [Commits](https://github.com/actions/labeler/compare/v6...v7)
+
+--- updated-dependencies: - dependency-name: actions/labeler dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps)(deps**: Bump actions/setup-python in the all-actions group
+  ([`799f4c6`](https://github.com/docling-project/docling-graph/commit/799f4c652cc3d269ee984389c705e0f3f9dec7cd))
+
+Bumps the all-actions group with 1 update:
+  [actions/setup-python](https://github.com/actions/setup-python).
+
+Updates `actions/setup-python` from 6 to 7 - [Release
+  notes](https://github.com/actions/setup-python/releases) -
+  [Commits](https://github.com/actions/setup-python/compare/v6...v7)
+
+--- updated-dependencies: - dependency-name: actions/setup-python dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major
+
+dependency-group: all-actions ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump mkdocs-material from 9.7.6 to 9.7.7
+  ([`a5368f9`](https://github.com/docling-project/docling-graph/commit/a5368f959aefd91d777c0a0c30e47b3e0f7374df))
+
+Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 9.7.6 to 9.7.7. -
+  [Release notes](https://github.com/squidfunk/mkdocs-material/releases) -
+  [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/CHANGELOG) -
+  [Commits](https://github.com/squidfunk/mkdocs-material/compare/9.7.6...9.7.7)
+
+--- updated-dependencies: - dependency-name: mkdocs-material dependency-version: 9.7.7
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+- **deps-dev**: Bump notebook from 7.6.0 to 7.6.3
+  ([`b56c51f`](https://github.com/docling-project/docling-graph/commit/b56c51ff343bb1bbfe966ff9b006da44c51d8877))
+
+Bumps [notebook](https://github.com/jupyter/notebook) from 7.6.0 to 7.6.3. - [Release
+  notes](https://github.com/jupyter/notebook/releases) -
+  [Changelog](https://github.com/jupyter/notebook/blob/@jupyter-notebook/tree@7.6.3/CHANGELOG.md) -
+  [Commits](https://github.com/jupyter/notebook/compare/@jupyter-notebook/tree@7.6.0...@jupyter-notebook/tree@7.6.3)
+
+--- updated-dependencies: - dependency-name: notebook dependency-version: 7.6.3
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+
 ## v1.9.1 (2026-07-17)
 
 ### Bug Fixes
