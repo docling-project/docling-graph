@@ -176,3 +176,27 @@ def test_list_valued_identity_differs_by_content(registry):
     a = TaggedItemModel(tags=["x", "y"])
     b = TaggedItemModel(tags=["x", "z"])
     assert registry.get_node_id(a) != registry.get_node_id(b)
+
+
+class CityModel(BaseModel):
+    city_name: str
+
+    model_config = {"graph_id_fields": ["city_name"]}
+
+
+def test_non_latin_identities_stay_distinct(registry):
+    """Distinct non-Latin identities must not canonicalize to one fingerprint."""
+    beijing = CityModel(city_name="北京")
+    shanghai = CityModel(city_name="上海")
+    assert registry.get_node_id(beijing) != registry.get_node_id(shanghai)
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [("ガス", "カス"), ("किताब", "कताब"), ("ไก่", "ไก"), ("مَلِك", "مَلَك")],
+)
+def test_script_specific_marks_keep_identities_distinct(registry, a, b):
+    """Kana voicing, Indic vowel signs, Thai tone marks and harakat are part of the letter."""
+    assert registry.get_node_id(CityModel(city_name=a)) != registry.get_node_id(
+        CityModel(city_name=b)
+    )
