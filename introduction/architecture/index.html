@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4359,7 +4359,7 @@ flowchart TB
 <h3 id="stage-by-stage-breakdown">Stage-by-Stage Breakdown<a class="headerlink" href="#stage-by-stage-breakdown" title="Permanent link">&para;</a></h3>
 <h4 id="stage-1-template-loading">Stage 1: Template Loading<a class="headerlink" href="#stage-1-template-loading" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Load Pydantic template</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">template</span> <span class="o">=</span> <span class="n">import_template</span><span class="p">(</span><span class="s2">&quot;module.Template&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">template</span> <span class="o">=</span> <span class="n">import_template</span><span class="p">(</span><span class="s2">"module.Template"</span><span class="p">)</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Validate structure</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">validate_template</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
 </code></pre></div>
@@ -4371,7 +4371,7 @@ flowchart TB
 </code></pre></div>
 <h4 id="stage-3-extraction">Stage 3: Extraction<a class="headerlink" href="#stage-3-extraction" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Choose backend</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;vlm&quot;</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">"vlm"</span><span class="p">:</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">models</span> <span class="o">=</span> <span class="n">vlm_backend</span><span class="o">.</span><span class="n">extract_from_document</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">else</span><span class="p">:</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">models</span> <span class="o">=</span> <span class="n">llm_backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="n">markdown</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
@@ -4395,22 +4395,22 @@ flowchart TB
 <h2 id="protocol-based-design">Protocol-Based Design<a class="headerlink" href="#protocol-based-design" title="Permanent link">&para;</a></h2>
 <p>Docling Graph uses Python Protocols for type-safe, flexible interfaces:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ExtractionBackendProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for extraction backends&quot;&quot;&quot;</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="sd">"""Protocol for extraction backends"""</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span> <span class="o">...</span>
 </code></pre></div>
 <p><strong>Benefits:</strong> Type safety, easy mocking, clear contracts, flexible implementations</p>
 <p><strong>Location</strong>: <code>docling_graph/config.py</code></p>
 <p><strong>Purpose</strong>: Type-safe configuration using Pydantic</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PipelineConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Single source of truth for all defaults&quot;&quot;&quot;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="sd">"""Single source of truth for all defaults"""</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">template</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]]</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">backend</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span> <span class="s2">&quot;vlm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;llm&quot;</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">inference</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;remote&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">processing_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span> <span class="s2">&quot;many-to-one&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;many-to-one&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">backend</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"llm"</span><span class="p">,</span> <span class="s2">"vlm"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"llm"</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">inference</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"local"</span><span class="p">,</span> <span class="s2">"remote"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"local"</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">processing_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"one-to-one"</span><span class="p">,</span> <span class="s2">"many-to-one"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"many-to-one"</span>
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">use_chunking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">export_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;cypher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">export_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"csv"</span><span class="p">,</span> <span class="s2">"cypher"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"csv"</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"outputs"</span>
 <a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="c1"># ... additional settings</span>
 </code></pre></div>
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
@@ -4428,9 +4428,9 @@ flowchart TB
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">except</span> <span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Details: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cause: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">cause</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Details: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cause: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">cause</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></p>
 <h2 id="extensibility">Extensibility<a class="headerlink" href="#extensibility" title="Permanent link">&para;</a></h2>
 <p>Docling Graph is designed for extension:</p>
@@ -4528,10 +4528,10 @@ flowchart TB
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

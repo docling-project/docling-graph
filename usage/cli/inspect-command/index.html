@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -5099,7 +5099,7 @@
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># Save with timestamp</span>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">&quot;viz_</span><span class="k">$(</span>date<span class="w"> </span>+%Y%m%d_%H%M%S<span class="k">)</span><span class="s2">.html&quot;</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">"viz_</span><span class="k">$(</span>date<span class="w"> </span>+%Y%m%d_%H%M%S<span class="k">)</span><span class="s2">.html"</span>
 </code></pre></div></p>
 <hr />
 <h3 id="browser-control">Browser Control<a class="headerlink" href="#browser-control" title="Permanent link">&para;</a></h3>
@@ -5111,7 +5111,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Open automatically (default)</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Don&#39;t open browser</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Don't open browser</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>--no-open<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span>--output<span class="w"> </span>visualization.html
@@ -5121,8 +5121,8 @@
 <h3 id="quick-visualization">📍 Quick Visualization<a class="headerlink" href="#quick-visualization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Convert document</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/invoice&quot;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/invoice"</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
 <a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="c1"># Visualize immediately</span>
 <a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/invoice/
@@ -5147,13 +5147,13 @@
 <h3 id="batch-visualization">📍 Batch Visualization<a class="headerlink" href="#batch-visualization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Create visualizations for multiple outputs</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">for</span><span class="w"> </span>dir<span class="w"> </span><span class="k">in</span><span class="w"> </span>outputs/*/<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nv">name</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$dir</span><span class="s2">&quot;</span><span class="k">)</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$dir</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">        </span>--output<span class="w"> </span><span class="s2">&quot;visualizations/</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nv">name</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">"</span><span class="nv">$dir</span><span class="s2">"</span><span class="k">)</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span><span class="s2">"</span><span class="nv">$dir</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">        </span>--output<span class="w"> </span><span class="s2">"visualizations/</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">.html"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">        </span>--no-open
 <a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="k">done</span>
 <a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
-<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Created visualizations in visualizations/&quot;</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Created visualizations in visualizations/"</span>
 </code></pre></div>
 <h3 id="share-visualization">📍 Share Visualization<a class="headerlink" href="#share-visualization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Create self-contained HTML</span>
@@ -5255,8 +5255,8 @@
 <a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
 <a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Ensure convert completed successfully</span>
 <a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs"</span>
 <a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>
 <a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="c1"># Then inspect</span>
 <a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/
@@ -5286,7 +5286,7 @@
 <a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
 <a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Or use Neo4j for large graphs</span>
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">    </span>--export-format<span class="w"> </span>cypher
 <a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>
 <a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="c1"># Import to Neo4j and use Neo4j Browser</span>
@@ -5296,8 +5296,8 @@
 <h3 id="workflow-1-development-cycle">Workflow 1: Development Cycle<a class="headerlink" href="#workflow-1-development-cycle" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># 1. Convert document</span>
 <a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;test_output&quot;</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"test_output"</span>
 <a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>
 <a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="c1"># 2. Inspect results</span>
 <a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>test_output/
@@ -5307,8 +5307,8 @@
 <a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>
 <a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="c1"># 4. Re-convert and inspect</span>
 <a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;test_output&quot;</span>
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"test_output"</span>
 <a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a>
 <a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>test_output/
 </code></pre></div>
@@ -5317,39 +5317,39 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="ch">#!/bin/bash</span>
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="c1"># process_and_visualize.sh</span>
 <a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nv">INPUT_DIR</span><span class="o">=</span><span class="s2">&quot;documents&quot;</span>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="nv">OUTPUT_BASE</span><span class="o">=</span><span class="s2">&quot;outputs&quot;</span>
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="nv">VIZ_DIR</span><span class="o">=</span><span class="s2">&quot;visualizations&quot;</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nv">INPUT_DIR</span><span class="o">=</span><span class="s2">"documents"</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="nv">OUTPUT_BASE</span><span class="o">=</span><span class="s2">"outputs"</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="nv">VIZ_DIR</span><span class="o">=</span><span class="s2">"visualizations"</span>
 <a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>
-<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$VIZ_DIR</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$VIZ_DIR</span><span class="s2">"</span>
 <a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>
-<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="k">for</span><span class="w"> </span>pdf<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$INPUT_DIR</span><span class="s2">&quot;</span>/*.pdf<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="w">    </span><span class="nv">name</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pdf</span><span class="s2">&quot;</span><span class="w"> </span>.pdf<span class="k">)</span>
-<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a><span class="w">    </span><span class="nv">output_dir</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$OUTPUT_BASE</span><span class="s2">/</span><span class="nv">$name</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="k">for</span><span class="w"> </span>pdf<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">"</span><span class="nv">$INPUT_DIR</span><span class="s2">"</span>/*.pdf<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="w">    </span><span class="nv">name</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">"</span><span class="nv">$pdf</span><span class="s2">"</span><span class="w"> </span>.pdf<span class="k">)</span>
+<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a><span class="w">    </span><span class="nv">output_dir</span><span class="o">=</span><span class="s2">"</span><span class="nv">$OUTPUT_BASE</span><span class="s2">/</span><span class="nv">$name</span><span class="s2">"</span>
 <a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a>
-<a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Processing: </span><span class="nv">$name</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Processing: </span><span class="nv">$name</span><span class="s2">"</span>
 <a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a>
 <a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a><span class="w">    </span><span class="c1"># Convert</span>
-<a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pdf</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$output_dir</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"</span><span class="nv">$pdf</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">"</span><span class="nv">$output_dir</span><span class="s2">"</span>
 <a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a>
 <a id="__codelineno-27-21" name="__codelineno-27-21" href="#__codelineno-27-21"></a><span class="w">    </span><span class="c1"># Visualize</span>
-<a id="__codelineno-27-22" name="__codelineno-27-22" href="#__codelineno-27-22"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$output_dir</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-27-23" name="__codelineno-27-23" href="#__codelineno-27-23"></a><span class="w">        </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$VIZ_DIR</span><span class="s2">/</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-22" name="__codelineno-27-22" href="#__codelineno-27-22"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span><span class="s2">"</span><span class="nv">$output_dir</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-23" name="__codelineno-27-23" href="#__codelineno-27-23"></a><span class="w">        </span>--output<span class="w"> </span><span class="s2">"</span><span class="nv">$VIZ_DIR</span><span class="s2">/</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">.html"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-27-24" name="__codelineno-27-24" href="#__codelineno-27-24"></a><span class="w">        </span>--no-open
 <a id="__codelineno-27-25" name="__codelineno-27-25" href="#__codelineno-27-25"></a>
-<a id="__codelineno-27-26" name="__codelineno-27-26" href="#__codelineno-27-26"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Completed: </span><span class="nv">$name</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-26" name="__codelineno-27-26" href="#__codelineno-27-26"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Completed: </span><span class="nv">$name</span><span class="s2">"</span>
 <a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a><span class="k">done</span>
 <a id="__codelineno-27-28" name="__codelineno-27-28" href="#__codelineno-27-28"></a>
-<a id="__codelineno-27-29" name="__codelineno-27-29" href="#__codelineno-27-29"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;All visualizations saved to </span><span class="nv">$VIZ_DIR</span><span class="s2">/&quot;</span>
+<a id="__codelineno-27-29" name="__codelineno-27-29" href="#__codelineno-27-29"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"All visualizations saved to </span><span class="nv">$VIZ_DIR</span><span class="s2">/"</span>
 </code></pre></div>
 <hr />
 <h3 id="workflow-3-quality-assurance">Workflow 3: Quality Assurance<a class="headerlink" href="#workflow-3-quality-assurance" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Convert with verbose logging</span>
 <a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>--verbose<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;qa_output&quot;</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"qa_output"</span>
 <a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>
 <a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="c1"># Inspect graph structure</span>
 <a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>qa_output/
@@ -5419,7 +5419,7 @@
 <h3 id="save-important-visualizations">👍 Save Important Visualizations<a class="headerlink" href="#save-important-visualizations" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># ✅ Good - Save with descriptive name</span>
 <a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">&quot;invoice_001_graph.html&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">"invoice_001_graph.html"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span>--no-open
 <a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
 <a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="c1"># ❌ Avoid - Temporary files get lost</span>
@@ -5429,17 +5429,17 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># ✅ Good - Organized structure</span>
 <a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>visualizations/invoices
 <a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/invoice_001/<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">&quot;visualizations/invoices/invoice_001.html&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">"visualizations/invoices/invoice_001.html"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">    </span>--no-open
 <a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>
 <a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="c1"># ❌ Avoid - Cluttered directory</span>
 <a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>outputs/<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">&quot;viz1.html&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="w">    </span>--output<span class="w"> </span><span class="s2">"viz1.html"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="w">    </span>--no-open
 </code></pre></div>
 <h3 id="use-for-development">👍 Use for Development<a class="headerlink" href="#use-for-development" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># ✅ Good - Quick feedback loop</span>
-<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>test.pdf<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;test&quot;</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>test.pdf<span class="w"> </span>-t<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span>-o<span class="w"> </span><span class="s2">"test"</span>
 <a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>inspect<span class="w"> </span>test/
 <a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>
 <a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="c1"># ✅ Good - Iterate quickly</span>
@@ -5534,10 +5534,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

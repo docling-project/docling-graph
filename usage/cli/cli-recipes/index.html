@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4518,12 +4518,12 @@
 <p><strong>Python Script:</strong> <code>01_quickstart_vlm_image.py</code></p>
 <p><strong>Use Case:</strong> Extract structured data from invoice images</p>
 <p><strong>CLI Command:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/invoice/sample_invoice.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_01&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;vlm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;one-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span>--docling-pipeline<span class="w"> </span><span class="s2">&quot;vision&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/invoice/sample_invoice.jpg"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_01"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"vlm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"one-to-one"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span>--docling-pipeline<span class="w"> </span><span class="s2">"vision"</span>
 </code></pre></div></p>
 <p><strong>When to Use:</strong></p>
 <ul>
@@ -4538,28 +4538,28 @@
 <p><strong>Use Case:</strong> Extract from multi-page rheology researchs</p>
 <p><strong>Prerequisites:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 </code></pre></div></p>
 <p><strong>CLI Command:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_02&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_02"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"mistral-large-latest"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span>--use-chunking
 </code></pre></div></p>
 <p><strong>With Streaming (for timeout-constrained environments):</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_02_streaming&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_02_streaming"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"mistral-large-latest"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span>--llm-streaming
 </code></pre></div></p>
@@ -4576,17 +4576,17 @@
 <p><strong>Use Case:</strong> Download and process documents from URLs</p>
 <p><strong>Prerequisites:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 </code></pre></div></p>
 <p><strong>CLI Command:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;https://arxiv.org/pdf/2207.02720&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_03&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"https://arxiv.org/pdf/2207.02720"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_03"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"mistral-large-latest"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--use-chunking
 </code></pre></div></p>
 <p><strong>When to Use:</strong></p>
@@ -4602,26 +4602,26 @@
 <p><strong>Use Case:</strong> Process text, Markdown, and DoclingDocument formats</p>
 <p><strong>Text File:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Create sample text file</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Title: Sample Document</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Title: Sample Document</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="s2">Summary: This is a test document.</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="s2">Key Points:</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="s2">- Point 1</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="s2">- Point 2&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>sample.txt
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="s2">- Point 2"</span><span class="w"> </span>&gt;<span class="w"> </span>sample.txt
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># Process text file</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;sample.txt&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.simple.SimpleDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_04_text&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"sample.txt"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.simple.SimpleDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_04_text"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span>
 </code></pre></div></p>
 <p><strong>Markdown File:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Process markdown file</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;README.md&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.simple.SimpleDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_04_markdown&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"README.md"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.simple.SimpleDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_04_markdown"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span>
 </code></pre></div></p>
 <p><strong>When to Use:</strong></p>
 <ul>
@@ -4640,25 +4640,25 @@
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
 </code></pre></div></p>
 <p><strong>One-to-One Mode:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/id_card/multi_french_id_cards.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.id_card.IDCard&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_05_one_to_one&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;ollama&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;llama3:8b&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;one-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/id_card/multi_french_id_cards.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.id_card.IDCard"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_05_one_to_one"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"local"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"ollama"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"llama3:8b"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"one-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span>--no-use-chunking
 </code></pre></div></p>
 <p><strong>Many-to-One Mode:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/id_card/multi_french_id_cards.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.id_card.IDCard&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_05_many_to_one&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;ollama&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;llama3:8b&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/id_card/multi_french_id_cards.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.id_card.IDCard"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_05_many_to_one"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"local"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"ollama"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"llama3:8b"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span>--use-chunking
 </code></pre></div></p>
 <hr />
@@ -4666,18 +4666,18 @@
 <p><strong>Python Script:</strong> <code>06_export_formats.py</code></p>
 <p><strong>Use Case:</strong> Generate different export formats for Neo4j</p>
 <p><strong>CSV Export (Bulk Import):</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/invoice/sample_invoice.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_06_csv&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;vlm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span>--export-format<span class="w"> </span><span class="s2">&quot;csv&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/invoice/sample_invoice.jpg"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_06_csv"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"vlm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span>--export-format<span class="w"> </span><span class="s2">"csv"</span>
 </code></pre></div></p>
 <p><strong>Cypher Export (Script):</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/invoice/sample_invoice.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_06_cypher&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;vlm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>--export-format<span class="w"> </span><span class="s2">&quot;cypher&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/invoice/sample_invoice.jpg"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_06_cypher"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"vlm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>--export-format<span class="w"> </span><span class="s2">"cypher"</span>
 </code></pre></div></p>
 <p><strong>Neo4j Import:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># CSV bulk import</span>
@@ -4699,14 +4699,14 @@
 <a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
 </code></pre></div></p>
 <p><strong>CLI Command:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_07&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;ollama&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;llama3:8b&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_07"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"local"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"ollama"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"llama3:8b"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span>--use-chunking
 </code></pre></div></p>
 <p><strong>When to Use:</strong></p>
@@ -4722,16 +4722,16 @@
 <p><strong>Use Case:</strong> Compare consolidation strategies</p>
 <p><strong>Prerequisites:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 </code></pre></div></p>
 <p><strong>Programmatic Merge (Fast):</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_08_programmatic&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_08_programmatic"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">    </span>--use-chunking
 </code></pre></div></p>
 <hr />
@@ -4743,17 +4743,17 @@
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="c1"># Process all invoices in a directory</span>
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="k">for</span><span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span>docs/examples/data/invoice/*.jpg<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="nv">filename</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span>.jpg<span class="k">)</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Processing </span><span class="nv">$filename</span><span class="s2">...&quot;</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="nv">filename</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span><span class="w"> </span>.jpg<span class="k">)</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Processing </span><span class="nv">$filename</span><span class="s2">..."</span>
 <a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_09/</span><span class="nv">$filename</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">        </span>--backend<span class="w"> </span><span class="s2">&quot;vlm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">        </span>--processing-mode<span class="w"> </span><span class="s2">&quot;one-to-one&quot;</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_09/</span><span class="nv">$filename</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">        </span>--backend<span class="w"> </span><span class="s2">"vlm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">        </span>--processing-mode<span class="w"> </span><span class="s2">"one-to-one"</span>
 <a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="k">done</span>
 <a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>
-<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Batch processing complete!&quot;</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Batch processing complete!"</span>
 </code></pre></div></p>
 <hr />
 <h2 id="multi-provider">📍 Multi-Provider<a class="headerlink" href="#multi-provider" title="Permanent link">&para;</a></h2>
@@ -4761,49 +4761,49 @@
 <p><strong>Use Case:</strong> Compare different LLM providers</p>
 <p><strong>Prerequisites:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Set API keys for providers you want to test</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEMINI_API_KEY</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_API_KEY</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
-<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_PROJECT_ID</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">"sk-..."</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"..."</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEMINI_API_KEY</span><span class="o">=</span><span class="s2">"..."</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_API_KEY</span><span class="o">=</span><span class="s2">"..."</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATSONX_PROJECT_ID</span><span class="o">=</span><span class="s2">"..."</span>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
 <a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
 </code></pre></div></p>
 <p><strong>OpenAI:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_10_openai&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;openai&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;gpt-4-turbo-preview&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_10_openai"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"openai"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"gpt-4-turbo-preview"</span>
 </code></pre></div></p>
 <p><strong>Mistral:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_10_mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_10_mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"mistral-large-latest"</span>
 </code></pre></div></p>
 <p><strong>Gemini:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_10_gemini&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;gemini&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;gemini-1.5-pro&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_10_gemini"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"gemini"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"gemini-1.5-pro"</span>
 </code></pre></div></p>
 <p><strong>watsonx:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_10_watsonx&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;watsonx&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;ibm/granite-4-h-small&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_10_watsonx"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"watsonx"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"ibm/granite-4-h-small"</span>
 </code></pre></div></p>
 <hr />
 <h2 id="streaming-responses">📍 Streaming Responses<a class="headerlink" href="#streaming-responses" title="Permanent link">&para;</a></h2>
@@ -4811,17 +4811,17 @@
 <p><strong>Use Case:</strong> Avoid timeout issues in constrained infrastructure environments</p>
 <p><strong>Prerequisites:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 </code></pre></div></p>
 <p><strong>CLI Command:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_streaming&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_streaming"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"mistral-large-latest"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">    </span>--llm-streaming
 </code></pre></div></p>
@@ -4836,13 +4836,13 @@
 <p><strong>Comparison:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Without streaming (may timeout in constrained environments)</span>
 <a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>large_document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ComplexSchema&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ComplexSchema"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">    </span>--no-llm-streaming
 <a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
 <a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="c1"># With streaming (keeps connection alive)</span>
 <a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>large_document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ComplexSchema&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ComplexSchema"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="w">    </span>--llm-streaming
 </code></pre></div>
@@ -4852,19 +4852,19 @@
 <p><strong>Use Case:</strong> Trace every extracted node back to its source chunk and page for auditing or citation</p>
 <p><strong>Prerequisites:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 </code></pre></div></p>
 <p><strong>CLI Command:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;docs/examples/data/research_paper/rheology.pdf&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/cli_provenance&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="w">    </span>--extraction-contract<span class="w"> </span><span class="s2">&quot;dense&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="w">    </span>--provenance<span class="w"> </span><span class="s2">&quot;detailed&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"docs/examples/data/research_paper/rheology.pdf"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/cli_provenance"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span>--backend<span class="w"> </span><span class="s2">"llm"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span>--inference<span class="w"> </span><span class="s2">"remote"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span>--provider<span class="w"> </span><span class="s2">"mistral"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"mistral-large-latest"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span><span class="s2">"many-to-one"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="w">    </span>--extraction-contract<span class="w"> </span><span class="s2">"dense"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="w">    </span>--provenance<span class="w"> </span><span class="s2">"detailed"</span>
 </code></pre></div></p>
 <p><strong>When to Use:</strong></p>
 <ul>
@@ -4873,7 +4873,7 @@
 <li>✅ Debugging why a field has a particular value</li>
 </ul>
 <p><strong>Result:</strong> Every entity node in <code>docling_graph/graph.json</code> carries a <code>__provenance__</code> attribute, and the full grounding ledger — including source chunk text — is written to <code>docling_graph/provenance.json</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>jq<span class="w"> </span><span class="s1">&#39;.nodes[] | {id, provenance: .__provenance__}&#39;</span><span class="w"> </span>outputs/cli_provenance/*/docling_graph/graph.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>jq<span class="w"> </span><span class="s1">'.nodes[] | {id, provenance: .__provenance__}'</span><span class="w"> </span>outputs/cli_provenance/*/docling_graph/graph.json
 </code></pre></div>
 <p>See <a href="../../../fundamentals/graph-management/provenance/">Data Grounding &amp; Provenance</a> for the full schema.</p>
 <hr />
@@ -4909,10 +4909,10 @@
 <a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$MISTRAL_API_KEY</span>
 <a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
 <a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="c1"># Set key for current session</span>
-<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-key"</span>
 <a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>
 <a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="c1"># Set permanently (add to ~/.bashrc or ~/.zshrc)</span>
-<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export MISTRAL_API_KEY=&quot;your-key&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">'export MISTRAL_API_KEY="your-key"'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
 </code></pre></div>
 <h3 id="ollama-issues">🐛 Ollama Issues<a class="headerlink" href="#ollama-issues" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># Check if Ollama is running</span>
@@ -4935,7 +4935,7 @@
 <a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>python<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Should be 3.10+</span>
 <a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>
 <a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="c1"># Verify installation</span>
-<a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import docling_graph; print(docling_graph.__version__)&quot;</span>
+<a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import docling_graph; print(docling_graph.__version__)"</span>
 </code></pre></div>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
@@ -5026,10 +5026,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

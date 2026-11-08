@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -5176,9 +5176,9 @@ flowchart LR
 <h3 id="many-to-one-default">Many-to-One (Default)<a class="headerlink" href="#many-to-one-default" title="Permanent link">&para;</a></h3>
 <p><strong>Best for:</strong> Most documents</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Default</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>  <span class="c1"># Default</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Process:</strong></p>
@@ -5193,9 +5193,9 @@ flowchart LR
 <h3 id="one-to-one">One-to-One<a class="headerlink" href="#one-to-one" title="Permanent link">&para;</a></h3>
 <p><strong>Best for:</strong> Multi-page forms, page-specific data</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Process:</strong></p>
@@ -5270,8 +5270,8 @@ flowchart LR
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">context</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># Access results</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">extracted_models</span><span class="p">)</span><span class="si">}</span><span class="s2"> models&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Graph has </span><span class="si">{</span><span class="n">context</span><span class="o">.</span><span class="n">graph_metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2"> nodes&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">extracted_models</span><span class="p">)</span><span class="si">}</span><span class="s2"> models"</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Graph has </span><span class="si">{</span><span class="n">context</span><span class="o">.</span><span class="n">graph_metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2"> nodes"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="extraction-flow">Extraction Flow<a class="headerlink" href="#extraction-flow" title="Permanent link">&para;</a></h2>
@@ -5287,44 +5287,44 @@ flowchart TD
     classDef operator fill:#F3E5F5,stroke:#CE93D8,color:#6A1B9A
     classDef process fill:#ECEFF1,stroke:#B0BEC5,color:#263238</p>
 <div class="highlight"><pre><span></span><code>%% 2. Define Nodes
-Start@{ shape: terminal, label: &quot;Input Source&quot; }
+Start@{ shape: terminal, label: "Input Source" }
 
-Normalize@{ shape: procs, label: &quot;Input Normalization&quot; }
-CheckInput{&quot;Input Type&quot;}
+Normalize@{ shape: procs, label: "Input Normalization" }
+CheckInput{"Input Type"}
 
-Convert@{ shape: procs, label: &quot;Document Conversion&lt;br/&gt;PDF/Image&quot; }
-TextProc@{ shape: lin-proc, label: &quot;Text Processing&lt;br/&gt;Text/Markdown&quot; }
-LoadDoc@{ shape: lin-proc, label: &quot;Load DoclingDocument&lt;br/&gt;Skip to Graph&quot; }
+Convert@{ shape: procs, label: "Document Conversion&lt;br/&gt;PDF/Image" }
+TextProc@{ shape: lin-proc, label: "Text Processing&lt;br/&gt;Text/Markdown" }
+LoadDoc@{ shape: lin-proc, label: "Load DoclingDocument&lt;br/&gt;Skip to Graph" }
 
-CheckMode{&quot;Process. Mode&quot;}
-CheckChunk{&quot;Chunking?&quot;}
+CheckMode{"Process. Mode"}
+CheckChunk{"Chunking?"}
 
-PageExtract@{ shape: lin-proc, label: &quot;Page-by-Page Extraction&quot; }
-FullDoc@{ shape: lin-proc, label: &quot;Full Document Extraction&quot; }
+PageExtract@{ shape: lin-proc, label: "Page-by-Page Extraction" }
+FullDoc@{ shape: lin-proc, label: "Full Document Extraction" }
 
-Chunk@{ shape: tag-proc, label: &quot;Structure-Aware Chunking&quot; }
-Batch@{ shape: tag-proc, label: &quot;Batch Chunks&quot; }
+Chunk@{ shape: tag-proc, label: "Structure-Aware Chunking" }
+Batch@{ shape: tag-proc, label: "Batch Chunks" }
 
-Extract@{ shape: procs, label: &quot;Extract from Batches&quot; }
+Extract@{ shape: procs, label: "Extract from Batches" }
 
-CheckMerge{&quot;Multiple Models?&quot;}
+CheckMerge{"Multiple Models?"}
 
-Merge@{ shape: lin-proc, label: &quot;Programmatic Merge&quot; }
-Single@{ shape: doc, label: &quot;Single Model&quot; }
+Merge@{ shape: lin-proc, label: "Programmatic Merge" }
+Single@{ shape: doc, label: "Single Model" }
 
-CheckConsol{&quot;Consolidation?&quot;}
-Consol@{ shape: procs, label: &quot;LLM Consolidation&quot; }
+CheckConsol{"Consolidation?"}
+Consol@{ shape: procs, label: "LLM Consolidation" }
 
-Final@{ shape: doc, label: &quot;Final Model&quot; }
-Graph@{ shape: db, label: &quot;Knowledge Graph&quot; }
+Final@{ shape: doc, label: "Final Model" }
+Graph@{ shape: db, label: "Knowledge Graph" }
 
 %% 3. Define Connections
 Start --&gt; Normalize
 Normalize --&gt; CheckInput
 
-CheckInput -- &quot;PDF/Image&quot; --&gt; Convert
-CheckInput -- &quot;Text/Markdown&quot; --&gt; TextProc
-CheckInput -- &quot;DoclingDocument&quot; --&gt; LoadDoc
+CheckInput -- "PDF/Image" --&gt; Convert
+CheckInput -- "Text/Markdown" --&gt; TextProc
+CheckInput -- "DoclingDocument" --&gt; LoadDoc
 
 Convert --&gt; CheckMode
 TextProc --&gt; CheckMode
@@ -5382,7 +5382,7 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">DocumentChunker</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">chunker</span> <span class="o">=</span> <span class="n">DocumentChunker</span><span class="p">(</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">tokenizer_name</span><span class="o">=</span><span class="s2">&quot;sentence-transformers/all-MiniLM-L6-v2&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">tokenizer_name</span><span class="o">=</span><span class="s2">"sentence-transformers/all-MiniLM-L6-v2"</span><span class="p">,</span>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">chunk_max_tokens</span><span class="o">=</span><span class="mi">512</span>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">)</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">chunks</span> <span class="o">=</span> <span class="n">chunker</span><span class="o">.</span><span class="n">chunk_document</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
@@ -5394,9 +5394,9 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.extractors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtractorFactory</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">extractor</span> <span class="o">=</span> <span class="n">ExtractorFactory</span><span class="o">.</span><span class="n">create_extractor</span><span class="p">(</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">backend_name</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;dense&quot; for chunked skeleton-then-flesh extraction</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">backend_name</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">extraction_contract</span><span class="o">=</span><span class="s2">"direct"</span><span class="p">,</span>  <span class="c1"># or "dense" for chunked skeleton-then-flesh extraction</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">llm_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">)</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">models</span><span class="p">,</span> <span class="n">doc</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
@@ -5442,8 +5442,8 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 </table>
 <h3 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">)</span>
 </code></pre></div>
@@ -5455,8 +5455,8 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">except</span> <span class="n">ExtractionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extraction failed: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Details: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Extraction failed: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Details: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="pipeline-errors">Pipeline Errors<a class="headerlink" href="#pipeline-errors" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineError</span>
@@ -5464,7 +5464,7 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">except</span> <span class="n">PipelineError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pipeline failed at stage: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s1">&#39;stage&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Pipeline failed at stage: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s1">'stage'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="section-contents">Section Contents<a class="headerlink" href="#section-contents" title="Permanent link">&para;</a></h2>
@@ -5532,30 +5532,30 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;local&quot;</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"local"</span>
 <a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">)</span>
 <a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="high-accuracy-extraction">📍 High-Accuracy Extraction<a class="headerlink" href="#high-accuracy-extraction" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;complex_document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;vlm&quot;</span><span class="p">,</span>              <span class="c1"># Vision backend</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span>     <span class="c1"># Vision pipeline</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"complex_document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"vlm"</span><span class="p">,</span>              <span class="c1"># Vision backend</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span><span class="p">,</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span>     <span class="c1"># Vision pipeline</span>
 <a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="p">)</span>
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
 <a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="optimized-for-large-documents">📍 Optimized for Large Documents<a class="headerlink" href="#optimized-for-large-documents" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;large_document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Contract&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"large_document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Contract"</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
 <a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="p">)</span>
 <a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
@@ -5566,15 +5566,15 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <h3 id="choose-the-right-backend">👍 Choose the Right Backend<a class="headerlink" href="#choose-the-right-backend" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># ✅ Good - Match backend to document type</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">if</span> <span class="n">document_has_complex_layout</span><span class="p">:</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">backend</span> <span class="o">=</span> <span class="s2">&quot;vlm&quot;</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">backend</span> <span class="o">=</span> <span class="s2">"vlm"</span>
 <a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">backend</span> <span class="o">=</span> <span class="s2">&quot;llm&quot;</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">backend</span> <span class="o">=</span> <span class="s2">"llm"</span>
 </code></pre></div>
 <h3 id="enable-chunking-for-large-documents">👍 Enable Chunking for Large Documents<a class="headerlink" href="#enable-chunking-for-large-documents" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># ✅ Good - Use chunking for efficiency</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;large_doc.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"large_doc.pdf"</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Recommended</span>
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="p">)</span>
 </code></pre></div>
@@ -5584,18 +5584,18 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Check document conversion</span>
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">processor</span> <span class="o">=</span> <span class="n">DocumentProcessor</span><span class="p">()</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">document</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">convert_to_docling_doc</span><span class="p">(</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">document</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">convert_to_docling_doc</span><span class="p">(</span><span class="s2">"document.pdf"</span><span class="p">)</span>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">markdown</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">extract_full_markdown</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
 <a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">markdown</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Document conversion failed&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Document conversion failed"</span><span class="p">)</span>
 </code></pre></div></p>
 <h3 id="out-of-memory">🐛 Out of Memory<a class="headerlink" href="#out-of-memory" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Enable chunking and reduce batch size</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="p">)</span>
 </code></pre></div></p>
@@ -5603,10 +5603,10 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Use local backend for faster inference</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;local&quot;</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"local"</span>
 <a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="p">)</span>
 </code></pre></div></p>
 <hr />
@@ -5699,10 +5699,10 @@ document = processor.convert_to_docling_doc("document.pdf")</code></p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

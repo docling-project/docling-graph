@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -5097,9 +5097,9 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span>  <span class="c1"># OCR pipeline (default)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span>  <span class="c1"># OCR pipeline (default)</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
@@ -5211,9 +5211,9 @@ flowchart LR
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span>  <span class="c1"># Vision pipeline</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span>  <span class="c1"># Vision pipeline</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="how-it-works_1">How It Works<a class="headerlink" href="#how-it-works_1" title="Permanent link">&para;</a></h3>
@@ -5325,8 +5325,8 @@ flowchart LR
 <h2 id="export-options">Export Options<a class="headerlink" href="#export-options" title="Permanent link">&para;</a></h2>
 <h3 id="docling-document-export">Docling Document Export<a class="headerlink" href="#docling-document-export" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="c1"># Docling export settings</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">export_docling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Export Docling document (default)</span>
@@ -5393,11 +5393,11 @@ flowchart LR
 <h2 id="complete-configuration-examples">Complete Configuration Examples<a class="headerlink" href="#complete-configuration-examples" title="Permanent link">&para;</a></h2>
 <h3 id="ocr-with-full-exports">📍 OCR with Full Exports<a class="headerlink" href="#ocr-with-full-exports" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoice.pdf"</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="c1"># OCR pipeline</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span><span class="p">,</span>
 <a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
 <a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="c1"># Export everything</span>
 <a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="n">export_docling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -5408,11 +5408,11 @@ flowchart LR
 </code></pre></div>
 <h3 id="vision-with-minimal-exports">📍 Vision with Minimal Exports<a class="headerlink" href="#vision-with-minimal-exports" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;complex_form.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Form&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"complex_form.pdf"</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Form"</span><span class="p">,</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="c1"># Vision pipeline</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span><span class="p">,</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
 <a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="c1"># Minimal exports (save space)</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">export_docling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -5423,16 +5423,16 @@ flowchart LR
 </code></pre></div>
 <h3 id="ocr-with-page-level-exports">📍 OCR with Page-Level Exports<a class="headerlink" href="#ocr-with-page-level-exports" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;batch_invoices.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"batch_invoices.pdf"</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="c1"># OCR pipeline</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span><span class="p">,</span>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
 <a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="c1"># Page-level exports for one-to-one processing</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span><span class="p">,</span>
 <a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="n">export_markdown</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># Don&#39;t need full document</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="n">export_markdown</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># Don't need full document</span>
 <a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -5491,21 +5491,21 @@ flowchart LR
 </table>
 <h3 id="by-quality">By Quality<a class="headerlink" href="#by-quality" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_docling_config</span><span class="p">(</span><span class="n">scan_quality</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Choose pipeline based on scan quality.&quot;&quot;&quot;</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="k">if</span> <span class="n">scan_quality</span> <span class="o">==</span> <span class="s2">&quot;high&quot;</span><span class="p">:</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>        <span class="k">return</span> <span class="s2">&quot;ocr&quot;</span>  <span class="c1"># OCR works well</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="k">elif</span> <span class="n">scan_quality</span> <span class="o">==</span> <span class="s2">&quot;medium&quot;</span><span class="p">:</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="k">return</span> <span class="s2">&quot;ocr&quot;</span>  <span class="c1"># OCR still acceptable</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="sd">"""Choose pipeline based on scan quality."""</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="k">if</span> <span class="n">scan_quality</span> <span class="o">==</span> <span class="s2">"high"</span><span class="p">:</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>        <span class="k">return</span> <span class="s2">"ocr"</span>  <span class="c1"># OCR works well</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="k">elif</span> <span class="n">scan_quality</span> <span class="o">==</span> <span class="s2">"medium"</span><span class="p">:</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="k">return</span> <span class="s2">"ocr"</span>  <span class="c1"># OCR still acceptable</span>
 <a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="k">return</span> <span class="s2">&quot;vision&quot;</span>  <span class="c1"># Vision better for poor quality</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="k">return</span> <span class="s2">"vision"</span>  <span class="c1"># Vision better for poor quality</span>
 </code></pre></div>
 <h3 id="by-infrastructure">By Infrastructure<a class="headerlink" href="#by-infrastructure" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_docling_config</span><span class="p">(</span><span class="n">has_gpu</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Choose pipeline based on available hardware.&quot;&quot;&quot;</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="sd">"""Choose pipeline based on available hardware."""</span>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="k">if</span> <span class="n">has_gpu</span><span class="p">:</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="k">return</span> <span class="s2">&quot;vision&quot;</span>  <span class="c1"># Can use vision</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="k">return</span> <span class="s2">"vision"</span>  <span class="c1"># Can use vision</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="k">return</span> <span class="s2">&quot;ocr&quot;</span>  <span class="c1"># Must use OCR</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="k">return</span> <span class="s2">"ocr"</span>  <span class="c1"># Must use OCR</span>
 </code></pre></div>
 <hr />
 <h2 id="performance-comparison">Performance Comparison<a class="headerlink" href="#performance-comparison" title="Permanent link">&para;</a></h2>
@@ -5542,43 +5542,43 @@ flowchart LR
 <h3 id="ocr-llm-backend">OCR + LLM Backend<a class="headerlink" href="#ocr-llm-backend" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Most common combination</span>
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
 <a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="c1"># OCR for conversion</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span><span class="p">,</span>
 <a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
 <a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>    <span class="c1"># LLM for extraction</span>
-<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"remote"</span>
 <a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="vision-vlm-backend">Vision + VLM Backend<a class="headerlink" href="#vision-vlm-backend" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Highest accuracy combination</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;complex_document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Form&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"complex_document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Form"</span><span class="p">,</span>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
 <a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="c1"># Vision for conversion</span>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span><span class="p">,</span>
 <a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
 <a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>    <span class="c1"># VLM for extraction</span>
-<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;vlm&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;local&quot;</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"vlm"</span><span class="p">,</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"local"</span>
 <a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="ocr-vlm-backend">OCR + VLM Backend<a class="headerlink" href="#ocr-vlm-backend" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Mixed approach (less common)</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="c1"># OCR for conversion (faster)</span>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span><span class="p">,</span>
 <a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="c1"># VLM for extraction (higher accuracy)</span>
-<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;vlm&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;local&quot;</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"vlm"</span><span class="p">,</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"local"</span>
 <a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -5588,9 +5588,9 @@ flowchart LR
 <p><strong>Solutions:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># 1. Try vision pipeline</span>
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;poor_scan.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span>  <span class="c1"># Better for poor quality</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"poor_scan.pdf"</span><span class="p">,</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span>  <span class="c1"># Better for poor quality</span>
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="p">)</span>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
 <a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="c1"># 2. Pre-process document (external tool)</span>
@@ -5603,9 +5603,9 @@ flowchart LR
 <p><strong>Solutions:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># 1. Use OCR if acceptable</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span>  <span class="c1"># Faster</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span>  <span class="c1"># Faster</span>
 <a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="p">)</span>
 <a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
 <a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c1"># 2. Process fewer pages</span>
@@ -5616,9 +5616,9 @@ flowchart LR
 <p><strong>Solutions:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Use vision pipeline for better table handling</span>
 <a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document_with_tables.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span>  <span class="c1"># Better table extraction</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document_with_tables.pdf"</span><span class="p">,</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span>  <span class="c1"># Better table extraction</span>
 <a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="p">)</span>
 </code></pre></div></p>
 <hr />
@@ -5626,9 +5626,9 @@ flowchart LR
 <h3 id="start-with-ocr">👍 Start with OCR<a class="headerlink" href="#start-with-ocr" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># ✅ Good - Start with faster option</span>
 <a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span>  <span class="c1"># Try OCR first</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span>  <span class="c1"># Try OCR first</span>
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="p">)</span>
 <a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>
 <a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="c1"># If accuracy insufficient, switch to vision</span>
@@ -5636,26 +5636,26 @@ flowchart LR
 <h3 id="match-pipeline-to-document">👍 Match Pipeline to Document<a class="headerlink" href="#match-pipeline-to-document" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># ✅ Good - Choose based on document type</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="k">if</span> <span class="n">document_has_complex_layout</span><span class="p">:</span>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">docling_config</span> <span class="o">=</span> <span class="s2">&quot;vision&quot;</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">docling_config</span> <span class="o">=</span> <span class="s2">"vision"</span>
 <a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="n">docling_config</span> <span class="o">=</span> <span class="s2">&quot;ocr&quot;</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="n">docling_config</span> <span class="o">=</span> <span class="s2">"ocr"</span>
 <a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
 <a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="n">docling_config</span>
 <a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="enable-appropriate-exports">👍 Enable Appropriate Exports<a class="headerlink" href="#enable-appropriate-exports" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># ✅ Good - Export what you need</span>
 <a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;ocr&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"ocr"</span><span class="p">,</span>
 <a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
 <a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>    <span class="c1"># Enable useful exports</span>
 <a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">export_markdown</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># For debugging</span>
-<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">export_docling_json</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Don&#39;t need full structure</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">export_docling_json</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Don't need full structure</span>
 <a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># Not doing page-level</span>
 <a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="p">)</span>
 </code></pre></div>
@@ -5750,10 +5750,10 @@ flowchart LR
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

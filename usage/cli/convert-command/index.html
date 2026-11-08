@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -5398,20 +5398,20 @@
 <h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># PDF document</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Text file</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>notes.txt<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.Report&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.Report"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span>--backend<span class="w"> </span>llm
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># URL</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>https://example.com/doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Markdown file</span>
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>README.md<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.Documentation&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.Documentation"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span>--backend<span class="w"> </span>llm
 </code></pre></div>
 <hr />
@@ -5431,7 +5431,7 @@
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Enable debug mode</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>--debug
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># Debug artifacts will be in:</span>
@@ -5457,12 +5457,12 @@
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Use LLM backend</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># Use VLM backend</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>form.jpg<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.IDCard&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.IDCard"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--backend<span class="w"> </span>vlm
 </code></pre></div></p>
 <hr />
@@ -5484,12 +5484,12 @@
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Local inference</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span>--inference<span class="w"> </span><span class="nb">local</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Remote inference</span>
 <a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span>--inference<span class="w"> </span>remote
 </code></pre></div></p>
 <hr />
@@ -5511,12 +5511,12 @@
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Merge all pages</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># Process pages separately</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span>--processing-mode<span class="w"> </span>one-to-one
 </code></pre></div></p>
 <hr />
@@ -5535,7 +5535,7 @@
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Use specific model</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span>--provider<span class="w"> </span>mistral<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>--model<span class="w"> </span>mistral-large-latest
 </code></pre></div></p>
@@ -5543,8 +5543,8 @@
 <p>Use <code>--llm-base-url</code> to point to a custom endpoint (e.g. on-prem OpenAI-compatible server). API keys are set via environment variables or <code>config.yaml</code> (<code>llm_overrides.connection</code>), not CLI. See <a href="../../api/llm-model-config/">LLM Model Configuration</a> for the full list of overrides and on-prem setup.</p>
 <p>For <strong>LM Studio</strong> (<code>--provider lmstudio</code>): override the base URL with <code>LM_STUDIO_API_BASE</code> or <code>--llm-base-url</code>; when the server requires auth, set <code>LM_STUDIO_API_KEY</code> or <code>llm_overrides.connection.api_key</code> in config.</p>
 <p>For the on-prem flow (openai-compatible), use fixed env vars:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CUSTOM_LLM_BASE_URL</span><span class="o">=</span><span class="s2">&quot;https://your-llm.example.com/v1&quot;</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CUSTOM_LLM_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CUSTOM_LLM_BASE_URL</span><span class="o">=</span><span class="s2">"https://your-llm.example.com/v1"</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CUSTOM_LLM_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 </code></pre></div>
 <hr />
 <h2 id="extraction-options">Extraction Options<a class="headerlink" href="#extraction-options" title="Permanent link">&para;</a></h2>
@@ -5566,12 +5566,12 @@
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Enable chunking (default)</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>large_doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span>--use-chunking
 <a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># Disable chunking</span>
 <a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>small_doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span>--no-use-chunking
 </code></pre></div></p>
 <hr />
@@ -5596,7 +5596,7 @@
 </code></pre></div>
 <p><strong>Example (dense with tuned batching):</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
@@ -5605,7 +5605,7 @@
 </code></pre></div>
 <p><strong>Example (basic dense):</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
@@ -5622,7 +5622,7 @@
 </ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>--provenance<span class="w"> </span>detailed
@@ -5646,7 +5646,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 </ul>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--extraction-contract<span class="w"> </span>dense<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
@@ -5670,13 +5670,13 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Enable streaming to avoid timeouts</span>
 <a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">    </span>--llm-streaming
 <a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>
 <a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="c1"># Explicitly disable streaming (default behavior)</span>
 <a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">    </span>--no-llm-streaming
 </code></pre></div>
@@ -5706,12 +5706,12 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Use OCR pipeline (default)</span>
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">    </span>--docling-pipeline<span class="w"> </span>ocr
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="c1"># Use vision pipeline</span>
 <a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>complex_doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="w">    </span>--docling-pipeline<span class="w"> </span>vision
 </code></pre></div></p>
 <h3 id="remote-conversion-docling-serve">Remote Conversion (docling-serve)<a class="headerlink" href="#remote-conversion-docling-serve" title="Permanent link">&para;</a></h3>
@@ -5720,7 +5720,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p>Delegates document conversion to a remote <a href="https://github.com/docling-project/docling-serve">docling-serve</a> instance instead of running Docling locally. No local conversion models are loaded; the rest of the pipeline (chunking, extraction, export) is unchanged.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span>--docling-serve-url<span class="w"> </span>http://localhost:5001
 </code></pre></div></p>
 <p>Also configurable via <code>docling.serve.url</code> in <code>config.yaml</code> or the <code>DOCLING_SERVE_URL</code> environment variable; the API key (if the server requires one) is read from <code>DOCLING_SERVE_API_KEY</code>, and extra auth headers (e.g. <code>Authorization: Bearer</code> for deployments behind an auth proxy) from <code>DOCLING_SERVE_HEADERS</code> (a JSON object string). See <a href="../../../fundamentals/pipeline-configuration/docling-serve/">Docling-Serve Integration</a>.</p>
@@ -5744,12 +5744,12 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Export as CSV</span>
 <a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">    </span>--export-format<span class="w"> </span>csv
 <a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
 <a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="c1"># Export as Cypher</span>
 <a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="w">    </span>--export-format<span class="w"> </span>cypher
 </code></pre></div></p>
 <hr />
@@ -5763,7 +5763,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># Export all Docling outputs</span>
 <a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">    </span>--export-docling-json<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="w">    </span>--export-markdown<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="w">    </span>--export-doclang<span class="w"> </span><span class="se">\</span>
@@ -5771,7 +5771,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>
 <a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="c1"># Minimal exports</span>
 <a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a><span class="w">    </span>--no-docling-json<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a><span class="w">    </span>--no-markdown<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a><span class="w">    </span>--no-doclang<span class="w"> </span><span class="se">\</span>
@@ -5786,7 +5786,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># Send DocLang (structure only) to the LLM; raise the chunk budget to compensate</span>
 <a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="w">    </span>--llm-format<span class="w"> </span>doclang<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="w">    </span>--chunk-max-tokens<span class="w"> </span><span class="m">768</span>
 </code></pre></div></p>
@@ -5798,7 +5798,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p>Creates bidirectional relationships in the graph.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">    </span>--reverse-edges
 </code></pre></div></p>
 <hr />
@@ -5810,43 +5810,43 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># Custom output directory</span>
 <a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;results/invoice_001&quot;</span>
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"results/invoice_001"</span>
 <a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a>
 <a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a><span class="c1"># Organize by date</span>
 <a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/</span><span class="k">$(</span>date<span class="w"> </span>+%Y-%m-%d<span class="k">)</span><span class="s2">&quot;</span>
+<a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/</span><span class="k">$(</span>date<span class="w"> </span>+%Y-%m-%d<span class="k">)</span><span class="s2">"</span>
 </code></pre></div></p>
 <hr />
 <h2 id="complete-examples">Complete Examples<a class="headerlink" href="#complete-examples" title="Permanent link">&para;</a></h2>
 <h3 id="simple-invoice-vlm">📍 Simple Invoice (VLM)<a class="headerlink" href="#simple-invoice-vlm" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.jpg<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">    </span>--backend<span class="w"> </span>vlm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="w">    </span>--processing-mode<span class="w"> </span>one-to-one<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/invoice&quot;</span>
+<a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/invoice"</span>
 </code></pre></div>
 <h3 id="rheology-research-remote-llm">📍 Rheology Research (Remote LLM)<a class="headerlink" href="#rheology-research-remote-llm" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-key"</span>
 <a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>
 <a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a><span class="w">    </span>--inference<span class="w"> </span>remote<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="w">    </span>--provider<span class="w"> </span>mistral<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a><span class="w">    </span>--model<span class="w"> </span>mistral-large-latest<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/research&quot;</span>
+<a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/research"</span>
 </code></pre></div>
 <h3 id="debug-mode-enabled">📍 Debug Mode Enabled<a class="headerlink" href="#debug-mode-enabled" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="c1"># Enable debug mode for troubleshooting</span>
 <a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a><span class="w">    </span>--debug<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/debug_run&quot;</span>
+<a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/debug_run"</span>
 <a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a>
 <a id="__codelineno-42-8" name="__codelineno-42-8" href="#__codelineno-42-8"></a><span class="c1"># Debug artifacts will be saved to:</span>
 <a id="__codelineno-42-9" name="__codelineno-42-9" href="#__codelineno-42-9"></a><span class="c1"># outputs/debug_run/document_pdf_20260206_094500/debug/</span>
@@ -5856,72 +5856,72 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>ollama<span class="w"> </span>serve
 <a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a>
 <a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-43-5" name="__codelineno-43-5" href="#__codelineno-43-5"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-43-5" name="__codelineno-43-5" href="#__codelineno-43-5"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-43-6" name="__codelineno-43-6" href="#__codelineno-43-6"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-43-7" name="__codelineno-43-7" href="#__codelineno-43-7"></a><span class="w">    </span>--inference<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-43-8" name="__codelineno-43-8" href="#__codelineno-43-8"></a><span class="w">    </span>--provider<span class="w"> </span>ollama<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-43-9" name="__codelineno-43-9" href="#__codelineno-43-9"></a><span class="w">    </span>--model<span class="w"> </span>llama3:8b<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-43-10" name="__codelineno-43-10" href="#__codelineno-43-10"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-43-11" name="__codelineno-43-11" href="#__codelineno-43-11"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-43-12" name="__codelineno-43-12" href="#__codelineno-43-12"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/local&quot;</span>
+<a id="__codelineno-43-12" name="__codelineno-43-12" href="#__codelineno-43-12"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/local"</span>
 </code></pre></div>
 <h3 id="cypher-export-for-neo4j">📍 Cypher Export for Neo4j<a class="headerlink" href="#cypher-export-for-neo4j" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a><span class="w">    </span>--inference<span class="w"> </span>remote<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a><span class="w">    </span>--export-format<span class="w"> </span>cypher<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/neo4j&quot;</span>
+<a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/neo4j"</span>
 <a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a>
 <a id="__codelineno-44-8" name="__codelineno-44-8" href="#__codelineno-44-8"></a><span class="c1"># Import to Neo4j</span>
 <a id="__codelineno-44-9" name="__codelineno-44-9" href="#__codelineno-44-9"></a>cat<span class="w"> </span>outputs/neo4j/graph.cypher<span class="w"> </span><span class="p">|</span><span class="w"> </span>cypher-shell
 </code></pre></div>
 <h3 id="minimal-processing">📍 Minimal Processing<a class="headerlink" href="#minimal-processing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>small_doc.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-45-4" name="__codelineno-45-4" href="#__codelineno-45-4"></a><span class="w">    </span>--inference<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-45-5" name="__codelineno-45-5" href="#__codelineno-45-5"></a><span class="w">    </span>--no-use-chunking<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-45-6" name="__codelineno-45-6" href="#__codelineno-45-6"></a><span class="w">    </span>--no-docling-json<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-45-7" name="__codelineno-45-7" href="#__codelineno-45-7"></a><span class="w">    </span>--no-markdown<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-45-8" name="__codelineno-45-8" href="#__codelineno-45-8"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/minimal&quot;</span>
+<a id="__codelineno-45-8" name="__codelineno-45-8" href="#__codelineno-45-8"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/minimal"</span>
 </code></pre></div>
 <hr />
 <h2 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h2>
 <h3 id="process-multiple-files">Process Multiple Files<a class="headerlink" href="#process-multiple-files" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="c1"># Bash loop</span>
 <a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="k">for</span><span class="w"> </span>pdf<span class="w"> </span><span class="k">in</span><span class="w"> </span>documents/*.pdf<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pdf</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/</span><span class="k">$(</span>basename<span class="w"> </span><span class="nv">$pdf</span><span class="w"> </span>.pdf<span class="k">)</span><span class="s2">&quot;</span>
+<a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"</span><span class="nv">$pdf</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">"outputs/</span><span class="k">$(</span>basename<span class="w"> </span><span class="nv">$pdf</span><span class="w"> </span>.pdf<span class="k">)</span><span class="s2">"</span>
 <a id="__codelineno-46-6" name="__codelineno-46-6" href="#__codelineno-46-6"></a><span class="k">done</span>
 </code></pre></div>
 <h3 id="parallel-processing">Parallel Processing<a class="headerlink" href="#parallel-processing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="c1"># Using GNU parallel</span>
 <a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a>ls<span class="w"> </span>documents/*.pdf<span class="w"> </span><span class="p">|</span><span class="w"> </span>parallel<span class="w"> </span>-j<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="o">{}</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/{/.}&quot;</span>
+<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">"outputs/{/.}"</span>
 </code></pre></div>
 <h3 id="batch-script">Batch Script<a class="headerlink" href="#batch-script" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="ch">#!/bin/bash</span>
 <a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="c1"># batch_convert.sh</span>
 <a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>
-<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="nv">TEMPLATE</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span>
-<a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a><span class="nv">INPUT_DIR</span><span class="o">=</span><span class="s2">&quot;documents&quot;</span>
-<a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a><span class="nv">OUTPUT_BASE</span><span class="o">=</span><span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="nv">TEMPLATE</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span>
+<a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a><span class="nv">INPUT_DIR</span><span class="o">=</span><span class="s2">"documents"</span>
+<a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a><span class="nv">OUTPUT_BASE</span><span class="o">=</span><span class="s2">"outputs"</span>
 <a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a>
-<a id="__codelineno-48-8" name="__codelineno-48-8" href="#__codelineno-48-8"></a><span class="k">for</span><span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$INPUT_DIR</span><span class="s2">&quot;</span>/*.pdf<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-48-9" name="__codelineno-48-9" href="#__codelineno-48-9"></a><span class="w">    </span><span class="nv">filename</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span>.pdf<span class="k">)</span>
-<a id="__codelineno-48-10" name="__codelineno-48-10" href="#__codelineno-48-10"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Processing: </span><span class="nv">$filename</span><span class="s2">&quot;</span>
+<a id="__codelineno-48-8" name="__codelineno-48-8" href="#__codelineno-48-8"></a><span class="k">for</span><span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">"</span><span class="nv">$INPUT_DIR</span><span class="s2">"</span>/*.pdf<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-48-9" name="__codelineno-48-9" href="#__codelineno-48-9"></a><span class="w">    </span><span class="nv">filename</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span><span class="w"> </span>.pdf<span class="k">)</span>
+<a id="__codelineno-48-10" name="__codelineno-48-10" href="#__codelineno-48-10"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Processing: </span><span class="nv">$filename</span><span class="s2">"</span>
 <a id="__codelineno-48-11" name="__codelineno-48-11" href="#__codelineno-48-11"></a>
-<a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-48-13" name="__codelineno-48-13" href="#__codelineno-48-13"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TEMPLATE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-48-14" name="__codelineno-48-14" href="#__codelineno-48-14"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$OUTPUT_BASE</span><span class="s2">/</span><span class="nv">$filename</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-48-12" name="__codelineno-48-12" href="#__codelineno-48-12"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-48-13" name="__codelineno-48-13" href="#__codelineno-48-13"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">"</span><span class="nv">$TEMPLATE</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-48-14" name="__codelineno-48-14" href="#__codelineno-48-14"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">"</span><span class="nv">$OUTPUT_BASE</span><span class="s2">/</span><span class="nv">$filename</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-48-15" name="__codelineno-48-15" href="#__codelineno-48-15"></a><span class="w">        </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-48-16" name="__codelineno-48-16" href="#__codelineno-48-16"></a><span class="w">        </span>--inference<span class="w"> </span>remote
 <a id="__codelineno-48-17" name="__codelineno-48-17" href="#__codelineno-48-17"></a>
-<a id="__codelineno-48-18" name="__codelineno-48-18" href="#__codelineno-48-18"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Completed: </span><span class="nv">$filename</span><span class="s2">&quot;</span>
+<a id="__codelineno-48-18" name="__codelineno-48-18" href="#__codelineno-48-18"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Completed: </span><span class="nv">$filename</span><span class="s2">"</span>
 <a id="__codelineno-48-19" name="__codelineno-48-19" href="#__codelineno-48-19"></a><span class="k">done</span>
 </code></pre></div>
 <hr />
@@ -5941,7 +5941,7 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="c1"># This uses remote inference (CLI overrides config)</span>
 <a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a><span class="w">    </span>--inference<span class="w"> </span>remote
 </code></pre></div>
 <hr />
@@ -5963,32 +5963,32 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <hr />
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
 <h3 id="configuration-errors">Configuration Errors<a class="headerlink" href="#configuration-errors" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="o">[</span>red<span class="o">]</span>Configuration<span class="w"> </span>Error:<span class="o">[</span>/red<span class="o">]</span><span class="w"> </span>Invalid<span class="w"> </span>backend<span class="w"> </span>type:<span class="w"> </span><span class="s1">&#39;invalid&#39;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="o">[</span>red<span class="o">]</span>Configuration<span class="w"> </span>Error:<span class="o">[</span>/red<span class="o">]</span><span class="w"> </span>Invalid<span class="w"> </span>backend<span class="w"> </span>type:<span class="w"> </span><span class="s1">'invalid'</span>
 </code></pre></div>
 <p><strong>Solution:</strong> Use <code>llm</code> or <code>vlm</code></p>
 <h3 id="extraction-errors">Extraction Errors<a class="headerlink" href="#extraction-errors" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="o">[</span>red<span class="o">]</span>Extraction<span class="w"> </span>Error:<span class="o">[</span>/red<span class="o">]</span><span class="w"> </span>Template<span class="w"> </span>not<span class="w"> </span>found:<span class="w"> </span><span class="s1">&#39;templates.Missing&#39;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="o">[</span>red<span class="o">]</span>Extraction<span class="w"> </span>Error:<span class="o">[</span>/red<span class="o">]</span><span class="w"> </span>Template<span class="w"> </span>not<span class="w"> </span>found:<span class="w"> </span><span class="s1">'templates.Missing'</span>
 </code></pre></div>
 <p><strong>Solution:</strong> Check template path and ensure it's importable</p>
 <h3 id="api-errors">API Errors<a class="headerlink" href="#api-errors" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a><span class="o">[</span>red<span class="o">]</span>Pipeline<span class="w"> </span>Error:<span class="o">[</span>/red<span class="o">]</span><span class="w"> </span>API<span class="w"> </span>key<span class="w"> </span>not<span class="w"> </span>found<span class="w"> </span><span class="k">for</span><span class="w"> </span>provider:<span class="w"> </span>mistral
 </code></pre></div>
 <p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-key"</span>
 </code></pre></div></p>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="template-not-found">🐛 Template Not Found<a class="headerlink" href="#template-not-found" title="Permanent link">&para;</a></h3>
 <p><strong>Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a>ModuleNotFoundError: No module named &#39;templates&#39;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a>ModuleNotFoundError: No module named 'templates'
 </code></pre></div></p>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="c1"># Ensure template is in Python path</span>
-<a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="si">}</span><span class="s2">:</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&quot;</span>
+<a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="si">}</span><span class="s2">:</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">"</span>
 <a id="__codelineno-57-3" name="__codelineno-57-3" href="#__codelineno-57-3"></a>
 <a id="__codelineno-57-4" name="__codelineno-57-4" href="#__codelineno-57-4"></a><span class="c1"># Or use absolute path</span>
 <a id="__codelineno-57-5" name="__codelineno-57-5" href="#__codelineno-57-5"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-57-6" name="__codelineno-57-6" href="#__codelineno-57-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;my_project.templates.BillingDocument&quot;</span>
+<a id="__codelineno-57-6" name="__codelineno-57-6" href="#__codelineno-57-6"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"my_project.templates.BillingDocument"</span>
 </code></pre></div></p>
 <h3 id="out-of-memory">🐛 Out of Memory<a class="headerlink" href="#out-of-memory" title="Permanent link">&para;</a></h3>
 <p><strong>Error:</strong>
@@ -5997,19 +5997,19 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a><span class="c1"># Enable chunking</span>
 <a id="__codelineno-59-2" name="__codelineno-59-2" href="#__codelineno-59-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-59-3" name="__codelineno-59-3" href="#__codelineno-59-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-59-3" name="__codelineno-59-3" href="#__codelineno-59-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-59-4" name="__codelineno-59-4" href="#__codelineno-59-4"></a><span class="w">    </span>--use-chunking
 <a id="__codelineno-59-5" name="__codelineno-59-5" href="#__codelineno-59-5"></a>
 <a id="__codelineno-59-6" name="__codelineno-59-6" href="#__codelineno-59-6"></a><span class="c1"># Or use smaller model</span>
 <a id="__codelineno-59-7" name="__codelineno-59-7" href="#__codelineno-59-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-59-8" name="__codelineno-59-8" href="#__codelineno-59-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-59-9" name="__codelineno-59-9" href="#__codelineno-59-9"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">&quot;ibm-granite/granite-4.0-1b&quot;</span>
+<a id="__codelineno-59-8" name="__codelineno-59-8" href="#__codelineno-59-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-59-9" name="__codelineno-59-9" href="#__codelineno-59-9"></a><span class="w">    </span>--model<span class="w"> </span><span class="s2">"ibm-granite/granite-4.0-1b"</span>
 </code></pre></div></p>
 <h3 id="slow-processing">🐛 Slow Processing<a class="headerlink" href="#slow-processing" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="c1"># Disable chunking for small documents to speed up</span>
 <a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="w">    </span>--no-use-chunking
 </code></pre></div></p>
 <hr />
@@ -6017,32 +6017,32 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
 <h3 id="use-configuration-files">👍 Use Configuration Files<a class="headerlink" href="#use-configuration-files" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="c1"># ✅ Good - Reusable configuration</span>
 <a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>init
-<a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span>-t<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 <a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a>
 <a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a><span class="c1"># ❌ Avoid - Repeating options</span>
 <a id="__codelineno-61-6" name="__codelineno-61-6" href="#__codelineno-61-6"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-61-8" name="__codelineno-61-8" href="#__codelineno-61-8"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span>--inference<span class="w"> </span>remote<span class="w"> </span>--provider<span class="w"> </span>mistral
 </code></pre></div>
 <h3 id="organize-outputs">👍 Organize Outputs<a class="headerlink" href="#organize-outputs" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a><span class="c1"># ✅ Good - Organized by document</span>
 <a id="__codelineno-62-2" name="__codelineno-62-2" href="#__codelineno-62-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice_001.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-62-3" name="__codelineno-62-3" href="#__codelineno-62-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-62-4" name="__codelineno-62-4" href="#__codelineno-62-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/invoice_001&quot;</span>
+<a id="__codelineno-62-3" name="__codelineno-62-3" href="#__codelineno-62-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-62-4" name="__codelineno-62-4" href="#__codelineno-62-4"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/invoice_001"</span>
 <a id="__codelineno-62-5" name="__codelineno-62-5" href="#__codelineno-62-5"></a>
 <a id="__codelineno-62-6" name="__codelineno-62-6" href="#__codelineno-62-6"></a><span class="c1"># ❌ Avoid - Overwriting outputs</span>
 <a id="__codelineno-62-7" name="__codelineno-62-7" href="#__codelineno-62-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice_001.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-62-8" name="__codelineno-62-8" href="#__codelineno-62-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-62-8" name="__codelineno-62-8" href="#__codelineno-62-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 </code></pre></div>
 <h3 id="use-appropriate-backend">👍 Use Appropriate Backend<a class="headerlink" href="#use-appropriate-backend" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a><span class="c1"># ✅ Good - VLM for forms</span>
 <a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>id_card.jpg<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.IDCard&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.IDCard"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-63-4" name="__codelineno-63-4" href="#__codelineno-63-4"></a><span class="w">    </span>--backend<span class="w"> </span>vlm
 <a id="__codelineno-63-5" name="__codelineno-63-5" href="#__codelineno-63-5"></a>
 <a id="__codelineno-63-6" name="__codelineno-63-6" href="#__codelineno-63-6"></a><span class="c1"># ✅ Good - LLM for documents</span>
 <a id="__codelineno-63-7" name="__codelineno-63-7" href="#__codelineno-63-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-63-8" name="__codelineno-63-8" href="#__codelineno-63-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-63-8" name="__codelineno-63-8" href="#__codelineno-63-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-63-9" name="__codelineno-63-9" href="#__codelineno-63-9"></a><span class="w">    </span>--backend<span class="w"> </span>llm
 </code></pre></div>
 <hr />
@@ -6134,10 +6134,10 @@ through LiteLLM <code>response_format=json_schema</code>.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4817,17 +4817,17 @@ flowchart TB
     classDef operator fill:#F3E5F5,stroke:#CE93D8,color:#6A1B9A
     classDef process fill:#ECEFF1,stroke:#B0BEC5,color:#263238</p>
 <div class="highlight"><pre><span></span><code>%% 2. Define Nodes
-A@{ shape: terminal, label: &quot;Input Source&quot; }
+A@{ shape: terminal, label: "Input Source" }
 
-B@{ shape: lin-proc, label: &quot;Custom Stage 1&quot; }
-C@{ shape: procs, label: &quot;Docling Conversion&quot; }
-D@{ shape: tag-proc, label: &quot;Custom Backend&quot; }
-E@{ shape: procs, label: &quot;Extraction&quot; }
-F@{ shape: lin-proc, label: &quot;Custom Stage 2&quot; }
-G@{ shape: procs, label: &quot;Graph Conversion&quot; }
-H@{ shape: tag-proc, label: &quot;Custom Exporter&quot; }
+B@{ shape: lin-proc, label: "Custom Stage 1" }
+C@{ shape: procs, label: "Docling Conversion" }
+D@{ shape: tag-proc, label: "Custom Backend" }
+E@{ shape: procs, label: "Extraction" }
+F@{ shape: lin-proc, label: "Custom Stage 2" }
+G@{ shape: procs, label: "Graph Conversion" }
+H@{ shape: tag-proc, label: "Custom Exporter" }
 
-I@{ shape: doc, label: &quot;Output&quot; }
+I@{ shape: doc, label: "Output" }
 
 %% 3. Define Connections
 A --&gt; B
@@ -4886,8 +4886,8 @@ class MyBackend(TextExtractionBackendProtocol):
 ```</p>
 <h3 id="2-implement">2. Implement<a class="headerlink" href="#2-implement" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Implement methods</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">is_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract structured data.&quot;&quot;&quot;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">is_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="sd">"""Extract structured data."""</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="c1"># Your logic here</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">pass</span>
 </code></pre></div>
@@ -4895,7 +4895,7 @@ class MyBackend(TextExtractionBackendProtocol):
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Write tests</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_my_backend</span><span class="p">():</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">backend</span> <span class="o">=</span> <span class="n">MyBackend</span><span class="p">()</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="s2">"test"</span><span class="p">,</span> <span class="n">MyTemplate</span><span class="p">)</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 </code></pre></div>
 <h3 id="4-integrate">4. Integrate<a class="headerlink" href="#4-integrate" title="Permanent link">&para;</a></h3>
@@ -4904,8 +4904,8 @@ class MyBackend(TextExtractionBackendProtocol):
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">my_backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyBackend</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="c1"># Custom backend integration</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
 </code></pre></div>
@@ -4934,27 +4934,27 @@ class MyBackend(TextExtractionBackendProtocol):
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="k">return</span> <span class="n">result</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="k">raise</span> <span class="n">ExtractionError</span><span class="p">(</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="s2">&quot;Extraction failed&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">},</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="s2">"Extraction failed"</span><span class="p">,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="n">details</span><span class="o">=</span><span class="p">{</span><span class="s2">"source"</span><span class="p">:</span> <span class="n">source</span><span class="p">},</span>
 <a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>            <span class="n">cause</span><span class="o">=</span><span class="n">e</span>
 <a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="p">)</span>
 <a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
 <a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="c1"># ❌ Avoid - Generic exceptions</span>
 <a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
-<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Something went wrong&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Something went wrong"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="write-tests">👍 Write Tests<a class="headerlink" href="#write-tests" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># ✅ Good - Comprehensive tests</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_backend_success</span><span class="p">():</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test successful extraction.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="sd">"""Test successful extraction."""</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="k">pass</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_backend_failure</span><span class="p">():</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test error handling.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="sd">"""Test error handling."""</span>
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="k">pass</span>
 <a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_backend_cleanup</span><span class="p">():</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test resource cleanup.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="sd">"""Test resource cleanup."""</span>
 <a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="k">pass</span>
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
 <a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="c1"># ❌ Avoid - No tests</span>
@@ -4963,7 +4963,7 @@ class MyBackend(TextExtractionBackendProtocol):
 <h3 id="document-code">👍 Document Code<a class="headerlink" href="#document-code" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># ✅ Good - Clear documentation</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyBackend</span><span class="p">:</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="sd">"""</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="sd">    Custom backend for specialized extraction.</span>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="sd">    This backend uses a proprietary model to extract</span>
@@ -4974,9 +4974,9 @@ class MyBackend(TextExtractionBackendProtocol):
 <a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="sd">        model: Model name to use</span>
 <a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
 <a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="sd">    Example:</span>
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="sd">        &gt;&gt;&gt; backend = MyBackend(api_key=&quot;key&quot;, model=&quot;model-v1&quot;)</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="sd">        &gt;&gt;&gt; backend = MyBackend(api_key="key", model="model-v1")</span>
 <a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="sd">        &gt;&gt;&gt; result = backend.extract_from_markdown(text, Template)</span>
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="sd">    """</span>
 <a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="k">pass</span>
 <a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>
 <a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="c1"># ❌ Avoid - No documentation</span>
@@ -4989,10 +4989,10 @@ class MyBackend(TextExtractionBackendProtocol):
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># ✅ Good - Clean up resources</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyBackend</span><span class="p">:</span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Release resources.&quot;&quot;&quot;</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">):</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">        </span><span class="sd">"""Release resources."""</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'model'</span><span class="p">):</span>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;client&#39;</span><span class="p">):</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'client'</span><span class="p">):</span>
 <a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
 <a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># ❌ Avoid - Memory leaks</span>
@@ -5018,20 +5018,20 @@ class MyBackend(TextExtractionBackendProtocol):
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># ✅ Good - Use environment variables</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MY_API_KEY&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"MY_API_KEY"</span><span class="p">)</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;MY_API_KEY not set&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"MY_API_KEY not set"</span><span class="p">)</span>
 <a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
 <a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="c1"># ❌ Avoid - Hardcoded keys</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">api_key</span> <span class="o">=</span> <span class="s2">&quot;sk-1234567890&quot;</span>  <span class="c1"># Never do this!</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">api_key</span> <span class="o">=</span> <span class="s2">"sk-1234567890"</span>  <span class="c1"># Never do this!</span>
 </code></pre></div>
 <h3 id="input-validation">Input Validation<a class="headerlink" href="#input-validation" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># ✅ Good - Validate inputs</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">markdown</span><span class="p">:</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Markdown cannot be empty&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Markdown cannot be empty"</span><span class="p">)</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">template</span><span class="p">:</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Template is required&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Template is required"</span><span class="p">)</span>
 <a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="c1"># Process...</span>
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
 <a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="c1"># ❌ Avoid - No validation</span>
@@ -5132,10 +5132,10 @@ class MyBackend(TextExtractionBackendProtocol):
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

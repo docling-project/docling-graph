@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -5125,15 +5125,15 @@
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>1. Install (if not already): pip install docling-graph
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>2. Set your API key:
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>   export MISTRAL_API_KEY=&quot;your-api-key-here&quot;
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>   export MISTRAL_API_KEY="your-api-key-here"
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
 <a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>   (If you chose custom endpoint, set instead:)
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>   export CUSTOM_LLM_BASE_URL=&quot;https://your-llm.example.com/v1&quot;
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>   export CUSTOM_LLM_API_KEY=&quot;your-key&quot;
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>   export CUSTOM_LLM_BASE_URL="https://your-llm.example.com/v1"
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>   export CUSTOM_LLM_API_KEY="your-key"
 <a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
 <a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>3. Run your first conversion:
 <a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>   docling-graph convert document.pdf \
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>       --template &quot;templates.BillingDocument&quot;
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>       --template "templates.BillingDocument"
 </code></pre></div>
 <h3 id="local-provider-setup">Local Provider Setup<a class="headerlink" href="#local-provider-setup" title="Permanent link">&para;</a></h3>
 <p>If you selected <strong>LM Studio</strong>: start the Local Server in the LM Studio app; set <code>LM_STUDIO_API_KEY</code> only if your server requires authentication.</p>
@@ -5148,12 +5148,12 @@
 <a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
 <a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>4. Run your first conversion:
 <a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>   docling-graph convert document.pdf \
-<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>       --template &quot;templates.BillingDocument&quot;
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>       --template "templates.BillingDocument"
 </code></pre></div>
 <hr />
 <h2 id="overwriting-configuration">Overwriting Configuration<a class="headerlink" href="#overwriting-configuration" title="Permanent link">&para;</a></h2>
 <p>If <code>config.yaml</code> already exists:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>A configuration file: &#39;config.yaml&#39; already exists.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>A configuration file: 'config.yaml' already exists.
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Overwrite it? [y/N]:
 </code></pre></div>
 <ul>
@@ -5192,11 +5192,11 @@
 <a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="c1"># 7. Export format, output directory</span>
 <a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>
 <a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="c1"># Set API key</span>
-<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-key"</span>
 <a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>
 <a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="c1"># Test conversion</span>
 <a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>test.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 </code></pre></div>
 <h3 id="local-development-setup">📍 Local Development Setup<a class="headerlink" href="#local-development-setup" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Install (if not already)</span>
@@ -5221,7 +5221,7 @@
 <a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>
 <a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a><span class="c1"># Test conversion</span>
 <a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>test.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 </code></pre></div>
 <h3 id="vlm-setup">📍 VLM Setup<a class="headerlink" href="#vlm-setup" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Install (if not already)</span>
@@ -5239,7 +5239,7 @@
 <a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a>
 <a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="c1"># Test conversion</span>
 <a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>form.jpg<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.IDCard&quot;</span>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.IDCard"</span>
 </code></pre></div>
 <hr />
 <h2 id="configuration-file-location">Configuration File Location<a class="headerlink" href="#configuration-file-location" title="Permanent link">&para;</a></h2>
@@ -5323,10 +5323,10 @@
 <h3 id="version-control">👍 Version Control<a class="headerlink" href="#version-control" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># ✅ Good - Track configuration</span>
 <a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>git<span class="w"> </span>add<span class="w"> </span>config.yaml
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add docling-graph configuration&quot;</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"Add docling-graph configuration"</span>
 <a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>
 <a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="c1"># Add to .gitignore if it contains secrets</span>
-<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;config.yaml&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"config.yaml"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
 </code></pre></div>
 <h3 id="environment-specific-configs">👍 Environment-Specific Configs<a class="headerlink" href="#environment-specific-configs" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Development</span>
@@ -5337,7 +5337,7 @@
 <a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>
 <a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="c1"># Use specific config</span>
 <a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>cp<span class="w"> </span>config.prod.yaml<span class="w"> </span>config.yaml
-<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>docling-graph<span class="w"> </span>convert<span class="w"> </span>document.pdf<span class="w"> </span>-t<span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 </code></pre></div>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
@@ -5429,10 +5429,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

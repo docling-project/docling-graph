@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4839,7 +4839,7 @@
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>dev
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Verify installation</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import docling_graph; print(docling_graph.__version__)&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import docling_graph; print(docling_graph.__version__)"</span>
 </code></pre></div>
 <h3 id="3-create-branch">3. Create Branch<a class="headerlink" href="#3-create-branch" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Create feature branch</span>
@@ -4863,7 +4863,7 @@
 <h3 id="6-submit-pull-request">6. Submit Pull Request<a class="headerlink" href="#6-submit-pull-request" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Commit changes</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>add<span class="w"> </span>.
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-s<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add new feature&quot;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-s<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat: add new feature"</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Push to your fork</span>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/my-feature
@@ -4983,30 +4983,30 @@ How releases are managed.</p>
 <a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>docling_graph<span class="w"> </span>--cov-report<span class="o">=</span>html
 <a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
 <a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="c1"># Fast tests only (skip slow)</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;not slow&quot;</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">"not slow"</span>
 </code></pre></div>
 <h3 id="writing-tests">Writing Tests<a class="headerlink" href="#writing-tests" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="sd">&quot;&quot;&quot;Test example.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="sd">"""Test example."""</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
 <a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_pipeline_config_creation</span><span class="p">():</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test PipelineConfig can be created.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="sd">"""Test PipelineConfig can be created."""</span>
 <a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;test.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Test&quot;</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"test.pdf"</span><span class="p">,</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Test"</span>
 <a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="p">)</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;test.pdf&quot;</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;llm&quot;</span>  <span class="c1"># Default</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">"test.pdf"</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    <span class="k">assert</span> <span class="n">config</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">"llm"</span>  <span class="c1"># Default</span>
 <a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
 <a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_pipeline_config_validation</span><span class="p">():</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test PipelineConfig validates inputs.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="sd">"""Test PipelineConfig validates inputs."""</span>
 <a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
 <a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>        <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>            <span class="n">source</span><span class="o">=</span><span class="s2">&quot;test.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>            <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Test&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>            <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;invalid&quot;</span>  <span class="c1"># Should fail</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>            <span class="n">source</span><span class="o">=</span><span class="s2">"test.pdf"</span><span class="p">,</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>            <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Test"</span><span class="p">,</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>            <span class="n">backend</span><span class="o">=</span><span class="s2">"invalid"</span>  <span class="c1"># Should fail</span>
 <a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>        <span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -5202,10 +5202,10 @@ How releases are managed.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

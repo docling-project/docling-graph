@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4338,25 +4338,25 @@
 <h3 id="baseexporter">BaseExporter<a class="headerlink" href="#baseexporter" title="Permanent link">&para;</a></h3>
 <p>Base class for all exporters.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BaseExporter</span><span class="p">:</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for graph exporters.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">"""Base class for graph exporters."""</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">,</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="p">):</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="sd">"""</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="sd">        Initialize exporter.</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">        Args:</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="sd">            graph: NetworkX graph to export</span>
 <a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">            output_dir: Output directory</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">        """</span>
 <a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
 <a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Export graph to target format.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="sd">"""Export graph to target format."""</span>
 <a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div>
 <hr />
@@ -4364,16 +4364,16 @@
 <h3 id="csvexporter">CSVExporter<a class="headerlink" href="#csvexporter" title="Permanent link">&para;</a></h3>
 <p>Export graphs to Neo4j-compatible CSV format.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CSVExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export graph to CSV format.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="sd">"""Export graph to CSV format."""</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="sd">"""</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="sd">        Export to CSV files.</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">        Creates:</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">            - nodes.csv: Node data</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">            - edges.csv: Edge data</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">        """</span>
 </code></pre></div>
 <p><strong>Output Format:</strong></p>
 <p><strong>nodes.csv:</strong>
@@ -4388,7 +4388,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">CSVExporter</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">CSVExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">))</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">CSVExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"outputs"</span><span class="p">))</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Files created:</span>
@@ -4400,26 +4400,26 @@
 <h3 id="cypherexporter">CypherExporter<a class="headerlink" href="#cypherexporter" title="Permanent link">&para;</a></h3>
 <p>Export graphs to Cypher script format.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CypherExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export graph to Cypher script.&quot;&quot;&quot;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="sd">"""Export graph to Cypher script."""</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="sd">"""</span>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="sd">        Export to Cypher script.</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="sd">        Creates:</span>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="sd">            - graph.cypher: Cypher CREATE statements</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="sd">        """</span>
 </code></pre></div>
 <p><strong>Output Format:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n1</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;John Doe&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="p">})</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n2</span><span class="p">:</span><span class="n">Organization</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ACME Corp&quot;</span><span class="p">})</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n1</span><span class="p">:</span><span class="n">Person</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">"John Doe"</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="p">})</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n2</span><span class="p">:</span><span class="n">Organization</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">"ACME Corp"</span><span class="p">})</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="p">(</span><span class="n">n1</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">WORKS_AT</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">n2</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Example:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">CypherExporter</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">CypherExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">))</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">CypherExporter</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"outputs"</span><span class="p">))</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
 <a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># File created: outputs/graph.cypher</span>
@@ -4429,18 +4429,18 @@
 <h3 id="jsonexporter">JSONExporter<a class="headerlink" href="#jsonexporter" title="Permanent link">&para;</a></h3>
 <p>Export graphs to JSON format.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">JSONExporter</span><span class="p">:</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export graph to JSON format.&quot;&quot;&quot;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">"""Export graph to JSON format."""</span>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">ExportConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="sd">"""</span>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="sd">        Initialize exporter.</span>
 <a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
 <a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="sd">        Args:</span>
 <a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="sd">            config: Export configuration. Uses defaults if None.</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="sd">        """</span>
 <a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
 <a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">        </span><span class="sd">"""</span>
 <a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="sd">        Export graph to JSON.</span>
 <a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
 <a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="sd">        Args:</span>
@@ -4449,19 +4449,19 @@
 <a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>
 <a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="sd">        Raises:</span>
 <a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="sd">            ValueError: If graph is empty.</span>
-<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="sd">        """</span>
 </code></pre></div>
 <p><strong>Output Format:</strong></p>
 <p>Docling-graph's own shape — <em>not</em> NetworkX node-link. Edges live under <code>edges</code> (not <code>links</code>), and graph-level metadata (the format-v2 identity contract: <code>id_fields_map</code>, template name/schema hash) lives under a top-level <code>graph</code> key, absent on v1 exports.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;entity&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;John&quot;</span><span class="p">}</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="p">{</span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node_1"</span><span class="p">,</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"entity"</span><span class="p">,</span><span class="w"> </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John"</span><span class="p">}</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="p">],</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">&quot;edges&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_2&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;works_at&quot;</span><span class="p">}</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">"edges"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="p">{</span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node_1"</span><span class="p">,</span><span class="w"> </span><span class="nt">"target"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node_2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"works_at"</span><span class="p">}</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span><span class="p">],</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;node_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;edge_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">},</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span><span class="nt">&quot;graph&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v2&quot;</span><span class="p">}</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"node_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"edge_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">},</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span><span class="nt">"graph"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"format"</span><span class="p">:</span><span class="w"> </span><span class="s2">"v2"</span><span class="p">}</span>
 <a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="p">}</span>
 </code></pre></div>
 <p><strong>Example:</strong></p>
@@ -4469,21 +4469,21 @@
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">exporter</span> <span class="o">=</span> <span class="n">JSONExporter</span><span class="p">()</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs/graph.json&quot;</span><span class="p">))</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"outputs/graph.json"</span><span class="p">))</span>
 </code></pre></div>
 <hr />
 <h3 id="graph_to_dict">graph_to_dict<a class="headerlink" href="#graph_to_dict" title="Permanent link">&para;</a></h3>
 <p>Serialize a graph to the canonical <code>graph.json</code> shape without touching the filesystem.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">graph_to_dict</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="sd">"""</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="sd">    Serialize a graph to the canonical docling-graph JSON shape.</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="sd">    Args:</span>
 <a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="sd">        graph: NetworkX directed graph.</span>
 <a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
 <a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="sd">        {&quot;nodes&quot;: [...], &quot;edges&quot;: [...], &quot;metadata&quot;: {...}, &quot;graph&quot;: {...}}</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="sd">        {"nodes": [...], "edges": [...], "metadata": {...}, "graph": {...}}</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="sd">    """</span>
 </code></pre></div>
 <p>The round-trip inverse is <a href="#load_graph_from_dict"><code>load_graph_from_dict()</code></a>. Use the pair when the graph or payload is already in memory (an HTTP handler, a notebook) and a temp file would be pure overhead.</p>
 <p><strong>Example:</strong></p>
@@ -4508,18 +4508,18 @@
 <h3 id="load_graph_from_dict">load_graph_from_dict<a class="headerlink" href="#load_graph_from_dict" title="Permanent link">&para;</a></h3>
 <p>Load an in-memory <code>graph.json</code> object back into a graph. The read-side inverse of <a href="#graph_to_dict"><code>graph_to_dict()</code></a>.</p>
 <p><strong>Module:</strong> <code>docling_graph.core.importers</code></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_graph_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&lt;dict&gt;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">:</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_graph_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"&lt;dict&gt;"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">:</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="sd">"""</span>
 <a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="sd">    Load an already-parsed graph.json object into an nx.DiGraph.</span>
 <a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="sd">    Args:</span>
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="sd">        data: A docling-graph graph export object.</span>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="sd">        source: Label used in error messages (a path, URL, or &quot;&lt;dict&gt;&quot;).</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="sd">        source: Label used in error messages (a path, URL, or "&lt;dict&gt;").</span>
 <a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
 <a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="sd">    Raises:</span>
 <a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="sd">        ConfigurationError: When data is not a docling-graph export, is empty,</span>
 <a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="sd">            or is structurally corrupt (malformed records, dangling edges).</span>
-<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="sd">    """</span>
 </code></pre></div>
 <p>Validation is identical to the file-based <code>load_graph_json()</code>, which is a thin wrapper over this function. Node <code>id</code>s must be JSON scalars; graph-level metadata under <code>graph</code> is restored when present and tolerated when absent (v1 exports).</p>
 <p><strong>Example:</strong></p>
@@ -4527,9 +4527,9 @@
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurationError</span>
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">graph</span> <span class="o">=</span> <span class="n">load_graph_from_dict</span><span class="p">(</span><span class="n">request_body</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;POST /graphs&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">graph</span> <span class="o">=</span> <span class="n">load_graph_from_dict</span><span class="p">(</span><span class="n">request_body</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">"POST /graphs"</span><span class="p">)</span>
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rejected: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Rejected: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Related file-based loaders</strong> (<code>docling_graph.core.importers</code>):</p>
 <table>
@@ -4563,7 +4563,7 @@
 <h3 id="doclingexporter">DoclingExporter<a class="headerlink" href="#doclingexporter" title="Permanent link">&para;</a></h3>
 <p>Export Docling document outputs.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DoclingExporter</span><span class="p">:</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Export Docling document outputs.&quot;&quot;&quot;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="sd">"""Export Docling document outputs."""</span>
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>        <span class="bp">self</span><span class="p">,</span>
@@ -4573,7 +4573,7 @@
 <a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>        <span class="n">export_markdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>        <span class="n">export_per_page</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="w">        </span><span class="sd">"""</span>
 <a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="sd">        Export Docling outputs.</span>
 <a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
 <a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="sd">        Args:</span>
@@ -4582,7 +4582,7 @@
 <a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="sd">            export_json: Export JSON</span>
 <a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="sd">            export_markdown: Export markdown</span>
 <a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="sd">            export_per_page: Export per-page markdown</span>
-<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="sd">        """</span>
 </code></pre></div>
 <p><strong>Creates:</strong></p>
 <ul>
@@ -4598,15 +4598,15 @@
 <a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
 <a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyExporter</span><span class="p">(</span><span class="n">BaseExporter</span><span class="p">):</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom exporter.&quot;&quot;&quot;</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="sd">"""Custom exporter."""</span>
 <a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>
 <a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Export to custom format.&quot;&quot;&quot;</span>
-<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>        <span class="n">output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;custom.txt&quot;</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">        </span><span class="sd">"""Export to custom format."""</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>        <span class="n">output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"custom.txt"</span>
 <a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
-<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nodes: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Edges: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <p>See <a href="../../usage/advanced/custom-exporters/">Custom Exporters Guide</a> for details.</p>
 <hr />
@@ -4698,10 +4698,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

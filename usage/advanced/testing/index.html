@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4819,49 +4819,49 @@
 <hr />
 <h2 id="template-testing">Template Testing<a class="headerlink" href="#template-testing" title="Permanent link">&para;</a></h2>
 <h3 id="basic-template-validation">Basic Template Validation<a class="headerlink" href="#basic-template-validation" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="sd">&quot;&quot;&quot;Test Pydantic template validation.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="sd">"""Test Pydantic template validation."""</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">templates.my_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Person</span><span class="p">,</span> <span class="n">Organization</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person_valid</span><span class="p">():</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test valid person creation.&quot;&quot;&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="sd">"""Test valid person creation."""</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"John Doe"</span><span class="p">,</span>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@example.com&quot;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">email</span><span class="o">=</span><span class="s2">"john@example.com"</span>
 <a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="p">)</span>
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;John Doe&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"John Doe"</span>
 <a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">30</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">email</span> <span class="o">==</span> <span class="s2">&quot;john@example.com&quot;</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">email</span> <span class="o">==</span> <span class="s2">"john@example.com"</span>
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person_invalid_age</span><span class="p">():</span>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person with invalid age.&quot;&quot;&quot;</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="sd">"""Test person with invalid age."""</span>
 <a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc_info</span><span class="p">:</span>
 <a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>        <span class="n">Person</span><span class="p">(</span>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">"John Doe"</span><span class="p">,</span>
 <a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>            <span class="n">age</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span>  <span class="c1"># Invalid</span>
-<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>            <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@example.com&quot;</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>            <span class="n">email</span><span class="o">=</span><span class="s2">"john@example.com"</span>
 <a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>        <span class="p">)</span>
 <a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>
 <a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    <span class="n">errors</span> <span class="o">=</span> <span class="n">exc_info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">errors</span><span class="p">()</span>
-<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;loc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">,)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">)</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'loc'</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="s1">'age'</span><span class="p">,)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">)</span>
 <a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
 <a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person_invalid_email</span><span class="p">():</span>
-<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person with invalid email.&quot;&quot;&quot;</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="w">    </span><span class="sd">"""Test person with invalid email."""</span>
 <a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
 <a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>        <span class="n">Person</span><span class="p">(</span>
-<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">"John Doe"</span><span class="p">,</span>
 <a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>            <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
-<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>            <span class="n">email</span><span class="o">=</span><span class="s2">&quot;not-an-email&quot;</span>  <span class="c1"># Invalid</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>            <span class="n">email</span><span class="o">=</span><span class="s2">"not-an-email"</span>  <span class="c1"># Invalid</span>
 <a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>        <span class="p">)</span>
 <a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>
 <a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person_optional_fields</span><span class="p">():</span>
-<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person with optional fields.&quot;&quot;&quot;</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a><span class="w">    </span><span class="sd">"""Test person with optional fields."""</span>
 <a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span>
-<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"John Doe"</span><span class="p">,</span>
 <a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>        <span class="n">age</span><span class="o">=</span><span class="mi">30</span>
 <a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>        <span class="c1"># email is optional</span>
 <a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>    <span class="p">)</span>
@@ -4869,43 +4869,43 @@
 <a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">email</span> <span class="ow">is</span> <span class="kc">None</span>
 </code></pre></div>
 <h3 id="test-field-validators">Test Field Validators<a class="headerlink" href="#test-field-validators" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="sd">&quot;&quot;&quot;Test custom field validators.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="sd">"""Test custom field validators."""</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">field_validator</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">EmailTemplate</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Template with email validation.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">"""Template with email validation."""</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Email address&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Email address"</span><span class="p">)</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"email"</span><span class="p">)</span>
 <a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="nd">@classmethod</span>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">validate_email</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate email format.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="k">if</span> <span class="s2">&quot;@&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid email format&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="sd">"""Validate email format."""</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="k">if</span> <span class="s2">"@"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid email format"</span><span class="p">)</span>
 <a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 <a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
 <a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_email_validator_valid</span><span class="p">():</span>
-<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test valid email.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">template</span> <span class="o">=</span> <span class="n">EmailTemplate</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;John@Example.com&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="k">assert</span> <span class="n">template</span><span class="o">.</span><span class="n">email</span> <span class="o">==</span> <span class="s2">&quot;john@example.com&quot;</span>  <span class="c1"># Lowercased</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="sd">"""Test valid email."""</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">template</span> <span class="o">=</span> <span class="n">EmailTemplate</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">"John@Example.com"</span><span class="p">)</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="k">assert</span> <span class="n">template</span><span class="o">.</span><span class="n">email</span> <span class="o">==</span> <span class="s2">"john@example.com"</span>  <span class="c1"># Lowercased</span>
 <a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
 <a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_email_validator_invalid</span><span class="p">():</span>
-<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test invalid email.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">    </span><span class="sd">"""Test invalid email."""</span>
 <a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc_info</span><span class="p">:</span>
-<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>        <span class="n">EmailTemplate</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;not-an-email&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>        <span class="n">EmailTemplate</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">"not-an-email"</span><span class="p">)</span>
 <a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>
 <a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="n">errors</span> <span class="o">=</span> <span class="n">exc_info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">errors</span><span class="p">()</span>
-<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="k">assert</span> <span class="s2">&quot;Invalid email format&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="k">assert</span> <span class="s2">"Invalid email format"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="test-relationships">Test Relationships<a class="headerlink" href="#test-relationships" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="sd">&quot;&quot;&quot;Test entity relationships.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="sd">"""Test entity relationships."""</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">ConfigDict</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">edge</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;edge_label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">"edge_label"</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">is_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -4914,35 +4914,35 @@
 <a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
 <a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">address</span><span class="p">:</span> <span class="n">Address</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;LIVES_AT&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">address</span><span class="p">:</span> <span class="n">Address</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"LIVES_AT"</span><span class="p">)</span>
 <a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
 <a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_relationship_structure</span><span class="p">():</span>
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test relationship is properly defined.&quot;&quot;&quot;</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="sd">"""Test relationship is properly defined."""</span>
 <a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span>
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>        <span class="n">address</span><span class="o">=</span><span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">&quot;123 Main St&quot;</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">&quot;NYC&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="n">name</span><span class="o">=</span><span class="s2">"John"</span><span class="p">,</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>        <span class="n">address</span><span class="o">=</span><span class="n">Address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="s2">"123 Main St"</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="s2">"NYC"</span><span class="p">)</span>
 <a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    <span class="p">)</span>
 <a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;John&quot;</span>
-<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">address</span><span class="o">.</span><span class="n">street</span> <span class="o">==</span> <span class="s2">&quot;123 Main St&quot;</span>
-<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">address</span><span class="o">.</span><span class="n">city</span> <span class="o">==</span> <span class="s2">&quot;NYC&quot;</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"John"</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">address</span><span class="o">.</span><span class="n">street</span> <span class="o">==</span> <span class="s2">"123 Main St"</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">address</span><span class="o">.</span><span class="n">city</span> <span class="o">==</span> <span class="s2">"NYC"</span>
 <a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
 <a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_relationship_metadata</span><span class="p">():</span>
-<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test edge metadata is present.&quot;&quot;&quot;</span>
-<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>    <span class="n">field_info</span> <span class="o">=</span> <span class="n">Person</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">]</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">    </span><span class="sd">"""Test edge metadata is present."""</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>    <span class="n">field_info</span> <span class="o">=</span> <span class="n">Person</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">"address"</span><span class="p">]</span>
 <a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>    <span class="k">assert</span> <span class="n">field_info</span><span class="o">.</span><span class="n">json_schema_extra</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>    <span class="k">assert</span> <span class="n">field_info</span><span class="o">.</span><span class="n">json_schema_extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;edge_label&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;LIVES_AT&quot;</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>    <span class="k">assert</span> <span class="n">field_info</span><span class="o">.</span><span class="n">json_schema_extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"edge_label"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"LIVES_AT"</span>
 </code></pre></div>
 <hr />
 <h2 id="mock-backends">Mock Backends<a class="headerlink" href="#mock-backends" title="Permanent link">&para;</a></h2>
 <h3 id="create-mock-backend">Create Mock Backend<a class="headerlink" href="#create-mock-backend" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="sd">&quot;&quot;&quot;Mock backend for testing.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="sd">"""Mock backend for testing."""</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">MockLLMBackend</span><span class="p">:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock LLM backend for testing.&quot;&quot;&quot;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="sd">"""Mock LLM backend for testing."""</span>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_response</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mock_response</span> <span class="o">=</span> <span class="n">mock_response</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -4954,10 +4954,10 @@
 <a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"document"</span><span class="p">,</span>
 <a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>        <span class="n">is_partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock extraction.&quot;&quot;&quot;</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">        </span><span class="sd">"""Mock extraction."""</span>
 <a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">call_count</span> <span class="o">+=</span> <span class="mi">1</span>
 <a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">last_markdown</span> <span class="o">=</span> <span class="n">markdown</span>
 <a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">last_template</span> <span class="o">=</span> <span class="n">template</span>
@@ -4974,56 +4974,56 @@
 <a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>        <span class="n">programmatic_model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">,</span>
 <a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 <a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock consolidation.&quot;&quot;&quot;</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">        </span><span class="sd">"""Mock consolidation."""</span>
 <a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>        <span class="k">return</span> <span class="n">programmatic_model</span>
 <a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>
 <a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock cleanup.&quot;&quot;&quot;</span>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="w">        </span><span class="sd">"""Mock cleanup."""</span>
 <a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a>        <span class="k">pass</span>
 </code></pre></div>
 <h3 id="use-mock-backend">Use Mock Backend<a class="headerlink" href="#use-mock-backend" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="sd">&quot;&quot;&quot;Test extraction with mock backend.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="sd">"""Test extraction with mock backend."""</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">templates.my_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Person</span>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
 <a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_extraction_with_mock</span><span class="p">():</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test extraction using mock backend.&quot;&quot;&quot;</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="sd">"""Test extraction using mock backend."""</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="c1"># Create mock backend</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">mock_backend</span> <span class="o">=</span> <span class="n">MockLLMBackend</span><span class="p">(</span>
 <a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="n">mock_response</span><span class="o">=</span><span class="p">{</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>            <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>            <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;john@example.com&quot;</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"John Doe"</span><span class="p">,</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>            <span class="s2">"age"</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>            <span class="s2">"email"</span><span class="p">:</span> <span class="s2">"john@example.com"</span>
 <a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="p">}</span>
 <a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="p">)</span>
 <a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
 <a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="c1"># Use mock backend</span>
 <a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">mock_backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span>
-<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>        <span class="n">markdown</span><span class="o">=</span><span class="s2">&quot;Name: John Doe, Age: 30&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>        <span class="n">markdown</span><span class="o">=</span><span class="s2">"Name: John Doe, Age: 30"</span><span class="p">,</span>
 <a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>        <span class="n">template</span><span class="o">=</span><span class="n">Person</span>
 <a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="p">)</span>
 <a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>
 <a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>    <span class="c1"># Verify</span>
 <a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;John Doe&quot;</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"John Doe"</span>
 <a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">30</span>
 <a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>    <span class="k">assert</span> <span class="n">mock_backend</span><span class="o">.</span><span class="n">call_count</span> <span class="o">==</span> <span class="mi">1</span>
 <a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>
 <a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_extraction_tracks_calls</span><span class="p">():</span>
-<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test mock tracks method calls.&quot;&quot;&quot;</span>
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="w">    </span><span class="sd">"""Test mock tracks method calls."""</span>
 <a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>    <span class="n">mock_backend</span> <span class="o">=</span> <span class="n">MockLLMBackend</span><span class="p">()</span>
 <a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a>
-<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>    <span class="n">mock_backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">Person</span><span class="p">)</span>
-<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a>    <span class="n">mock_backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="s2">&quot;test2&quot;</span><span class="p">,</span> <span class="n">Person</span><span class="p">)</span>
+<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>    <span class="n">mock_backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="s2">"test"</span><span class="p">,</span> <span class="n">Person</span><span class="p">)</span>
+<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a>    <span class="n">mock_backend</span><span class="o">.</span><span class="n">extract_from_markdown</span><span class="p">(</span><span class="s2">"test2"</span><span class="p">,</span> <span class="n">Person</span><span class="p">)</span>
 <a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a>
 <a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a>    <span class="k">assert</span> <span class="n">mock_backend</span><span class="o">.</span><span class="n">call_count</span> <span class="o">==</span> <span class="mi">2</span>
-<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a>    <span class="k">assert</span> <span class="n">mock_backend</span><span class="o">.</span><span class="n">last_markdown</span> <span class="o">==</span> <span class="s2">&quot;test2&quot;</span>
+<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a>    <span class="k">assert</span> <span class="n">mock_backend</span><span class="o">.</span><span class="n">last_markdown</span> <span class="o">==</span> <span class="s2">"test2"</span>
 </code></pre></div>
 <hr />
 <h2 id="integration-testing">Integration Testing<a class="headerlink" href="#integration-testing" title="Permanent link">&para;</a></h2>
 <h3 id="test-complete-pipeline">Test Complete Pipeline<a class="headerlink" href="#test-complete-pipeline" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="sd">&quot;&quot;&quot;Integration test for complete pipeline.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="sd">"""Integration test for complete pipeline."""</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -5031,24 +5031,24 @@
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
 <a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">sample_document</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create sample document for testing.&quot;&quot;&quot;</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">doc_path</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;test.pdf&quot;</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="sd">"""Create sample document for testing."""</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">doc_path</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"test.pdf"</span>
 <a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="c1"># Create minimal PDF (or use existing test file)</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="n">doc_path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;%PDF-1.4</span><span class="se">\n</span><span class="s2">%Test PDF&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="n">doc_path</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="sa">b</span><span class="s2">"%PDF-1.4</span><span class="se">\n</span><span class="s2">%Test PDF"</span><span class="p">)</span>
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="k">return</span> <span class="n">doc_path</span>
 <a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
 <a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="k">def</span><span class="w"> </span><span class="nf">output_dir</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create output directory.&quot;&quot;&quot;</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="n">output</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">    </span><span class="sd">"""Create output directory."""</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="n">output</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"outputs"</span>
 <a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="n">output</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 <a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>    <span class="k">return</span> <span class="n">output</span>
 <a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
 <a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_pipeline_execution</span><span class="p">(</span><span class="n">sample_document</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
-<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test pipeline executes successfully.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">    </span><span class="sd">"""Test pipeline executes successfully."""</span>
 <a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>        <span class="n">source</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">sample_document</span><span class="p">),</span>
-<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.my_template.Person&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.my_template.Person"</span><span class="p">,</span>
 <a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
 <a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>    <span class="p">)</span>
 <a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a>
@@ -5056,21 +5056,21 @@
 <a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>
 <a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>    <span class="c1"># Verify outputs exist</span>
-<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;nodes.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
-<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;edges.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"nodes.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"edges.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 <a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a>
 <a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_pipeline_with_invalid_source</span><span class="p">():</span>
-<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test pipeline handles invalid source.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">    </span><span class="sd">"""Test pipeline handles invalid source."""</span>
 <a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;nonexistent.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.my_template.Person&quot;</span>
+<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"nonexistent.pdf"</span><span class="p">,</span>
+<a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.my_template.Person"</span>
 <a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a>    <span class="p">)</span>
 <a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a>
 <a id="__codelineno-7-44" name="__codelineno-7-44" href="#__codelineno-7-44"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <a id="__codelineno-7-45" name="__codelineno-7-45" href="#__codelineno-7-45"></a>        <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="test-with-real-documents">Test with Real Documents<a class="headerlink" href="#test-with-real-documents" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="sd">&quot;&quot;&quot;Test with real document samples.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="sd">"""Test with real document samples."""</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -5078,44 +5078,44 @@
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
 <a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">invoice_pdf</span><span class="p">():</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Path to sample invoice.&quot;&quot;&quot;</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;tests/fixtures/sample_invoice.pdf&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="sd">"""Path to sample invoice."""</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"tests/fixtures/sample_invoice.pdf"</span><span class="p">)</span>
 <a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
 <a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">research_paper_pdf</span><span class="p">():</span>
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Path to sample rheology research.&quot;&quot;&quot;</span>
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;tests/fixtures/sample_paper.pdf&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">    </span><span class="sd">"""Path to sample rheology research."""</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"tests/fixtures/sample_paper.pdf"</span><span class="p">)</span>
 <a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
 <a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_invoice_extraction</span><span class="p">(</span><span class="n">invoice_pdf</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test invoice extraction.&quot;&quot;&quot;</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">    </span><span class="sd">"""Test invoice extraction."""</span>
 <a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">invoice_pdf</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;Sample invoice not available&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">"Sample invoice not available"</span><span class="p">)</span>
 <a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>
 <a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>        <span class="n">source</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">invoice_pdf</span><span class="p">),</span>
-<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.billing_document.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.billing_document.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
 <a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>    <span class="p">)</span>
 <a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>
 <a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>
 <a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>    <span class="c1"># Verify invoice-specific outputs</span>
-<a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>    <span class="n">nodes_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;nodes.csv&quot;</span>
+<a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>    <span class="n">nodes_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"nodes.csv"</span>
 <a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a>    <span class="k">assert</span> <span class="n">nodes_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 <a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a>
 <a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a>    <span class="c1"># Check for expected node types</span>
 <a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a>    <span class="n">content</span> <span class="o">=</span> <span class="n">nodes_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
-<a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>    <span class="k">assert</span> <span class="s2">&quot;Invoice&quot;</span> <span class="ow">in</span> <span class="n">content</span>
-<a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a>    <span class="k">assert</span> <span class="s2">&quot;LineItem&quot;</span> <span class="ow">in</span> <span class="n">content</span>
+<a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>    <span class="k">assert</span> <span class="s2">"Invoice"</span> <span class="ow">in</span> <span class="n">content</span>
+<a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a>    <span class="k">assert</span> <span class="s2">"LineItem"</span> <span class="ow">in</span> <span class="n">content</span>
 <a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a>
 <a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_research_paper_extraction</span><span class="p">(</span><span class="n">research_paper_pdf</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test rheology research extraction.&quot;&quot;&quot;</span>
+<a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a><span class="w">    </span><span class="sd">"""Test rheology research extraction."""</span>
 <a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">research_paper_pdf</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>        <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;Sample paper not available&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>        <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">"Sample paper not available"</span><span class="p">)</span>
 <a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a>
 <a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a>        <span class="n">source</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">research_paper_pdf</span><span class="p">),</span>
-<a id="__codelineno-8-46" name="__codelineno-8-46" href="#__codelineno-8-46"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.rheology_research.ScholarlyRheologyPaperPaper&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-46" name="__codelineno-8-46" href="#__codelineno-8-46"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.rheology_research.ScholarlyRheologyPaperPaper"</span><span class="p">,</span>
 <a id="__codelineno-8-47" name="__codelineno-8-47" href="#__codelineno-8-47"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">),</span>
 <a id="__codelineno-8-48" name="__codelineno-8-48" href="#__codelineno-8-48"></a>        <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Large document</span>
 <a id="__codelineno-8-49" name="__codelineno-8-49" href="#__codelineno-8-49"></a>    <span class="p">)</span>
@@ -5123,13 +5123,13 @@
 <a id="__codelineno-8-51" name="__codelineno-8-51" href="#__codelineno-8-51"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-8-52" name="__codelineno-8-52" href="#__codelineno-8-52"></a>
 <a id="__codelineno-8-53" name="__codelineno-8-53" href="#__codelineno-8-53"></a>    <span class="c1"># Verify outputs</span>
-<a id="__codelineno-8-54" name="__codelineno-8-54" href="#__codelineno-8-54"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;nodes.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
-<a id="__codelineno-8-55" name="__codelineno-8-55" href="#__codelineno-8-55"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;edges.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<a id="__codelineno-8-54" name="__codelineno-8-54" href="#__codelineno-8-54"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"nodes.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<a id="__codelineno-8-55" name="__codelineno-8-55" href="#__codelineno-8-55"></a>    <span class="k">assert</span> <span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"edges.csv"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 </code></pre></div>
 <hr />
 <h2 id="test-fixtures">Test Fixtures<a class="headerlink" href="#test-fixtures" title="Permanent link">&para;</a></h2>
 <h3 id="shared-fixtures">Shared Fixtures<a class="headerlink" href="#shared-fixtures" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="sd">&quot;&quot;&quot;Shared test fixtures in conftest.py.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="sd">"""Shared test fixtures in conftest.py."""</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -5137,67 +5137,67 @@
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">sample_template</span><span class="p">():</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample template for testing.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="sd">"""Sample template for testing."""</span>
 <a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="k">class</span><span class="w"> </span><span class="nc">TestTemplate</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Name&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Name"</span><span class="p">)</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>        <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Value"</span><span class="p">)</span>
 <a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>
 <a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="k">return</span> <span class="n">TestTemplate</span>
 <a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
 <a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">sample_data</span><span class="p">():</span>
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample data for testing.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="sd">"""Sample data for testing."""</span>
 <a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>    <span class="k">return</span> <span class="p">{</span>
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Test&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">42</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Test"</span><span class="p">,</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>        <span class="s2">"value"</span><span class="p">:</span> <span class="mi">42</span>
 <a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>    <span class="p">}</span>
 <a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>
 <a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="k">def</span><span class="w"> </span><span class="nf">temp_output_dir</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Temporary output directory.&quot;&quot;&quot;</span>
-<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">    </span><span class="sd">"""Temporary output directory."""</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"outputs"</span>
 <a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>    <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 <a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>    <span class="k">return</span> <span class="n">output_dir</span>
 <a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>
 <a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a><span class="k">def</span><span class="w"> </span><span class="nf">mock_backend</span><span class="p">():</span>
-<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock backend for testing.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="w">    </span><span class="sd">"""Mock backend for testing."""</span>
 <a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">tests.mocks</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockLLMBackend</span>
 <a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>    <span class="k">return</span> <span class="n">MockLLMBackend</span><span class="p">()</span>
 </code></pre></div>
 <h3 id="use-fixtures">Use Fixtures<a class="headerlink" href="#use-fixtures" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="sd">&quot;&quot;&quot;Use shared fixtures in tests.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="sd">"""Use shared fixtures in tests."""</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_with_fixtures</span><span class="p">(</span><span class="n">sample_template</span><span class="p">,</span> <span class="n">sample_data</span><span class="p">):</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test using fixtures.&quot;&quot;&quot;</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="sd">"""Test using fixtures."""</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">instance</span> <span class="o">=</span> <span class="n">sample_template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">sample_data</span><span class="p">)</span>
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="k">assert</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Test&quot;</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="k">assert</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"Test"</span>
 <a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="k">assert</span> <span class="n">instance</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">42</span>
 <a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
 <a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_with_output_dir</span><span class="p">(</span><span class="n">temp_output_dir</span><span class="p">):</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test with temporary output directory.&quot;&quot;&quot;</span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="n">test_file</span> <span class="o">=</span> <span class="n">temp_output_dir</span> <span class="o">/</span> <span class="s2">&quot;test.txt&quot;</span>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="n">test_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">    </span><span class="sd">"""Test with temporary output directory."""</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="n">test_file</span> <span class="o">=</span> <span class="n">temp_output_dir</span> <span class="o">/</span> <span class="s2">"test.txt"</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="n">test_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"test"</span><span class="p">)</span>
 <a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
 <a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    <span class="k">assert</span> <span class="n">test_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 </code></pre></div>
 <hr />
 <h2 id="parametrized-tests">Parametrized Tests<a class="headerlink" href="#parametrized-tests" title="Permanent link">&para;</a></h2>
 <h3 id="test-multiple-inputs">Test Multiple Inputs<a class="headerlink" href="#test-multiple-inputs" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="sd">&quot;&quot;&quot;Test with multiple parameter sets.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="sd">"""Test with multiple parameter sets."""</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">templates.my_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Person</span>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;name,age,valid&quot;</span><span class="p">,</span> <span class="p">[</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="p">(</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="p">(</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>  <span class="c1"># Invalid age</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>     <span class="c1"># Empty name</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">"name,age,valid"</span><span class="p">,</span> <span class="p">[</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="p">(</span><span class="s2">"John"</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="p">(</span><span class="s2">"Jane"</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="p">(</span><span class="s2">"Bob"</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>  <span class="c1"># Invalid age</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>     <span class="c1"># Empty name</span>
 <a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">])</span>
 <a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person_validation</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">valid</span><span class="p">):</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person validation with various inputs.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="sd">"""Test person validation with various inputs."""</span>
 <a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="k">if</span> <span class="n">valid</span><span class="p">:</span>
 <a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>        <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">)</span>
 <a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>        <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span>
@@ -5206,18 +5206,18 @@
 <a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>            <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">)</span>
 <a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>
-<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;backend,inference&quot;</span><span class="p">,</span> <span class="p">[</span>
-<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>    <span class="p">(</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">),</span>
-<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a>    <span class="p">(</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span> <span class="s2">&quot;remote&quot;</span><span class="p">),</span>
-<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>    <span class="p">(</span><span class="s2">&quot;vlm&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">),</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">"backend,inference"</span><span class="p">,</span> <span class="p">[</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>    <span class="p">(</span><span class="s2">"llm"</span><span class="p">,</span> <span class="s2">"local"</span><span class="p">),</span>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a>    <span class="p">(</span><span class="s2">"llm"</span><span class="p">,</span> <span class="s2">"remote"</span><span class="p">),</span>
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>    <span class="p">(</span><span class="s2">"vlm"</span><span class="p">,</span> <span class="s2">"local"</span><span class="p">),</span>
 <a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="p">])</span>
 <a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_pipeline_configurations</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">inference</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test different pipeline configurations.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="w">    </span><span class="sd">"""Test different pipeline configurations."""</span>
 <a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a>
 <a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;test.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.my_template.Person&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"test.pdf"</span><span class="p">,</span>
+<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.my_template.Person"</span><span class="p">,</span>
 <a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a>        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span>
 <a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a>        <span class="n">inference</span><span class="o">=</span><span class="n">inference</span><span class="p">,</span>
 <a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
@@ -5291,29 +5291,29 @@
 <h3 id="test-edge-cases">👍 Test Edge Cases<a class="headerlink" href="#test-edge-cases" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># ✅ Good - Test edge cases</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_empty_string</span><span class="p">():</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test with empty string.&quot;&quot;&quot;</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="sd">"""Test with empty string."""</span>
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
 <a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_boundary_values</span><span class="p">():</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test boundary values.&quot;&quot;&quot;</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>    <span class="c1"># Minimum</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>  <span class="c1"># Maximum</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="sd">"""Test boundary values."""</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"A"</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>    <span class="c1"># Minimum</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"A"</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>  <span class="c1"># Maximum</span>
 <a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
 <a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="c1"># ❌ Avoid - Only happy path</span>
 <a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person</span><span class="p">():</span>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person.&quot;&quot;&quot;</span>
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
-<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;John&quot;</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="sd">"""Test person."""</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"John"</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"John"</span>
 </code></pre></div>
 <h3 id="use-descriptive-names">👍 Use Descriptive Names<a class="headerlink" href="#use-descriptive-names" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># ✅ Good - Descriptive test names</span>
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_person_validation_rejects_negative_age</span><span class="p">():</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that negative ages are rejected.&quot;&quot;&quot;</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="sd">"""Test that negative ages are rejected."""</span>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="k">pass</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
 <a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_invoice_extraction_handles_multiple_line_items</span><span class="p">():</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test extraction of invoices with multiple items.&quot;&quot;&quot;</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="sd">"""Test extraction of invoices with multiple items."""</span>
 <a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="k">pass</span>
 <a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
 <a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="c1"># ❌ Avoid - Vague names</span>
@@ -5326,44 +5326,44 @@
 <h3 id="keep-tests-independent">👍 Keep Tests Independent<a class="headerlink" href="#keep-tests-independent" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># ✅ Good - Independent tests</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_create_person</span><span class="p">():</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person creation.&quot;&quot;&quot;</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;John&quot;</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="sd">"""Test person creation."""</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"John"</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"John"</span>
 <a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
 <a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_validate_person</span><span class="p">():</span>
-<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test person validation.&quot;&quot;&quot;</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">    </span><span class="sd">"""Test person validation."""</span>
 <a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
-<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>        <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>        <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
 <a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="c1"># ❌ Avoid - Dependent tests</span>
 <a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="n">person</span> <span class="o">=</span> <span class="kc">None</span>
 <a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>
 <a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_create</span><span class="p">():</span>
 <a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>    <span class="k">global</span> <span class="n">person</span>
-<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>    <span class="n">person</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"John"</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>
 <a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_validate</span><span class="p">():</span>
 <a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>    <span class="c1"># Depends on test_create!</span>
-<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;John&quot;</span>
+<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>    <span class="k">assert</span> <span class="n">person</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"John"</span>
 </code></pre></div>
 <h3 id="mock-external-dependencies">👍 Mock External Dependencies<a class="headerlink" href="#mock-external-dependencies" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># ✅ Good - Mock external APIs</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">mock_api</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock external API.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="sd">"""Mock external API."""</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">mock_call</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">}</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"result"</span><span class="p">:</span> <span class="s2">"success"</span><span class="p">}</span>
 <a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s2">&quot;my_module.api.call&quot;</span><span class="p">,</span> <span class="n">mock_call</span><span class="p">)</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s2">"my_module.api.call"</span><span class="p">,</span> <span class="n">mock_call</span><span class="p">)</span>
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
 <a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_with_mock_api</span><span class="p">(</span><span class="n">mock_api</span><span class="p">):</span>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test using mocked API.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">    </span><span class="sd">"""Test using mocked API."""</span>
 <a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">my_function</span><span class="p">()</span>
-<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">&quot;success&quot;</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">"success"</span>
 <a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>
 <a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="c1"># ❌ Avoid - Real API calls in tests</span>
 <a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_with_real_api</span><span class="p">():</span>
-<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test with real API.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="w">    </span><span class="sd">"""Test with real API."""</span>
 <a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>  <span class="c1"># Slow, unreliable, costs money</span>
 <a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>    <span class="k">assert</span> <span class="n">result</span>
 </code></pre></div>
@@ -5373,31 +5373,31 @@
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Use tmp_path fixture for file operations</span>
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_file_operations</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test file operations.&quot;&quot;&quot;</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">test_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;test.txt&quot;</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">test_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="sd">"""Test file operations."""</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">test_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"test.txt"</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">test_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">"test"</span><span class="p">)</span>
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="k">assert</span> <span class="n">test_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
-<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="c1"># Don&#39;t use hardcoded paths</span>
-<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="c1"># ❌ test_file = Path(&quot;/tmp/test.txt&quot;)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="c1"># Don't use hardcoded paths</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="c1"># ❌ test_file = Path("/tmp/test.txt")</span>
 </code></pre></div></p>
 <h3 id="slow-tests">🐛 Slow Tests<a class="headerlink" href="#slow-tests" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Mark slow tests</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">slow</span>
 <a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_large_document</span><span class="p">():</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test with large document.&quot;&quot;&quot;</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span><span class="sd">"""Test with large document."""</span>
 <a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="k">pass</span>
 <a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>
 <a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="c1"># Run fast tests only</span>
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c1"># pytest -m &quot;not slow&quot;</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c1"># pytest -m "not slow"</span>
 </code></pre></div></p>
 <h3 id="flaky-tests">🐛 Flaky Tests<a class="headerlink" href="#flaky-tests" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Add retries for flaky tests</span>
 <a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">flaky</span><span class="p">(</span><span class="n">reruns</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_api_call</span><span class="p">():</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test API call (may be flaky).&quot;&quot;&quot;</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="sd">"""Test API call (may be flaky)."""</span>
 <a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="k">pass</span>
 </code></pre></div></p>
 <hr />
@@ -5489,10 +5489,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -29,10 +29,10 @@
       
     
     
-      <link rel="stylesheet" href="../../stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -3853,44 +3853,44 @@ flowchart TD
     classDef operator fill:#F3E5F5,stroke:#CE93D8,color:#6A1B9A
     classDef process fill:#ECEFF1,stroke:#B0BEC5,color:#263238</p>
 <div class="highlight"><pre><span></span><code>%% 2. Define Nodes
-Start@{ shape: terminal, label: &quot;Input Source&quot; }
+Start@{ shape: terminal, label: "Input Source" }
 
-Normalize@{ shape: procs, label: &quot;Input Normalization&quot; }
-CheckInput{&quot;Input Type&quot;}
+Normalize@{ shape: procs, label: "Input Normalization" }
+CheckInput{"Input Type"}
 
-Convert@{ shape: procs, label: &quot;Document Conversion&lt;br/&gt;PDF/Image&quot; }
-TextProc@{ shape: lin-proc, label: &quot;Text Processing&lt;br/&gt;Text/Markdown&quot; }
-LoadDoc@{ shape: lin-proc, label: &quot;Load DoclingDocument&lt;br/&gt;Skip to Graph&quot; }
+Convert@{ shape: procs, label: "Document Conversion&lt;br/&gt;PDF/Image" }
+TextProc@{ shape: lin-proc, label: "Text Processing&lt;br/&gt;Text/Markdown" }
+LoadDoc@{ shape: lin-proc, label: "Load DoclingDocument&lt;br/&gt;Skip to Graph" }
 
-CheckMode{&quot;Process. Mode&quot;}
-CheckChunk{&quot;Chunking?&quot;}
+CheckMode{"Process. Mode"}
+CheckChunk{"Chunking?"}
 
-PageExtract@{ shape: lin-proc, label: &quot;Page-by-Page Extraction&quot; }
-FullDoc@{ shape: lin-proc, label: &quot;Full Document Extraction&quot; }
+PageExtract@{ shape: lin-proc, label: "Page-by-Page Extraction" }
+FullDoc@{ shape: lin-proc, label: "Full Document Extraction" }
 
-Chunk@{ shape: tag-proc, label: &quot;Structure-Aware Chunking&quot; }
-Batch@{ shape: tag-proc, label: &quot;Batch Chunks&quot; }
+Chunk@{ shape: tag-proc, label: "Structure-Aware Chunking" }
+Batch@{ shape: tag-proc, label: "Batch Chunks" }
 
-Extract@{ shape: procs, label: &quot;Extract from Batches&quot; }
+Extract@{ shape: procs, label: "Extract from Batches" }
 
-CheckMerge{&quot;Multiple Models?&quot;}
+CheckMerge{"Multiple Models?"}
 
-Merge@{ shape: lin-proc, label: &quot;Programmatic Merge&quot; }
-Single@{ shape: doc, label: &quot;Single Model&quot; }
+Merge@{ shape: lin-proc, label: "Programmatic Merge" }
+Single@{ shape: doc, label: "Single Model" }
 
-CheckConsol{&quot;Consolidation?&quot;}
-Consol@{ shape: procs, label: &quot;LLM Consolidation&quot; }
+CheckConsol{"Consolidation?"}
+Consol@{ shape: procs, label: "LLM Consolidation" }
 
-Final@{ shape: doc, label: &quot;Final Model&quot; }
-Graph@{ shape: db, label: &quot;Knowledge Graph&quot; }
+Final@{ shape: doc, label: "Final Model" }
+Graph@{ shape: db, label: "Knowledge Graph" }
 
 %% 3. Define Connections
 Start --&gt; Normalize
 Normalize --&gt; CheckInput
 
-CheckInput -- &quot;PDF/Image&quot; --&gt; Convert
-CheckInput -- &quot;Text/Markdown&quot; --&gt; TextProc
-CheckInput -- &quot;DoclingDocument&quot; --&gt; LoadDoc
+CheckInput -- "PDF/Image" --&gt; Convert
+CheckInput -- "Text/Markdown" --&gt; TextProc
+CheckInput -- "DoclingDocument" --&gt; LoadDoc
 
 Convert --&gt; CheckMode
 TextProc --&gt; CheckMode
@@ -4013,10 +4013,10 @@ class Final,Graph output
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

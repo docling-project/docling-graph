@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4998,18 +4998,18 @@ flowchart LR
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">GraphConverter</span><span class="p">()</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">graph</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">pydantic_list_to_graph</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nodes: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Edges: </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Learn more:</strong> <a href="graph-conversion/">Graph Conversion</a></p>
 <hr />
 <h3 id="2-data-grounding-provenance">2. Data Grounding &amp; Provenance<a class="headerlink" href="#2-data-grounding-provenance" title="Permanent link">&para;</a></h3>
 <p>Trace every graph node back to the source chunk(s) and page(s) it came from — fully deterministic, no LLM involvement:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">graph</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">knowledge_graph</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">node_data</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;Invoice_a1b2c3&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">node_data</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="s2">"Invoice_a1b2c3"</span><span class="p">]</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">node_data</span><span class="p">[</span><span class="s2">&quot;__provenance__&quot;</span><span class="p">])</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># {&quot;document_id&quot;: &quot;...&quot;, &quot;match&quot;: &quot;verbatim&quot;, &quot;chunks&quot;: [2], &quot;pages&quot;: [1]}</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">node_data</span><span class="p">[</span><span class="s2">"__provenance__"</span><span class="p">])</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># {"document_id": "...", "match": "verbatim", "chunks": [2], "pages": [1]}</span>
 </code></pre></div>
 <p>Enabled by default (<code>provenance="standard"</code>); a full ledger with chunk text is also written to <code>provenance.json</code>.</p>
 <p><strong>Learn more:</strong> <a href="provenance/">Data Grounding &amp; Provenance</a></p>
@@ -5031,7 +5031,7 @@ flowchart LR
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">InteractiveVisualizer</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">visualizer</span> <span class="o">=</span> <span class="n">InteractiveVisualizer</span><span class="p">()</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">visualizer</span><span class="o">.</span><span class="n">save_cytoscape_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s2">&quot;graph.html&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">visualizer</span><span class="o">.</span><span class="n">save_cytoscape_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s2">"graph.html"</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Learn more:</strong> <a href="visualization/">Visualization</a></p>
 <hr />
@@ -5048,12 +5048,12 @@ flowchart LR
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Run complete pipeline</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;cypher&quot;</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"local"</span><span class="p">,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">"csv"</span><span class="p">,</span>  <span class="c1"># or "cypher"</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"outputs"</span>
 <a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="p">)</span>
 <a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
 <a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
@@ -5070,20 +5070,20 @@ flowchart LR
 <p><strong>Nodes</strong> represent entities from your Pydantic models:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Node structure</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="p">{</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;invoice_001&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;entity&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">&quot;document_no&quot;</span><span class="p">:</span> <span class="s2">&quot;INV-001&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1000</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"invoice_001"</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"entity"</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">"document_no"</span><span class="p">:</span> <span class="s2">"INV-001"</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">"total"</span><span class="p">:</span> <span class="mi">1000</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="edges">Edges<a class="headerlink" href="#edges" title="Permanent link">&para;</a></h3>
 <p><strong>Edges</strong> represent relationships between entities:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Edge structure</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p">{</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;invoice_001&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;org_acme&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;ISSUED_BY&quot;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"invoice_001"</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"org_acme"</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"ISSUED_BY"</span>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
 </code></pre></div>
 <hr />
@@ -5196,10 +5196,10 @@ flowchart LR
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># Extract and export to CSV</span>
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoices.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;analysis&quot;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoices.pdf"</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">"csv"</span><span class="p">,</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"analysis"</span>
 <a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">)</span>
 <a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
 <a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
@@ -5207,10 +5207,10 @@ flowchart LR
 <a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="c1"># Analyze in Python</span>
 <a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="n">nodes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;analysis/nodes.csv&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;analysis/edges.csv&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="n">nodes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"analysis/nodes.csv"</span><span class="p">)</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"analysis/edges.csv"</span><span class="p">)</span>
 <a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>
-<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total invoices: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">nodes</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;BillingDocument&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total invoices: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">nodes</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'BillingDocument'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h3 id="workflow-2-neo4j-import">Workflow 2: Neo4j Import<a class="headerlink" href="#workflow-2-neo4j-import" title="Permanent link">&para;</a></h3>
@@ -5218,10 +5218,10 @@ flowchart LR
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># Extract and export to Cypher</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;contracts.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Contract&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;cypher&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;neo4j_import&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"contracts.pdf"</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Contract"</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">"cypher"</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"neo4j_import"</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="p">)</span>
 <a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
 <a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
@@ -5236,53 +5236,53 @@ flowchart LR
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Extract and access programmatically</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;data&quot;</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"data"</span>
 <a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="p">)</span>
 <a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
 <a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
 <a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="c1"># Load graph data</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/graph_data.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"data/graph_data.json"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    <span class="n">graph_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
 <a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="c1"># Process nodes</span>
-<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph_data</span><span class="p">[</span><span class="s2">&quot;nodes&quot;</span><span class="p">]:</span>
-<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph_data</span><span class="p">[</span><span class="s2">"nodes"</span><span class="p">]:</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">node</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="graph-statistics">Graph Statistics<a class="headerlink" href="#graph-statistics" title="Permanent link">&para;</a></h2>
 <h3 id="automatic-statistics">Automatic Statistics<a class="headerlink" href="#automatic-statistics" title="Permanent link">&para;</a></h3>
 <p>Every pipeline run generates statistics:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;node_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;edge_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">&quot;node_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">&quot;BillingDocument&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">&quot;Organization&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">&quot;Address&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="nt">&quot;LineItem&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">"node_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">"edge_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">"node_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">"BillingDocument"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">"Organization"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">"Address"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="nt">"LineItem"</span><span class="p">:</span><span class="w"> </span><span class="mi">9</span>
 <a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="nt">&quot;edge_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nt">&quot;ISSUED_BY&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">&quot;SENT_TO&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">&quot;LOCATED_AT&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="nt">&quot;CONTAINS_LINE&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="nt">"edge_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nt">"ISSUED_BY"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">"SENT_TO"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">"LOCATED_AT"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="nt">"CONTAINS_LINE"</span><span class="p">:</span><span class="w"> </span><span class="mi">9</span>
 <a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">  </span><span class="nt">&quot;avg_degree&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.4</span><span class="p">,</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.17</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">  </span><span class="nt">"avg_degree"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.4</span><span class="p">,</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.17</span>
 <a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="using-statistics">Using Statistics<a class="headerlink" href="#using-statistics" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># Load statistics</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;outputs/graph_stats.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"outputs/graph_stats.json"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">stats</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Graph has </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;node_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> nodes&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Most common node type: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;node_types&#39;</span><span class="p">],</span><span class="w"> </span><span class="n">key</span><span class="o">=</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;node_types&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Graph has </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'node_count'</span><span class="p">]</span><span class="si">}</span><span class="s2"> nodes"</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Most common node type: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">'node_types'</span><span class="p">],</span><span class="w"> </span><span class="n">key</span><span class="o">=</span><span class="n">stats</span><span class="p">[</span><span class="s1">'node_types'</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="visualization-preview">Visualization Preview<a class="headerlink" href="#visualization-preview" title="Permanent link">&para;</a></h2>
@@ -5302,12 +5302,12 @@ flowchart LR
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="choose-the-right-format">👍 Choose the Right Format<a class="headerlink" href="#choose-the-right-format" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># ✅ Good - Match format to use case</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">if</span> <span class="n">use_case</span> <span class="o">==</span> <span class="s2">&quot;neo4j&quot;</span><span class="p">:</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">export_format</span> <span class="o">=</span> <span class="s2">&quot;cypher&quot;</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">elif</span> <span class="n">use_case</span> <span class="o">==</span> <span class="s2">&quot;analysis&quot;</span><span class="p">:</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">export_format</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">if</span> <span class="n">use_case</span> <span class="o">==</span> <span class="s2">"neo4j"</span><span class="p">:</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">export_format</span> <span class="o">=</span> <span class="s2">"cypher"</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">elif</span> <span class="n">use_case</span> <span class="o">==</span> <span class="s2">"analysis"</span><span class="p">:</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">export_format</span> <span class="o">=</span> <span class="s2">"csv"</span>
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="n">export_format</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span>  <span class="c1"># Default</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="n">export_format</span> <span class="o">=</span> <span class="s2">"csv"</span>  <span class="c1"># Default</span>
 </code></pre></div>
 <h3 id="validate-graph-structure">👍 Validate Graph Structure<a class="headerlink" href="#validate-graph-structure" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># ✅ Good - Enable validation</span>
@@ -5322,10 +5322,10 @@ flowchart LR
 <h3 id="check-statistics">👍 Check Statistics<a class="headerlink" href="#check-statistics" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># ✅ Good - Verify graph quality</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">node_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Empty graph&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Warning: Empty graph"</span><span class="p">)</span>
 <a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">edge_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: No relationships&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Warning: No relationships"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
@@ -5333,11 +5333,11 @@ flowchart LR
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Check if models were extracted</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">models</span><span class="p">:</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No models extracted&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"No models extracted"</span><span class="p">)</span>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1"># Check if models have relationships</span>
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Model: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></p>
 <h3 id="missing-relationships">🐛 Missing Relationships<a class="headerlink" href="#missing-relationships" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
@@ -5345,17 +5345,17 @@ flowchart LR
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Organization</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="c1"># Must be entity to create nodes</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;is_entity&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"is_entity"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 </code></pre></div></p>
 <h3 id="export-fails">🐛 Export Fails<a class="headerlink" href="#export-fails" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Check output directory exists</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">"outputs"</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
 <a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="c1"># Check graph is not empty</span>
 <a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot export empty graph&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Cannot export empty graph"</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
@@ -5447,10 +5447,10 @@ flowchart LR
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

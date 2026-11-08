@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4749,11 +4749,11 @@
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Using dict</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="s2">&quot;inference&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="s2">&quot;output_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s2">"backend"</span><span class="p">:</span> <span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="s2">"inference"</span><span class="p">:</span> <span class="s2">"local"</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="s2">"output_dir"</span><span class="p">:</span> <span class="s2">"outputs"</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">}</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
@@ -4761,8 +4761,8 @@
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
 <a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.MyTemplate&quot;</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.MyTemplate"</span>
 <a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="p">)</span>
 <a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
@@ -4852,7 +4852,7 @@
 <p>Internal context object passed between stages:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">PipelineContext</span><span class="p">:</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Shared context for pipeline stages.&quot;&quot;&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="sd">"""Shared context for pipeline stages."""</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">config</span><span class="p">:</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">template</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -4993,8 +4993,8 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">})</span>
 </code></pre></div>
 <h3 id="with-error-handling">With Error Handling<a class="headerlink" href="#with-error-handling" title="Permanent link">&para;</a></h3>
@@ -5007,59 +5007,59 @@
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span>
 <a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="p">})</span>
 <a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration error: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Details: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Configuration error: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Details: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="k">except</span> <span class="n">ExtractionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extraction failed: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Extraction failed: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="k">except</span> <span class="n">PipelineError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pipeline error: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Pipeline error: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">documents</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;documents&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.pdf&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">documents</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"documents"</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.pdf"</span><span class="p">)</span>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing </span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="s2">&quot;output_dir&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;outputs/</span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="s2">"source"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="s2">"output_dir"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"outputs/</span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">"</span>
 <a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="p">})</span>
 <a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ </span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> complete&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"✅ </span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> complete"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="custom-configuration">Custom Configuration<a class="headerlink" href="#custom-configuration" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
 <a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="c1"># Backend</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="s2">&quot;inference&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="s2">&quot;model_override&quot;</span><span class="p">:</span> <span class="s2">&quot;mistral-small-latest&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="s2">&quot;provider_override&quot;</span><span class="p">:</span> <span class="s2">&quot;mistral&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="s2">"backend"</span><span class="p">:</span> <span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="s2">"inference"</span><span class="p">:</span> <span class="s2">"remote"</span><span class="p">,</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="s2">"model_override"</span><span class="p">:</span> <span class="s2">"mistral-small-latest"</span><span class="p">,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="s2">"provider_override"</span><span class="p">:</span> <span class="s2">"mistral"</span><span class="p">,</span>
 <a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
 <a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="c1"># Processing</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="s2">&quot;extraction_contract&quot;</span><span class="p">:</span> <span class="s2">&quot;dense&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="s2">&quot;use_chunking&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="s2">"processing_mode"</span><span class="p">:</span> <span class="s2">"many-to-one"</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="s2">"extraction_contract"</span><span class="p">:</span> <span class="s2">"dense"</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="s2">"use_chunking"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
 <a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="c1"># Export</span>
-<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="s2">&quot;export_format&quot;</span><span class="p">:</span> <span class="s2">&quot;cypher&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>    <span class="s2">&quot;export_docling_json&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="s2">&quot;export_markdown&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="s2">"export_format"</span><span class="p">:</span> <span class="s2">"cypher"</span><span class="p">,</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>    <span class="s2">"export_docling_json"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="s2">"export_markdown"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>
 <a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>    <span class="c1"># Output</span>
-<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="s2">&quot;output_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;outputs/custom&quot;</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="s2">"output_dir"</span><span class="p">:</span> <span class="s2">"outputs/custom"</span>
 <a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="p">}</span>
 <a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>
 <a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
@@ -5091,32 +5091,32 @@
 <h3 id="metadatajson-structure">metadata.json Structure<a class="headerlink" href="#metadatajson-structure" title="Permanent link">&para;</a></h3>
 <p>The <code>metadata.json</code> file contains pipeline configuration, results, and performance metrics:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;pipeline_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.1.0&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-25T12:30:45.123456&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">&quot;template&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;templates.BillingDocument&quot;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">"pipeline_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.1.0"</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-01-25T12:30:45.123456"</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">"input"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">"template"</span><span class="p">:</span><span class="w"> </span><span class="s2">"templates.BillingDocument"</span>
 <a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="nt">&quot;pipeline&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">      </span><span class="nt">&quot;processing_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">      </span><span class="nt">&quot;debug&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">      </span><span class="nt">&quot;reverse_edges&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">      </span><span class="nt">&quot;docling&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ocr&quot;</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="nt">"pipeline"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">      </span><span class="nt">"processing_mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"many-to-one"</span><span class="p">,</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">      </span><span class="nt">"debug"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">      </span><span class="nt">"reverse_edges"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">      </span><span class="nt">"docling"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ocr"</span>
 <a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">    </span><span class="nt">&quot;extraction&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">      </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">      </span><span class="nt">&quot;inference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mistral-small-latest&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">      </span><span class="nt">&quot;provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="nt">&quot;use_chunking&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">    </span><span class="nt">"extraction"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">      </span><span class="nt">"backend"</span><span class="p">:</span><span class="w"> </span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">      </span><span class="nt">"inference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"remote"</span><span class="p">,</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mistral-small-latest"</span><span class="p">,</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">      </span><span class="nt">"provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mistral"</span><span class="p">,</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="nt">"use_chunking"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">  </span><span class="nt">&quot;processing_time_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">15.42</span><span class="p">,</span>
-<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">  </span><span class="nt">&quot;results&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">    </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
-<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="w">    </span><span class="nt">&quot;edges&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
-<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="nt">&quot;extracted_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">  </span><span class="nt">"processing_time_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">15.42</span><span class="p">,</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">  </span><span class="nt">"results"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">    </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="w">    </span><span class="nt">"edges"</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="nt">"extracted_models"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
 <a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="w">  </span><span class="p">}</span>
 <a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a><span class="p">}</span>
 </code></pre></div>
@@ -5126,8 +5126,8 @@
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># Create manager</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">OutputDirectoryManager</span><span class="p">(</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">base_output_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">),</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">source_filename</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">base_output_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"outputs"</span><span class="p">),</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">source_filename</span><span class="o">=</span><span class="s2">"document.pdf"</span>
 <a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">)</span>
 <a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="c1"># Main output directories</span>
@@ -5144,20 +5144,20 @@
 <h3 id="memory-usage">Memory Usage<a class="headerlink" href="#memory-usage" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># For large documents, use chunking</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;large_document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="s2">&quot;use_chunking&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># Reduces memory usage</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;one-to-one&quot;</span>  <span class="c1"># Process page by page</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"large_document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="s2">"use_chunking"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># Reduces memory usage</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="s2">"processing_mode"</span><span class="p">:</span> <span class="s2">"one-to-one"</span>  <span class="c1"># Process page by page</span>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">})</span>
 </code></pre></div>
 <h3 id="speed-optimization">Speed Optimization<a class="headerlink" href="#speed-optimization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># For faster processing</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="s2">&quot;inference&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>  <span class="c1"># Faster than remote</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="s2">&quot;use_chunking&quot;</span><span class="p">:</span> <span class="kc">False</span>  <span class="c1"># Skip chunking for small docs</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="s2">"backend"</span><span class="p">:</span> <span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="s2">"inference"</span><span class="p">:</span> <span class="s2">"local"</span><span class="p">,</span>  <span class="c1"># Faster than remote</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="s2">"use_chunking"</span><span class="p">:</span> <span class="kc">False</span>  <span class="c1"># Skip chunking for small docs</span>
 <a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">})</span>
 </code></pre></div>
 <hr />
@@ -5168,15 +5168,15 @@
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># Configure logging</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="nb">format</span><span class="o">=</span><span class="s1">'</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">'</span>
 <a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="p">)</span>
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
 <a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="c1"># Run pipeline</span>
 <a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
 <a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span>
 <a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="p">})</span>
 </code></pre></div>
 <h3 id="inspect-outputs">Inspect Outputs<a class="headerlink" href="#inspect-outputs" title="Permanent link">&para;</a></h3>
@@ -5187,20 +5187,20 @@
 <a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
 <a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
 <a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="n">run_pipeline</span><span class="p">({</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="s2">&quot;templates.MyTemplate&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="s2">&quot;output_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;outputs&quot;</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="s2">"template"</span><span class="p">:</span> <span class="s2">"templates.MyTemplate"</span><span class="p">,</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="s2">"output_dir"</span><span class="p">:</span> <span class="s2">"outputs"</span>
 <a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">})</span>
 <a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
 <a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="c1"># Inspect graph (path depends on output_dir and document name)</span>
 <a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.core.utils.output_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutputDirectoryManager</span>
-<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">OutputDirectoryManager</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">),</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="n">graph_path</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_docling_graph_dir</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;graph.json&quot;</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">OutputDirectoryManager</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"outputs"</span><span class="p">),</span> <span class="s2">"document.pdf"</span><span class="p">)</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="n">graph_path</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_docling_graph_dir</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"graph.json"</span>
 <a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="k">if</span> <span class="n">graph_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
 <a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">graph_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>        <span class="n">graph_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nodes&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;links&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nodes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'nodes'</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Edges: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'links'</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="related-apis">Related APIs<a class="headerlink" href="#related-apis" title="Permanent link">&para;</a></h2>
@@ -5298,10 +5298,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

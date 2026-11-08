@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4998,9 +4998,9 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>  <span class="c1"># Process each page separately</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>  <span class="c1"># Process each page separately</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
@@ -5066,27 +5066,27 @@ flowchart LR
 <h4 id="use-case-1-batch-invoice-processing">Use Case 1: Batch Invoice Processing<a class="headerlink" href="#use-case-1-batch-invoice-processing" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Multiple invoices in one PDF</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoices_batch.pdf&quot;</span><span class="p">,</span>  <span class="c1"># 10 invoices, 1 page each</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>  <span class="c1"># Each page is separate invoice</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoices_batch.pdf"</span><span class="p">,</span>  <span class="c1"># 10 invoices, 1 page each</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>  <span class="c1"># Each page is separate invoice</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Result:</strong> 10 BillingDocument models, one per page</p>
 <h4 id="use-case-2-form-collection">Use Case 2: Form Collection<a class="headerlink" href="#use-case-2-form-collection" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Multiple forms in one PDF</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;forms_collection.pdf&quot;</span><span class="p">,</span>  <span class="c1"># 20 forms</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.ApplicationForm&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>  <span class="c1"># Each page is separate form</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"forms_collection.pdf"</span><span class="p">,</span>  <span class="c1"># 20 forms</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.ApplicationForm"</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>  <span class="c1"># Each page is separate form</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Result:</strong> 20 ApplicationForm models</p>
 <h4 id="use-case-3-id-card-batch">Use Case 3: ID Card Batch<a class="headerlink" href="#use-case-3-id-card-batch" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Multiple ID cards scanned together</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;id_cards_batch.pdf&quot;</span><span class="p">,</span>  <span class="c1"># 50 ID cards</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.IDCard&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>  <span class="c1"># Each page is separate ID</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"id_cards_batch.pdf"</span><span class="p">,</span>  <span class="c1"># 50 ID cards</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.IDCard"</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>  <span class="c1"># Each page is separate ID</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Result:</strong> 50 IDCard models</p>
@@ -5120,9 +5120,9 @@ flowchart LR
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Process whole document (default)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>  <span class="c1"># Process whole document (default)</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="how-it-works_1">How It Works<a class="headerlink" href="#how-it-works_1" title="Permanent link">&para;</a></h3>
@@ -5180,27 +5180,27 @@ flowchart LR
 <h4 id="use-case-1-multi-page-invoice">Use Case 1: Multi-Page Invoice<a class="headerlink" href="#use-case-1-multi-page-invoice" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Single invoice spanning 3 pages</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice_multipage.pdf&quot;</span><span class="p">,</span>  <span class="c1"># 1 invoice, 3 pages</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Merge all pages</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoice_multipage.pdf"</span><span class="p">,</span>  <span class="c1"># 1 invoice, 3 pages</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>  <span class="c1"># Merge all pages</span>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Result:</strong> 1 BillingDocument model with data from all pages</p>
 <h4 id="use-case-2-rheology-research">Use Case 2: Rheology Research<a class="headerlink" href="#use-case-2-rheology-research" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Rheology research with 15 pages</span>
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;research_paper.pdf&quot;</span><span class="p">,</span>  <span class="c1"># 1 paper, 15 pages</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Single paper entity</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"research_paper.pdf"</span><span class="p">,</span>  <span class="c1"># 1 paper, 15 pages</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>  <span class="c1"># Single paper entity</span>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Result:</strong> 1 Research model</p>
 <h4 id="use-case-3-contract-document">Use Case 3: Contract Document<a class="headerlink" href="#use-case-3-contract-document" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Contract with 20 pages</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;contract.pdf&quot;</span><span class="p">,</span>  <span class="c1"># 1 contract, 20 pages</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Contract&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Single contract</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"contract.pdf"</span><span class="p">,</span>  <span class="c1"># 1 contract, 20 pages</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Contract"</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>  <span class="c1"># Single contract</span>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">)</span>
 </code></pre></div>
 <p><strong>Result:</strong> 1 Contract model</p>
@@ -5243,17 +5243,17 @@ flowchart LR
 <h3 id="context-handling">Context Handling<a class="headerlink" href="#context-handling" title="Permanent link">&para;</a></h3>
 <h4 id="one-to-one-context">One-to-One Context<a class="headerlink" href="#one-to-one-context" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Each page has isolated context</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">Page</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Invoice #001, Total: $100&quot;</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">Page</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;Invoice #002, Total: $200&quot;</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">Page</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;Invoice #003, Total: $300&quot;</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">Page</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">"Invoice #001, Total: $100"</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">Page</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"Invoice #002, Total: $200"</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">Page</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">"Invoice #003, Total: $300"</span>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># Result: 3 separate invoices</span>
 </code></pre></div>
 <h4 id="many-to-one-context">Many-to-One Context<a class="headerlink" href="#many-to-one-context" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># All pages share context</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">Page</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Invoice #001&quot;</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">Page</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;Line items continued...&quot;</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">Page</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;Total: $1000&quot;</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">Page</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">"Invoice #001"</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">Page</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"Line items continued..."</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">Page</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">"Total: $1000"</span>
 <a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># Result: 1 invoice with all information</span>
 </code></pre></div>
@@ -5364,9 +5364,9 @@ flowchart TD
 <h2 id="mode-specific-configuration">Mode-Specific Configuration<a class="headerlink" href="#mode-specific-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="one-to-one-configuration">One-to-One Configuration<a class="headerlink" href="#one-to-one-configuration" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;batch.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"batch.pdf"</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span><span class="p">,</span>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
 <a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="c1"># One-to-one specific settings</span>
 <a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Export markdown per page</span>
@@ -5375,9 +5375,9 @@ flowchart TD
 </code></pre></div>
 <h3 id="many-to-one-configuration">Many-to-One Configuration<a class="headerlink" href="#many-to-one-configuration" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span><span class="p">,</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="c1"># Many-to-one specific settings</span>
 <a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Enable chunking for large docs</span>
@@ -5389,32 +5389,32 @@ flowchart TD
 <h3 id="from-many-to-one-to-one-to-one">From Many-to-One to One-to-One<a class="headerlink" href="#from-many-to-one-to-one-to-one" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Original: many-to-one</span>
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">config_many</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="p">)</span>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
 <a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="c1"># Switch to one-to-one</span>
 <a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="n">config_one</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span>  <span class="c1"># Change mode</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span><span class="p">,</span>  <span class="c1"># Change mode</span>
 <a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Add page-specific export</span>
 <a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="from-one-to-one-to-many-to-one">From One-to-One to Many-to-One<a class="headerlink" href="#from-one-to-one-to-many-to-one" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Original: one-to-one</span>
 <a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">config_one</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;batch.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"batch.pdf"</span><span class="p">,</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>
 <a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="p">)</span>
 <a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
 <a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c1"># Switch to many-to-one</span>
 <a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="n">config_many</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;batch.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>  <span class="c1"># Change mode</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"batch.pdf"</span><span class="p">,</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span><span class="p">,</span>  <span class="c1"># Change mode</span>
 <a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Enable chunking</span>
 <a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="p">)</span>
 </code></pre></div>
@@ -5423,9 +5423,9 @@ flowchart TD
 <h3 id="batch-processing-with-one-to-one">📍 Batch Processing with One-to-One<a class="headerlink" href="#batch-processing-with-one-to-one" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Process batch of documents</span>
 <a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoices_batch.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoices_batch.pdf"</span><span class="p">,</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span><span class="p">,</span>
 <a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>    <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">True</span>
 <a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="p">)</span>
 <a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>
@@ -5434,9 +5434,9 @@ flowchart TD
 <h3 id="single-document-with-many-to-one">📍 Single Document with Many-to-One<a class="headerlink" href="#single-document-with-many-to-one" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Process single multi-page document</span>
 <a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;contract.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.Contract&quot;</span><span class="p">,</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"contract.pdf"</span><span class="p">,</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.Contract"</span><span class="p">,</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span><span class="p">,</span>
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="p">)</span>
 <a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>
@@ -5444,17 +5444,17 @@ flowchart TD
 </code></pre></div>
 <h3 id="conditional-mode-selection">📍 Conditional Mode Selection<a class="headerlink" href="#conditional-mode-selection" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_processing_mode</span><span class="p">(</span><span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">is_batch</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Choose mode based on document characteristics.&quot;&quot;&quot;</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span><span class="sd">"""Choose mode based on document characteristics."""</span>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="k">if</span> <span class="n">is_batch</span><span class="p">:</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>        <span class="k">return</span> <span class="s2">&quot;one-to-one&quot;</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>        <span class="k">return</span> <span class="s2">"one-to-one"</span>
 <a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="k">elif</span> <span class="n">page_count</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>        <span class="k">return</span> <span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Use chunking for large docs</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>        <span class="k">return</span> <span class="s2">"many-to-one"</span>  <span class="c1"># Use chunking for large docs</span>
 <a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>        <span class="k">return</span> <span class="s2">&quot;many-to-one&quot;</span>  <span class="c1"># Small doc, process as one</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>        <span class="k">return</span> <span class="s2">"many-to-one"</span>  <span class="c1"># Small doc, process as one</span>
 <a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>
 <a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="n">get_processing_mode</span><span class="p">(</span><span class="n">page_count</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">is_batch</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="p">)</span>
 </code></pre></div>
@@ -5463,30 +5463,30 @@ flowchart TD
 <h3 id="match-mode-to-document-structure">👍 Match Mode to Document Structure<a class="headerlink" href="#match-mode-to-document-structure" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># ✅ Good - Mode matches document structure</span>
 <a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="k">if</span> <span class="n">document_is_batch</span><span class="p">:</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;one-to-one&quot;</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">mode</span> <span class="o">=</span> <span class="s2">"one-to-one"</span>
 <a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;many-to-one&quot;</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    <span class="n">mode</span> <span class="o">=</span> <span class="s2">"many-to-one"</span>
 <a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
 <a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
 <a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="n">mode</span>
 <a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="enable-appropriate-settings">👍 Enable Appropriate Settings<a class="headerlink" href="#enable-appropriate-settings" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># ✅ Good - Settings match mode</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;one-to-one&quot;</span><span class="p">:</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"one-to-one"</span><span class="p">:</span>
 <a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>        <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>        <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span><span class="p">,</span>
 <a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>        <span class="n">export_per_page_markdown</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Page-specific</span>
 <a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>    <span class="p">)</span>
 <a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="k">else</span><span class="p">:</span>
 <a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>        <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>        <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span><span class="p">,</span>
 <a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>        <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Document-wide</span>
 <a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a>    <span class="p">)</span>
 </code></pre></div>
@@ -5494,12 +5494,12 @@ flowchart TD
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># ✅ Good - Consider document size</span>
 <a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="k">if</span> <span class="n">page_count</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">:</span>
 <a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    <span class="c1"># Large batch: one-to-one might be slow</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Processing 50+ pages individually&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Warning: Processing 50+ pages individually"</span><span class="p">)</span>
 <a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>
 <a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;large_batch.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;one-to-one&quot;</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"large_batch.pdf"</span><span class="p">,</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"one-to-one"</span>
 <a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -5592,10 +5592,10 @@ flowchart TD
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

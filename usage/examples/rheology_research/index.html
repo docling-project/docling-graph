@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4685,7 +4685,7 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pip<span class="w"> </span>install<span class="w"> </span>docling-graph
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Set API key</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-key&quot;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MISTRAL_API_KEY</span><span class="o">=</span><span class="s2">"your-key"</span>
 </code></pre></div>
 <hr />
 <h2 id="template-overview">Template Overview<a class="headerlink" href="#template-overview" title="Permanent link">&para;</a></h2>
@@ -4703,7 +4703,7 @@
 <h3 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 1. Measurement Model</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Measurement</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Flexible measurement with value and unit.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="sd">"""Flexible measurement with value and unit."""</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">numeric_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">text_value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -4711,30 +4711,30 @@
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># 2. Enum Types</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">GeometryType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">VANE_RHEOMETER</span> <span class="o">=</span> <span class="s2">&quot;Vane Rheometer&quot;</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">DOUBLE_PLATE</span> <span class="o">=</span> <span class="s2">&quot;Double Plate&quot;</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">CYLINDRICAL_CONTAINER</span> <span class="o">=</span> <span class="s2">&quot;Cylindrical Container&quot;</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">VANE_RHEOMETER</span> <span class="o">=</span> <span class="s2">"Vane Rheometer"</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">DOUBLE_PLATE</span> <span class="o">=</span> <span class="s2">"Double Plate"</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">CYLINDRICAL_CONTAINER</span> <span class="o">=</span> <span class="s2">"Cylindrical Container"</span>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># 3. Experiment Entity</span>
 <a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="k">class</span><span class="w"> </span><span class="nc">Experiment</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">experiment_id</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">objective</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">granular_material</span><span class="p">:</span> <span class="n">GranularMaterial</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;USES_MATERIAL&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">vibration_conditions</span><span class="p">:</span> <span class="n">VibrationConditions</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;HAS_VIBRATION&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">rheological_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RheologicalResult</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;HAS_RESULT&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">granular_material</span><span class="p">:</span> <span class="n">GranularMaterial</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"USES_MATERIAL"</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">vibration_conditions</span><span class="p">:</span> <span class="n">VibrationConditions</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"HAS_VIBRATION"</span><span class="p">)</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">rheological_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RheologicalResult</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"HAS_RESULT"</span><span class="p">)</span>
 <a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
 <a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="c1"># 4. Root Model</span>
 <a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="k">class</span><span class="w"> </span><span class="nc">Research</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="n">authors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">experiments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Experiment</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;HAS_EXPERIMENT&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">experiments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Experiment</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"HAS_EXPERIMENT"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="processing">Processing<a class="headerlink" href="#processing" title="Permanent link">&para;</a></h2>
 <h3 id="using-cli">Using CLI<a class="headerlink" href="#using-cli" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Process rheology research with chunking</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span>--inference<span class="w"> </span>remote<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>--provider<span class="w"> </span>mistral<span class="w"> </span><span class="se">\</span>
@@ -4742,31 +4742,31 @@
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span>--docling-pipeline<span class="w"> </span>vision<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/research&quot;</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/research"</span>
 </code></pre></div>
 <h3 id="using-python-api">Using Python API<a class="headerlink" href="#using-python-api" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="sd">&quot;&quot;&quot;Process rheology research.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="sd">"""Process rheology research."""</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MISTRAL_API_KEY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;your-key&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MISTRAL_API_KEY"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"your-key"</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;research.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;docs.examples.templates.rheology_research.ScholarlyRheologyPaper&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">provider_override</span><span class="o">=</span><span class="s2">&quot;mistral&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">model_override</span><span class="o">=</span><span class="s2">&quot;mistral-large-latest&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"research.pdf"</span><span class="p">,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"docs.examples.templates.rheology_research.ScholarlyRheologyPaper"</span><span class="p">,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"remote"</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">provider_override</span><span class="o">=</span><span class="s2">"mistral"</span><span class="p">,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">model_override</span><span class="o">=</span><span class="s2">"mistral-large-latest"</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span><span class="p">,</span>
 <a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">&quot;vision&quot;</span>  <span class="c1"># Better for complex layouts</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="n">docling_config</span><span class="o">=</span><span class="s2">"vision"</span>  <span class="c1"># Better for complex layouts</span>
 <a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="p">)</span>
 <a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
-<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing rheology research (may take several minutes)...&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="nb">print</span><span class="p">(</span><span class="s2">"Processing rheology research (may take several minutes)..."</span><span class="p">)</span>
 <a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Complete!&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Complete!"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="expected-results">Expected Results<a class="headerlink" href="#expected-results" title="Permanent link">&para;</a></h2>
@@ -4790,17 +4790,17 @@
 </code></pre></div>
 <h3 id="statistics">Statistics<a class="headerlink" href="#statistics" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;node_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;edge_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">38</span><span class="p">,</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.019</span><span class="p">,</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">&quot;node_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">&quot;Research&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">&quot;Experiment&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">&quot;GranularMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nt">&quot;SystemGeometry&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="nt">&quot;VibrationConditions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="nt">&quot;RheologicalResult&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="nt">&quot;Measurement&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">"node_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">"edge_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">38</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.019</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">"node_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">"Research"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">"Experiment"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">"GranularMaterial"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nt">"SystemGeometry"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="nt">"VibrationConditions"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="nt">"RheologicalResult"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="nt">"Measurement"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
 <a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">  </span><span class="p">}</span>
 <a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">}</span>
 </code></pre></div>
@@ -4808,21 +4808,21 @@
 <h2 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h2>
 <h3 id="1-enum-normalization">1. Enum Normalization<a class="headerlink" href="#1-enum-normalization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GeometryType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">VANE_RHEOMETER</span> <span class="o">=</span> <span class="s2">&quot;Vane Rheometer&quot;</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">CYLINDRICAL_CONTAINER</span> <span class="o">=</span> <span class="s2">&quot;Cylindrical Container&quot;</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">VANE_RHEOMETER</span> <span class="o">=</span> <span class="s2">"Vane Rheometer"</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">CYLINDRICAL_CONTAINER</span> <span class="o">=</span> <span class="s2">"Cylindrical Container"</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Validator accepts multiple formats</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;geometry_type&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"geometry_type"</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nd">@classmethod</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">normalize_enum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="c1"># Accepts: &quot;Vane Rheometer&quot;, &quot;vane_rheometer&quot;, &quot;VANE_RHEOMETER&quot;</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="c1"># Accepts: "Vane Rheometer", "vane_rheometer", "VANE_RHEOMETER"</span>
 <a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="k">return</span> <span class="n">_normalize_enum</span><span class="p">(</span><span class="n">GeometryType</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="2-measurement-parsing">2. Measurement Parsing<a class="headerlink" href="#2-measurement-parsing" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Parses strings like &quot;1.6 mPa.s&quot;, &quot;2 mm&quot;, &quot;80-90 °C&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Parses strings like "1.6 mPa.s", "2 mm", "80-90 °C"</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">_parse_measurement_string</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="c1"># Single value: &quot;1.6 mPa.s&quot; → {numeric_value: 1.6, unit: &quot;mPa.s&quot;}</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="c1"># Range: &quot;80-90 °C&quot; → {numeric_value_min: 80, numeric_value_max: 90, unit: &quot;°C&quot;}</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="c1"># Single value: "1.6 mPa.s" → {numeric_value: 1.6, unit: "mPa.s"}</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="c1"># Range: "80-90 °C" → {numeric_value_min: 80, numeric_value_max: 90, unit: "°C"}</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="o">...</span>
 </code></pre></div>
 <h3 id="3-flexible-measurements">3. Flexible Measurements<a class="headerlink" href="#3-flexible-measurements" title="Permanent link">&para;</a></h3>
@@ -4837,7 +4837,7 @@
 <h3 id="4-nested-relationships">4. Nested Relationships<a class="headerlink" href="#4-nested-relationships" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Experiment</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="c1"># Direct edges</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">granular_material</span><span class="p">:</span> <span class="n">GranularMaterial</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;USES_MATERIAL&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">granular_material</span><span class="p">:</span> <span class="n">GranularMaterial</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"USES_MATERIAL"</span><span class="p">)</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="c1"># Nested properties (not separate nodes)</span>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">key_findings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
@@ -4847,41 +4847,41 @@
 <h3 id="for-long-documents">For Long Documents<a class="headerlink" href="#for-long-documents" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Enable chunking and consolidation</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span>--use-chunking<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>--processing-mode<span class="w"> </span>many-to-one
 </code></pre></div>
 <h3 id="for-complex-layouts">For Complex Layouts<a class="headerlink" href="#for-complex-layouts" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Use vision pipeline for better table/figure handling</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span>--docling-pipeline<span class="w"> </span>vision
 </code></pre></div>
 <h3 id="for-cost-optimization">For Cost Optimization<a class="headerlink" href="#for-cost-optimization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Use smaller model without consolidation</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span>--model<span class="w"> </span>mistral-small-latest<span class="w"> </span><span class="se">\</span>
 </code></pre></div>
 <hr />
 <h2 id="customization">Customization<a class="headerlink" href="#customization" title="Permanent link">&para;</a></h2>
 <h3 id="simplify-for-your-domain">Simplify for Your Domain<a class="headerlink" href="#simplify-for-your-domain" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="sd">&quot;&quot;&quot;Simplified research template.&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="sd">"""Simplified research template."""</span>
 <a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
 <a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 <a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 <a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
 <a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">edge</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;edge_label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="k">return</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">json_schema_extra</span><span class="o">=</span><span class="p">{</span><span class="s2">"edge_label"</span><span class="p">:</span> <span class="n">label</span><span class="p">},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
 <a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">Measurement</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple measurement.&quot;&quot;&quot;</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span><span class="sd">"""Simple measurement."""</span>
 <a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Keep as string for simplicity</span>
 <a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>
 <a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="k">class</span><span class="w"> </span><span class="nc">Experiment</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplified experiment.&quot;&quot;&quot;</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">    </span><span class="sd">"""Simplified experiment."""</span>
 <a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>    <span class="n">objective</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>    <span class="n">methods</span><span class="p">:</span> <span class="nb">str</span>
@@ -4889,7 +4889,7 @@
 <a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>    <span class="n">measurements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Measurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 <a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a>
 <a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="k">class</span><span class="w"> </span><span class="nc">Research</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplified rheology research (for demonstration).</span>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="w">    </span><span class="sd">"""Simplified rheology research (for demonstration).</span>
 <a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>
 <a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a><span class="sd">    Note: For production use, see the full ScholarlyRheologyPaper template at:</span>
 <a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a><span class="sd">    docs/examples/templates/rheology_research.py</span>
@@ -4900,11 +4900,11 @@
 <a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="sd">    - Batch preparation history (mixing steps, equipment, conditions)</span>
 <a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a><span class="sd">    - Complete rheometry setup (instruments, geometries, protocols)</span>
 <a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a><span class="sd">    - Test runs and datasets (curves, measurements, model fits)</span>
-<a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="sd">    """</span>
 <a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a>    <span class="n">authors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 <a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a>    <span class="n">abstract</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a>    <span class="n">experiments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Experiment</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;HAS_EXPERIMENT&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a>    <span class="n">experiments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Experiment</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"HAS_EXPERIMENT"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
@@ -4912,7 +4912,7 @@
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Disable consolidation for faster processing</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>research.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># Or use smaller model</span>
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>--model<span class="w"> </span>mistral-small-latest
@@ -4922,15 +4922,15 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Make measurements optional</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">measurements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Measurement</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;List of measurements (optional)&quot;</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">"List of measurements (optional)"</span>
 <a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="p">)</span>
 </code></pre></div></p>
 <h3 id="enum-validation-errors">🐛 Enum Validation Errors<a class="headerlink" href="#enum-validation-errors" title="Permanent link">&para;</a></h3>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Add OTHER option to enums</span>
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">GeometryType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">VANE_RHEOMETER</span> <span class="o">=</span> <span class="s2">&quot;Vane Rheometer&quot;</span>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">OTHER</span> <span class="o">=</span> <span class="s2">&quot;Other&quot;</span>  <span class="c1"># Fallback</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">VANE_RHEOMETER</span> <span class="o">=</span> <span class="s2">"Vane Rheometer"</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">OTHER</span> <span class="o">=</span> <span class="s2">"Other"</span>  <span class="c1"># Fallback</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
 <a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="c1"># Or make enum optional</span>
 <a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="n">geometry_type</span><span class="p">:</span> <span class="n">GeometryType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -4956,17 +4956,17 @@
 <h3 id="use-appropriate-chunking">👍 Use Appropriate Chunking<a class="headerlink" href="#use-appropriate-chunking" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># For papers &gt; 10 pages</span>
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;long_paper.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.ScholarlyRheologyPaper&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"long_paper.pdf"</span><span class="p">,</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.ScholarlyRheologyPaper"</span><span class="p">,</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">use_chunking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Essential</span>
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="provide-clear-examples">👍 Provide Clear Examples<a class="headerlink" href="#provide-clear-examples" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># ✅ Good - Domain-specific examples</span>
 <a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">viscosity</span><span class="p">:</span> <span class="n">Measurement</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Effective viscosity measurement&quot;</span><span class="p">,</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">"Effective viscosity measurement"</span><span class="p">,</span>
 <a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Effective Viscosity&quot;</span><span class="p">,</span> <span class="s2">&quot;numeric_value&quot;</span><span class="p">:</span> <span class="mf">1.6</span><span class="p">,</span> <span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="s2">&quot;mPa.s&quot;</span><span class="p">}</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Effective Viscosity"</span><span class="p">,</span> <span class="s2">"numeric_value"</span><span class="p">:</span> <span class="mf">1.6</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">:</span> <span class="s2">"mPa.s"</span><span class="p">}</span>
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="p">]</span>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="p">)</span>
 </code></pre></div>
@@ -5059,10 +5059,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

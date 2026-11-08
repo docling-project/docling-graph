@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4450,18 +4450,18 @@
 <p>Protocol for VLM backends that process documents directly.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@runtime_checkable</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">ExtractionBackendProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for extraction backends that process entire documents.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="sd">"""Protocol for extraction backends that process entire documents."""</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_document</span><span class="p">(</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="bp">self</span><span class="p">,</span> 
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract structured data from a document.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="sd">"""Extract structured data from a document."""</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="o">...</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up backend resources.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="sd">"""Clean up backend resources."""</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="o">...</span>
 </code></pre></div>
 <p><strong>Methods:</strong></p>
@@ -4493,7 +4493,7 @@
 <p>Protocol for LLM backends that process markdown/text.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@runtime_checkable</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">TextExtractionBackendProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for extraction backends that process markdown/text.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="sd">"""Protocol for extraction backends that process markdown/text."""</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">client</span><span class="p">:</span> <span class="n">Any</span>  <span class="c1"># LLM client instance</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
@@ -4501,10 +4501,10 @@
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"document"</span><span class="p">,</span>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="n">is_partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract structured data from markdown.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="sd">"""Extract structured data from markdown."""</span>
 <a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="o">...</span>
 <a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
 <a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">consolidate_from_pydantic_models</span><span class="p">(</span>
@@ -4513,11 +4513,11 @@
 <a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        <span class="n">programmatic_model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">,</span>
 <a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 <a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Consolidate multiple models using LLM.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">        </span><span class="sd">"""Consolidate multiple models using LLM."""</span>
 <a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span class="o">...</span>
 <a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
 <a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up backend resources.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">        </span><span class="sd">"""Clean up backend resources."""</span>
 <a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>        <span class="o">...</span>
 </code></pre></div>
 <p><strong>Attributes:</strong></p>
@@ -4529,7 +4529,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"document"</span><span class="p">,</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">is_partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
@@ -4562,8 +4562,8 @@
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">markdown</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">is_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Extract from: </span><span class="si">{</span><span class="n">markdown</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_from_markdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">markdown</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">is_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Extract from: </span><span class="si">{</span><span class="n">markdown</span><span class="si">}</span><span class="s2">"</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">())</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
@@ -4580,11 +4580,11 @@
 <p>Protocol for LLM clients (Ollama, Mistral, OpenAI, etc.).</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nd">@runtime_checkable</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">LLMClientProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for LLM clients.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="sd">"""Protocol for LLM clients."""</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="nd">@property</span>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">context_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return effective context limit in tokens.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="sd">"""Return effective context limit in tokens."""</span>
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="o">...</span>
 <a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_json_response</span><span class="p">(</span>
@@ -4592,7 +4592,7 @@
 <a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="n">schema_json</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute LLM call and return parsed JSON.&quot;&quot;&quot;</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">        </span><span class="sd">"""Execute LLM call and return parsed JSON."""</span>
 <a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="o">...</span>
 </code></pre></div>
 <p><strong>Properties:</strong></p>
@@ -4625,10 +4625,10 @@
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_json_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">schema_json</span><span class="p">):</span>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="c1"># Handle both formats</span>
 <a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>            <span class="n">system</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>            <span class="n">user</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>            <span class="n">system</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"system"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>            <span class="n">user</span> <span class="o">=</span> <span class="n">prompt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"user"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 <a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>            <span class="n">system</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>            <span class="n">system</span> <span class="o">=</span> <span class="s2">""</span>
 <a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>            <span class="n">user</span> <span class="o">=</span> <span class="n">prompt</span>
 <a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
 <a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>        <span class="c1"># Call LLM API</span>
@@ -4641,7 +4641,7 @@
 <p>Protocol for extraction strategies.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nd">@runtime_checkable</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">ExtractorProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for extraction strategies.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="sd">"""Protocol for extraction strategies."""</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">backend</span><span class="p">:</span> <span class="n">Any</span>  <span class="c1"># Backend instance</span>
 <a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
@@ -4650,7 +4650,7 @@
 <a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 <a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract structured data from source document.&quot;&quot;&quot;</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">        </span><span class="sd">"""Extract structured data from source document."""</span>
 <a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>        <span class="o">...</span>
 </code></pre></div>
 <p><strong>Attributes:</strong></p>
@@ -4688,18 +4688,18 @@
 <p>Protocol for document processing and conversion.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nd">@runtime_checkable</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">DocumentProcessorProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for document processing and conversion.&quot;&quot;&quot;</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="sd">"""Protocol for document processing and conversion."""</span>
 <a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_docling_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert document to Docling document object.&quot;&quot;&quot;</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">        </span><span class="sd">"""Convert document to Docling document object."""</span>
 <a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="o">...</span>
 <a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
 <a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_full_markdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract complete markdown from document.&quot;&quot;&quot;</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">        </span><span class="sd">"""Extract complete markdown from document."""</span>
 <a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="o">...</span>
 <a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
 <a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">extract_page_markdowns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract markdown for each page separately.&quot;&quot;&quot;</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">        </span><span class="sd">"""Extract markdown for each page separately."""</span>
 <a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="o">...</span>
 </code></pre></div>
 <p><strong>Methods:</strong></p>
@@ -4777,7 +4777,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_backend_type</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">backend_type</span> <span class="o">=</span> <span class="n">get_backend_type</span><span class="p">(</span><span class="n">my_backend</span><span class="p">)</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Backend type: </span><span class="si">{</span><span class="n">backend_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Backend type: </span><span class="si">{</span><span class="n">backend_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="type-aliases">Type Aliases<a class="headerlink" href="#type-aliases" title="Permanent link">&para;</a></h2>
@@ -4798,11 +4798,11 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Backend</span><span class="p">,</span> <span class="n">LLMClient</span>
 <a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
 <a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_with_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span><span class="p">):</span>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Process with any backend type.&quot;&quot;&quot;</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span><span class="sd">"""Process with any backend type."""</span>
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    <span class="k">pass</span>
 <a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>
 <a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_client</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">LLMClient</span><span class="p">:</span>
-<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an LLM client.&quot;&quot;&quot;</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">    </span><span class="sd">"""Create an LLM client."""</span>
 <a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>    <span class="k">pass</span>
 </code></pre></div>
 <hr />
@@ -4813,7 +4813,7 @@
 <a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
 <a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">CustomVLMBackend</span><span class="p">(</span><span class="n">ExtractionBackendProtocol</span><span class="p">):</span>
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom VLM backend implementation.&quot;&quot;&quot;</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">    </span><span class="sd">"""Custom VLM backend implementation."""</span>
 <a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>
 <a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
@@ -4823,12 +4823,12 @@
 <a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 <a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
-<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract from document.&quot;&quot;&quot;</span>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="w">        </span><span class="sd">"""Extract from document."""</span>
 <a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 <a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a>        <span class="k">return</span> <span class="p">[</span><span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">result</span><span class="p">)]</span>
 <a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a>
 <a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up resources.&quot;&quot;&quot;</span>
+<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="w">        </span><span class="sd">"""Clean up resources."""</span>
 <a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a>        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 </code></pre></div>
 <h3 id="custom-llm-backend">Custom LLM Backend<a class="headerlink" href="#custom-llm-backend" title="Permanent link">&para;</a></h3>
@@ -4837,7 +4837,7 @@
 <a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 <a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">CustomLLMBackend</span><span class="p">(</span><span class="n">TextExtractionBackendProtocol</span><span class="p">):</span>
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom LLM backend implementation.&quot;&quot;&quot;</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">    </span><span class="sd">"""Custom LLM backend implementation."""</span>
 <a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>
 <a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
 <a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
@@ -4846,10 +4846,10 @@
 <a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a>        <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a>        <span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
-<a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+<a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a>        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"document"</span><span class="p">,</span>
 <a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a>        <span class="n">is_partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract from markdown.&quot;&quot;&quot;</span>
+<a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="w">        </span><span class="sd">"""Extract from markdown."""</span>
 <a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a>        <span class="n">schema</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
 <a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span><span class="n">markdown</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">schema</span><span class="p">))</span>
 <a id="__codelineno-27-21" name="__codelineno-27-21" href="#__codelineno-27-21"></a>        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -4860,11 +4860,11 @@
 <a id="__codelineno-27-26" name="__codelineno-27-26" href="#__codelineno-27-26"></a>        <span class="n">programmatic_model</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">,</span>
 <a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a>        <span class="n">template</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
 <a id="__codelineno-27-28" name="__codelineno-27-28" href="#__codelineno-27-28"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-27-29" name="__codelineno-27-29" href="#__codelineno-27-29"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Consolidate models.&quot;&quot;&quot;</span>
+<a id="__codelineno-27-29" name="__codelineno-27-29" href="#__codelineno-27-29"></a><span class="w">        </span><span class="sd">"""Consolidate models."""</span>
 <a id="__codelineno-27-30" name="__codelineno-27-30" href="#__codelineno-27-30"></a>        <span class="k">return</span> <span class="n">programmatic_model</span>
 <a id="__codelineno-27-31" name="__codelineno-27-31" href="#__codelineno-27-31"></a>
 <a id="__codelineno-27-32" name="__codelineno-27-32" href="#__codelineno-27-32"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-27-33" name="__codelineno-27-33" href="#__codelineno-27-33"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up resources.&quot;&quot;&quot;</span>
+<a id="__codelineno-27-33" name="__codelineno-27-33" href="#__codelineno-27-33"></a><span class="w">        </span><span class="sd">"""Clean up resources."""</span>
 <a id="__codelineno-27-34" name="__codelineno-27-34" href="#__codelineno-27-34"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
 <hr />
@@ -4874,7 +4874,7 @@
 <a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
 <a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="c1"># Check at runtime</span>
 <a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">my_backend</span><span class="p">,</span> <span class="n">ExtractionBackendProtocol</span><span class="p">):</span>
-<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Backend implements VLM protocol&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Backend implements VLM protocol"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="related-apis">Related APIs<a class="headerlink" href="#related-apis" title="Permanent link">&para;</a></h2>
@@ -4971,10 +4971,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

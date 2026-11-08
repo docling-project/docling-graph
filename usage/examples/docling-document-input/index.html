@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4955,7 +4955,7 @@
 <h3 id="method-1-export-from-docling-graph">Method 1: Export from Docling Graph<a class="headerlink" href="#method-1-export-from-docling-graph" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># First run: Convert PDF and export DoclingDocument</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span>--export-docling-json
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># This creates: outputs/invoice_docling.json</span>
@@ -4965,10 +4965,10 @@
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Convert document with Docling</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">converter</span> <span class="o">=</span> <span class="n">DocumentConverter</span><span class="p">()</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">result</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;invoice.pdf&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">result</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"invoice.pdf"</span><span class="p">)</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Export DoclingDocument</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;invoice_docling.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"invoice_docling.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 </code></pre></div>
 <h3 id="method-3-custom-pipeline">Method 3: Custom Pipeline<a class="headerlink" href="#method-3-custom-pipeline" title="Permanent link">&para;</a></h3>
@@ -4977,14 +4977,14 @@
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Create custom DoclingDocument</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">doc</span> <span class="o">=</span> <span class="n">DoclingDocument</span><span class="p">(</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">schema_name</span><span class="o">=</span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;custom_invoice&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">schema_name</span><span class="o">=</span><span class="s2">"DoclingDocument"</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">"custom_invoice"</span><span class="p">,</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="c1"># ... add pages, body, furniture</span>
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">)</span>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
 <a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Save to JSON</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;custom_docling.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"custom_docling.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -4994,46 +4994,46 @@
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">edge</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">Address</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Address component.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="sd">"""Address component."""</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'is_entity'</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">street</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Street address&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">city</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;City&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">postal_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Postal code&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">country</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Country&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">street</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Street address"</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">city</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"City"</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">postal_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Postal code"</span><span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">country</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Country"</span><span class="p">)</span>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="k">class</span><span class="w"> </span><span class="nc">Company</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Company entity.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="sd">"""Company entity."""</span>
 <a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="s1">&#39;graph_id_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="s1">'is_entity'</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="s1">'graph_id_fields'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'name'</span><span class="p">]</span>
 <a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="p">}</span>
 <a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
-<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Company name&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="n">address</span><span class="p">:</span> <span class="n">Address</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Company address&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="n">tax_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tax ID&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Company name"</span><span class="p">)</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="n">address</span><span class="p">:</span> <span class="n">Address</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Company address"</span><span class="p">)</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="n">tax_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Tax ID"</span><span class="p">)</span>
 <a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
 <a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="k">class</span><span class="w"> </span><span class="nc">LineItem</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Invoice line item.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">    </span><span class="sd">"""Invoice line item."""</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'is_entity'</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 <a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>
-<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Item description&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="n">quantity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Quantity&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="n">unit_price</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Unit price&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Line total&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Item description"</span><span class="p">)</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    <span class="n">quantity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Quantity"</span><span class="p">)</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="n">unit_price</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Unit price"</span><span class="p">)</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Line total"</span><span class="p">)</span>
 <a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>
 <a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="k">class</span><span class="w"> </span><span class="nc">BillingDocument</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Complete invoice structure.&quot;&quot;&quot;</span>
-<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;is_entity&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">    </span><span class="sd">"""Complete invoice structure."""</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'is_entity'</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 <a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>
-<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>    <span class="n">document_no</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Invoice number&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Invoice date&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>    <span class="n">issuer</span><span class="p">:</span> <span class="n">Company</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;ISSUED_BY&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Issuing company&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>    <span class="n">client</span><span class="p">:</span> <span class="n">Company</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">&quot;BILLED_TO&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Client company&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>    <span class="n">line_items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LineItem</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Invoice line items&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>    <span class="n">subtotal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Subtotal amount&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>    <span class="n">tax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Tax amount&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total amount&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>    <span class="n">document_no</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Invoice number"</span><span class="p">)</span>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Invoice date"</span><span class="p">)</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>    <span class="n">issuer</span><span class="p">:</span> <span class="n">Company</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"ISSUED_BY"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Issuing company"</span><span class="p">)</span>
+<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>    <span class="n">client</span><span class="p">:</span> <span class="n">Company</span> <span class="o">=</span> <span class="n">edge</span><span class="p">(</span><span class="s2">"BILLED_TO"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Client company"</span><span class="p">)</span>
+<a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>    <span class="n">line_items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LineItem</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Invoice line items"</span><span class="p">)</span>
+<a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>    <span class="n">subtotal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Subtotal amount"</span><span class="p">)</span>
+<a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>    <span class="n">tax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Tax amount"</span><span class="p">)</span>
+<a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>    <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Total amount"</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Save as:</strong> <code>templates/billing_document.py</code></p>
 <hr />
@@ -5041,27 +5041,27 @@
 <h3 id="basic-doclingdocument-processing">Basic DoclingDocument Processing<a class="headerlink" href="#basic-doclingdocument-processing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Process DoclingDocument JSON</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice_docling.json<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span>--backend<span class="w"> </span>llm<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span>--inference<span class="w"> </span>remote
 </code></pre></div>
 <h3 id="reprocess-with-different-template">Reprocess with Different Template<a class="headerlink" href="#reprocess-with-different-template" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># First extraction</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>invoice.pdf<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.billing_document.BasicInvoice&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.billing_document.BasicInvoice"</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--export-docling-json
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># Reprocess with detailed template (no OCR needed)</span>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span>outputs/invoice_docling.json<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">&quot;templates.billing_document.DetailedInvoice&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/detailed&quot;</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--template<span class="w"> </span><span class="s2">"templates.billing_document.DetailedInvoice"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--output-dir<span class="w"> </span><span class="s2">"outputs/detailed"</span>
 </code></pre></div>
 <h3 id="batch-reprocessing">Batch Reprocessing<a class="headerlink" href="#batch-reprocessing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Reprocess multiple DoclingDocument files</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">for</span><span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span>outputs/*_docling.json<span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">&quot;templates.billing_document.BillingDocument&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">&quot;outputs/reprocessed&quot;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>docling-graph<span class="w"> </span>convert<span class="w"> </span><span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span>--template<span class="w"> </span><span class="s2">"templates.billing_document.BillingDocument"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span>--output-dir<span class="w"> </span><span class="s2">"outputs/reprocessed"</span>
 <a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">done</span>
 </code></pre></div>
 <hr />
@@ -5072,11 +5072,11 @@
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Configure pipeline for DoclingDocument input</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice_docling.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoice_docling.json"</span><span class="p">,</span>
 <a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">template</span><span class="o">=</span><span class="n">Invoice</span><span class="p">,</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">&quot;many-to-one&quot;</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"remote"</span><span class="p">,</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">processing_mode</span><span class="o">=</span><span class="s2">"many-to-one"</span>
 <a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="p">)</span>
 <a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="c1"># Run pipeline (skips document conversion)</span>
@@ -5089,10 +5089,10 @@
 <a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
 <a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># Stage 1: Initial extraction with basic template</span>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">stage1_config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoice.pdf"</span><span class="p">,</span>
 <a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">template</span><span class="o">=</span><span class="n">BasicInvoice</span><span class="p">,</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"remote"</span><span class="p">,</span>
 <a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="n">export_docling_json</span><span class="o">=</span><span class="kc">True</span>
 <a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="p">)</span>
 <a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="n">stage1_context</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">stage1_config</span><span class="p">)</span>
@@ -5102,8 +5102,8 @@
 <a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="n">stage2_config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="n">source</span><span class="o">=</span><span class="n">docling_json</span><span class="p">,</span>
 <a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="n">template</span><span class="o">=</span><span class="n">DetailedInvoice</span><span class="p">,</span>
-<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="n">inference</span><span class="o">=</span><span class="s2">"remote"</span>
 <a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="p">)</span>
 <a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">stage2_config</span><span class="p">)</span>
 </code></pre></div>
@@ -5114,25 +5114,25 @@
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># Example: DoclingDocument JSON strings from a datastore</span>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">docling_documents</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="s2">&quot;...docling_json_1...&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="s2">&quot;...docling_json_2...&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="s2">"...docling_json_1..."</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="s2">"...docling_json_2..."</span><span class="p">,</span>
 <a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="p">]</span>
 <a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
 <a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="k">for</span> <span class="n">doc_json</span> <span class="ow">in</span> <span class="n">docling_documents</span><span class="p">:</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reprocessing DoclingDocument...&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Reprocessing DoclingDocument..."</span><span class="p">)</span>
 <a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>
 <a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>        <span class="n">source</span><span class="o">=</span><span class="n">doc_json</span><span class="p">,</span>
 <a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        <span class="n">template</span><span class="o">=</span><span class="n">Invoice</span><span class="p">,</span>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>        <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>        <span class="n">inference</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>        <span class="n">backend</span><span class="o">=</span><span class="s2">"llm"</span><span class="p">,</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>        <span class="n">inference</span><span class="o">=</span><span class="s2">"remote"</span>
 <a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>    <span class="p">)</span>
 <a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
 <a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    <span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>        <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Completed&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Completed"</span><span class="p">)</span>
 <a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"❌ Failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="expected-output">Expected Output<a class="headerlink" href="#expected-output" title="Permanent link">&para;</a></h2>
@@ -5196,20 +5196,20 @@
 <h2 id="doclingdocument-structure">DoclingDocument Structure<a class="headerlink" href="#doclingdocument-structure" title="Permanent link">&para;</a></h2>
 <h3 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;schema_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// Required</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span><span class="w">                </span><span class="c1">// Required</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;document_name&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">&quot;0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">      </span><span class="nt">&quot;page_no&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">      </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">612</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">792</span><span class="p">}</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">"schema_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DoclingDocument"</span><span class="p">,</span><span class="w">  </span><span class="c1">// Required</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span><span class="w">                </span><span class="c1">// Required</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"document_name"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">"pages"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">"0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">      </span><span class="nt">"page_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">      </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mi">612</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">792</span><span class="p">}</span>
 <a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">&quot;self_ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/body&quot;</span><span class="p">,</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">&quot;children&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">"self_ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#/body"</span><span class="p">,</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">"children"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">  </span><span class="nt">&quot;furniture&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">  </span><span class="nt">"furniture"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h3>
@@ -5222,12 +5222,12 @@
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="invalid-schema">🐛 Invalid Schema<a class="headerlink" href="#invalid-schema" title="Permanent link">&para;</a></h3>
 <p><strong>Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>ValidationError: schema_name must be &#39;DoclingDocument&#39;, got &#39;CustomDocument&#39;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>ValidationError: schema_name must be 'DoclingDocument', got 'CustomDocument'
 </code></pre></div></p>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;schema_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// Must be exactly this</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">"schema_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DoclingDocument"</span><span class="p">,</span><span class="w">  </span><span class="c1">// Must be exactly this</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span>
 <a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="err">...</span>
 <a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">}</span>
 </code></pre></div></p>
@@ -5237,8 +5237,8 @@
 </code></pre></div></p>
 <p><strong>Solution:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;schema_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// Add version field</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">"schema_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DoclingDocument"</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span><span class="w">  </span><span class="c1">// Add version field</span>
 <a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="err">...</span>
 <a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="p">}</span>
 </code></pre></div></p>
@@ -5270,26 +5270,26 @@
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="version-your-doclingdocuments">👍 Version Your DoclingDocuments<a class="headerlink" href="#version-your-doclingdocuments" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Add version to filename</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">doc_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;invoice_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">_docling.json&quot;</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">doc_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"invoice_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">_docling.json"</span>
 <a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
 <a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c1"># Or in metadata</span>
 <a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="n">doc</span> <span class="o">=</span> <span class="n">DoclingDocument</span><span class="p">(</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">schema_name</span><span class="o">=</span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;invoice_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">schema_name</span><span class="o">=</span><span class="s2">"DoclingDocument"</span><span class="p">,</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">,</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"invoice_v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
 <a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>    <span class="o">...</span>
 <a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="store-metadata">👍 Store Metadata<a class="headerlink" href="#store-metadata" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">{</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="nt">&quot;schema_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invoice_001&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span><span class="nt">&quot;source_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invoice.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span><span class="nt">&quot;processed_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span><span class="nt">&quot;ocr_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docling&quot;</span><span class="p">,</span>
-<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span><span class="nt">&quot;template_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0&quot;</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="nt">"schema_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DoclingDocument"</span><span class="p">,</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invoice_001"</span><span class="p">,</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span><span class="nt">"source_file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invoice.pdf"</span><span class="p">,</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span><span class="nt">"processed_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-01-15"</span><span class="p">,</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span><span class="nt">"ocr_engine"</span><span class="p">:</span><span class="w"> </span><span class="s2">"docling"</span><span class="p">,</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span><span class="nt">"template_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span>
 <a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">  </span><span class="p">},</span>
 <a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">  </span><span class="err">...</span>
 <a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="p">}</span>
@@ -5301,23 +5301,23 @@
 <a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Validate DoclingDocument</span>
 <a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="n">validator</span> <span class="o">=</span> <span class="n">DoclingDocumentValidator</span><span class="p">()</span>
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;invoice_docling.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"invoice_docling.json"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>
 <a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>    <span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
-<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Valid DoclingDocument&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Valid DoclingDocument"</span><span class="p">)</span>
 <a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Invalid: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"❌ Invalid: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="archive-original-pdfs">👍 Archive Original PDFs<a class="headerlink" href="#archive-original-pdfs" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
 <a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="c1"># Keep original PDF alongside DoclingDocument</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="n">pdf_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;invoice.pdf&quot;</span><span class="p">)</span>
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="n">docling_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;invoice_docling.json&quot;</span><span class="p">)</span>
-<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="n">archive_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;archive&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="n">pdf_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"invoice.pdf"</span><span class="p">)</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="n">docling_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"invoice_docling.json"</span><span class="p">)</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="n">archive_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"archive"</span><span class="p">)</span>
 <a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>
 <a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="c1"># Archive structure</span>
 <a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="n">archive_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5332,24 +5332,24 @@
 <a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
 <a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Create custom DoclingDocument</span>
 <a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="n">doc</span> <span class="o">=</span> <span class="n">DoclingDocument</span><span class="p">(</span>
-<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>    <span class="n">schema_name</span><span class="o">=</span><span class="s2">&quot;DoclingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;custom_invoice&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>    <span class="n">schema_name</span><span class="o">=</span><span class="s2">"DoclingDocument"</span><span class="p">,</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">,</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">name</span><span class="o">=</span><span class="s2">"custom_invoice"</span><span class="p">,</span>
 <a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">pages</span><span class="o">=</span><span class="p">{</span>
-<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>        <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="n">Page</span><span class="p">(</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>        <span class="s2">"0"</span><span class="p">:</span> <span class="n">Page</span><span class="p">(</span>
 <a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>            <span class="n">page_no</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>            <span class="n">size</span><span class="o">=</span><span class="n">Size</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">612</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">792</span><span class="p">)</span>
 <a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>        <span class="p">)</span>
 <a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>    <span class="p">},</span>
 <a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>    <span class="n">body</span><span class="o">=</span><span class="p">{</span>
-<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>        <span class="s2">&quot;self_ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/body&quot;</span><span class="p">,</span>
-<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>        <span class="s2">"self_ref"</span><span class="p">:</span> <span class="s2">"#/body"</span><span class="p">,</span>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>        <span class="s2">"children"</span><span class="p">:</span> <span class="p">[]</span>
 <a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a>    <span class="p">},</span>
 <a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>    <span class="n">furniture</span><span class="o">=</span><span class="p">{}</span>
 <a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a><span class="p">)</span>
 <a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a>
 <a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a><span class="c1"># Save</span>
-<a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;custom_docling.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"custom_docling.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-24-24" name="__codelineno-24-24" href="#__codelineno-24-24"></a>    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="merging-multiple-doclingdocuments">Merging Multiple DoclingDocuments<a class="headerlink" href="#merging-multiple-doclingdocuments" title="Permanent link">&para;</a></h3>
@@ -5358,7 +5358,7 @@
 <a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
 <a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Load multiple documents</span>
 <a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;doc1_docling.json&quot;</span><span class="p">,</span> <span class="s2">&quot;doc2_docling.json&quot;</span><span class="p">]:</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"doc1_docling.json"</span><span class="p">,</span> <span class="s2">"doc2_docling.json"</span><span class="p">]:</span>
 <a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>        <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
 <a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>
@@ -5366,28 +5366,28 @@
 <a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="n">merged</span> <span class="o">=</span> <span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
 <a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>    <span class="c1"># Merge pages, body, etc.</span>
-<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>    <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">])</span>
+<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>    <span class="n">merged</span><span class="p">[</span><span class="s2">"pages"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">"pages"</span><span class="p">])</span>
 <a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a>
 <a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a><span class="c1"># Save merged document</span>
-<a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;merged_docling.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"merged_docling.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a>    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">merged</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="extracting-specific-pages">Extracting Specific Pages<a class="headerlink" href="#extracting-specific-pages" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
 <a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="c1"># Load DoclingDocument</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;multi_page_docling.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"multi_page_docling.json"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>    <span class="n">doc</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
 <a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="c1"># Extract specific pages</span>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="n">pages_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">]</span>  <span class="c1"># Keep pages 0, 2, 4</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>    <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="n">pages_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"0"</span><span class="p">,</span> <span class="s2">"2"</span><span class="p">,</span> <span class="s2">"4"</span><span class="p">]</span>  <span class="c1"># Keep pages 0, 2, 4</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="n">doc</span><span class="p">[</span><span class="s2">"pages"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>    <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s2">"pages"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
 <a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pages_to_keep</span>
 <a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="p">}</span>
 <a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>
 <a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="c1"># Save filtered document</span>
-<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;filtered_docling.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"filtered_docling.json"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a>    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -5395,23 +5395,23 @@
 <h3 id="1-template-experimentation">1. Template Experimentation<a class="headerlink" href="#1-template-experimentation" title="Permanent link">&para;</a></h3>
 <p>Test different templates without re-running OCR:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">templates</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="s2">&quot;templates.billing_document.BasicInvoice&quot;</span><span class="p">,</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="s2">&quot;templates.billing_document.DetailedInvoice&quot;</span><span class="p">,</span>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="s2">&quot;templates.billing_document.MinimalInvoice&quot;</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="s2">"templates.billing_document.BasicInvoice"</span><span class="p">,</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="s2">"templates.billing_document.DetailedInvoice"</span><span class="p">,</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="s2">"templates.billing_document.MinimalInvoice"</span>
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="p">]</span>
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
 <a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
 <a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice_docling.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"invoice_docling.json"</span><span class="p">,</span>
 <a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>        <span class="n">template</span><span class="o">=</span><span class="n">template</span>
 <a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a>    <span class="p">)</span>
 <a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="2-ab-testing-extraction-strategies">2. A/B Testing Extraction Strategies<a class="headerlink" href="#2-ab-testing-extraction-strategies" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Test different backends</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;llm&quot;</span><span class="p">,</span> <span class="s2">&quot;vlm&quot;</span><span class="p">]:</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"llm"</span><span class="p">,</span> <span class="s2">"vlm"</span><span class="p">]:</span>
 <a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoice_docling.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>        <span class="n">source</span><span class="o">=</span><span class="s2">"invoice_docling.json"</span><span class="p">,</span>
 <a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>        <span class="n">template</span><span class="o">=</span><span class="n">Invoice</span><span class="p">,</span>
 <a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span>
 <a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>    <span class="p">)</span>
@@ -5420,12 +5420,12 @@
 <h3 id="3-incremental-processing">3. Incremental Processing<a class="headerlink" href="#3-incremental-processing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Process in stages</span>
 <a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="n">stages</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    <span class="p">(</span><span class="s2">&quot;basic&quot;</span><span class="p">,</span> <span class="n">BasicTemplate</span><span class="p">),</span>
-<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="p">(</span><span class="s2">&quot;detailed&quot;</span><span class="p">,</span> <span class="n">DetailedTemplate</span><span class="p">),</span>
-<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="p">(</span><span class="s2">&quot;enriched&quot;</span><span class="p">,</span> <span class="n">EnrichedTemplate</span><span class="p">)</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    <span class="p">(</span><span class="s2">"basic"</span><span class="p">,</span> <span class="n">BasicTemplate</span><span class="p">),</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="p">(</span><span class="s2">"detailed"</span><span class="p">,</span> <span class="n">DetailedTemplate</span><span class="p">),</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="p">(</span><span class="s2">"enriched"</span><span class="p">,</span> <span class="n">EnrichedTemplate</span><span class="p">)</span>
 <a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="p">]</span>
 <a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>
-<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;invoice_docling.json&quot;</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="n">source</span> <span class="o">=</span> <span class="s2">"invoice_docling.json"</span>
 <a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="k">for</span> <span class="n">stage_name</span><span class="p">,</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">:</span>
 <a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
@@ -5521,10 +5521,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

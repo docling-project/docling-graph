@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -33,10 +33,10 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -4909,7 +4909,7 @@
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>curl<span class="w"> </span>http://localhost:7474
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Test cypher-shell</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>cypher-shell<span class="w"> </span>-u<span class="w"> </span>neo4j<span class="w"> </span>-p<span class="w"> </span>password<span class="w"> </span><span class="s2">&quot;RETURN 1&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>cypher-shell<span class="w"> </span>-u<span class="w"> </span>neo4j<span class="w"> </span>-p<span class="w"> </span>password<span class="w"> </span><span class="s2">"RETURN 1"</span>
 </code></pre></div>
 <hr />
 <h2 id="exporting-for-neo4j">Exporting for Neo4j<a class="headerlink" href="#exporting-for-neo4j" title="Permanent link">&para;</a></h2>
@@ -4917,10 +4917,10 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">docling_graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;cypher&quot;</span><span class="p">,</span>  <span class="c1"># Generate Cypher script</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;neo4j_import&quot;</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">"cypher"</span><span class="p">,</span>  <span class="c1"># Generate Cypher script</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"neo4j_import"</span>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">)</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
 <a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
@@ -4955,24 +4955,24 @@
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># Connect to Neo4j</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">driver</span> <span class="o">=</span> <span class="n">GraphDatabase</span><span class="o">.</span><span class="n">driver</span><span class="p">(</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;bolt://localhost:7687&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;neo4j&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">"bolt://localhost:7687"</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">"neo4j"</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">)</span>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">)</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># Read Cypher file</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;neo4j_import/graph.cypher&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"neo4j_import/graph.cypher"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">cypher_script</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
 <a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1"># session.run() executes one statement at a time: split the script the way</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="c1"># cypher-shell does (each statement ends with &#39;;&#39; at end of line).</span>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">cypher_script</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;//&quot;</span><span class="p">))</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="c1"># cypher-shell does (each statement ends with ';' at end of line).</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="n">code</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">cypher_script</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"//"</span><span class="p">))</span>
 <a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="k">with</span> <span class="n">driver</span><span class="o">.</span><span class="n">session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="k">for</span> <span class="n">statement</span> <span class="ow">in</span> <span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="k">for</span> <span class="n">statement</span> <span class="ow">in</span> <span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";</span><span class="se">\n</span><span class="s2">"</span><span class="p">):</span>
 <a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>        <span class="k">if</span> <span class="n">statement</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
 <a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>            <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
 <a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>
 <a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="n">driver</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Imported to Neo4j&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Imported to Neo4j"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h3 id="method-4-automated-import">Method 4: Automated Import<a class="headerlink" href="#method-4-automated-import" title="Permanent link">&para;</a></h3>
@@ -4981,26 +4981,26 @@
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Extract and export</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;cypher&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;neo4j_import&quot;</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"document.pdf"</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">"cypher"</span><span class="p">,</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"neo4j_import"</span>
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="p">)</span>
 <a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
 <a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
 <a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="c1"># Import to Neo4j</span>
 <a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span class="s2">&quot;cypher-shell&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="s2">&quot;-u&quot;</span><span class="p">,</span> <span class="s2">&quot;neo4j&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;neo4j_import/graph.cypher&quot;</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span class="s2">"cypher-shell"</span><span class="p">,</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="s2">"-u"</span><span class="p">,</span> <span class="s2">"neo4j"</span><span class="p">,</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">,</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="s2">"-f"</span><span class="p">,</span> <span class="s2">"neo4j_import/graph.cypher"</span>
 <a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
 <a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Successfully imported to Neo4j&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Successfully imported to Neo4j"</span><span class="p">)</span>
 <a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Import failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"❌ Import failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="querying-neo4j">Querying Neo4j<a class="headerlink" href="#querying-neo4j" title="Permanent link">&para;</a></h2>
@@ -5029,11 +5029,11 @@
 <h3 id="finding-nodes">Finding Nodes<a class="headerlink" href="#finding-nodes" title="Permanent link">&para;</a></h3>
 <h4 id="find-specific-node">Find Specific Node<a class="headerlink" href="#find-specific-node" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1">// Find invoice by number</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">BillingDocument</span><span class="w"> </span><span class="p">{</span><span class="n">document_no</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;INV-001&quot;</span><span class="p">})</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">BillingDocument</span><span class="w"> </span><span class="p">{</span><span class="n">document_no</span><span class="p">:</span><span class="w"> </span><span class="s">"INV-001"</span><span class="p">})</span>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">i</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1">// Find organization by name</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">:</span><span class="n">Organization</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Acme Corp&quot;</span><span class="p">})</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">:</span><span class="n">Organization</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Acme Corp"</span><span class="p">})</span>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">o</span>
 </code></pre></div>
 <h4 id="find-all-of-type">Find All of Type<a class="headerlink" href="#find-all-of-type" title="Permanent link">&para;</a></h4>
@@ -5050,12 +5050,12 @@
 <h3 id="relationship-queries">Relationship Queries<a class="headerlink" href="#relationship-queries" title="Permanent link">&para;</a></h3>
 <h4 id="direct-relationships">Direct Relationships<a class="headerlink" href="#direct-relationships" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Find who issued an invoice</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">BillingDocument</span><span class="w"> </span><span class="p">{</span><span class="n">document_no</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;INV-001&quot;</span><span class="p">})</span><span class="o">-[</span><span class="p">:</span><span class="n">ISSUED_BY</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">o</span><span class="p">:</span><span class="n">Organization</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">BillingDocument</span><span class="w"> </span><span class="p">{</span><span class="n">document_no</span><span class="p">:</span><span class="w"> </span><span class="s">"INV-001"</span><span class="p">})</span><span class="o">-[</span><span class="p">:</span><span class="n">ISSUED_BY</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">o</span><span class="p">:</span><span class="n">Organization</span><span class="p">)</span>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">document_no</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">name</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1">// Find all line items in an invoice</span>
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">BillingDocument</span><span class="p">)</span><span class="o">-[</span><span class="p">:</span><span class="n">CONTAINS_LINE</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">item</span><span class="p">:</span><span class="n">LineItem</span><span class="p">)</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">document_no</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;INV-001&quot;</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">document_no</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"INV-001"</span>
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="n">description</span><span class="p">,</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="n">total</span>
 </code></pre></div>
 <h4 id="multi-hop-relationships">Multi-Hop Relationships<a class="headerlink" href="#multi-hop-relationships" title="Permanent link">&para;</a></h4>
@@ -5065,7 +5065,7 @@
 <a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
 <a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1">// Find all paths between two nodes</span>
 <a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">MATCH</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span><span class="k">start</span><span class="p">:</span><span class="n">BillingDocument</span><span class="p">)</span><span class="o">-[</span><span class="p">*..</span><span class="m">3</span><span class="o">]-</span><span class="p">(</span><span class="k">end</span><span class="p">:</span><span class="n">Address</span><span class="p">)</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">WHERE</span><span class="w"> </span><span class="k">start</span><span class="p">.</span><span class="n">document_no</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;INV-001&quot;</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">WHERE</span><span class="w"> </span><span class="k">start</span><span class="p">.</span><span class="n">document_no</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"INV-001"</span>
 <a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">path</span>
 </code></pre></div>
 <hr />
@@ -5107,21 +5107,21 @@
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># 1. Extract and export</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;invoices.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;cypher&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;neo4j_data&quot;</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="n">source</span><span class="o">=</span><span class="s2">"invoices.pdf"</span><span class="p">,</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="n">export_format</span><span class="o">=</span><span class="s2">"cypher"</span><span class="p">,</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">"neo4j_data"</span>
 <a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="p">)</span>
 <a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
 <a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
 <a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="c1"># 2. Import to Neo4j</span>
 <a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="n">driver</span> <span class="o">=</span> <span class="n">GraphDatabase</span><span class="o">.</span><span class="n">driver</span><span class="p">(</span>
-<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="s2">&quot;bolt://localhost:7687&quot;</span><span class="p">,</span>
-<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;neo4j&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="s2">"bolt://localhost:7687"</span><span class="p">,</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">"neo4j"</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">)</span>
 <a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="p">)</span>
 <a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>
-<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;neo4j_data/graph.cypher&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"neo4j_data/graph.cypher"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>    <span class="n">cypher_script</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>
 <a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="k">with</span> <span class="n">driver</span><span class="o">.</span><span class="n">session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
@@ -5129,15 +5129,15 @@
 <a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>
 <a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="c1"># 3. Query</span>
 <a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="k">with</span> <span class="n">driver</span><span class="o">.</span><span class="n">session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">"""</span>
 <a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="s2">        MATCH (i:BillingDocument)</span>
 <a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a><span class="s2">        RETURN i.document_no, i.total</span>
 <a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a><span class="s2">        ORDER BY i.total DESC</span>
 <a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="s2">        LIMIT 5</span>
-<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="s2">    """</span><span class="p">)</span>
 <a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a>
 <a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a>    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;i.document_no&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: $</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;i.total&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">'i.document_no'</span><span class="p">]</span><span class="si">}</span><span class="s2">: $</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">'i.total'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a>
 <a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a><span class="n">driver</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
@@ -5147,29 +5147,29 @@
 <a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="c1"># Process multiple documents</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="k">for</span> <span class="n">pdf_file</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;documents&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.pdf&quot;</span><span class="p">):</span>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">pdf_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="k">for</span> <span class="n">pdf_file</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"documents"</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.pdf"</span><span class="p">):</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing </span><span class="si">{</span><span class="n">pdf_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
 <a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>    <span class="c1"># Extract</span>
 <a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
 <a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>        <span class="n">source</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">),</span>
-<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">&quot;templates.BillingDocument&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>        <span class="n">export_format</span><span class="o">=</span><span class="s2">&quot;cypher&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;neo4j_batch/</span><span class="si">{</span><span class="n">pdf_file</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="n">template</span><span class="o">=</span><span class="s2">"templates.BillingDocument"</span><span class="p">,</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>        <span class="n">export_format</span><span class="o">=</span><span class="s2">"cypher"</span><span class="p">,</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="sa">f</span><span class="s2">"neo4j_batch/</span><span class="si">{</span><span class="n">pdf_file</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">"</span>
 <a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>    <span class="p">)</span>
 <a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>
 <a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>    <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>
 <a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>    <span class="c1"># Import</span>
-<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>    <span class="n">cypher_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;neo4j_batch/</span><span class="si">{</span><span class="n">pdf_file</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">/graph.cypher&quot;</span>
+<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>    <span class="n">cypher_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"neo4j_batch/</span><span class="si">{</span><span class="n">pdf_file</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">/graph.cypher"</span>
 <a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span>
-<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a>        <span class="s2">&quot;cypher-shell&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a>        <span class="s2">&quot;-u&quot;</span><span class="p">,</span> <span class="s2">&quot;neo4j&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a>        <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span>
-<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>        <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="n">cypher_file</span>
+<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a>        <span class="s2">"cypher-shell"</span><span class="p">,</span>
+<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a>        <span class="s2">"-u"</span><span class="p">,</span> <span class="s2">"neo4j"</span><span class="p">,</span>
+<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a>        <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">,</span>
+<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>        <span class="s2">"-f"</span><span class="p">,</span> <span class="n">cypher_file</span>
 <a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a>    <span class="p">])</span>
 <a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>
-<a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Batch import complete&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Batch import complete"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="query-and-export">📍 Query and Export<a class="headerlink" href="#query-and-export" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">neo4j</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphDatabase</span>
@@ -5177,26 +5177,26 @@
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Connect</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">driver</span> <span class="o">=</span> <span class="n">GraphDatabase</span><span class="o">.</span><span class="n">driver</span><span class="p">(</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="s2">&quot;bolt://localhost:7687&quot;</span><span class="p">,</span>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;neo4j&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="s2">"bolt://localhost:7687"</span><span class="p">,</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">"neo4j"</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">)</span>
 <a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="p">)</span>
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
 <a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="c1"># Query</span>
 <a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="k">with</span> <span class="n">driver</span><span class="o">.</span><span class="n">session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">"""</span>
 <a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="s2">        MATCH (i:BillingDocument)-[:ISSUED_BY]-&gt;(o:Organization)</span>
 <a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="s2">        RETURN i.document_no as invoice,</span>
 <a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="s2">               o.name as organization,</span>
 <a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="s2">               i.total as amount</span>
 <a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="s2">        ORDER BY i.total DESC</span>
-<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="s2">    """</span><span class="p">)</span>
 <a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>
 <a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>    <span class="c1"># Convert to DataFrame</span>
 <a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">result</span><span class="p">])</span>
 <a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>
 <a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>    <span class="c1"># Export</span>
-<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;invoice_summary.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exported </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"invoice_summary.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exported </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> records"</span><span class="p">)</span>
 <a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a>
 <a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="n">driver</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
@@ -5232,7 +5232,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># ✅ Good - Import in batches</span>
 <a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">neo4j</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphDatabase</span>
 <a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">driver</span> <span class="o">=</span> <span class="n">GraphDatabase</span><span class="o">.</span><span class="n">driver</span><span class="p">(</span><span class="s2">&quot;bolt://localhost:7687&quot;</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;neo4j&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">))</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">driver</span> <span class="o">=</span> <span class="n">GraphDatabase</span><span class="o">.</span><span class="n">driver</span><span class="p">(</span><span class="s2">"bolt://localhost:7687"</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s2">"neo4j"</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">))</span>
 <a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="c1"># Process in batches</span>
 <a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1000</span>
@@ -5243,7 +5243,7 @@
 <a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>        <span class="k">for</span> <span class="n">statement</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
 <a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>            <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
 <a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>
-<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imported batch </span><span class="si">{</span><span class="n">i</span><span class="o">//</span><span class="n">batch_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Imported batch </span><span class="si">{</span><span class="n">i</span><span class="o">//</span><span class="n">batch_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>
 <a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="n">driver</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </code></pre></div>
@@ -5296,12 +5296,12 @@
 <h3 id="graph-algorithms">Graph Algorithms<a class="headerlink" href="#graph-algorithms" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1">// Find shortest path</span>
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="k">MATCH</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">shortestPath</span><span class="p">(</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span><span class="p">(</span><span class="k">start</span><span class="p">:</span><span class="n">BillingDocument</span><span class="w"> </span><span class="p">{</span><span class="n">document_no</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;INV-001&quot;</span><span class="p">})</span><span class="o">-[</span><span class="p">*</span><span class="o">]-</span><span class="p">(</span><span class="k">end</span><span class="p">:</span><span class="n">Address</span><span class="p">)</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span><span class="p">(</span><span class="k">start</span><span class="p">:</span><span class="n">BillingDocument</span><span class="w"> </span><span class="p">{</span><span class="n">document_no</span><span class="p">:</span><span class="w"> </span><span class="s">"INV-001"</span><span class="p">})</span><span class="o">-[</span><span class="p">*</span><span class="o">]-</span><span class="p">(</span><span class="k">end</span><span class="p">:</span><span class="n">Address</span><span class="p">)</span>
 <a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="p">)</span>
 <a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">path</span>
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
 <a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="c1">// PageRank (requires APOC or GDS)</span>
-<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="k">CALL</span><span class="w"> </span><span class="n">gds</span><span class="p">.</span><span class="n">pageRank</span><span class="p">.</span><span class="n">stream</span><span class="p">(</span><span class="s">&#39;myGraph&#39;</span><span class="p">)</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="k">CALL</span><span class="w"> </span><span class="n">gds</span><span class="p">.</span><span class="n">pageRank</span><span class="p">.</span><span class="n">stream</span><span class="p">(</span><span class="s">'myGraph'</span><span class="p">)</span>
 <a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="k">YIELD</span><span class="w"> </span><span class="n">nodeId</span><span class="p">,</span><span class="w"> </span><span class="n">score</span>
 <a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">gds</span><span class="p">.</span><span class="n">util</span><span class="p">.</span><span class="n">asNode</span><span class="p">(</span><span class="n">nodeId</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">score</span>
 <a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">score</span><span class="w"> </span><span class="k">DESC</span>
@@ -5311,7 +5311,7 @@
 <a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="n">FULLTEXT</span><span class="w"> </span><span class="n">INDEX</span><span class="w"> </span><span class="n">organization_search</span><span class="w"> </span><span class="n">FOR</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">:</span><span class="n">Organization</span><span class="p">)</span><span class="w"> </span><span class="n">ON</span><span class="w"> </span><span class="n">EACH</span><span class="w"> </span><span class="o">[</span><span class="n">o</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">description</span><span class="o">]</span>
 <a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
 <a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1">// Search</span>
-<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="k">CALL</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">index</span><span class="p">.</span><span class="n">fulltext</span><span class="p">.</span><span class="n">queryNodes</span><span class="p">(</span><span class="s">&#39;organization_search&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Acme&#39;</span><span class="p">)</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="k">CALL</span><span class="w"> </span><span class="n">db</span><span class="p">.</span><span class="n">index</span><span class="p">.</span><span class="n">fulltext</span><span class="p">.</span><span class="n">queryNodes</span><span class="p">(</span><span class="s">'organization_search'</span><span class="p">,</span><span class="w"> </span><span class="s">'Acme'</span><span class="p">)</span>
 <a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="k">YIELD</span><span class="w"> </span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">score</span>
 <a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="k">RETURN</span><span class="w"> </span><span class="n">node</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">score</span>
 </code></pre></div>
@@ -5405,10 +5405,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
