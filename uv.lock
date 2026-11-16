@@ -1386,7 +1386,7 @@ chunking-openai = [
 
 [[package]]
 name = "docling-graph"
-version = "1.9.1"
+version = "1.9.2"
 source = { editable = "." }
 default-groups = ["dev", "notebook", "test"]
 dependencies = [
@@ -3209,11 +3209,11 @@ wheels = [
 
 [[package]]
 name = "mail-parser"
-version = "4.4.0"
+version = "4.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9c/6e/2cee08e0d6fbce02a301d5ab72ef5ffe8f47dd59ac3d8ce61324d8a9143a/mail_parser-4.4.0.tar.gz", hash = "sha256:82d2c0fa98a138620feaa87a378af2a2643b2941b2e125d7abfc65dd21094b33", size = 2852896, upload-time = "2026-06-11T06:56:49.789Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/37/4fe3355cfee767234fc57cd62a48ef15829d8cd8e14c7c3412e4f1f16908/mail_parser-4.6.3.tar.gz", hash = "sha256:9b89d91d741ba4688fd4ac0f5071f2b0e238683cf9e94dec407fe3eba0c42698", size = 2898823, upload-time = "2026-08-19T22:09:14.671Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/a7/99dfed167ba728384521acd54fadbb7649ce49333018f42e1f190ed25911/mail_parser-4.4.0-py3-none-any.whl", hash = "sha256:46f7931817660fec4f7723e6f1722e66a9cce44c2daeacbeb9e705078379561f", size = 35504, upload-time = "2026-06-11T06:56:48.348Z" },
+    { url = "https://files.pythonhosted.org/packages/05/b2/db246a5f5e430e05ab358501cd34cfe2b422951a2738daf6054f4c2af885/mail_parser-4.6.3-py3-none-any.whl", hash = "sha256:abfcba25955332c72d81c06aaf32107744fd70e610a6e50899efada542712afa", size = 50027, upload-time = "2026-08-19T22:09:13.196Z" },
 ]
 
 [[package]]
